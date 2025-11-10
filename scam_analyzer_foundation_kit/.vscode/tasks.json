@@ -1,0 +1,26 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Create venv",
+      "type": "shell",
+      "command": "python -m venv .venv",
+      "problemMatcher": []
+    },
+    {
+      "label": "Install requirements",
+      "type": "shell",
+      "command": ".venv\\Scripts\\python -m pip install -r requirements.txt",
+      "windows": {
+        "command": ".venv\\Scripts\\python -m pip install -r requirements.txt"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Run (no debug)",
+      "type": "shell",
+      "command": ".venv\\Scripts\\python scam_analyzer.py",
+      "problemMatcher": []
+    }
+  ]
+}

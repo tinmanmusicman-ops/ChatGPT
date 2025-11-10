@@ -1,0 +1,15 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run Scam Analyzer",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/scam_analyzer.py",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "envFile": "${workspaceFolder}/.env",
+      "cwd": "${workspaceFolder}"
+    }
+  ]
+}
