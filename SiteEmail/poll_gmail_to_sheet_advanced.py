@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""    dlfl
+"""    dlflhgf
 poll_gmail_to_sheet_advanced.py (clean-text edition, corrected)
 - Reads config.json
 - Appends only [Timestamp, Message Text]
