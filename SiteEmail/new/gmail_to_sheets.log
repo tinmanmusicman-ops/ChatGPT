@@ -1,0 +1,23 @@
+2025-11-09 17:24:38,843 [INFO] Starting poller (max_per_run=25, unseen_only=True, mark_read=False, thread=False)
+2025-11-09 17:24:39,668 [INFO] Searching with IMAP terms: UNSEEN SUBJECT "672-7323"
+2025-11-09 17:24:39,983 [INFO] No matching messages found.
+2025-11-09 17:25:01,555 [INFO] Starting poller (max_per_run=25, unseen_only=True, mark_read=False, thread=False)
+2025-11-09 17:25:02,065 [INFO] Searching with IMAP terms: UNSEEN SUBJECT "672-7323"
+2025-11-09 17:25:05,109 [INFO] Processing 1 new message(s).
+2025-11-09 17:25:06,032 [INFO] Appended 1 row(s).
+2025-11-09 17:25:06,213 [INFO] Recorded 1 UID(s) as processed.
+2025-11-09 17:29:50,607 [INFO] Starting poller (max_per_run=25, unseen_only=True, mark_read=False, thread=False)
+2025-11-09 17:29:51,318 [INFO] Searching with IMAP terms: UNSEEN SUBJECT "672-7323"
+2025-11-09 17:29:54,090 [INFO] Processing 1 new message(s).
+2025-11-09 17:29:54,611 [INFO] Appended 1 row(s).
+2025-11-09 17:29:54,800 [INFO] Recorded 1 UID(s) as processed.
+2025-11-09 17:31:51,426 [INFO] Starting poller (max_per_run=25, unseen_only=True, mark_read=False, thread=False)
+2025-11-09 17:31:52,039 [INFO] Searching with IMAP terms: UNSEEN SUBJECT "672-7323"
+2025-11-09 17:31:54,937 [INFO] Processing 1 new message(s).
+2025-11-09 17:31:55,338 [INFO] Appended 1 row(s).
+2025-11-09 17:31:55,535 [INFO] Recorded 1 UID(s) as processed.
+2025-11-09 17:33:25,791 [INFO] Starting poller (max_per_run=25, unseen_only=True, mark_read=False, thread=False)
+2025-11-09 17:33:26,393 [INFO] Searching with IMAP terms: UNSEEN SUBJECT "672-7323"
+2025-11-09 17:33:29,090 [INFO] Processing 1 new message(s).
+2025-11-09 17:33:29,500 [INFO] Appended 1 row(s).
+2025-11-09 17:33:29,688 [INFO] Recorded 1 UID(s) as processed.

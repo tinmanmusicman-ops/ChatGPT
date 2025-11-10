@@ -1,0 +1,88 @@
+2025-11-09 12:38:51,520 | ERROR | gmail_to_sheets_poller | poll_gmail_to_sheet.py:74 - GMAIL_USER is not set. Check your .env
+2025-11-09 12:38:51,520 | WARNING | gmail_to_sheets_poller | poll_gmail_to_sheet.py:76 - GMAIL_APP_PASSWORD is empty; IMAP login will fail. Set it in your .env
+2025-11-09 12:38:51,521 | INFO | gmail_to_sheets_poller | poll_gmail_to_sheet.py:224 - === Gmail poller starting (TZ=America/Los_Angeles, poll=30s) ===
+2025-11-09 12:38:51,522 | DEBUG | gmail_to_sheets_poller | poll_gmail_to_sheet.py:82 - Authorizing Google Sheets with service_account.json ...
+2025-11-09 12:38:51,523 | ERROR | gmail_to_sheets_poller | poll_gmail_to_sheet.py:228 - Google Sheets authorization/open failed. Exiting.
+Traceback (most recent call last):
+  File "C:\!!!\Hope\chatgpt\SiteEmail\poll_gmail_to_sheet.py", line 226, in main
+    ws = authorize_sheets()
+  File "C:\!!!\Hope\chatgpt\SiteEmail\poll_gmail_to_sheet.py", line 83, in authorize_sheets
+    creds = Credentials.from_service_account_file("service_account.json", scopes=SCOPES)
+  File "C:\Users\SCRC\AppData\Local\Programs\Python\Python314\Lib\site-packages\google\oauth2\service_account.py", line 260, in from_service_account_file
+    info, signer = _service_account_info.from_filename(
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        filename, require=["client_email", "token_uri"]
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\SCRC\AppData\Local\Programs\Python\Python314\Lib\site-packages\google\auth\_service_account_info.py", line 78, in from_filename
+    with io.open(filename, "r", encoding="utf-8") as json_file:
+         ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'service_account.json'
+2025-11-09 12:54:46,190 | ERROR | gmail_to_sheets_poller | poll_gmail_to_sheet.py:74 - GMAIL_USER is not set. Check your .env
+2025-11-09 12:54:46,191 | WARNING | gmail_to_sheets_poller | poll_gmail_to_sheet.py:76 - GMAIL_APP_PASSWORD is empty; IMAP login will fail. Set it in your .env
+2025-11-09 12:54:46,192 | INFO | gmail_to_sheets_poller | poll_gmail_to_sheet.py:224 - === Gmail poller starting (TZ=America/Los_Angeles, poll=30s) ===
+2025-11-09 12:54:46,192 | DEBUG | gmail_to_sheets_poller | poll_gmail_to_sheet.py:82 - Authorizing Google Sheets with service_account.json ...
+2025-11-09 12:54:46,193 | ERROR | gmail_to_sheets_poller | poll_gmail_to_sheet.py:228 - Google Sheets authorization/open failed. Exiting.
+Traceback (most recent call last):
+  File "C:\!!!\Hope\chatgpt\SiteEmail\poll_gmail_to_sheet.py", line 226, in main
+    ws = authorize_sheets()
+  File "C:\!!!\Hope\chatgpt\SiteEmail\poll_gmail_to_sheet.py", line 83, in authorize_sheets
+    creds = Credentials.from_service_account_file("service_account.json", scopes=SCOPES)
+  File "C:\Users\SCRC\AppData\Local\Programs\Python\Python314\Lib\site-packages\google\oauth2\service_account.py", line 260, in from_service_account_file
+    info, signer = _service_account_info.from_filename(
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        filename, require=["client_email", "token_uri"]
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\SCRC\AppData\Local\Programs\Python\Python314\Lib\site-packages\google\auth\_service_account_info.py", line 78, in from_filename
+    with io.open(filename, "r", encoding="utf-8") as json_file:
+         ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'service_account.json'
+2025-11-09 13:14:25,865 | INFO | gmail_to_sheets_poller | poll_gmail_to_sheet.py:224 - === Gmail poller starting (TZ=America/Los_Angeles, poll=30s) ===
+2025-11-09 13:14:25,867 | DEBUG | gmail_to_sheets_poller | poll_gmail_to_sheet.py:82 - Authorizing Google Sheets with service_account.json ...
+2025-11-09 13:14:25,870 | DEBUG | urllib3.util.retry | retry.py:286 - Converted retries value: 3 -> Retry(total=3, connect=None, read=None, redirect=None, status=None)
+2025-11-09 13:14:25,871 | DEBUG | gmail_to_sheets_poller | poll_gmail_to_sheet.py:85 - Opening spreadsheet: LGBTQ
+2025-11-09 13:14:25,928 | DEBUG | google.auth.transport.requests | requests.py:186 - Making request: POST https://oauth2.googleapis.com/token
+2025-11-09 13:14:25,933 | DEBUG | urllib3.connectionpool | connectionpool.py:1049 - Starting new HTTPS connection (1): oauth2.googleapis.com:443
+2025-11-09 13:14:26,958 | DEBUG | urllib3.connectionpool | connectionpool.py:544 - https://oauth2.googleapis.com:443 "POST /token HTTP/1.1" 200 None
+2025-11-09 13:14:26,962 | DEBUG | urllib3.connectionpool | connectionpool.py:1049 - Starting new HTTPS connection (1): www.googleapis.com:443
+2025-11-09 13:14:27,908 | DEBUG | urllib3.connectionpool | connectionpool.py:544 - https://www.googleapis.com:443 "GET /drive/v3/files?q=mimeType%3D%22application%2Fvnd.google-apps.spreadsheet%22+and+name+%3D+%22LGBTQ%22&pageSize=1000&supportsAllDrives=True&includeItemsFromAllDrives=True&fields=kind%2CnextPageToken%2Cfiles%28id%2Cname%2CcreatedTime%2CmodifiedTime%29 HTTP/1.1" 403 None
+2025-11-09 13:14:27,910 | ERROR | gmail_to_sheets_poller | poll_gmail_to_sheet.py:228 - Google Sheets authorization/open failed. Exiting.
+Traceback (most recent call last):
+  File "C:\!!!\Hope\chatgpt\SiteEmail\poll_gmail_to_sheet.py", line 226, in main
+    ws = authorize_sheets()
+  File "C:\!!!\Hope\chatgpt\SiteEmail\poll_gmail_to_sheet.py", line 86, in authorize_sheets
+    sh = client.open(SPREADSHEET_NAME)
+  File "C:\Users\SCRC\AppData\Local\Programs\Python\Python314\Lib\site-packages\gspread\client.py", line 132, in open
+    spreadsheet_files, response = self._list_spreadsheet_files(title, folder_id)
+                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\SCRC\AppData\Local\Programs\Python\Python314\Lib\site-packages\gspread\client.py", line 105, in _list_spreadsheet_files
+    response = self.http_client.request("get", url, params=params)
+  File "C:\Users\SCRC\AppData\Local\Programs\Python\Python314\Lib\site-packages\gspread\http_client.py", line 128, in request
+    raise APIError(response)
+gspread.exceptions.APIError: APIError: [403]: Request had insufficient authentication scopes.
+2025-11-09 13:43:43,152 | INFO | gmail_to_sheets_poller | poll_gmail_to_sheet.py:224 - === Gmail poller starting (TZ=America/Los_Angeles, poll=30s) ===
+2025-11-09 13:43:43,154 | DEBUG | gmail_to_sheets_poller | poll_gmail_to_sheet.py:82 - Authorizing Google Sheets with service_account.json ...
+2025-11-09 13:43:43,158 | DEBUG | urllib3.util.retry | retry.py:286 - Converted retries value: 3 -> Retry(total=3, connect=None, read=None, redirect=None, status=None)
+2025-11-09 13:43:43,159 | DEBUG | gmail_to_sheets_poller | poll_gmail_to_sheet.py:85 - Opening spreadsheet: LGBTQ
+2025-11-09 13:43:43,226 | DEBUG | google.auth.transport.requests | requests.py:186 - Making request: POST https://oauth2.googleapis.com/token
+2025-11-09 13:43:43,231 | DEBUG | urllib3.connectionpool | connectionpool.py:1049 - Starting new HTTPS connection (1): oauth2.googleapis.com:443
+2025-11-09 13:43:44,452 | DEBUG | urllib3.connectionpool | connectionpool.py:544 - https://oauth2.googleapis.com:443 "POST /token HTTP/1.1" 200 None
+2025-11-09 13:43:44,456 | DEBUG | urllib3.connectionpool | connectionpool.py:1049 - Starting new HTTPS connection (1): www.googleapis.com:443
+2025-11-09 13:43:46,265 | DEBUG | urllib3.connectionpool | connectionpool.py:544 - https://www.googleapis.com:443 "GET /drive/v3/files?q=mimeType%3D%22application%2Fvnd.google-apps.spreadsheet%22+and+name+%3D+%22LGBTQ%22&pageSize=1000&supportsAllDrives=True&includeItemsFromAllDrives=True&fields=kind%2CnextPageToken%2Cfiles%28id%2Cname%2CcreatedTime%2CmodifiedTime%29 HTTP/1.1" 403 None
+2025-11-09 13:43:46,268 | ERROR | gmail_to_sheets_poller | poll_gmail_to_sheet.py:228 - Google Sheets authorization/open failed. Exiting.
+Traceback (most recent call last):
+  File "C:\!!!\Hope\chatgpt\SiteEmail\poll_gmail_to_sheet.py", line 226, in main
+    ws = authorize_sheets()
+  File "C:\!!!\Hope\chatgpt\SiteEmail\poll_gmail_to_sheet.py", line 86, in authorize_sheets
+    sh = client.open(SPREADSHEET_NAME)
+  File "C:\Users\SCRC\AppData\Local\Programs\Python\Python314\Lib\site-packages\gspread\client.py", line 132, in open
+    spreadsheet_files, response = self._list_spreadsheet_files(title, folder_id)
+                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\SCRC\AppData\Local\Programs\Python\Python314\Lib\site-packages\gspread\client.py", line 105, in _list_spreadsheet_files
+    response = self.http_client.request("get", url, params=params)
+  File "C:\Users\SCRC\AppData\Local\Programs\Python\Python314\Lib\site-packages\gspread\http_client.py", line 128, in request
+    raise APIError(response)
+gspread.exceptions.APIError: APIError: [403]: Request had insufficient authentication scopes.
