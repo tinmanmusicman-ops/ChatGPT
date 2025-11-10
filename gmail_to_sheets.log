@@ -1,0 +1,10 @@
+2025-11-10 13:05:30,420 [ERROR] Fatal error: Config file not found: config.json
+Traceback (most recent call last):
+  File "C:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 455, in <module>
+    main()
+    ~~~~^^
+  File "C:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 374, in main
+    cfg = load_config(CONFIG_FILE)
+  File "C:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 60, in load_config
+    raise FileNotFoundError(f"Config file not found: {path}")
+FileNotFoundError: Config file not found: config.json
