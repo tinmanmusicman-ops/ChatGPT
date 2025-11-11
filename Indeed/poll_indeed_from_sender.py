@@ -325,6 +325,72 @@ def extract_text_from_msg(msg: email.message.Message) -> str:
     return _post_filters(subj or "(no content)")
 
 
+
+# ------------ URL Extraction Helpers ------------
+def _extract_urls_from_text(text: str) -> List[str]:
+    """Extract raw URLs from visible text."""
+    pattern = re.compile(r"https?://[^\s\"'>]+", re.IGNORECASE)
+    return pattern.findall(text or "")
+
+def _extract_urls_from_html(html: str) -> List[str]:
+    """Extract URLs from href attributes in HTML body."""
+    # capture http/https URLs in href="..."
+    href_pat = re.compile(r'href=["\'](https?://[^"\']+)["\']', re.IGNORECASE)
+    urls = href_pat.findall(html or "")
+    # also catch any bare URLs in HTML text just in case
+    urls += _extract_urls_from_text(html or "")
+    return urls
+
+def extract_urls_from_msg(msg: email.message.Message) -> List[str]:
+    """Walk the message payload and extract all hyperlink targets.
+    Prefers href URLs in HTML, falls back to raw URLs in text/plain.
+    Returns a de-duplicated list preserving first-seen order.
+    """
+    urls = []
+    def _extend(new_items):
+        for u in new_items:
+            if u and u not in urls:
+                urls.append(u)
+
+    if msg.is_multipart():
+        # Prefer HTML first to capture true link targets (href)
+        for part in msg.walk():
+            ctype = part.get_content_type()
+            disp = str(part.get("Content-Disposition", ""))
+            if ctype == "text/html" and "attachment" not in disp:
+                try:
+                    charset = part.get_content_charset() or "utf-8"
+                    html = part.get_payload(decode=True).decode(charset, errors="replace")
+                    _extend(_extract_urls_from_html(html))
+                except Exception:
+                    continue
+        # Then inspect text/plain for any naked URLs
+        for part in msg.walk():
+            ctype = part.get_content_type()
+            disp = str(part.get("Content-Disposition", ""))
+            if ctype == "text/plain" and "attachment" not in disp:
+                try:
+                    charset = part.get_content_charset() or "utf-8"
+                    body = part.get_payload(decode=True).decode(charset, errors="replace")
+                    _extend(_extract_urls_from_text(body))
+                except Exception:
+                    continue
+    else:
+        ctype = msg.get_content_type()
+        try:
+            if ctype == "text/html":
+                charset = msg.get_content_charset() or "utf-8"
+                html = msg.get_payload(decode=True).decode(charset, errors="replace")
+                _extend(_extract_urls_from_html(html))
+            elif ctype == "text/plain":
+                charset = msg.get_content_charset() or "utf-8"
+                body = msg.get_payload(decode=True).decode(charset, errors="replace")
+                _extend(_extract_urls_from_text(body))
+        except Exception:
+            pass
+
+    return urls
+
 # ------------ Sheets helpers ------------
 def open_sheet(service_account_json: str, spreadsheet_id: str, worksheet_name: str):
     gc = gspread.service_account(filename=service_account_json)
@@ -417,12 +483,13 @@ def main():
 
         ts = now_local_iso(tz_name)
 
-        for uid in todo:
+        
+for uid in todo:
             msg = fetch_rfc822(imap, uid)
-            text = extract_text_from_msg(msg)
-            text = re.sub(r"\s+", " ", text).strip()
-            rows.append((ts, text))
-
+            urls = extract_urls_from_msg(msg)
+            url_text = "
+".join(urls) if urls else "(no links found)"
+            rows.append((ts, url_text))
             uid_str = uid.decode() if isinstance(uid, bytes) else uid
             processed_to_add.append(uid_str)
 
