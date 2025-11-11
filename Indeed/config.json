@@ -1,9 +1,13 @@
 {
+  "gmail_user": "tinmanmusicman@gmail.com",
+  "gmail_app_password": "jwhk piox dqnt jxqc",
   "user": "tinmanmusicman@gmail.com",
   "app_password": "jwhk piox dqnt jxqc",
   "subject_term": "",
   "spreadsheet_id": "1IYrpGlyCSIilIEyRA70Uq2iUofl-sPA94ygH9ZL-2ag",
   "worksheet_name": "Inbox",
-  "service_account_json": "sa_key.json"
+  "service_account_json": "sa_key.json",
+  "openai_model": "gpt-4o-mini",
+  "openai_temperature": 0.1
 }
 

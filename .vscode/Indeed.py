@@ -3,39 +3,38 @@
 Indeed.py — fetch latest Indeed email from Gmail, extract job info with AI,
 and append a nicely formatted row to Google Sheets.
 
-This version ALWAYS pulls the email body from Gmail (no --text/--file/--stdin).
+Input priority:
+  1) --text (explicit body)       2) --file (read from path)
+  3) Default: fetch latest Gmail message from donotreply@indeed.com
 
-Config (config.json in same folder):
-{
-  "service_account_json": "sa_key.json",
-  "spreadsheet_id": "YOUR_SHEET_ID_HERE",
-  "worksheet_name": "Inbox",
-  "openai_model": "gpt-4o-mini",
-  "openai_temperature": 0.1,
-  "gmail_user": "you@example.com",
-  "gmail_app_password": "your-16-char-app-password",
-  "gmail_folder": "INBOX",
-  "gmail_from_filter": "donotreply@indeed.com",
-  "gmail_search_query": null,              // optional IMAP search add-on, e.g. 'UNSEEN'
-  "mark_read": true                        // mark the fetched message as read
-}
-
-Requires env var OPENAI_API_KEY for the AI step.
+Requires:
+  - config.json (in the same folder as this script) with:
+      {
+        "service_account_json": "sa_key.json",
+        "spreadsheet_id": "YOUR_SHEET_ID_HERE",
+        "worksheet_name": "Inbox",
+        "openai_model": "gpt-4o-mini",
+        "openai_temperature": 0.1,
+        "gmail_user": "you@example.com",
+        "gmail_app_password": "your-16-char-app-password",
+        "gmail_folder": "INBOX",
+        "gmail_from_filter": "donotreply@indeed.com"
+      }
+  - Environment var OPENAI_API_KEY set to a valid API key.
 """
 
-# --- Standard header (per user's preference) ---
 from pathlib import Path
 from typing import Iterable, List, Set, Tuple, Dict, Any
 import os
-
-base_dir = Path(__file__).resolve().parent
-os.chdir(base_dir)
-
-# ---------------- Standard libs ----------------
 import sys
 import re
 import json
+import argparse
 from datetime import datetime
+
+# Always operate relative to this script's folder
+base_dir = Path(__file__).resolve().parent
+os.chdir(base_dir)
 
 # ---------------- URL extraction ----------------
 URL_RE = re.compile(r"https?://[^\s>')\\]]+", re.IGNORECASE)
@@ -52,7 +51,7 @@ def ai_analyze_email(body: str, model: str, temperature: float = 0.1) -> Dict[st
     Requires OPENAI_API_KEY in environment.
     Falls back gracefully if anything fails.
     """
-    api_key = "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"
+    api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
         return {
             "ok": False,
@@ -116,16 +115,12 @@ def append_row(ws, row: List[Any]):
     ws.append_row(row, value_input_option="USER_ENTERED")
 
 def pretty_format_sheet(spreadsheet_id: str, worksheet_title: str, creds):
-    try:
-        from googleapiclient.discovery import build
-    except Exception:
-        # Optional beautification — safe to skip if not available
-        return
+    from googleapiclient.discovery import build
     service = build("sheets", "v4", credentials=creds, cache_discovery=False)
     # find sheetId for the target worksheet
     ss = service.spreadsheets().get(spreadsheetId=spreadsheet_id).execute()
     sheet_id = None
-    for s in ss.get("sheets", []):
+    for s in ss["sheets"]:
         if s["properties"]["title"] == worksheet_title:
             sheet_id = s["properties"]["sheetId"]
             break
@@ -160,11 +155,18 @@ def pretty_format_sheet(spreadsheet_id: str, worksheet_title: str, creds):
         },
         {
             "autoResizeDimensions": {
-                "dimensions": {"sheetId": sheet_id, "dimension": "COLUMNS", "startIndex": 0, "endIndex": 20}
+                "dimensions": {
+                    "sheetId": sheet_id,
+                    "dimension": "COLUMNS",
+                    "startIndex": 0,
+                    "endIndex": 20,
+                }
             }
         },
     ]
-    service.spreadsheets().batchUpdate(spreadsheetId=spreadsheet_id, body={"requests": requests}).execute()
+    service.spreadsheets().batchUpdate(
+        spreadsheetId=spreadsheet_id, body={"requests": requests}
+    ).execute()
 
 # ---------------- Config ----------------
 def load_config(cfg_path: str) -> Dict[str, Any]:
@@ -174,12 +176,8 @@ def load_config(cfg_path: str) -> Dict[str, Any]:
 # ---------------- Gmail fetch ----------------
 import imaplib, email
 
-def fetch_latest_email_body(user: str, app_password: str, folder: str, from_filter: str, extra_raw_query: str = None, mark_read: bool = True) -> str:
-    """
-    Connect to Gmail IMAP, fetch the most recent email from from_filter.
-    Prefer text/plain body, fallback to text/html. Optionally mark as read.
-    Returns the body text (str). Prints useful info for logs.
-    """
+def get_latest_indeed_email(user: str, app_password: str, folder: str = "INBOX", from_filter: str = "donotreply@indeed.com") -> str:
+    """Connect to Gmail IMAP and return the body of the most recent Indeed email (text/plain preferred, fallback to HTML)."""
     print("[INFO] Connecting to Gmail…")
     mail = imaplib.IMAP4_SSL("imap.gmail.com")
     mail.login(user, app_password)
@@ -190,15 +188,8 @@ def fetch_latest_email_body(user: str, app_password: str, folder: str, from_filt
         except: pass
         return ""
 
-    
-    # Build IMAP SEARCH criteria using separate args (avoid parentheses/split issues)
-    criteria = ['FROM', from_filter]
-    if extra_raw_query:
-        # Only allow safe single-token flags like UNSEEN, SEEN, etc.
-        for token in str(extra_raw_query).split():
-            criteria.append(token)
-    print(f"[INFO] IMAP SEARCH criteria: {criteria}")
-    typ, data = mail.search(None, *criteria)
+    # Search by FROM
+    typ, data = mail.search(None, f'(FROM "{from_filter}")')
     if typ != "OK":
         print("[ERROR] Gmail search failed.")
         try: mail.logout()
@@ -206,7 +197,6 @@ def fetch_latest_email_body(user: str, app_password: str, folder: str, from_filt
         return ""
 
     ids = data[0].split()
-    
     if not ids:
         print("[WARN] No matching Indeed emails found.")
         try: mail.logout()
@@ -220,14 +210,6 @@ def fetch_latest_email_body(user: str, app_password: str, folder: str, from_filt
         try: mail.logout()
         except: pass
         return ""
-
-    # Optionally mark as read
-    if mark_read:
-        try:
-            mail.store(latest_id, '+FLAGS', '\\Seen')
-            print("[INFO] Marked message as read (\\Seen).")
-        except Exception as e:
-            print(f"[WARN] Failed to mark as read: {e}")
 
     msg = email.message_from_bytes(msg_data[0][1])
     body = ""
@@ -243,6 +225,7 @@ def fetch_latest_email_body(user: str, app_password: str, folder: str, from_filt
                     except Exception:
                         body = payload.decode("utf-8", errors="ignore")
                     break
+        # Fallback to text/html if no plain part found
         if not body:
             for part in msg.walk():
                 if part.get_content_type() == "text/html":
@@ -268,13 +251,18 @@ def fetch_latest_email_body(user: str, app_password: str, folder: str, from_filt
 
 # ---------------- Main ----------------
 def main():
-    # Always use config.json from the working directory unless overridden by ENV
-    cfg_path = os.getenv("INDEED_CONFIG", "config.json")
+    parser = argparse.ArgumentParser(description="AI-enriched email-to-Sheets formatter")
+    parser.add_argument("--config", default="config.json", help="Path to config JSON")
+    parser.add_argument("--file", help="Path to a text file containing the email body")
+    parser.add_argument("--text", help="Raw email body text")
+    args = parser.parse_args()
+
+    # Load config
     try:
-        cfg = load_config(cfg_path)
-        print(f"[INFO] Using config: {cfg_path}")
+        cfg = load_config(args.config)
+        print(f"[INFO] Using config: {args.config}")
     except FileNotFoundError:
-        print(f"[ERROR] Config not found: {cfg_path}")
+        print(f"[ERROR] Config not found: {args.config}")
         sys.exit(1)
 
     sa_json = cfg.get("service_account_json", "sa_key.json")
@@ -286,25 +274,21 @@ def main():
     gmail_user = cfg.get("gmail_user")
     gmail_app_password = cfg.get("gmail_app_password")
     gmail_folder = cfg.get("gmail_folder", "INBOX")
-    gmail_from_filter = cfg.get("gmail_from_filter", "donotreply@match.indeed.com")
-    gmail_from_filters = cfg.get("gmail_from_filters")  # optional list of senders to try in order
-    gmail_search_query = cfg.get("gmail_search_query")  # e.g., 'UNSEEN'
-    mark_read = bool(cfg.get("mark_read", True))
+    gmail_from_filter = cfg.get("gmail_from_filter", "donotreply@indeed.com")
 
-    # Validate Gmail creds
-    if not (gmail_user and gmail_app_password):
-        print("[ERROR] Missing gmail_user/gmail_app_password in config.json.")
-        sys.exit(2)
-
-    # Fetch body from Gmail
-    body = fetch_latest_email_body(
-        gmail_user,
-        gmail_app_password,
-        folder=gmail_folder,
-        from_filter=gmail_from_filter,
-        extra_raw_query=gmail_search_query,
-        mark_read=mark_read,
-    )
+    # Acquire body (args override Gmail)
+    if args.file:
+        with open(args.file, "r", encoding="utf-8") as f:
+            body = f.read()
+        print(f"[INFO] Loaded body from file: {args.file}")
+    elif args.text:
+        body = args.text
+        print("[INFO] Loaded body from --text")
+    else:
+        if not (gmail_user and gmail_app_password):
+            print("[ERROR] Missing gmail_user/gmail_app_password in config.json, and no --text/--file provided.")
+            sys.exit(2)
+        body = get_latest_indeed_email(gmail_user, gmail_app_password, folder=gmail_folder, from_filter=gmail_from_filter)
 
     body = (body or "").strip()
     if not body:
