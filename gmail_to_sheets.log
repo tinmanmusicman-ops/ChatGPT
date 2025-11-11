@@ -8,3 +8,399 @@ Traceback (most recent call last):
   File "C:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 60, in load_config
     raise FileNotFoundError(f"Config file not found: {path}")
 FileNotFoundError: Config file not found: config.json
+2025-11-10 13:10:08,855 [ERROR] Fatal error: Config file not found: config.json
+Traceback (most recent call last):
+  File "C:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 455, in <module>
+    main()
+    ~~~~^^
+  File "C:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 374, in main
+    cfg = load_config(CONFIG_FILE)
+  File "C:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 60, in load_config
+    raise FileNotFoundError(f"Config file not found: {path}")
+FileNotFoundError: Config file not found: config.json
+2025-11-10 13:18:04,519 [ERROR] Fatal error: Config file not found: config.json
+Traceback (most recent call last):
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 455, in <module>
+    main()
+    ~~~~^^
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 374, in main
+    cfg = load_config(CONFIG_FILE)
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 60, in load_config
+    raise FileNotFoundError(f"Config file not found: {path}")
+FileNotFoundError: Config file not found: config.json
+2025-11-10 13:21:12,386 [ERROR] Fatal error: Config file not found: config.json
+Traceback (most recent call last):
+  File "C:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 455, in <module>
+    main()
+    ~~~~^^
+  File "C:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 374, in main
+    cfg = load_config(CONFIG_FILE)
+  File "C:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 60, in load_config
+    raise FileNotFoundError(f"Config file not found: {path}")
+FileNotFoundError: Config file not found: config.json
+2025-11-10 13:26:08,554 [ERROR] Fatal error: Config file not found: config.json
+Traceback (most recent call last):
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 455, in <module>
+    main()
+    ~~~~^^
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 374, in main
+    cfg = load_config(CONFIG_FILE)
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 60, in load_config
+    raise FileNotFoundError(f"Config file not found: {path}")
+FileNotFoundError: Config file not found: config.json
+2025-11-10 13:27:04,450 [ERROR] Fatal error: Config file not found: config.json
+Traceback (most recent call last):
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 455, in <module>
+    main()
+    ~~~~^^
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 374, in main
+    cfg = load_config(CONFIG_FILE)
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 60, in load_config
+    raise FileNotFoundError(f"Config file not found: {path}")
+FileNotFoundError: Config file not found: config.json
+2025-11-10 13:29:07,166 [ERROR] Fatal error: Config file not found: config.json
+Traceback (most recent call last):
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 455, in <module>
+    main()
+    ~~~~^^
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 374, in main
+    cfg = load_config(CONFIG_FILE)
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 60, in load_config
+    raise FileNotFoundError(f"Config file not found: {path}")
+FileNotFoundError: Config file not found: config.json
+2025-11-10 13:29:22,151 [ERROR] Fatal error: Config file not found: config.json
+Traceback (most recent call last):
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 455, in <module>
+    main()
+    ~~~~^^
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 374, in main
+    cfg = load_config(CONFIG_FILE)
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 60, in load_config
+    raise FileNotFoundError(f"Config file not found: {path}")
+FileNotFoundError: Config file not found: config.json
+2025-11-10 13:31:30,504 [ERROR] Fatal error: Config file not found: config.json
+Traceback (most recent call last):
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 455, in <module>
+    main()
+    ~~~~^^
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 374, in main
+    cfg = load_config(CONFIG_FILE)
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 60, in load_config
+    raise FileNotFoundError(f"Config file not found: {path}")
+FileNotFoundError: Config file not found: config.json
+2025-11-10 13:32:07,550 [ERROR] Fatal error: Config file not found: config.json
+Traceback (most recent call last):
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 455, in <module>
+    main()
+    ~~~~^^
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 374, in main
+    cfg = load_config(CONFIG_FILE)
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 60, in load_config
+    raise FileNotFoundError(f"Config file not found: {path}")
+FileNotFoundError: Config file not found: config.json
+2025-11-10 13:32:19,878 [ERROR] Fatal error: Config file not found: config.json
+Traceback (most recent call last):
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 455, in <module>
+    main()
+    ~~~~^^
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 374, in main
+    cfg = load_config(CONFIG_FILE)
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 60, in load_config
+    raise FileNotFoundError(f"Config file not found: {path}")
+FileNotFoundError: Config file not found: config.json
+2025-11-10 13:33:09,850 [ERROR] Fatal error: Config file not found: config.json
+Traceback (most recent call last):
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 455, in <module>
+    main()
+    ~~~~^^
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 374, in main
+    cfg = load_config(CONFIG_FILE)
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 60, in load_config
+    raise FileNotFoundError(f"Config file not found: {path}")
+FileNotFoundError: Config file not found: config.json
+2025-11-10 13:33:54,287 [ERROR] Fatal error: Config file not found: config.json
+Traceback (most recent call last):
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 455, in <module>
+    main()
+    ~~~~^^
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 374, in main
+    cfg = load_config(CONFIG_FILE)
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 60, in load_config
+    raise FileNotFoundError(f"Config file not found: {path}")
+FileNotFoundError: Config file not found: config.json
+2025-11-10 13:38:38,000 [ERROR] Fatal error: Config file not found: config.json
+Traceback (most recent call last):
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 455, in <module>
+    main()
+    ~~~~^^
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 374, in main
+    cfg = load_config(CONFIG_FILE)
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 60, in load_config
+    raise FileNotFoundError(f"Config file not found: {path}")
+FileNotFoundError: Config file not found: config.json
+2025-11-10 13:39:55,521 [ERROR] Fatal error: Config file not found: config.json
+Traceback (most recent call last):
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 455, in <module>
+    main()
+    ~~~~^^
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 374, in main
+    cfg = load_config(CONFIG_FILE)
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 60, in load_config
+    raise FileNotFoundError(f"Config file not found: {path}")
+FileNotFoundError: Config file not found: config.json
+2025-11-10 13:40:32,462 [ERROR] Fatal error: Config file not found: config.json
+Traceback (most recent call last):
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 455, in <module>
+    main()
+    ~~~~^^
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 374, in main
+    cfg = load_config(CONFIG_FILE)
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 60, in load_config
+    raise FileNotFoundError(f"Config file not found: {path}")
+FileNotFoundError: Config file not found: config.json
+2025-11-10 13:45:00,969 [ERROR] Fatal error: Config file not found: config.json
+Traceback (most recent call last):
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 456, in <module>
+    main()
+    ~~~~^^
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 375, in main
+    cfg = load_config(CONFIG_FILE)
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 61, in load_config
+    raise FileNotFoundError(f"Config file not found: {path}")
+FileNotFoundError: Config file not found: config.json
+2025-11-10 13:45:58,180 [ERROR] Fatal error: Config file not found: config.json
+Traceback (most recent call last):
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 458, in <module>
+    main()
+    ~~~~^^
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 377, in main
+    cfg = load_config(CONFIG_FILE)
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 63, in load_config
+    raise FileNotFoundError(f"Config file not found: {path}")
+FileNotFoundError: Config file not found: config.json
+2025-11-10 13:46:32,727 [ERROR] Fatal error: Config file not found: config.json
+Traceback (most recent call last):
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 458, in <module>
+    main()
+    ~~~~^^
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 377, in main
+    cfg = load_config(CONFIG_FILE)
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 63, in load_config
+    raise FileNotFoundError(f"Config file not found: {path}")
+FileNotFoundError: Config file not found: config.json
+2025-11-10 13:49:17,889 [ERROR] Fatal error: Config file not found: config.json
+Traceback (most recent call last):
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 458, in <module>
+    main()
+    ~~~~^^
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 377, in main
+    cfg = load_config(CONFIG_FILE)
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 63, in load_config
+    raise FileNotFoundError(f"Config file not found: {path}")
+FileNotFoundError: Config file not found: config.json
+2025-11-10 13:53:14,165 [ERROR] Fatal error: Config file not found: config.json
+Traceback (most recent call last):
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 458, in <module>
+    main()
+    ~~~~^^
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 377, in main
+    cfg = load_config(CONFIG_FILE)
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 63, in load_config
+    raise FileNotFoundError(f"Config file not found: {path}")
+FileNotFoundError: Config file not found: config.json
+2025-11-10 13:54:56,535 [ERROR] Fatal error: Config file not found: config.json
+Traceback (most recent call last):
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 458, in <module>
+    main()
+    ~~~~^^
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 377, in main
+    cfg = load_config(CONFIG_FILE)
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 63, in load_config
+    raise FileNotFoundError(f"Config file not found: {path}")
+FileNotFoundError: Config file not found: config.json
+2025-11-10 13:56:36,121 [ERROR] Fatal error: Config file not found: config.json
+Traceback (most recent call last):
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 458, in <module>
+    main()
+    ~~~~^^
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 377, in main
+    cfg = load_config(CONFIG_FILE)
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 63, in load_config
+    raise FileNotFoundError(f"Config file not found: {path}")
+FileNotFoundError: Config file not found: config.json
+2025-11-10 14:00:12,192 [ERROR] Fatal error: Config file not found: config.json
+Traceback (most recent call last):
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 458, in <module>
+    main()
+    ~~~~^^
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 377, in main
+    cfg = load_config(CONFIG_FILE)
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 63, in load_config
+    raise FileNotFoundError(f"Config file not found: {path}")
+FileNotFoundError: Config file not found: config.json
+2025-11-10 14:01:06,557 [ERROR] Fatal error: Config file not found: config.json
+Traceback (most recent call last):
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 458, in <module>
+    main()
+    ~~~~^^
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 377, in main
+    cfg = load_config(CONFIG_FILE)
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 63, in load_config
+    raise FileNotFoundError(f"Config file not found: {path}")
+FileNotFoundError: Config file not found: config.json
+2025-11-10 14:01:25,192 [ERROR] Fatal error: Config file not found: config.json
+Traceback (most recent call last):
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 458, in <module>
+    main()
+    ~~~~^^
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 377, in main
+    cfg = load_config(CONFIG_FILE)
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 63, in load_config
+    raise FileNotFoundError(f"Config file not found: {path}")
+FileNotFoundError: Config file not found: config.json
+2025-11-10 14:04:52,580 [ERROR] Fatal error: Config file not found: config.json
+Traceback (most recent call last):
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 458, in <module>
+    main()
+    ~~~~^^
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 377, in main
+    cfg = load_config(CONFIG_FILE)
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 63, in load_config
+    raise FileNotFoundError(f"Config file not found: {path}")
+FileNotFoundError: Config file not found: config.json
+2025-11-10 14:11:22,531 [ERROR] Fatal error: Config file not found: config.json
+Traceback (most recent call last):
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 458, in <module>
+    main()
+    ~~~~^^
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 377, in main
+    cfg = load_config(CONFIG_FILE)
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 63, in load_config
+    raise FileNotFoundError(f"Config file not found: {path}")
+FileNotFoundError: Config file not found: config.json
+2025-11-10 14:13:38,780 [ERROR] Fatal error: Config file not found: config.json
+Traceback (most recent call last):
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 458, in <module>
+    main()
+    ~~~~^^
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 377, in main
+    cfg = load_config(CONFIG_FILE)
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 63, in load_config
+    raise FileNotFoundError(f"Config file not found: {path}")
+FileNotFoundError: Config file not found: config.json
+2025-11-10 14:14:57,679 [ERROR] Fatal error: Config file not found: config.json
+Traceback (most recent call last):
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 458, in <module>
+    main()
+    ~~~~^^
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 377, in main
+    cfg = load_config(CONFIG_FILE)
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 63, in load_config
+    raise FileNotFoundError(f"Config file not found: {path}")
+FileNotFoundError: Config file not found: config.json
+2025-11-10 14:16:59,310 [ERROR] Fatal error: Config file not found: config.json
+Traceback (most recent call last):
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 458, in <module>
+    main()
+    ~~~~^^
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 377, in main
+    cfg = load_config(CONFIG_FILE)
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 63, in load_config
+    raise FileNotFoundError(f"Config file not found: {path}")
+FileNotFoundError: Config file not found: config.json
+2025-11-10 14:23:06,545 [ERROR] Fatal error: Config file not found: config.json
+Traceback (most recent call last):
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 458, in <module>
+    main()
+    ~~~~^^
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 377, in main
+    cfg = load_config(CONFIG_FILE)
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 63, in load_config
+    raise FileNotFoundError(f"Config file not found: {path}")
+FileNotFoundError: Config file not found: config.json
+2025-11-10 14:26:47,842 [ERROR] Fatal error: Config file not found: config.json
+Traceback (most recent call last):
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 458, in <module>
+    main()
+    ~~~~^^
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 377, in main
+    cfg = load_config(CONFIG_FILE)
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 63, in load_config
+    raise FileNotFoundError(f"Config file not found: {path}")
+FileNotFoundError: Config file not found: config.json
+2025-11-10 14:27:05,894 [ERROR] Fatal error: Config file not found: config.json
+Traceback (most recent call last):
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 458, in <module>
+    main()
+    ~~~~^^
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 377, in main
+    cfg = load_config(CONFIG_FILE)
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 63, in load_config
+    raise FileNotFoundError(f"Config file not found: {path}")
+FileNotFoundError: Config file not found: config.json
+2025-11-10 14:42:51,017 [ERROR] Fatal error: Config file not found: config.json
+Traceback (most recent call last):
+  File "C:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 458, in <module>
+    main()
+    ~~~~^^
+  File "C:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 377, in main
+    cfg = load_config(CONFIG_FILE)
+  File "C:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 63, in load_config
+    raise FileNotFoundError(f"Config file not found: {path}")
+FileNotFoundError: Config file not found: config.json
+2025-11-10 14:49:57,328 [ERROR] Fatal error: Config file not found: config.json
+Traceback (most recent call last):
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 458, in <module>
+    main()
+    ~~~~^^
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 377, in main
+    cfg = load_config(CONFIG_FILE)
+  File "c:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 63, in load_config
+    raise FileNotFoundError(f"Config file not found: {path}")
+FileNotFoundError: Config file not found: config.json
+2025-11-10 14:50:58,012 [ERROR] Fatal error: Config file not found: config.json
+Traceback (most recent call last):
+  File "C:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 458, in <module>
+    main()
+    ~~~~^^
+  File "C:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 377, in main
+    cfg = load_config(CONFIG_FILE)
+  File "C:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 63, in load_config
+    raise FileNotFoundError(f"Config file not found: {path}")
+FileNotFoundError: Config file not found: config.json
+2025-11-10 15:30:54,578 [ERROR] Fatal error: Config file not found: config.json
+Traceback (most recent call last):
+  File "C:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 459, in <module>
+    main()
+    ~~~~^^
+  File "C:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 378, in main
+    cfg = load_config(CONFIG_FILE)
+  File "C:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 64, in load_config
+    raise FileNotFoundError(f"Config file not found: {path}")
+FileNotFoundError: Config file not found: config.json
+2025-11-10 15:36:37,153 [ERROR] Fatal error: Config file not found: config.json
+Traceback (most recent call last):
+  File "C:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 459, in <module>
+    main()
+    ~~~~^^
+  File "C:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 378, in main
+    cfg = load_config(CONFIG_FILE)
+  File "C:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 61, in load_config
+    raise FileNotFoundError(f"Config file not found: {path}")
+FileNotFoundError: Config file not found: config.json
+2025-11-10 15:38:04,855 [ERROR] Fatal error: Config file not found: config.json
+Traceback (most recent call last):
+  File "C:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 457, in <module>
+    main()
+    ~~~~^^
+  File "C:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 376, in main
+    cfg = load_config(CONFIG_FILE)
+  File "C:\ChatGPT\SiteEmail\poll_gmail_to_sheet_advanced.py", line 61, in load_config
+    raise FileNotFoundError(f"Config file not found: {path}")
+FileNotFoundError: Config file not found: config.json
+2025-11-10 15:39:09,251 [INFO] Starting poller (max_per_run=25, unseen_only=True, mark_read=True, thread=True)
+2025-11-10 15:39:09,818 [INFO] Searching with IMAP terms: UNSEEN SUBJECT "672-7323"
+2025-11-10 15:39:09,906 [INFO] No matching messages found.
+2025-11-10 16:02:07,949 [INFO] Starting poller (max_per_run=25, unseen_only=True, mark_read=True, thread=True)
+2025-11-10 16:02:08,539 [INFO] Searching with IMAP terms: UNSEEN SUBJECT "672-7323"
+2025-11-10 16:02:08,638 [INFO] No matching messages found.

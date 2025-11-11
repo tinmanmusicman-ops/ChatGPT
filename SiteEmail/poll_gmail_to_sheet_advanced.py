@@ -20,13 +20,14 @@ import html as ihtml
 from datetime import datetime
 from email.header import decode_header, make_header
 from typing import Iterable, List, Set, Tuple
-
+from pathlib import Path
 import gspread
 import pytz
 
+
+
 CONFIG_FILE = "config.json"
 LOG_FILE = "gmail_to_sheets.log"
-
 
 # ------------ Logging ------------
 def setup_logger():
@@ -371,6 +372,9 @@ def now_local_iso(tz_name: str) -> str:
 
 # ------------ Main ------------
 def main():
+    base_dir = Path(__file__).resolve().parent
+    os.chdir(base_dir)
+    
     cfg = load_config(CONFIG_FILE)
     user = cfg["user"]
     app_password = cfg["app_password"]

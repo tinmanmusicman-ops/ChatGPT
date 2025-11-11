@@ -1,0 +1,8 @@
+{
+  "python.terminal.executeInFileDir": true,
+  "python.analysis.autoImportCompletions": true,
+  "python.analysis.diagnosticMode": "workspace",
+  "python.analysis.useLibraryCodeForTypes": true,
+  "python.linting.enabled": true,
+  "python.logging.level": "warning"
+}

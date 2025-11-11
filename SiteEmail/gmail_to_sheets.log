@@ -4000,3 +4000,30 @@ ConnectionAbortedError: [WinError 10053] An established connection was aborted b
 2025-11-10 12:49:03,098 [INFO] Starting poller (max_per_run=25, unseen_only=True, mark_read=True, thread=True)
 2025-11-10 12:49:03,706 [INFO] Searching with IMAP terms: UNSEEN SUBJECT "672-7323"
 2025-11-10 12:49:03,802 [INFO] No matching messages found.
+2025-11-10 13:27:44,023 [INFO] Starting poller (max_per_run=25, unseen_only=True, mark_read=True, thread=True)
+2025-11-10 13:27:44,826 [INFO] Searching with IMAP terms: UNSEEN SUBJECT "672-7323"
+2025-11-10 13:27:44,926 [INFO] No matching messages found.
+2025-11-10 14:35:03,833 [INFO] Starting poller (max_per_run=25, unseen_only=True, mark_read=True, thread=True)
+2025-11-10 14:35:04,313 [INFO] Searching with IMAP terms: UNSEEN SUBJECT "672-7323"
+2025-11-10 14:35:04,404 [INFO] No matching messages found.
+2025-11-10 14:40:45,549 [INFO] Starting poller (max_per_run=25, unseen_only=True, mark_read=True, thread=True)
+2025-11-10 14:40:46,214 [INFO] Searching with IMAP terms: UNSEEN SUBJECT "672-7323"
+2025-11-10 14:40:46,308 [INFO] No matching messages found.
+2025-11-10 14:40:52,242 [INFO] Starting poller (max_per_run=25, unseen_only=True, mark_read=True, thread=True)
+2025-11-10 14:40:54,747 [INFO] Searching with IMAP terms: UNSEEN SUBJECT "672-7323"
+2025-11-10 14:40:54,955 [INFO] No matching messages found.
+2025-11-10 15:23:47,375 [INFO] Starting poller (max_per_run=25, unseen_only=True, mark_read=True, thread=True)
+2025-11-10 15:23:48,005 [INFO] Searching with IMAP terms: UNSEEN SUBJECT "672-7323"
+2025-11-10 15:23:48,095 [INFO] No matching messages found.
+2025-11-10 15:24:21,564 [INFO] Starting poller (max_per_run=25, unseen_only=True, mark_read=True, thread=True)
+2025-11-10 15:24:22,082 [INFO] Searching with IMAP terms: UNSEEN SUBJECT "672-7323"
+2025-11-10 15:24:22,174 [INFO] No matching messages found.
+2025-11-10 15:31:35,810 [INFO] Starting poller (max_per_run=25, unseen_only=True, mark_read=True, thread=True)
+2025-11-10 15:31:36,659 [INFO] Searching with IMAP terms: UNSEEN SUBJECT "672-7323"
+2025-11-10 15:31:36,817 [INFO] No matching messages found.
+2025-11-10 15:31:55,888 [INFO] Starting poller (max_per_run=25, unseen_only=True, mark_read=True, thread=True)
+2025-11-10 15:31:56,382 [INFO] Searching with IMAP terms: UNSEEN SUBJECT "672-7323"
+2025-11-10 15:31:56,487 [INFO] No matching messages found.
+2025-11-10 15:32:59,556 [INFO] Starting poller (max_per_run=25, unseen_only=True, mark_read=True, thread=True)
+2025-11-10 15:33:00,109 [INFO] Searching with IMAP terms: UNSEEN SUBJECT "672-7323"
+2025-11-10 15:33:00,235 [INFO] No matching messages found.
