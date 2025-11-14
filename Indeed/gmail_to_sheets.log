@@ -1,8 +1,1 @@
-2025-11-10 20:24:20,948 [INFO] Starting Indeed poller (from=donotreply@match.indeed.com | max=50 | unseen_only=False | mark_read=False | thread=False)
-2025-11-10 20:24:21,624 [INFO] Searching with IMAP terms: FROM "donotreply@match.indeed.com"
-2025-11-10 20:24:24,322 [INFO] All matching messages already processed.
-2025-11-10 20:25:20,491 [INFO] Starting Indeed poller (from=donotreply@match.indeed.com | max=50 | unseen_only=False | mark_read=False | thread=False)
-2025-11-10 20:25:21,065 [INFO] Searching with IMAP terms: FROM "donotreply@match.indeed.com"
-2025-11-10 20:25:23,732 [INFO] Processing 3 new message(s).
-2025-11-10 20:25:24,712 [INFO] Appended 3 row(s).
-2025-11-10 20:25:24,905 [INFO] Recorded 3 UID(s) as processed.
+

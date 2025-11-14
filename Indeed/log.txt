@@ -1,0 +1,722 @@
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] Fetching UID 8699
+[INFO] Email body not job-related. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] Fetching UID 8700
+[INFO] Email body not job-related. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] Fetching UID 8699
+[DEBUG] Email length: 135703
+[INFO] Extracted 2 job(s)
+[OK] Appended 2 rows
+[OK] Done.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] Fetching UID 8699
+[DEBUG] Email length: 135703
+[INFO] Extracted 2 job(s)
+[OK] Appended 2 rows
+[OK] Done.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] Fetching UID 8701
+[DEBUG] Email length: 16523
+[INFO] Extracted 1 job(s)
+[OK] Appended 1 rows
+[OK] Done.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] Fetching UID 8703
+[DEBUG] Email length: 126791
+[INFO] Extracted 1 job(s)
+[OK] Appended 1 rows
+[OK] Done.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] Fetching UID 8704
+[DEBUG] Email length: 135986
+[INFO] Extracted 2 job(s)
+[OK] Appended 2 rows
+[OK] Done.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] Fetching UID 8705
+[DEBUG] Email length: 75498
+[INFO] Extracted 0 job(s)
+[INFO] Email looked job-related but no jobs extracted. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] Fetching UID 8706
+[DEBUG] Email length: 99930
+[INFO] Extracted 0 job(s)
+[INFO] Email looked job-related but no jobs extracted. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] Fetching UID 8708
+[DEBUG] Email length: 5245
+[INFO] Extracted 1 job(s)
+[OK] Appended 1 rows
+[OK] Done.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] Fetching UID 8710
+[DEBUG] Email length: 144347
+[INFO] Extracted 3 job(s)
+[OK] Appended 3 rows
+[OK] Done.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] Fetching UID 8711
+[DEBUG] Email length: 88344
+[INFO] Extracted 9 job(s)
+[OK] Appended 9 rows
+[OK] Done.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] Fetching UID 8696
+[DEBUG] Email length: 169859
+[INFO] Extracted 4 job(s)
+[OK] Appended 4 rows
+[OK] Done.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Connecting to Gmail (Primary + Unseen)…
+[INFO] No unread emails in PRIMARY.
+[INFO] No email body found. Exiting cleanly.
+[INFO] Line {inspect.currentframe().f_lineno} Connecting to Gmail (Primary + Unseen)…
+[INFO] Line {inspect.currentframe().f_lineno} No unread emails in PRIMARY.
+[INFO] Line {inspect.currentframe().f_lineno} No email body found. Exiting cleanly.
+[INFO] Line {inspect.currentframe().f_lineno} Connecting to Gmail (Primary + Unseen)…
+[INFO] Line {inspect.currentframe().f_lineno} No unread emails in PRIMARY.
+[INFO] Line {inspect.currentframe().f_lineno} No email body found. Exiting cleanly.
+[INFO] Line {inspect.currentframe().f_lineno} Connecting to Gmail (Primary + Unseen)…
+[INFO] Line {inspect.currentframe().f_lineno} No unread emails in PRIMARY.
+[INFO] Line {inspect.currentframe().f_lineno} No email body found. Exiting cleanly.
+[INFO] Line {inspect.currentframe().f_lineno} Connecting to Gmail (Primary + Unseen)…
+[INFO] Line 213 Fetching UID 8697
+[INFO] got wehat I needed from AI
+[INFO] Loading content from from AI
+[INFO] Line 157 Extracted 4 job(s)
+[OK] Appended 4 rows
+[OK] Done.
+[INFO] Line {inspect.currentframe().f_lineno} Connecting to Gmail (Primary + Unseen)…
+[INFO] Line {inspect.currentframe().f_lineno} No unread emails in PRIMARY.
+[INFO] Line {inspect.currentframe().f_lineno} No email body found. Exiting cleanly.
+[INFO] Line {inspect.currentframe().f_lineno} Connecting to Gmail (Primary + Unseen)…
+[INFO] Line {inspect.currentframe().f_lineno} No unread emails in PRIMARY.
+[INFO] Line {inspect.currentframe().f_lineno} No email body found. Exiting cleanly.
+[INFO] Line {inspect.currentframe().f_lineno} Connecting to Gmail (Primary + Unseen)…
+[INFO] Line {inspect.currentframe().f_lineno} No unread emails in PRIMARY.
+[INFO] Line {inspect.currentframe().f_lineno} No email body found. Exiting cleanly.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] Line 54 AI extraction started…
+[INFO] AI extraction finished. 0 job(s).
+[INFO] Looked job-related but no jobs extracted.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] Not job-related. Leaving UNREAD.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] Not job-related. Leaving UNREAD.
+[INFO] Line 241 Connecting to Gmail (Primary + Unseen)…
+Traceback (most recent call last):
+  File "C:\ChatGPT\Indeed\Indeed.py", line 369, in <module>
+    main()
+    ~~~~^^
+  File "C:\ChatGPT\Indeed\Indeed.py", line 339, in main
+    result = get_unread_email_body(cfg)
+  File "C:\ChatGPT\Indeed\Indeed.py", line 247, in get_unread_email_body
+    typ, data = mail.search(None, 'X-GM-RAW', '"category:primary"', 'UNSEEN')
+                ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\SCRC\AppData\Local\Programs\Python\Python314\Lib\imaplib.py", line 841, in search
+    typ, dat = self._simple_command(name, *criteria)
+               ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\SCRC\AppData\Local\Programs\Python\Python314\Lib\imaplib.py", line 1370, in _simple_command
+    return self._command_complete(name, self._command(name, *args))
+                                        ~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\SCRC\AppData\Local\Programs\Python\Python314\Lib\imaplib.py", line 1093, in _command
+    raise self.error("command %s illegal in state %s, "
+    ...<2 lines>...
+                      ', '.join(Commands[name])))
+imaplib.IMAP4.error: command SEARCH illegal in state AUTH, only allowed in states SELECTED
+[INFO] Line 241 Connecting to Gmail (Primary + Unseen)…
+Traceback (most recent call last):
+  File "C:\ChatGPT\Indeed\Indeed.py", line 369, in <module>
+    main()
+    ~~~~^^
+  File "C:\ChatGPT\Indeed\Indeed.py", line 339, in main
+    result = get_unread_email_body(cfg)
+  File "C:\ChatGPT\Indeed\Indeed.py", line 247, in get_unread_email_body
+    typ, data = mail.search(None, 'X-GM-RAW', '"category:primary"', 'UNSEEN')
+                ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\SCRC\AppData\Local\Programs\Python\Python314\Lib\imaplib.py", line 841, in search
+    typ, dat = self._simple_command(name, *criteria)
+               ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\SCRC\AppData\Local\Programs\Python\Python314\Lib\imaplib.py", line 1370, in _simple_command
+    return self._command_complete(name, self._command(name, *args))
+                                        ~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\SCRC\AppData\Local\Programs\Python\Python314\Lib\imaplib.py", line 1093, in _command
+    raise self.error("command %s illegal in state %s, "
+    ...<2 lines>...
+                      ', '.join(Commands[name])))
+imaplib.IMAP4.error: command SEARCH illegal in state AUTH, only allowed in states SELECTED
+[INFO] Line 241 Connecting to Gmail (Primary + Unseen)…
+Traceback (most recent call last):
+  File "C:\ChatGPT\Indeed\Indeed.py", line 369, in <module>
+    main()
+    ~~~~^^
+  File "C:\ChatGPT\Indeed\Indeed.py", line 339, in main
+    result = get_unread_email_body(cfg)
+  File "C:\ChatGPT\Indeed\Indeed.py", line 247, in get_unread_email_body
+    typ, data = mail.search(None, 'X-GM-RAW', '"category:primary"', 'UNSEEN')
+                ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\SCRC\AppData\Local\Programs\Python\Python314\Lib\imaplib.py", line 841, in search
+    typ, dat = self._simple_command(name, *criteria)
+               ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\SCRC\AppData\Local\Programs\Python\Python314\Lib\imaplib.py", line 1370, in _simple_command
+    return self._command_complete(name, self._command(name, *args))
+                                        ~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\SCRC\AppData\Local\Programs\Python\Python314\Lib\imaplib.py", line 1093, in _command
+    raise self.error("command %s illegal in state %s, "
+    ...<2 lines>...
+                      ', '.join(Commands[name])))
+imaplib.IMAP4.error: command SEARCH illegal in state AUTH, only allowed in states SELECTED
+[INFO] Line 241 Connecting to Gmail (Primary + Unseen)…
+Traceback (most recent call last):
+  File "C:\ChatGPT\Indeed\Indeed.py", line 369, in <module>
+    main()
+    ~~~~^^
+  File "C:\ChatGPT\Indeed\Indeed.py", line 339, in main
+    result = get_unread_email_body(cfg)
+  File "C:\ChatGPT\Indeed\Indeed.py", line 247, in get_unread_email_body
+    typ, data = mail.search(None, 'X-GM-RAW', '"category:primary"', 'UNSEEN')
+                ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\SCRC\AppData\Local\Programs\Python\Python314\Lib\imaplib.py", line 841, in search
+    typ, dat = self._simple_command(name, *criteria)
+               ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\SCRC\AppData\Local\Programs\Python\Python314\Lib\imaplib.py", line 1370, in _simple_command
+    return self._command_complete(name, self._command(name, *args))
+                                        ~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\SCRC\AppData\Local\Programs\Python\Python314\Lib\imaplib.py", line 1093, in _command
+    raise self.error("command %s illegal in state %s, "
+    ...<2 lines>...
+                      ', '.join(Commands[name])))
+imaplib.IMAP4.error: command SEARCH illegal in state AUTH, only allowed in states SELECTED
+[INFO] Line 241 Connecting to Gmail (Primary + Unseen)…
+Traceback (most recent call last):
+  File "C:\ChatGPT\Indeed\Indeed.py", line 369, in <module>
+    main()
+    ~~~~^^
+  File "C:\ChatGPT\Indeed\Indeed.py", line 339, in main
+    result = get_unread_email_body(cfg)
+  File "C:\ChatGPT\Indeed\Indeed.py", line 247, in get_unread_email_body
+    typ, data = mail.search(None, 'X-GM-RAW', '"category:primary"', 'UNSEEN')
+                ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\SCRC\AppData\Local\Programs\Python\Python314\Lib\imaplib.py", line 841, in search
+    typ, dat = self._simple_command(name, *criteria)
+               ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\SCRC\AppData\Local\Programs\Python\Python314\Lib\imaplib.py", line 1370, in _simple_command
+    return self._command_complete(name, self._command(name, *args))
+                                        ~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\SCRC\AppData\Local\Programs\Python\Python314\Lib\imaplib.py", line 1093, in _command
+    raise self.error("command %s illegal in state %s, "
+    ...<2 lines>...
+                      ', '.join(Commands[name])))
+imaplib.IMAP4.error: command SEARCH illegal in state AUTH, only allowed in states SELECTED
+[INFO] Line 54 AI extraction started…
+[INFO] AI extraction finished. 0 job(s).
+[INFO] Looked job-related but no jobs extracted.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] Line 65 AI extraction started…
+[INFO] AI extraction finished. 13 job(s).
+[OK] Appended 13 row(s).
+[INFO] Marked UID 8696 as read.
+[OK] Done.
+[INFO] No email body found.

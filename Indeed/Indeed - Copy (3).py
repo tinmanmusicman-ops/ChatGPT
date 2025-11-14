@@ -5,7 +5,7 @@ from email.header import decode_header
 from email.utils import parseaddr
 from datetime import datetime
 from openai import OpenAI
-import time
+
 base_dir = Path(__file__).resolve().parent
 os.chdir(base_dir)
 
@@ -121,10 +121,6 @@ def is_relevant_job_email(body: str) -> bool:
 
 def extract_jobs_from_email(body, cfg):
     print(f"[INFO] Line {inspect.currentframe().f_lineno} AI extraction started…")
-    ai_start = time.time()
-    ai_start_timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    print(f"[INFO] AI request sent at {ai_start_timestamp}")
-
     client = get_openai_client(cfg)
     response = client.responses.create(
         model=cfg.get("openai_model","gpt-4.1-mini"),
@@ -132,12 +128,6 @@ def extract_jobs_from_email(body, cfg):
         input=body,
         temperature=0.1,
     )
-
-    ai_end = time.time()
-    elapsed = ai_end - ai_start
-    print(f"[INFO] AI response received at "
-          f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    print(f"[INFO] AI processing time: {elapsed:.3f} seconds")
     raw = getattr(response,"output_text",None)
 #    breakpoint()
     if not raw:
@@ -174,7 +164,7 @@ def extract_jobs_from_email(body, cfg):
             })
     print(f"[INFO] AI extraction finished. {len(jobs)} job(s).")
 #    breakpoint()
-    return jobs, elapsed
+    return jobs
 
 
 def get_unread_email_body(cfg):
@@ -244,28 +234,21 @@ def get_gsheet_worksheet(cfg):
     sh=client.open_by_key(cfg["spreadsheet_id"])
     return sh.worksheet(cfg["worksheet_name"])
 
-def append_jobs_to_sheet(jobs,cfg,from_email,elapsed):
-
+def append_jobs_to_sheet(jobs,cfg,from_email):
     ws=get_gsheet_worksheet(cfg)
     ts=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
- 
- 
- 
+
     rows = [
- 
     [
         ts,
-        f"{elapsed:.3f}" if i == 0 else "------------",
         f'=HYPERLINK("{j["url"]}", "{j["job_name"] or "Job Link"}")',
         j["company_name"] or "",
         j["company_summary"] or "",
         from_email or "",
+     
     ]
- 
-    for i, j in enumerate(jobs)
-    ]
- 
-
+    for j in jobs
+]
 
 
 
@@ -306,12 +289,12 @@ def main():
     if from_email:
         print(f"[INFO] Source email detected: {from_email}")
 
-    jobs, elapsed = extract_jobs_from_email(body, cfg)
+    jobs = extract_jobs_from_email(body, cfg)
     if not jobs:
         print("[INFO] Looked job-related but no jobs extracted.")
         return
 
-    append_jobs_to_sheet(jobs, cfg, from_email, elapsed)
+    append_jobs_to_sheet(jobs, cfg, from_email)
 
     if uid:
         mark_email_as_read(cfg, uid)

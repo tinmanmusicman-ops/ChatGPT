@@ -535,3 +535,12 @@ AttributeError: 'Message' object has no attribute 'store'
 2025-11-10 17:47:08,640 [INFO] Processing 1 new message(s).
 2025-11-10 17:47:19,761 [INFO] Appended 1 row(s).
 2025-11-10 17:47:19,992 [INFO] Recorded 1 UID(s) as processed.
+2025-11-11 19:03:12,614 [INFO] Starting poller (max_per_run=25, unseen_only=True, mark_read=True, thread=True)
+2025-11-11 19:03:13,333 [INFO] Searching with IMAP terms: UNSEEN SUBJECT "672-7323"
+2025-11-11 19:03:13,460 [INFO] No matching messages found.
+2025-11-11 19:05:02,558 [INFO] Starting poller (max_per_run=25, unseen_only=True, mark_read=True, thread=True)
+2025-11-11 19:05:03,057 [INFO] Searching with IMAP terms: UNSEEN SUBJECT "672-7323"
+2025-11-11 19:05:03,159 [INFO] No matching messages found.
+2025-11-11 19:08:00,156 [INFO] Starting poller (max_per_run=25, unseen_only=True, mark_read=True, thread=True)
+2025-11-11 19:08:00,754 [INFO] Searching with IMAP terms: UNSEEN SUBJECT "672-7323"
+2025-11-11 19:08:00,855 [INFO] No matching messages found.

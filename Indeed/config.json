@@ -1,10 +1,22 @@
 {
+  "openai_api_key": "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",
   "gmail_user": "tinmanmusicman@gmail.com",
   "gmail_app_password": "jwhk piox dqnt jxqc",
   "user": "tinmanmusicman@gmail.com",
   "app_password": "jwhk piox dqnt jxqc",
   "subject_term": "",
-  "spreadsheet_id": "1IYrpGlyCSIilIEyRA70Uq2iUofl-sPA94ygH9ZL-2ag",
+  "gmail_use_category": true,
+  "gmail_category": "primary",
+  "gmail_search_scope": "inbox",
+  "gmail_only_unseen": true,
+  "mark_read": true,
+  "gmail_search_scope": "anywhere",
+  "gmail_from_filters": [
+    "jobalerts-noreply@linkedin.com",
+    "donotreply@match.indeed.com"
+  ],
+  "gmail_from_filter": "jobalerts-noreply@linkedin.com",
+ "spreadsheet_id": "1IYrpGlyCSIilIEyRA70Uq2iUofl-sPA94ygH9ZL-2ag",
   "worksheet_name": "Inbox",
   "service_account_json": "sa_key.json",
   "openai_model": "gpt-4o-mini",

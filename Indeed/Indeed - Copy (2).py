@@ -2,10 +2,9 @@ from pathlib import Path
 from typing import Iterable, List, Set, Tuple
 import os, json, imaplib, email, inspect, re, time
 from email.header import decode_header
-from email.utils import parseaddr
 from datetime import datetime
 from openai import OpenAI
-import time
+
 base_dir = Path(__file__).resolve().parent
 os.chdir(base_dir)
 
@@ -83,30 +82,6 @@ def mark_email_as_read(cfg, uid):
     except Exception as e:
         print(f"[WARN] Could not mark {uid} read: {e}")
 
-
-def extract_original_sender_from_body(body: str) -> str | None:
-    """
-    Try to detect the original sender in a forwarded email body.
-
-    Looks for lines like:
-      From: Name <email@example.com>
-      From: email@example.com
-    """
-    if not body:
-        return None
-
-    pattern = re.compile(
-        r"^From:\s*(?:.*<([^>]+)>|([^ \r\n]+@[^ \r\n]+))",
-        re.IGNORECASE | re.MULTILINE,
-    )
-    match = pattern.search(body)
-    if not match:
-        return None
-
-    email_addr = match.group(1) or match.group(2)
-#    breakpoint()
-    return email_addr.strip()
-
 def is_relevant_job_email(body: str) -> bool:
     if not body:
         return False
@@ -121,10 +96,6 @@ def is_relevant_job_email(body: str) -> bool:
 
 def extract_jobs_from_email(body, cfg):
     print(f"[INFO] Line {inspect.currentframe().f_lineno} AI extraction started…")
-    ai_start = time.time()
-    ai_start_timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    print(f"[INFO] AI request sent at {ai_start_timestamp}")
-
     client = get_openai_client(cfg)
     response = client.responses.create(
         model=cfg.get("openai_model","gpt-4.1-mini"),
@@ -132,14 +103,8 @@ def extract_jobs_from_email(body, cfg):
         input=body,
         temperature=0.1,
     )
-
-    ai_end = time.time()
-    elapsed = ai_end - ai_start
-    print(f"[INFO] AI response received at "
-          f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    print(f"[INFO] AI processing time: {elapsed:.3f} seconds")
     raw = getattr(response,"output_text",None)
-#    breakpoint()
+    breakpoint()
     if not raw:
         try:
             first = response.output[0]
@@ -173,68 +138,49 @@ def extract_jobs_from_email(body, cfg):
                 "url":j.get("url")
             })
     print(f"[INFO] AI extraction finished. {len(jobs)} job(s).")
-#    breakpoint()
-    return jobs, elapsed
-
+    breakpoint()
+    return jobs
 
 def get_unread_email_body(cfg):
-    mail = imaplib.IMAP4_SSL("imap.gmail.com")
+    mail=imaplib.IMAP4_SSL("imap.gmail.com")
     mail.login(cfg["gmail_user"], cfg["gmail_app_password"])
     mail.select("INBOX")
-    typ, data = mail.search(None, 'X-GM-RAW', '"category:primary"', 'UNSEEN')
-    if typ != "OK":
+    typ,data=mail.search(None,'X-GM-RAW','"category:primary"','UNSEEN')
+    if typ!="OK":
         mail.logout()
         return None
-
-    ids = data[0].split()
+    ids=data[0].split()
     if not ids:
         mail.logout()
         return None
-
-    msg_id = ids[0]
-    uid = msg_id.decode()
-
-    typ, msg_data = mail.fetch(msg_id, "(RFC822)")
-    if typ != "OK":
+    msg_id=ids[0]
+    uid=msg_id.decode()
+    typ,msg_data=mail.fetch(msg_id,"(RFC822)")
+    if typ!="OK":
         mail.logout()
         return None
-
-    raw = msg_data[0][1]
-    msg = email.message_from_bytes(raw)
-
-    # Get the header From: address (e.g., Indeed, LinkedIn, etc.)
-    from_header = (msg.get("From", "") or "").strip()
-    name, addr = parseaddr(from_header)
-    header_from_email = (addr or from_header).strip()
-
-    body = ""
+    raw=msg_data[0][1]
+    msg=email.message_from_bytes(raw)
+    
+    
+    body=""
     if msg.is_multipart():
         for part in msg.walk():
-            if part.get_content_disposition() == "attachment":
+            if part.get_content_disposition()=="attachment":
                 continue
-            payload = part.get_payload(decode=True)
-            if not payload:
-                continue
-            text = payload.decode(part.get_content_charset() or "utf-8", "replace")
-            if part.get_content_type() == "text/html" and not body:
-                body = text
-            elif part.get_content_type() == "text/plain" and not body:
-                body = text
+            payload=part.get_payload(decode=True)
+            if payload:
+                text=payload.decode(part.get_content_charset() or "utf-8","replace")
+                if part.get_content_type()=="text/html" and not body:
+                    body=text
+                elif part.get_content_type()=="text/plain" and not body:
+                    body=text
     else:
-        payload = msg.get_payload(decode=True)
+        payload=msg.get_payload(decode=True)
         if payload:
-            body = payload.decode(msg.get_content_charset() or "utf-8", "replace")
-
-    # Prefer the original sender found in a forwarded block, if present
-    original_from = extract_original_sender_from_body(body)
-    if original_from:
-        source_email = original_from.strip()
-    else:
-        source_email = header_from_email
-
+            body=payload.decode(msg.get_content_charset() or "utf-8","replace")
     mail.logout()
-    return body, uid, source_email
-
+    return body,uid
 
 def get_gsheet_worksheet(cfg):
     sa=base_dir/cfg.get("service_account_json","sa_key.json")
@@ -244,55 +190,30 @@ def get_gsheet_worksheet(cfg):
     sh=client.open_by_key(cfg["spreadsheet_id"])
     return sh.worksheet(cfg["worksheet_name"])
 
-def append_jobs_to_sheet(jobs,cfg,from_email,elapsed):
-
+def append_jobs_to_sheet(jobs,cfg):
     ws=get_gsheet_worksheet(cfg)
     ts=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
- 
- 
- 
-    rows = [
- 
-    [
-        ts,
-        f"{elapsed:.3f}" if i == 0 else "------------",
-        f'=HYPERLINK("{j["url"]}", "{j["job_name"] or "Job Link"}")',
-        j["company_name"] or "",
-        j["company_summary"] or "",
-        from_email or "",
-    ]
- 
-    for i, j in enumerate(jobs)
-    ]
- 
-
-
-
-
-#    rows=[[ts,j["job_name"] or "",j["company_name"] or "",j["url"],j["company_summary"] or ""] for j in jobs]
+    rows=[[ts,j["job_name"] or "",j["company_name"] or "",j["url"],j["company_summary"] or ""] for j in jobs]
     ws.append_rows(rows,value_input_option="USER_ENTERED")
     print(f"[OK] Appended {len(rows)} row(s).")
 
-
 def main():
-    cfg = load_config()
+    cfg=load_config()
 
     if cfg.get("debug_use_email_body_file"):
-        f = base_dir / "email_body.txt"
+        f=base_dir/"email_body.txt"
         if f.exists():
-            body = f.read_text()
-            uid = None
-            from_email = None
+            body=f.read_text()
+            uid=None
         else:
-            body = None
-            uid = None
-            from_email = None
+            body=None
+            uid=None
     else:
-        result = get_unread_email_body(cfg)
+        result=get_unread_email_body(cfg)
         if not result:
             print("[INFO] No email body found.")
             return
-        body, uid, from_email = result
+        body,uid=result
 
     if not body or not body.strip():
         print("[INFO] Empty body.")
@@ -302,19 +223,15 @@ def main():
         print("[INFO] Not job-related. Leaving UNREAD.")
         return
 
-    # from_email is captured here for future use (e.g., logging or sheet columns)
-    if from_email:
-        print(f"[INFO] Source email detected: {from_email}")
-
-    jobs, elapsed = extract_jobs_from_email(body, cfg)
+    jobs=extract_jobs_from_email(body,cfg)
     if not jobs:
         print("[INFO] Looked job-related but no jobs extracted.")
         return
 
-    append_jobs_to_sheet(jobs, cfg, from_email, elapsed)
+    append_jobs_to_sheet(jobs,cfg)
 
     if uid:
-        mark_email_as_read(cfg, uid)
+        mark_email_as_read(cfg,uid)
 
     print("[OK] Done.")
 
