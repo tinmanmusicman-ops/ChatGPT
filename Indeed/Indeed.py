@@ -39,9 +39,26 @@ Ignore:
    - Infer company_name
    - If unsure, return null
    
-   Generate a company_summary for the company, based only on information available in the email body. The summary should briefly describe the company’s type (e.g., staffing agency, tech company, healthcare provider) and any clearly stated details (e.g., location, industry, pay range hints, “Easily apply”, etc.).
+3. For each job URL, also extract a single field called decision_factors:
+   - A short, compact description using only info from the email.
+   - Include things like:
+     - salary / pay range
+     - remote / hybrid / on-site
+     - location (city/state or “multiple locations”)
+     - job type (full-time, part-time, contract, etc.)
+     - schedule hints (weekends, evenings, flexible)
+   - Keep it to 1–2 sentences max.
+   - If there is not enough info, set decision_factors to null.
+   
+   
 
-Do NOT invent or guess exact numbers such as employee count, revenue, founding year, or precise history. If those details are not explicitly mentioned in the email, keep the summary high-level and avoid specific statistics.
+      
+   
+   Generate a company_summary for the company, based only on information available in the email body. The summary should briefly describe the company’s type (e.g., staffing agency, tech company, healthcare provider) and any clearly stated details (e.g., location, industry, pay range hints, “Easily apply”, etc.).
+   What is the physical address for the company that is associated with the URL info
+      
+
+   Do NOT invent or guess exact numbers such as employee count, revenue, founding year, or precise history. If those details are not explicitly mentioned in the email, keep the summary high-level and avoid specific statistics.
 
 If there is not enough information to say anything meaningful about the company, set company_summary to null.
 
@@ -51,14 +68,19 @@ If there is not enough information to say anything meaningful about the company,
    - MUST NOT use markdown or code fences
    - JSON must start with '{' and end with '}'
 
-Structure:
+   
+
+
+ tructure:
 {
   "jobs": [
     {
       "job_name": string|null,
       "company_name": string|null,
       "url": string,
-      "company_summary": string|null
+      "company_summary": string|null,
+      "decision_factors": string|null
+      "location": string|null
     }
   ]
 }
@@ -111,10 +133,10 @@ def is_relevant_job_email(body: str) -> bool:
     if not body:
         return False
     text = body.lower()
-    job_keywords = ("job","jobs","view job","apply now","new job")
+    job_keywords = ("linkedin", "automation", "jobalerts", "job_alert", "job alert","job","jobs","view job","apply now","new job")
     if not any(k in text for k in job_keywords):
         return False
-    domains = ("indeed.com","linkedin.com/jobs")
+    domains = ("indeed","linkedin")
     if not any(d in body for d in domains):
         return False
     return True
@@ -170,6 +192,8 @@ def extract_jobs_from_email(body, cfg):
                 "job_name":j.get("job_name"),
                 "company_name":j.get("company_name"),
                 "company_summary":j.get("company_summary"),
+                "location": j.get("location"),
+                "decision_factors": j.get("decision_factors"),
                 "url":j.get("url")
             })
     print(f"[INFO] AI extraction finished. {len(jobs)} job(s).")
@@ -255,11 +279,13 @@ def append_jobs_to_sheet(jobs,cfg,from_email,elapsed):
  
     [
         ts,
-        f"{elapsed:.3f}" if i == 0 else "------------",
+        f"{elapsed:.3f}" if i == 0 else "---------",
         f'=HYPERLINK("{j["url"]}", "{j["job_name"] or "Job Link"}")',
         j["company_name"] or "",
+        j["location"] or "",
         j["company_summary"] or "",
-        from_email or "",
+        j["decision_factors"] or "",
+        from_email if i == 0 else "---------"
     ]
  
     for i, j in enumerate(jobs)
@@ -299,7 +325,7 @@ def main():
         return
 
     if not is_relevant_job_email(body):
-        print("[INFO] Not job-related. Leaving UNREAD.")
+        print("[INFO] Not job-related.")
         return
 
     # from_email is captured here for future use (e.g., logging or sheet columns)
