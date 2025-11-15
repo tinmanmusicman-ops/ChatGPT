@@ -4229,3 +4229,13 @@ Traceback (most recent call last):
     return io.open(self, mode, buffering, encoding, errors, newline)
            ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 FileNotFoundError: [Errno 2] No such file or directory: 'C:\\ChatGPT\\Indeed\\config.json'
+  10:25.16 imaplib version 2.60
+  10:25.16 new IMAP4 connection, tag=b'GNIE'
+  10:25.87 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
