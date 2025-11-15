@@ -276,14 +276,12 @@ def get_unread_email_body(cfg):
 
     if not is_relevant_job_email(body):
         print("[INFO] Not job-related.")
-        mail.uid("STORE", uid, "-FLAGS", "\Seen")
+        mail.uid("STORE", uid, "-FLAGS", "\\Seen")
         mail.uid("COPY", uid, "NotRead")
-        mail.uid("STORE", uid, "+FLAGS", "\Deleted")
+        mail.uid("STORE", uid, "+FLAGS", "\\Deleted")
         mail.expunge()
-        # Logout cleanly before returning to caller
-        mail.logout()
-        # Return an empty body so the caller continues the loop
-        return "", None, source_email
+ 
+        return
 
     try:
         mail.uid("COPY", uid, "Processed")
@@ -340,7 +338,6 @@ def append_jobs_to_sheet(jobs,cfg,from_email,elapsed):
 def main():
     cfg = load_config()
 
-    # Debug mode: use a saved email body from file, process once, and exit.
     if cfg.get("debug_use_email_body_file"):
         f = base_dir / "email_body.txt"
         if f.exists():
@@ -351,71 +348,37 @@ def main():
             body = None
             uid = None
             from_email = None
-
-        if not body or not body.strip():
-            print("[INFO] Empty body.")
-            return
-
-        jobs, elapsed = extract_jobs_from_email(body, cfg)
-        if not jobs:
-            print("[INFO] Looked job-related but no jobs extracted (debug mode).")
-            return
-
-        append_jobs_to_sheet(jobs, cfg, from_email, elapsed)
-        print("[OK] Done (debug mode).")
-        return
-
-    # Normal mode: process up to N unseen emails per run.
-    max_per_run = cfg.get("max_emails_per_run", 5)
-    try:
-        max_per_run = int(max_per_run)
-    except (TypeError, ValueError):
-        max_per_run = 5
-
-    if max_per_run < 1:
-        max_per_run = 1
-
-    processed_count = 0
-    processed_any = False
-
-    while processed_count < max_per_run:
+    else:
         result = get_unread_email_body(cfg)
         if not result:
-            if not processed_any:
-                print("[INFO] No email body found.")
-            break
-
+            print("[INFO] No email body found.")
+            return
         body, uid, from_email = result
 
-        if not body or not body.strip():
-            if from_email:
-                print(f"[INFO] Skipping non-job or empty body from {from_email}.")
-            else:
-                print("[INFO] Empty body.")
-            # Skip to the next email in this run
-            processed_count += 1
-            continue
+    if not body or not body.strip():
+        print("[INFO] Empty body.")
+        return
 
-        if from_email:
-            print(f"[INFO] Source email detected: {from_email}")
+#    if not is_relevant_job_email(body):
+#       print("[INFO] Not job-related.")
+#        return
 
-        jobs, elapsed = extract_jobs_from_email(body, cfg)
-        if not jobs:
-            print("[INFO] Looked job-related but no jobs extracted.")
-            # Still count this as processed so we don't spin forever
-            processed_count += 1
-            continue
+    # from_email is captured here for future use (e.g., logging or sheet columns)
+    if from_email:
+        print(f"[INFO] Source email detected: {from_email}")
 
-        append_jobs_to_sheet(jobs, cfg, from_email, elapsed)
+    jobs, elapsed = extract_jobs_from_email(body, cfg)
+    if not jobs:
+        print("[INFO] Looked job-related but no jobs extracted.")
+        return
 
-        if uid:
-            # get_unread_email_body already moved the email to the appropriate folder.
-            print("[OK] Done.")
+    append_jobs_to_sheet(jobs, cfg, from_email, elapsed)
 
-        processed_any = True
-        processed_count += 1
+# moved successful file to Processed folder
+    if uid:
+#        mark_email_as_read(cfg, uid)
 
-    print(f"[INFO] Run finished. Processed {processed_count} email(s).")
+       print("[OK] Done.")
 
 if __name__=="__main__":
     main()
