@@ -4,5 +4,12 @@
   "python.analysis.diagnosticMode": "workspace",
   "python.analysis.useLibraryCodeForTypes": true,
   "python.linting.enabled": true,
-  "python.logging.level": "warning"
+  "python.logging.level": "warning",
+  "workbench.colorCustomizations": {
+  "editor.selectionBackground" "#1b6e37",
+  "editor.selectionHighlightBackground" "#ff0000"
+  }
+ 
+
 }
+
