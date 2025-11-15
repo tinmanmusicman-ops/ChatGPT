@@ -234,8 +234,8 @@ def get_unread_email_body(cfg):
     msg_id = ids[0]
     uid = msg_id.decode()
 
-    typ, msg_data = mail.uid("FETCH", uid, "(RFC822)")
-    if typ != "OK" or not msg_data:
+    typ, msg_data = mail.fetch(msg_id, "(RFC822)")
+    if typ != "OK":
         mail.logout()
         return None
 
@@ -272,26 +272,9 @@ def get_unread_email_body(cfg):
     else:
         source_email = header_from_email
 
-# This section copies email to Processed and deletes the one in the Primary
-
-    if not is_relevant_job_email(body):
-        print("[INFO] Not job-related.")
-        mail.uid("STORE", uid, "-FLAGS", "\\Seen")
-        mail.uid("COPY", uid, "NotRead")
-        mail.uid("STORE", uid, "+FLAGS", "\\Deleted")
-        mail.expunge()
- 
-        return
-
-    try:
-        mail.uid("COPY", uid, "Processed")
-        mail.uid("STORE", uid, "+FLAGS", "\\Deleted")
-        mail.expunge()
-    except Exception:
-        pass
     mail.logout()
     return body, uid, source_email
-# end of copy email
+
 
 def get_gsheet_worksheet(cfg):
     sa=base_dir/cfg.get("service_account_json","sa_key.json")
@@ -359,9 +342,9 @@ def main():
         print("[INFO] Empty body.")
         return
 
-#    if not is_relevant_job_email(body):
-#       print("[INFO] Not job-related.")
-#        return
+    if not is_relevant_job_email(body):
+        print("[INFO] Not job-related.")
+        return
 
     # from_email is captured here for future use (e.g., logging or sheet columns)
     if from_email:
@@ -376,9 +359,9 @@ def main():
 
 # moved successful file to Processed folder
     if uid:
-#        mark_email_as_read(cfg, uid)
+        mark_email_as_read(cfg, uid)
 
-       print("[OK] Done.")
+    print("[OK] Done.")
 
 if __name__=="__main__":
     main()

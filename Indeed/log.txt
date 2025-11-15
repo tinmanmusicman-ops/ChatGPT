@@ -720,3 +720,849 @@ imaplib.IMAP4.error: command SEARCH illegal in state AUTH, only allowed in state
 [INFO] Marked UID 8696 as read.
 [OK] Done.
 [INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] Not job-related.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] Not job-related.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] Source email detected: jobalerts-noreply@linkedin.com
+[INFO] Line 145 AI extraction started…
+[INFO] AI request sent at 2025-11-14 09:15:25
+[INFO] AI response received at 2025-11-14 09:16:33
+[INFO] AI processing time: 67.403 seconds
+[INFO] AI extraction finished. 6 job(s).
+[OK] Appended 6 row(s).
+[INFO] Marked UID 8704 as read.
+[OK] Done.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] Not job-related.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] Not job-related.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] Source email detected: jobalerts-noreply@linkedin.com
+[INFO] Line 145 AI extraction started…
+[INFO] AI request sent at 2025-11-14 11:10:26
+[INFO] AI response received at 2025-11-14 11:10:59
+[INFO] AI processing time: 33.621 seconds
+[INFO] AI extraction finished. 3 job(s).
+[OK] Appended 3 row(s).
+[INFO] Marked UID 8704 as read.
+[OK] Done.
+[INFO] No email body found.
+[INFO] Source email detected: jobalerts-noreply@linkedin.com
+[INFO] Line 145 AI extraction started…
+[INFO] AI request sent at 2025-11-14 11:20:25
+[INFO] AI response received at 2025-11-14 11:20:56
+[INFO] AI processing time: 30.451 seconds
+[INFO] AI extraction finished. 3 job(s).
+[OK] Appended 3 row(s).
+[INFO] Marked UID 8704 as read.
+[OK] Done.
+[INFO] Source email detected: donotreply@match.indeed.com
+[INFO] Line 145 AI extraction started…
+[INFO] AI request sent at 2025-11-14 11:25:25
+[INFO] AI response received at 2025-11-14 11:25:43
+[INFO] AI processing time: 17.350 seconds
+[INFO] AI extraction finished. 1 job(s).
+[OK] Appended 1 row(s).
+[INFO] Marked UID 8703 as read.
+[OK] Done.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] Source email detected: jobalerts-noreply@linkedin.com
+[INFO] Line 148 AI extraction started…
+[INFO] AI request sent at 2025-11-14 11:50:26
+[INFO] AI response received at 2025-11-14 11:50:56
+[INFO] AI processing time: 30.026 seconds
+[INFO] AI extraction finished. 3 job(s).
+[OK] Appended 3 row(s).
+[INFO] Marked UID 8704 as read.
+[OK] Done.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] Source email detected: donotreply@match.indeed.com
+[INFO] Line 149 AI extraction started…
+[INFO] AI request sent at 2025-11-14 12:10:26
+[INFO] AI response received at 2025-11-14 12:10:57
+[INFO] AI processing time: 31.341 seconds
+[INFO] AI extraction finished. 2 job(s).
+[OK] Appended 2 row(s).
+[DEBUG] COPY: OK [None]
+[INFO] Marked UID 8703 as read.
+[OK] Done.
+[INFO] No email body found.
+  File "C:\ChatGPT\Indeed\Indeed.py", line 107
+    res_add, data_add = mail.uid(
+    ^^^^^^^
+SyntaxError: expected 'except' or 'finally' block
+  File "C:\ChatGPT\Indeed\Indeed.py", line 107
+    res_add, data_add = mail.uid(
+    ^^^^^^^
+SyntaxError: expected 'except' or 'finally' block
+[INFO] No email body found.
+[INFO] Source email detected: donotreply@match.indeed.com
+[INFO] Line 159 AI extraction started…
+[INFO] AI request sent at 2025-11-14 12:35:26
+[INFO] AI response received at 2025-11-14 12:35:41
+[INFO] AI processing time: 15.723 seconds
+[INFO] AI extraction finished. 1 job(s).
+[OK] Appended 1 row(s).
+[INFO] Marked UID 8703 as read.
+[OK] Done.
+[INFO] No email body found.
+  File "C:\ChatGPT\Indeed\Indeed.py", line 106
+    print(f"[INFO] Relabeling UID {uid}…")
+    ^^^^^
+SyntaxError: expected 'except' or 'finally' block
+  File "C:\ChatGPT\Indeed\Indeed.py", line 106
+    print(f"[INFO] Relabeling UID {uid}…")
+    ^^^^^
+SyntaxError: expected 'except' or 'finally' block
+  File "C:\ChatGPT\Indeed\Indeed.py", line 106
+    print(f"[INFO] Relabeling UID {uid}…")
+    ^^^^^
+SyntaxError: expected 'except' or 'finally' block
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+[INFO] No email body found.
+  20:25.45 imaplib version 2.60
+  20:25.45 new IMAP4 connection, tag=b'GNKM'
+  20:25.51 < b'* OK Gimap ready for requests from 98.173.62.74 41be03b00d2f7-bc4aa6dcd88mb130830181a12'
+  20:25.51 > b'GNKM0 CAPABILITY'
+  20:25.56 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER'
+  20:25.56 < b'GNKM0 OK Thats all she wrote! 41be03b00d2f7-bc4aa6dcd88mb130830181a12'
+  20:25.56 CAPABILITIES: ('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH2', 'AUTH=PLAIN', 'AUTH=PLAIN-CLIENTTOKEN', 'AUTH=OAUTHBEARER')
+  20:25.56 > b'GNKM1 LOGIN tinmanmusicman@gmail.com "jwhk piox dqnt jxqc"'
+  20:25.73 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 UIDPLUS COMPRESS=DEFLATE ENABLE MOVE CONDSTORE ESEARCH UTF8=ACCEPT LIST-EXTENDED LIST-STATUS LITERAL- SPECIAL-USE APPENDLIMIT=35651584'
+  20:25.73 < b'GNKM1 OK tinmanmusicman@gmail.com authenticated (Success)'
+  20:25.73 > b'GNKM2 SELECT INBOX'
+  20:25.83 < b'* FLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing)'
+  20:25.83 < b'* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing \\*)] Flags permitted.'
+  20:25.83 < b'* OK [UIDVALIDITY 1] UIDs valid.'
+  20:25.83 < b'* 8705 EXISTS'
+  20:25.83 < b'* 0 RECENT'
+  20:25.83 < b'* OK [UIDNEXT 17277] Predicted next UID.'
+  20:25.83 < b'* OK [HIGHESTMODSEQ 2001079]'
+  20:25.83 < b'GNKM2 OK [READ-WRITE] INBOX selected. (Success)'
+  20:25.83 > b'GNKM3 SEARCH X-GM-RAW "category:primary" UNSEEN'
+  20:25.92 < b'* SEARCH'
+  20:25.92 < b'GNKM3 OK SEARCH completed (Success)'
+  20:25.92 > b'GNKM4 LOGOUT'
+  20:25.99 < b'* BYE LOGOUT Requested'
+  20:25.99 BYE response: b'LOGOUT Requested'
+[INFO] No email body found.
+  25:25.04 imaplib version 2.60
+  25:25.04 new IMAP4 connection, tag=b'LOOA'
+  25:25.09 < b'* OK Gimap ready for requests from 98.173.62.74 41be03b00d2f7-bc5baf25b2fmb112575947a12'
+  25:25.10 > b'LOOA0 CAPABILITY'
+  25:25.15 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER'
+  25:25.15 < b'LOOA0 OK Thats all she wrote! 41be03b00d2f7-bc5baf25b2fmb112575947a12'
+  25:25.15 CAPABILITIES: ('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH2', 'AUTH=PLAIN', 'AUTH=PLAIN-CLIENTTOKEN', 'AUTH=OAUTHBEARER')
+  25:25.15 > b'LOOA1 LOGIN tinmanmusicman@gmail.com "jwhk piox dqnt jxqc"'
+  25:25.35 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 UIDPLUS COMPRESS=DEFLATE ENABLE MOVE CONDSTORE ESEARCH UTF8=ACCEPT LIST-EXTENDED LIST-STATUS LITERAL- SPECIAL-USE APPENDLIMIT=35651584'
+  25:25.35 < b'LOOA1 OK tinmanmusicman@gmail.com authenticated (Success)'
+  25:25.35 > b'LOOA2 SELECT INBOX'
+  25:25.44 < b'* FLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing)'
+  25:25.44 < b'* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing \\*)] Flags permitted.'
+  25:25.44 < b'* OK [UIDVALIDITY 1] UIDs valid.'
+  25:25.44 < b'* 8705 EXISTS'
+  25:25.44 < b'* 0 RECENT'
+  25:25.44 < b'* OK [UIDNEXT 17277] Predicted next UID.'
+  25:25.44 < b'* OK [HIGHESTMODSEQ 2001136]'
+  25:25.44 < b'LOOA2 OK [READ-WRITE] INBOX selected. (Success)'
+  25:25.44 > b'LOOA3 SEARCH X-GM-RAW "category:primary" UNSEEN'
+  25:25.53 < b'* SEARCH'
+  25:25.53 < b'LOOA3 OK SEARCH completed (Success)'
+  25:25.53 > b'LOOA4 LOGOUT'
+  25:25.61 < b'* BYE LOGOUT Requested'
+  25:25.61 BYE response: b'LOGOUT Requested'
+[INFO] No email body found.
+  30:25.12 imaplib version 2.60
+  30:25.12 new IMAP4 connection, tag=b'EJFM'
+  30:25.18 < b'* OK Gimap ready for requests from 98.173.62.74 d2e1a72fcca58-7b767f6e3eemb141947037b3a'
+  30:25.18 > b'EJFM0 CAPABILITY'
+  30:25.23 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER'
+  30:25.23 < b'EJFM0 OK Thats all she wrote! d2e1a72fcca58-7b767f6e3eemb141947037b3a'
+  30:25.23 CAPABILITIES: ('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH2', 'AUTH=PLAIN', 'AUTH=PLAIN-CLIENTTOKEN', 'AUTH=OAUTHBEARER')
+  30:25.23 > b'EJFM1 LOGIN tinmanmusicman@gmail.com "jwhk piox dqnt jxqc"'
+  30:25.53 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 UIDPLUS COMPRESS=DEFLATE ENABLE MOVE CONDSTORE ESEARCH UTF8=ACCEPT LIST-EXTENDED LIST-STATUS LITERAL- SPECIAL-USE APPENDLIMIT=35651584'
+  30:25.53 < b'EJFM1 OK tinmanmusicman@gmail.com authenticated (Success)'
+  30:25.53 > b'EJFM2 SELECT INBOX'
+  30:25.63 < b'* FLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing)'
+  30:25.63 < b'* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing \\*)] Flags permitted.'
+  30:25.63 < b'* OK [UIDVALIDITY 1] UIDs valid.'
+  30:25.63 < b'* 8705 EXISTS'
+  30:25.63 < b'* 0 RECENT'
+  30:25.63 < b'* OK [UIDNEXT 17277] Predicted next UID.'
+  30:25.63 < b'* OK [HIGHESTMODSEQ 2001136]'
+  30:25.63 < b'EJFM2 OK [READ-WRITE] INBOX selected. (Success)'
+  30:25.63 > b'EJFM3 SEARCH X-GM-RAW "category:primary" UNSEEN'
+  30:25.73 < b'* SEARCH'
+  30:25.73 < b'EJFM3 OK SEARCH completed (Success)'
+  30:25.73 > b'EJFM4 LOGOUT'
+  30:25.81 < b'* BYE LOGOUT Requested'
+  30:25.81 BYE response: b'LOGOUT Requested'
+[INFO] No email body found.
+  35:25.01 imaplib version 2.60
+  35:25.01 new IMAP4 connection, tag=b'HJAP'
+  35:25.07 < b'* OK Gimap ready for requests from 98.173.62.74 41be03b00d2f7-bbeecac79a3mb241655551a12'
+  35:25.07 > b'HJAP0 CAPABILITY'
+  35:25.12 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER'
+  35:25.12 < b'HJAP0 OK Thats all she wrote! 41be03b00d2f7-bbeecac79a3mb241655551a12'
+  35:25.12 CAPABILITIES: ('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH2', 'AUTH=PLAIN', 'AUTH=PLAIN-CLIENTTOKEN', 'AUTH=OAUTHBEARER')
+  35:25.12 > b'HJAP1 LOGIN tinmanmusicman@gmail.com "jwhk piox dqnt jxqc"'
+  35:25.38 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 UIDPLUS COMPRESS=DEFLATE ENABLE MOVE CONDSTORE ESEARCH UTF8=ACCEPT LIST-EXTENDED LIST-STATUS LITERAL- SPECIAL-USE APPENDLIMIT=35651584'
+  35:25.38 < b'HJAP1 OK tinmanmusicman@gmail.com authenticated (Success)'
+  35:25.38 > b'HJAP2 SELECT INBOX'
+  35:25.49 < b'* FLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing)'
+  35:25.50 < b'* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing \\*)] Flags permitted.'
+  35:25.50 < b'* OK [UIDVALIDITY 1] UIDs valid.'
+  35:25.50 < b'* 8705 EXISTS'
+  35:25.50 < b'* 0 RECENT'
+  35:25.50 < b'* OK [UIDNEXT 17277] Predicted next UID.'
+  35:25.50 < b'* OK [HIGHESTMODSEQ 2001193]'
+  35:25.50 < b'HJAP2 OK [READ-WRITE] INBOX selected. (Success)'
+  35:25.50 > b'HJAP3 SEARCH X-GM-RAW "category:primary" UNSEEN'
+  35:25.59 < b'* SEARCH'
+  35:25.59 < b'HJAP3 OK SEARCH completed (Success)'
+  35:25.59 > b'HJAP4 LOGOUT'
+  35:25.71 < b'* BYE LOGOUT Requested'
+  35:25.71 BYE response: b'LOGOUT Requested'
+[INFO] No email body found.
+  40:25.07 imaplib version 2.60
+  40:25.07 new IMAP4 connection, tag=b'KCOK'
+  40:25.12 < b'* OK Gimap ready for requests from 98.173.62.74 41be03b00d2f7-bc44ef99315mb143936159a12'
+  40:25.12 > b'KCOK0 CAPABILITY'
+  40:25.17 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER'
+  40:25.17 < b'KCOK0 OK Thats all she wrote! 41be03b00d2f7-bc44ef99315mb143936159a12'
+  40:25.17 CAPABILITIES: ('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH2', 'AUTH=PLAIN', 'AUTH=PLAIN-CLIENTTOKEN', 'AUTH=OAUTHBEARER')
+  40:25.17 > b'KCOK1 LOGIN tinmanmusicman@gmail.com "jwhk piox dqnt jxqc"'
+  40:25.34 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 UIDPLUS COMPRESS=DEFLATE ENABLE MOVE CONDSTORE ESEARCH UTF8=ACCEPT LIST-EXTENDED LIST-STATUS LITERAL- SPECIAL-USE APPENDLIMIT=35651584'
+  40:25.34 < b'KCOK1 OK tinmanmusicman@gmail.com authenticated (Success)'
+  40:25.34 > b'KCOK2 SELECT INBOX'
+  40:25.48 < b'* FLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing)'
+  40:25.48 < b'* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing \\*)] Flags permitted.'
+  40:25.48 < b'* OK [UIDVALIDITY 1] UIDs valid.'
+  40:25.48 < b'* 8705 EXISTS'
+  40:25.48 < b'* 0 RECENT'
+  40:25.48 < b'* OK [UIDNEXT 17277] Predicted next UID.'
+  40:25.48 < b'* OK [HIGHESTMODSEQ 2001223]'
+  40:25.48 < b'KCOK2 OK [READ-WRITE] INBOX selected. (Success)'
+Traceback (most recent call last):
+  File "C:\ChatGPT\Indeed\Indeed.py", line 375, in <module>
+    main()
+    ~~~~^^
+  File "C:\ChatGPT\Indeed\Indeed.py", line 343, in main
+    result = get_unread_email_body(cfg)
+  File "C:\ChatGPT\Indeed\Indeed.py", line 223, in get_unread_email_body
+    res_lbl, data_lbl = mail.uid("FETCH", uid, "(X-GM-LABELS)")
+                                          ^^^
+UnboundLocalError: cannot access local variable 'uid' where it is not associated with a value
+  45:25.65 imaplib version 2.60
+  45:25.65 new IMAP4 connection, tag=b'MNHF'
+  45:25.71 < b'* OK Gimap ready for requests from 98.173.62.74 616947a28c9db-68fe58f5706mb126070153b6c'
+  45:25.71 > b'MNHF0 CAPABILITY'
+  45:25.75 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER'
+  45:25.75 < b'MNHF0 OK Thats all she wrote! 616947a28c9db-68fe58f5706mb126070153b6c'
+  45:25.75 CAPABILITIES: ('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH2', 'AUTH=PLAIN', 'AUTH=PLAIN-CLIENTTOKEN', 'AUTH=OAUTHBEARER')
+  45:25.75 > b'MNHF1 LOGIN tinmanmusicman@gmail.com "jwhk piox dqnt jxqc"'
+  45:25.95 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 UIDPLUS COMPRESS=DEFLATE ENABLE MOVE CONDSTORE ESEARCH UTF8=ACCEPT LIST-EXTENDED LIST-STATUS LITERAL- SPECIAL-USE APPENDLIMIT=35651584'
+  45:25.95 < b'MNHF1 OK tinmanmusicman@gmail.com authenticated (Success)'
+  45:25.95 > b'MNHF2 SELECT INBOX'
+  45:26.06 < b'* FLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing)'
+  45:26.06 < b'* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing \\*)] Flags permitted.'
+  45:26.06 < b'* OK [UIDVALIDITY 1] UIDs valid.'
+  45:26.06 < b'* 8705 EXISTS'
+  45:26.06 < b'* 0 RECENT'
+  45:26.06 < b'* OK [UIDNEXT 17277] Predicted next UID.'
+  45:26.06 < b'* OK [HIGHESTMODSEQ 2001223]'
+  45:26.06 < b'MNHF2 OK [READ-WRITE] INBOX selected. (Success)'
+Traceback (most recent call last):
+  File "C:\ChatGPT\Indeed\Indeed.py", line 375, in <module>
+    main()
+    ~~~~^^
+  File "C:\ChatGPT\Indeed\Indeed.py", line 343, in main
+    result = get_unread_email_body(cfg)
+  File "C:\ChatGPT\Indeed\Indeed.py", line 223, in get_unread_email_body
+    res_lbl, data_lbl = mail.uid("FETCH", uid, "(X-GM-LABELS)")
+                                          ^^^
+UnboundLocalError: cannot access local variable 'uid' where it is not associated with a value
+  50:25.80 imaplib version 2.60
+  50:25.80 new IMAP4 connection, tag=b'MHHH'
+  50:25.85 < b'* OK Gimap ready for requests from 98.173.62.74 41be03b00d2f7-bc6377a982amb100091081a12'
+  50:25.85 > b'MHHH0 CAPABILITY'
+  50:25.91 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER'
+  50:25.91 < b'MHHH0 OK Thats all she wrote! 41be03b00d2f7-bc6377a982amb100091081a12'
+  50:25.91 CAPABILITIES: ('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH2', 'AUTH=PLAIN', 'AUTH=PLAIN-CLIENTTOKEN', 'AUTH=OAUTHBEARER')
+  50:25.91 > b'MHHH1 LOGIN tinmanmusicman@gmail.com "jwhk piox dqnt jxqc"'
+  50:26.20 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 UIDPLUS COMPRESS=DEFLATE ENABLE MOVE CONDSTORE ESEARCH UTF8=ACCEPT LIST-EXTENDED LIST-STATUS LITERAL- SPECIAL-USE APPENDLIMIT=35651584'
+  50:26.20 < b'MHHH1 OK tinmanmusicman@gmail.com authenticated (Success)'
+  50:26.20 > b'MHHH2 SELECT INBOX'
+  50:26.40 < b'* FLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing)'
+  50:26.40 < b'* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing \\*)] Flags permitted.'
+  50:26.40 < b'* OK [UIDVALIDITY 1] UIDs valid.'
+  50:26.40 < b'* 8705 EXISTS'
+  50:26.40 < b'* 0 RECENT'
+  50:26.40 < b'* OK [UIDNEXT 17277] Predicted next UID.'
+  50:26.40 < b'* OK [HIGHESTMODSEQ 2001227]'
+  50:26.40 < b'MHHH2 OK [READ-WRITE] INBOX selected. (Success)'
+Traceback (most recent call last):
+  File "C:\ChatGPT\Indeed\Indeed.py", line 375, in <module>
+    main()
+    ~~~~^^
+  File "C:\ChatGPT\Indeed\Indeed.py", line 343, in main
+    result = get_unread_email_body(cfg)
+  File "C:\ChatGPT\Indeed\Indeed.py", line 223, in get_unread_email_body
+    res_lbl, data_lbl = mail.uid("FETCH", uid, "(X-GM-LABELS)")
+                                          ^^^
+UnboundLocalError: cannot access local variable 'uid' where it is not associated with a value
+  55:25.05 imaplib version 2.60
+  55:25.05 new IMAP4 connection, tag=b'JHEP'
+  55:25.11 < b'* OK Gimap ready for requests from 98.173.62.74 d2e1a72fcca58-7bcc241c47emb24792401b3a'
+  55:25.11 > b'JHEP0 CAPABILITY'
+  55:25.16 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER'
+  55:25.16 < b'JHEP0 OK Thats all she wrote! d2e1a72fcca58-7bcc241c47emb24792401b3a'
+  55:25.16 CAPABILITIES: ('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH2', 'AUTH=PLAIN', 'AUTH=PLAIN-CLIENTTOKEN', 'AUTH=OAUTHBEARER')
+  55:25.16 > b'JHEP1 LOGIN tinmanmusicman@gmail.com "jwhk piox dqnt jxqc"'
+  55:25.46 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 UIDPLUS COMPRESS=DEFLATE ENABLE MOVE CONDSTORE ESEARCH UTF8=ACCEPT LIST-EXTENDED LIST-STATUS LITERAL- SPECIAL-USE APPENDLIMIT=35651584'
+  55:25.46 < b'JHEP1 OK tinmanmusicman@gmail.com authenticated (Success)'
+  55:25.46 > b'JHEP2 SELECT INBOX'
+  55:25.61 < b'* FLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing)'
+  55:25.61 < b'* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing \\*)] Flags permitted.'
+  55:25.61 < b'* OK [UIDVALIDITY 1] UIDs valid.'
+  55:25.61 < b'* 8705 EXISTS'
+  55:25.61 < b'* 0 RECENT'
+  55:25.61 < b'* OK [UIDNEXT 17277] Predicted next UID.'
+  55:25.61 < b'* OK [HIGHESTMODSEQ 2001227]'
+  55:25.61 < b'JHEP2 OK [READ-WRITE] INBOX selected. (Success)'
+Traceback (most recent call last):
+  File "C:\ChatGPT\Indeed\Indeed.py", line 375, in <module>
+    main()
+    ~~~~^^
+  File "C:\ChatGPT\Indeed\Indeed.py", line 343, in main
+    result = get_unread_email_body(cfg)
+  File "C:\ChatGPT\Indeed\Indeed.py", line 223, in get_unread_email_body
+    res_lbl, data_lbl = mail.uid("FETCH", uid, "(X-GM-LABELS)")
+                                          ^^^
+UnboundLocalError: cannot access local variable 'uid' where it is not associated with a value
+  00:25.38 imaplib version 2.60
+  00:25.38 new IMAP4 connection, tag=b'CEFJ'
+  00:25.44 < b'* OK Gimap ready for requests from 98.173.62.74 d2e1a72fcca58-7b767f6dac5mb140326441b3a'
+  00:25.44 > b'CEFJ0 CAPABILITY'
+  00:25.49 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER'
+  00:25.49 < b'CEFJ0 OK Thats all she wrote! d2e1a72fcca58-7b767f6dac5mb140326441b3a'
+  00:25.49 CAPABILITIES: ('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH2', 'AUTH=PLAIN', 'AUTH=PLAIN-CLIENTTOKEN', 'AUTH=OAUTHBEARER')
+  00:25.49 > b'CEFJ1 LOGIN tinmanmusicman@gmail.com "jwhk piox dqnt jxqc"'
+  00:25.76 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 UIDPLUS COMPRESS=DEFLATE ENABLE MOVE CONDSTORE ESEARCH UTF8=ACCEPT LIST-EXTENDED LIST-STATUS LITERAL- SPECIAL-USE APPENDLIMIT=35651584'
+  00:25.76 < b'CEFJ1 OK tinmanmusicman@gmail.com authenticated (Success)'
+  00:25.76 > b'CEFJ2 SELECT INBOX'
+  00:25.88 < b'* FLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing)'
+  00:25.88 < b'* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing \\*)] Flags permitted.'
+  00:25.88 < b'* OK [UIDVALIDITY 1] UIDs valid.'
+  00:25.88 < b'* 8706 EXISTS'
+  00:25.88 < b'* 0 RECENT'
+  00:25.88 < b'* OK [UIDNEXT 17278] Predicted next UID.'
+  00:25.88 < b'* OK [HIGHESTMODSEQ 2001314]'
+  00:25.88 < b'CEFJ2 OK [READ-WRITE] INBOX selected. (Success)'
+  00:25.88 > b'CEFJ3 UID SEARCH X-GM-RAW "category:primary" UNSEEN'
+  00:25.99 < b'* SEARCH 17274 17277'
+  00:25.99 < b'CEFJ3 OK SEARCH completed (Success)'
+  00:25.99 > b'CEFJ4 FETCH 17274 (RFC822)'
+  00:26.07 < b'CEFJ4 OK Success'
+Traceback (most recent call last):
+  File "C:\ChatGPT\Indeed\Indeed.py", line 367, in <module>
+    main()
+    ~~~~^^
+  File "C:\ChatGPT\Indeed\Indeed.py", line 335, in main
+    result = get_unread_email_body(cfg)
+  File "C:\ChatGPT\Indeed\Indeed.py", line 242, in get_unread_email_body
+    raw = msg_data[0][1]
+          ~~~~~~~~~~~^^^
+TypeError: 'NoneType' object is not subscriptable
+  05:25.20 imaplib version 2.60
+  05:25.21 new IMAP4 connection, tag=b'EPML'
+  05:25.26 < b'* OK Gimap ready for requests from 98.173.62.74 616947a28c9db-68fe592718dmb126771576b6c'
+  05:25.26 > b'EPML0 CAPABILITY'
+  05:25.31 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER'
+  05:25.31 < b'EPML0 OK Thats all she wrote! 616947a28c9db-68fe592718dmb126771576b6c'
+  05:25.31 CAPABILITIES: ('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH2', 'AUTH=PLAIN', 'AUTH=PLAIN-CLIENTTOKEN', 'AUTH=OAUTHBEARER')
+  05:25.31 > b'EPML1 LOGIN tinmanmusicman@gmail.com "jwhk piox dqnt jxqc"'
+  05:25.49 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 UIDPLUS COMPRESS=DEFLATE ENABLE MOVE CONDSTORE ESEARCH UTF8=ACCEPT LIST-EXTENDED LIST-STATUS LITERAL- SPECIAL-USE APPENDLIMIT=35651584'
+  05:25.49 < b'EPML1 OK tinmanmusicman@gmail.com authenticated (Success)'
+  05:25.49 > b'EPML2 SELECT INBOX'
+  05:25.61 < b'* FLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing)'
+  05:25.61 < b'* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing \\*)] Flags permitted.'
+  05:25.61 < b'* OK [UIDVALIDITY 1] UIDs valid.'
+  05:25.61 < b'* 8708 EXISTS'
+  05:25.61 < b'* 0 RECENT'
+  05:25.61 < b'* OK [UIDNEXT 17280] Predicted next UID.'
+  05:25.61 < b'* OK [HIGHESTMODSEQ 2001508]'
+  05:25.61 < b'EPML2 OK [READ-WRITE] INBOX selected. (Success)'
+  05:25.61 > b'EPML3 UID SEARCH X-GM-RAW "category:primary" UNSEEN'
+  05:25.71 < b'* SEARCH 17277 17278'
+  05:25.71 < b'EPML3 OK SEARCH completed (Success)'
+  05:25.71 > b'EPML4 UID FETCH 17277 (RFC822)'
+  05:25.85 < b'* 8706 FETCH (UID 17277 RFC822 {68195}'
+  05:25.85 read literal size 68195
+  05:25.93 < b' FLAGS (\\Seen))'
+  05:26.03 < b'* 8706 FETCH (UID 17277 FLAGS (\\Seen))'
+  05:26.03 < b'EPML4 OK Success'
+  05:26.03 > b'EPML5 UID STORE 17277 +X-GM-LABELS (P)'
+  05:26.29 < b'* 8706 FETCH (X-GM-LABELS ("\\\\Important" P) UID 17277)'
+  05:26.30 < b'EPML5 OK Success'
+  05:26.30 > b'EPML6 LOGOUT'
+  05:26.37 < b'* BYE LOGOUT Requested'
+  05:26.37 BYE response: b'LOGOUT Requested'
+  05:46.73 imaplib version 2.60
+  05:46.73 new IMAP4 connection, tag=b'DBLO'
+  05:46.78 < b'* OK Gimap ready for requests from 98.173.62.74 616947a28c9db-68fe58f378fmb125051648b6c'
+  05:46.78 > b'DBLO0 CAPABILITY'
+  05:46.84 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER'
+  05:46.84 < b'DBLO0 OK Thats all she wrote! 616947a28c9db-68fe58f378fmb125051648b6c'
+  05:46.84 CAPABILITIES: ('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH2', 'AUTH=PLAIN', 'AUTH=PLAIN-CLIENTTOKEN', 'AUTH=OAUTHBEARER')
+  05:46.84 > b'DBLO1 LOGIN tinmanmusicman@gmail.com "jwhk piox dqnt jxqc"'
+  05:47.17 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 UIDPLUS COMPRESS=DEFLATE ENABLE MOVE CONDSTORE ESEARCH UTF8=ACCEPT LIST-EXTENDED LIST-STATUS LITERAL- SPECIAL-USE APPENDLIMIT=35651584'
+  05:47.17 < b'DBLO1 OK tinmanmusicman@gmail.com authenticated (Success)'
+  05:47.17 > b'DBLO2 SELECT INBOX'
+  05:47.29 < b'* FLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing)'
+  05:47.29 < b'* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing \\*)] Flags permitted.'
+  05:47.29 < b'* OK [UIDVALIDITY 1] UIDs valid.'
+  05:47.29 < b'* 8708 EXISTS'
+  05:47.29 < b'* 0 RECENT'
+  05:47.29 < b'* OK [UIDNEXT 17280] Predicted next UID.'
+  05:47.29 < b'* OK [HIGHESTMODSEQ 2001581]'
+  05:47.29 < b'DBLO2 OK [READ-WRITE] INBOX selected. (Success)'
+  05:47.29 > b'DBLO3 UID FETCH 17277 (X-GM-LABELS)'
+  05:47.38 < b'* 8706 FETCH (X-GM-LABELS ("\\\\Important" P) UID 17277)'
+  05:47.38 < b'DBLO3 OK Success'
+[INFO] Source email detected: donotreply@match.indeed.com
+[INFO] Line 159 AI extraction started…
+[INFO] AI request sent at 2025-11-14 14:05:26
+[INFO] AI response received at 2025-11-14 14:05:44
+[INFO] AI processing time: 18.397 seconds
+[INFO] AI extraction finished. 1 job(s).
+[OK] Appended 1 row(s).
+[DEBUG] CURRENT LABELS: OK [b'8706 (X-GM-LABELS ("\\\\Important" P) UID 17277)']
+>>> PAUSED — press Enter to continue...^C  05:25.26 imaplib version 2.60
+  05:25.26 new IMAP4 connection, tag=b'DAIL'
+  05:25.31 < b'* OK Gimap ready for requests from 98.173.62.74 d2e1a72fcca58-7b7677a769amb145767584b3a'
+  05:25.31 > b'DAIL0 CAPABILITY'
+  05:25.36 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER'
+  05:25.36 < b'DAIL0 OK Thats all she wrote! d2e1a72fcca58-7b7677a769amb145767584b3a'
+  05:25.36 CAPABILITIES: ('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH2', 'AUTH=PLAIN', 'AUTH=PLAIN-CLIENTTOKEN', 'AUTH=OAUTHBEARER')
+  05:25.36 > b'DAIL1 LOGIN tinmanmusicman@gmail.com "jwhk piox dqnt jxqc"'
+  05:25.53 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 UIDPLUS COMPRESS=DEFLATE ENABLE MOVE CONDSTORE ESEARCH UTF8=ACCEPT LIST-EXTENDED LIST-STATUS LITERAL- SPECIAL-USE APPENDLIMIT=35651584'
+  05:25.53 < b'DAIL1 OK tinmanmusicman@gmail.com authenticated (Success)'
+  05:25.53 > b'DAIL2 SELECT INBOX'
+  05:25.63 < b'* FLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing)'
+  05:25.63 < b'* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing \\*)] Flags permitted.'
+  05:25.63 < b'* OK [UIDVALIDITY 1] UIDs valid.'
+  05:25.63 < b'* 8704 EXISTS'
+  05:25.63 < b'* 0 RECENT'
+  05:25.63 < b'* OK [UIDNEXT 17286] Predicted next UID.'
+  05:25.63 < b'* OK [HIGHESTMODSEQ 2003137]'
+  05:25.63 < b'DAIL2 OK [READ-WRITE] INBOX selected. (Success)'
+  05:25.63 > b'DAIL3 UID SEARCH X-GM-RAW "category:primary" UNSEEN'
+  05:25.73 < b'* SEARCH 17285'
+  05:25.73 < b'DAIL3 OK SEARCH completed (Success)'
+  05:25.73 > b'DAIL4 UID FETCH 17285 (RFC822)'
+  05:25.81 < b'* 8704 FETCH (UID 17285 RFC822 {67346}'
+  05:25.81 read literal size 67346
+  05:25.88 < b' FLAGS (\\Seen))'
+  05:26.00 < b'* 8704 FETCH (UID 17285 FLAGS (\\Seen))'
+  05:26.00 < b'DAIL4 OK Success'
+  05:26.01 > b'DAIL5 UID STORE 17285 +X-GM-LABELS (Processed)'
+  05:26.25 < b'* 8704 FETCH (X-GM-LABELS ("\\\\Important" Processed) UID 17285)'
+  05:26.25 < b'DAIL5 OK Success'
+  05:26.25 > b'DAIL6 UID STORE 17285 -X-GM-LABELS (\\Inbox)'
+  05:26.36 < b'* 8704 FETCH (X-GM-LABELS ("\\\\Important" Processed) UID 17285)'
+  05:26.36 < b'DAIL6 OK Success'
+  05:26.36 > b'DAIL7 LOGOUT'
+  05:26.44 < b'* BYE LOGOUT Requested'
+  05:26.44 BYE response: b'LOGOUT Requested'
+  06:01.80 imaplib version 2.60
+  06:01.81 new IMAP4 connection, tag=b'KHAO'
+  06:01.86 < b'* OK Gimap ready for requests from 98.173.62.74 d2e1a72fcca58-7b7689264c3mb144777598b3a'
+  06:01.86 > b'KHAO0 CAPABILITY'
+  06:01.91 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER'
+  06:01.91 < b'KHAO0 OK Thats all she wrote! d2e1a72fcca58-7b7689264c3mb144777598b3a'
+  06:01.91 CAPABILITIES: ('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH2', 'AUTH=PLAIN', 'AUTH=PLAIN-CLIENTTOKEN', 'AUTH=OAUTHBEARER')
+  06:01.91 > b'KHAO1 LOGIN tinmanmusicman@gmail.com "jwhk piox dqnt jxqc"'
+  06:02.23 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 UIDPLUS COMPRESS=DEFLATE ENABLE MOVE CONDSTORE ESEARCH UTF8=ACCEPT LIST-EXTENDED LIST-STATUS LITERAL- SPECIAL-USE APPENDLIMIT=35651584'
+  06:02.23 < b'KHAO1 OK tinmanmusicman@gmail.com authenticated (Success)'
+  06:02.23 > b'KHAO2 SELECT INBOX'
+  06:02.36 < b'* FLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing)'
+  06:02.36 < b'* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing \\*)] Flags permitted.'
+  06:02.36 < b'* OK [UIDVALIDITY 1] UIDs valid.'
+  06:02.36 < b'* 8704 EXISTS'
+  06:02.36 < b'* 0 RECENT'
+  06:02.36 < b'* OK [UIDNEXT 17286] Predicted next UID.'
+  06:02.36 < b'* OK [HIGHESTMODSEQ 2003196]'
+  06:02.36 < b'KHAO2 OK [READ-WRITE] INBOX selected. (Success)'
+  06:02.36 > b'KHAO3 UID FETCH 17285 (X-GM-LABELS)'
+  06:02.45 < b'* 8704 FETCH (X-GM-LABELS ("\\\\Important" Processed) UID 17285)'
+  06:02.45 < b'KHAO3 OK Success'
+[INFO] Source email detected: tim.inman.2024@gmail.com
+[INFO] Line 159 AI extraction started…
+[INFO] AI request sent at 2025-11-14 15:05:26
+[INFO] AI response received at 2025-11-14 15:05:59
+[INFO] AI processing time: 32.878 seconds
+[INFO] AI extraction finished. 1 job(s).
+[OK] Appended 1 row(s).
+[DEBUG] CURRENT LABELS: OK [b'8704 (X-GM-LABELS ("\\\\Important" Processed) UID 17285)']
+>>> PAUSED — press Enter to continue...^C  05:25.35 imaplib version 2.60
+  05:25.35 new IMAP4 connection, tag=b'JCOG'
+  05:25.41 < b'* OK Gimap ready for requests from 98.173.62.74 d2e1a72fcca58-7b7677a7563mb147732311b3a'
+  05:25.41 > b'JCOG0 CAPABILITY'
+  05:25.46 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER'
+  05:25.46 < b'JCOG0 OK Thats all she wrote! d2e1a72fcca58-7b7677a7563mb147732311b3a'
+  05:25.46 CAPABILITIES: ('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH2', 'AUTH=PLAIN', 'AUTH=PLAIN-CLIENTTOKEN', 'AUTH=OAUTHBEARER')
+  05:25.46 > b'JCOG1 LOGIN tinmanmusicman@gmail.com "jwhk piox dqnt jxqc"'
+  05:26.00 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 UIDPLUS COMPRESS=DEFLATE ENABLE MOVE CONDSTORE ESEARCH UTF8=ACCEPT LIST-EXTENDED LIST-STATUS LITERAL- SPECIAL-USE APPENDLIMIT=35651584'
+  05:26.00 < b'JCOG1 OK tinmanmusicman@gmail.com authenticated (Success)'
+  05:26.00 > b'JCOG2 SELECT INBOX'
+  05:26.13 < b'* FLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing)'
+  05:26.13 < b'* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing \\*)] Flags permitted.'
+  05:26.13 < b'* OK [UIDVALIDITY 1] UIDs valid.'
+  05:26.13 < b'* 8704 EXISTS'
+  05:26.13 < b'* 0 RECENT'
+  05:26.13 < b'* OK [UIDNEXT 17291] Predicted next UID.'
+  05:26.13 < b'* OK [HIGHESTMODSEQ 2004228]'
+  05:26.13 < b'JCOG2 OK [READ-WRITE] INBOX selected. (Success)'
+  05:26.13 > b'JCOG3 UID SEARCH X-GM-RAW "category:primary" UNSEEN'
+  05:26.23 < b'* SEARCH'
+  05:26.23 < b'JCOG3 OK SEARCH completed (Success)'
+  05:26.23 > b'JCOG4 LOGOUT'
+  05:26.31 < b'* BYE LOGOUT Requested'
+  05:26.31 BYE response: b'LOGOUT Requested'
+[INFO] No email body found.
+  10:25.30 imaplib version 2.60
+  10:25.30 new IMAP4 connection, tag=b'GHEK'
+  10:25.35 < b'* OK Gimap ready for requests from 98.173.62.74 41be03b00d2f7-bbef6ce3f1cmb251574599a12'
+  10:25.35 > b'GHEK0 CAPABILITY'
+  10:25.41 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER'
+  10:25.41 < b'GHEK0 OK Thats all she wrote! 41be03b00d2f7-bbef6ce3f1cmb251574599a12'
+  10:25.41 CAPABILITIES: ('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH2', 'AUTH=PLAIN', 'AUTH=PLAIN-CLIENTTOKEN', 'AUTH=OAUTHBEARER')
+  10:25.41 > b'GHEK1 LOGIN tinmanmusicman@gmail.com "jwhk piox dqnt jxqc"'
+  10:25.82 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 UIDPLUS COMPRESS=DEFLATE ENABLE MOVE CONDSTORE ESEARCH UTF8=ACCEPT LIST-EXTENDED LIST-STATUS LITERAL- SPECIAL-USE APPENDLIMIT=35651584'
+  10:25.82 < b'GHEK1 OK tinmanmusicman@gmail.com authenticated (Success)'
+  10:25.82 > b'GHEK2 SELECT INBOX'
+  10:25.94 < b'* FLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing)'
+  10:25.94 < b'* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing \\*)] Flags permitted.'
+  10:25.94 < b'* OK [UIDVALIDITY 1] UIDs valid.'
+  10:25.94 < b'* 8704 EXISTS'
+  10:25.94 < b'* 0 RECENT'
+  10:25.94 < b'* OK [UIDNEXT 17291] Predicted next UID.'
+  10:25.94 < b'* OK [HIGHESTMODSEQ 2004228]'
+  10:25.94 < b'GHEK2 OK [READ-WRITE] INBOX selected. (Success)'
+  10:25.94 > b'GHEK3 UID SEARCH X-GM-RAW "category:primary" UNSEEN'
+  10:26.05 < b'* SEARCH'
+  10:26.05 < b'GHEK3 OK SEARCH completed (Success)'
+  10:26.05 > b'GHEK4 LOGOUT'
+  10:26.13 < b'* BYE LOGOUT Requested'
+  10:26.13 BYE response: b'LOGOUT Requested'
+[INFO] No email body found.
+  15:26.05 imaplib version 2.60
+  15:26.05 new IMAP4 connection, tag=b'GNGN'
+  15:26.09 < b'* OK Gimap ready for requests from 98.173.62.74 d2e1a72fcca58-7b896331f0dmb125786139b3a'
+  15:26.09 > b'GNGN0 CAPABILITY'
+  15:26.14 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER'
+  15:26.14 < b'GNGN0 OK Thats all she wrote! d2e1a72fcca58-7b896331f0dmb125786139b3a'
+  15:26.14 CAPABILITIES: ('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH2', 'AUTH=PLAIN', 'AUTH=PLAIN-CLIENTTOKEN', 'AUTH=OAUTHBEARER')
+  15:26.14 > b'GNGN1 LOGIN tinmanmusicman@gmail.com "jwhk piox dqnt jxqc"'
+  15:26.46 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 UIDPLUS COMPRESS=DEFLATE ENABLE MOVE CONDSTORE ESEARCH UTF8=ACCEPT LIST-EXTENDED LIST-STATUS LITERAL- SPECIAL-USE APPENDLIMIT=35651584'
+  15:26.46 < b'GNGN1 OK tinmanmusicman@gmail.com authenticated (Success)'
+  15:26.46 > b'GNGN2 SELECT INBOX'
+  15:26.58 < b'* FLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing)'
+  15:26.58 < b'* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing \\*)] Flags permitted.'
+  15:26.58 < b'* OK [UIDVALIDITY 1] UIDs valid.'
+  15:26.58 < b'* 8705 EXISTS'
+  15:26.58 < b'* 0 RECENT'
+  15:26.58 < b'* OK [UIDNEXT 17292] Predicted next UID.'
+  15:26.58 < b'* OK [HIGHESTMODSEQ 2004374]'
+  15:26.58 < b'GNGN2 OK [READ-WRITE] INBOX selected. (Success)'
+  15:26.58 > b'GNGN3 UID SEARCH X-GM-RAW "category:primary" UNSEEN'
+  15:26.70 < b'* SEARCH'
+  15:26.70 < b'GNGN3 OK SEARCH completed (Success)'
+  15:26.70 > b'GNGN4 LOGOUT'
+  15:26.78 < b'* BYE LOGOUT Requested'
+  15:26.78 BYE response: b'LOGOUT Requested'
+[INFO] No email body found.
+  20:26.73 imaplib version 2.60
+  20:26.73 new IMAP4 connection, tag=b'FPPN'
+  20:26.79 < b'* OK Gimap ready for requests from 98.173.62.74 d2e1a72fcca58-7b9e54ec934mb81614906b3a'
+  20:26.79 > b'FPPN0 CAPABILITY'
+  20:26.83 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER'
+  20:26.83 < b'FPPN0 OK Thats all she wrote! d2e1a72fcca58-7b9e54ec934mb81614906b3a'
+  20:26.83 CAPABILITIES: ('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH2', 'AUTH=PLAIN', 'AUTH=PLAIN-CLIENTTOKEN', 'AUTH=OAUTHBEARER')
+  20:26.83 > b'FPPN1 LOGIN tinmanmusicman@gmail.com "jwhk piox dqnt jxqc"'
+  20:27.01 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 UIDPLUS COMPRESS=DEFLATE ENABLE MOVE CONDSTORE ESEARCH UTF8=ACCEPT LIST-EXTENDED LIST-STATUS LITERAL- SPECIAL-USE APPENDLIMIT=35651584'
+  20:27.01 < b'FPPN1 OK tinmanmusicman@gmail.com authenticated (Success)'
+  20:27.01 > b'FPPN2 SELECT INBOX'
+  20:27.14 < b'* FLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing)'
+  20:27.14 < b'* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing \\*)] Flags permitted.'
+  20:27.14 < b'* OK [UIDVALIDITY 1] UIDs valid.'
+  20:27.14 < b'* 8705 EXISTS'
+  20:27.14 < b'* 0 RECENT'
+  20:27.14 < b'* OK [UIDNEXT 17293] Predicted next UID.'
+  20:27.14 < b'* OK [HIGHESTMODSEQ 2004516]'
+  20:27.14 < b'FPPN2 OK [READ-WRITE] INBOX selected. (Success)'
+  20:27.14 > b'FPPN3 UID SEARCH X-GM-RAW "category:primary" UNSEEN'
+  20:27.24 < b'* SEARCH 17292'
+  20:27.24 < b'FPPN3 OK SEARCH completed (Success)'
+  20:27.24 > b'FPPN4 UID FETCH 17292 (RFC822)'
+  20:27.33 < b'* 8705 FETCH (UID 17292 RFC822 {11340}'
+  20:27.33 read literal size 11340
+  20:27.34 < b' FLAGS (\\Seen))'
+  20:27.54 < b'* 8705 FETCH (UID 17292 FLAGS (\\Seen))'
+  20:27.54 < b'FPPN4 OK Success'
+  20:27.54 > b'FPPN5 UID COPY 17292 Processed'
+  20:27.82 < b'FPPN5 OK [COPYUID 17 17292 12] (Success)'
+  20:27.82 > b'FPPN6 UID STORE 17292 +FLAGS \\Deleted'
+  20:28.16 < b'* 8705 FETCH (FLAGS (\\Seen \\Deleted) UID 17292)'
+  20:28.16 < b'* 8705 EXPUNGE'
+  20:28.16 < b'* 8704 EXISTS'
+  20:28.16 < b'FPPN6 OK Success'
+  20:28.16 > b'FPPN7 EXPUNGE'
+  20:28.23 < b'FPPN7 OK Success'
+  20:28.23 > b'FPPN8 LOGOUT'
+  20:28.33 < b'* BYE LOGOUT Requested'
+  20:28.33 BYE response: b'LOGOUT Requested'
+[INFO] Not job-related.
+  25:25.40 imaplib version 2.60
+  25:25.40 new IMAP4 connection, tag=b'BDPH'
+  25:25.46 < b'* OK Gimap ready for requests from 98.173.62.74 d2e1a72fcca58-7b76bc0f728mb154886313b3a'
+  25:25.46 > b'BDPH0 CAPABILITY'
+  25:25.51 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER'
+  25:25.51 < b'BDPH0 OK Thats all she wrote! d2e1a72fcca58-7b76bc0f728mb154886313b3a'
+  25:25.51 CAPABILITIES: ('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH2', 'AUTH=PLAIN', 'AUTH=PLAIN-CLIENTTOKEN', 'AUTH=OAUTHBEARER')
+  25:25.51 > b'BDPH1 LOGIN tinmanmusicman@gmail.com "jwhk piox dqnt jxqc"'
+  25:25.86 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 UIDPLUS COMPRESS=DEFLATE ENABLE MOVE CONDSTORE ESEARCH UTF8=ACCEPT LIST-EXTENDED LIST-STATUS LITERAL- SPECIAL-USE APPENDLIMIT=35651584'
+  25:25.86 < b'BDPH1 OK tinmanmusicman@gmail.com authenticated (Success)'
+  25:25.86 > b'BDPH2 SELECT INBOX'
+  25:25.98 < b'* FLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing)'
+  25:25.98 < b'* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing \\*)] Flags permitted.'
+  25:25.98 < b'* OK [UIDVALIDITY 1] UIDs valid.'
+  25:25.98 < b'* 8704 EXISTS'
+  25:25.98 < b'* 0 RECENT'
+  25:25.98 < b'* OK [UIDNEXT 17293] Predicted next UID.'
+  25:25.98 < b'* OK [HIGHESTMODSEQ 2004582]'
+  25:25.98 < b'BDPH2 OK [READ-WRITE] INBOX selected. (Success)'
+  25:25.98 > b'BDPH3 UID SEARCH X-GM-RAW "category:primary" UNSEEN'
+  25:26.09 < b'* SEARCH'
+  25:26.09 < b'BDPH3 OK SEARCH completed (Success)'
+  25:26.09 > b'BDPH4 LOGOUT'
+  25:26.19 < b'* BYE LOGOUT Requested'
+  25:26.19 BYE response: b'LOGOUT Requested'
+[INFO] No email body found.
+  30:25.66 imaplib version 2.60
+  30:25.66 new IMAP4 connection, tag=b'INNO'
+  30:25.71 < b'* OK Gimap ready for requests from 98.173.62.74 41be03b00d2f7-bbef5207c00mb261149803a12'
+  30:25.71 > b'INNO0 CAPABILITY'
+  30:25.76 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER'
+  30:25.76 < b'INNO0 OK Thats all she wrote! 41be03b00d2f7-bbef5207c00mb261149803a12'
+  30:25.76 CAPABILITIES: ('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH2', 'AUTH=PLAIN', 'AUTH=PLAIN-CLIENTTOKEN', 'AUTH=OAUTHBEARER')
+  30:25.76 > b'INNO1 LOGIN tinmanmusicman@gmail.com "jwhk piox dqnt jxqc"'
+  30:26.10 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 UIDPLUS COMPRESS=DEFLATE ENABLE MOVE CONDSTORE ESEARCH UTF8=ACCEPT LIST-EXTENDED LIST-STATUS LITERAL- SPECIAL-USE APPENDLIMIT=35651584'
+  30:26.10 < b'INNO1 OK tinmanmusicman@gmail.com authenticated (Success)'
+  30:26.10 > b'INNO2 SELECT INBOX'
+  30:26.21 < b'* FLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing)'
+  30:26.21 < b'* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing \\*)] Flags permitted.'
+  30:26.21 < b'* OK [UIDVALIDITY 1] UIDs valid.'
+  30:26.21 < b'* 8705 EXISTS'
+  30:26.21 < b'* 0 RECENT'
+  30:26.21 < b'* OK [UIDNEXT 17294] Predicted next UID.'
+  30:26.21 < b'* OK [HIGHESTMODSEQ 2004717]'
+  30:26.21 < b'INNO2 OK [READ-WRITE] INBOX selected. (Success)'
+  30:26.21 > b'INNO3 UID SEARCH X-GM-RAW "category:primary" UNSEEN'
+  30:26.30 < b'* SEARCH'
+  30:26.30 < b'INNO3 OK SEARCH completed (Success)'
+  30:26.30 > b'INNO4 LOGOUT'
+  30:26.39 < b'* BYE LOGOUT Requested'
+  30:26.39 BYE response: b'LOGOUT Requested'
+[INFO] No email body found.
+  35:26.01 imaplib version 2.60
+  35:26.01 new IMAP4 connection, tag=b'KFFH'
+  35:26.06 < b'* OK Gimap ready for requests from 98.173.62.74 41be03b00d2f7-bbef5207904mb256667164a12'
+  35:26.06 > b'KFFH0 CAPABILITY'
+  35:26.11 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER'
+  35:26.11 < b'KFFH0 OK Thats all she wrote! 41be03b00d2f7-bbef5207904mb256667164a12'
+  35:26.11 CAPABILITIES: ('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH2', 'AUTH=PLAIN', 'AUTH=PLAIN-CLIENTTOKEN', 'AUTH=OAUTHBEARER')
+  35:26.11 > b'KFFH1 LOGIN tinmanmusicman@gmail.com "jwhk piox dqnt jxqc"'
+  35:26.44 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 UIDPLUS COMPRESS=DEFLATE ENABLE MOVE CONDSTORE ESEARCH UTF8=ACCEPT LIST-EXTENDED LIST-STATUS LITERAL- SPECIAL-USE APPENDLIMIT=35651584'
+  35:26.44 < b'KFFH1 OK tinmanmusicman@gmail.com authenticated (Success)'
+  35:26.44 > b'KFFH2 SELECT INBOX'
+  35:26.54 < b'* FLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing)'
+  35:26.54 < b'* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing \\*)] Flags permitted.'
+  35:26.54 < b'* OK [UIDVALIDITY 1] UIDs valid.'
+  35:26.54 < b'* 8704 EXISTS'
+  35:26.54 < b'* 0 RECENT'
+  35:26.54 < b'* OK [UIDNEXT 17294] Predicted next UID.'
+  35:26.54 < b'* OK [HIGHESTMODSEQ 2004833]'
+  35:26.54 < b'KFFH2 OK [READ-WRITE] INBOX selected. (Success)'
+  35:26.54 > b'KFFH3 UID SEARCH X-GM-RAW "category:primary" UNSEEN'
+  35:26.63 < b'* SEARCH'
+  35:26.63 < b'KFFH3 OK SEARCH completed (Success)'
+  35:26.63 > b'KFFH4 LOGOUT'
+  35:26.71 < b'* BYE LOGOUT Requested'
+  35:26.71 BYE response: b'LOGOUT Requested'
+[INFO] No email body found.
+  40:24.43 imaplib version 2.60
+  40:24.43 new IMAP4 connection, tag=b'CHIH'
+  40:24.48 < b'* OK Gimap ready for requests from 98.173.62.74 41be03b00d2f7-bbef662bbf6mb251540799a12'
+  40:24.48 > b'CHIH0 CAPABILITY'
+  40:24.54 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER'
+  40:24.54 < b'CHIH0 OK Thats all she wrote! 41be03b00d2f7-bbef662bbf6mb251540799a12'
+  40:24.54 CAPABILITIES: ('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH2', 'AUTH=PLAIN', 'AUTH=PLAIN-CLIENTTOKEN', 'AUTH=OAUTHBEARER')
+  40:24.54 > b'CHIH1 LOGIN tinmanmusicman@gmail.com "jwhk piox dqnt jxqc"'
+  40:24.86 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 UIDPLUS COMPRESS=DEFLATE ENABLE MOVE CONDSTORE ESEARCH UTF8=ACCEPT LIST-EXTENDED LIST-STATUS LITERAL- SPECIAL-USE APPENDLIMIT=35651584'
+  40:24.86 < b'CHIH1 OK tinmanmusicman@gmail.com authenticated (Success)'
+  40:24.86 > b'CHIH2 SELECT INBOX'
+  40:24.99 < b'* FLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing)'
+  40:24.99 < b'* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing \\*)] Flags permitted.'
+  40:24.99 < b'* OK [UIDVALIDITY 1] UIDs valid.'
+  40:24.99 < b'* 8705 EXISTS'
+  40:24.99 < b'* 0 RECENT'
+  40:24.99 < b'* OK [UIDNEXT 17295] Predicted next UID.'
+  40:24.99 < b'* OK [HIGHESTMODSEQ 2005000]'
+  40:24.99 < b'CHIH2 OK [READ-WRITE] INBOX selected. (Success)'
+  40:24.99 > b'CHIH3 UID SEARCH X-GM-RAW "category:primary" UNSEEN'
+  40:25.09 < b'* SEARCH 17294'
+  40:25.09 < b'CHIH3 OK SEARCH completed (Success)'
+  40:25.09 > b'CHIH4 UID FETCH 17294 (RFC822)'
+  40:25.18 < b'* 8705 FETCH (UID 17294 RFC822 {13686}'
+  40:25.18 read literal size 13686
+  40:25.19 < b' FLAGS (\\Seen))'
+  40:25.35 < b'* 8705 FETCH (UID 17294 FLAGS (\\Seen))'
+  40:25.35 < b'CHIH4 OK Success'
+  40:25.35 > b'CHIH5 UID STORE 17294 -FLAGS \\Seen'
+  40:25.63 < b'* 8705 FETCH (FLAGS () UID 17294)'
+  40:25.63 < b'* 8705 FETCH (UID 17294 FLAGS ())'
+  40:25.63 < b'CHIH5 OK Success'
+  40:25.63 > b'CHIH6 UID COPY 17294 NotRead'
+  40:25.90 < b'CHIH6 OK [COPYUID 16 17294 2] (Success)'
+  40:25.90 > b'CHIH7 UID STORE 17294 +FLAGS \\Deleted'
+  40:26.25 < b'* 8705 FETCH (FLAGS (\\Deleted) UID 17294)'
+  40:26.25 < b'* 8705 EXPUNGE'
+  40:26.25 < b'* 8704 EXISTS'
+  40:26.25 < b'CHIH7 OK Success'
+  40:26.25 > b'CHIH8 EXPUNGE'
+  40:26.33 < b'CHIH8 OK Success'
+[INFO] Not job-related.
+[INFO] No email body found.
