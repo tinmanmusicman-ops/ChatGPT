@@ -2459,3 +2459,1705 @@ C:\ChatGPT\Indeed\Indeed.py:291: SyntaxWarning: "\D" is an invalid escape sequen
 [INFO] No email body found.
 
 [INFO] Run finished. Processed 0 email(s).
+  10:24.87 imaplib version 2.60
+  10:24.87 new IMAP4 connection, tag=b'NFEL'
+  10:25.60 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  15:24.82 imaplib version 2.60
+  15:24.82 new IMAP4 connection, tag=b'ILEL'
+  15:25.60 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  20:24.87 imaplib version 2.60
+  20:24.87 new IMAP4 connection, tag=b'KGIJ'
+  20:25.55 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  25:24.84 imaplib version 2.60
+  25:24.84 new IMAP4 connection, tag=b'GOMF'
+  25:25.39 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  30:24.83 imaplib version 2.60
+  30:24.83 new IMAP4 connection, tag=b'FHJG'
+  30:25.62 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  35:24.80 imaplib version 2.60
+  35:24.80 new IMAP4 connection, tag=b'ILJP'
+  35:25.53 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  40:24.83 imaplib version 2.60
+  40:24.83 new IMAP4 connection, tag=b'BLNP'
+  40:25.53 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  45:24.86 imaplib version 2.60
+  45:24.86 new IMAP4 connection, tag=b'GNGO'
+  45:26.82 BYE response: b'LOGOUT Requested'
+  45:26.91 imaplib version 2.60
+  45:26.91 new IMAP4 connection, tag=b'IAFI'
+  45:29.20 BYE response: b'LOGOUT Requested'
+  45:29.28 imaplib version 2.60
+  45:29.28 new IMAP4 connection, tag=b'NFMI'
+  45:30.02 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+
+[INFO] Line 129 Calling extract_original_sender_from_body(body: str)
+[INFO] Line 154 Calling is_relevant_job_email(body: str)
+[INFO] Not job-related.
+[INFO] Skipping non-job or empty body from CalJOBS@edd.ca.gov.
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+
+[INFO] Line 129 Calling extract_original_sender_from_body(body: str)
+[INFO] Line 154 Calling is_relevant_job_email(body: str)
+[INFO] Not job-related.
+[INFO] Skipping non-job or empty body from CalJOBS@edd.ca.gov.
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 2 email(s).
+  50:24.87 imaplib version 2.60
+  50:24.87 new IMAP4 connection, tag=b'HAAI'
+  50:25.59 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  55:24.90 imaplib version 2.60
+  55:24.90 new IMAP4 connection, tag=b'IIAI'
+  55:25.59 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  00:24.92 imaplib version 2.60
+  00:24.92 new IMAP4 connection, tag=b'LDGG'
+  00:25.49 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  05:24.97 imaplib version 2.60
+  05:24.97 new IMAP4 connection, tag=b'IOMO'
+  05:25.58 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  10:24.92 imaplib version 2.60
+  10:24.92 new IMAP4 connection, tag=b'DPLH'
+  10:25.65 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  15:24.96 imaplib version 2.60
+  15:24.96 new IMAP4 connection, tag=b'CKGL'
+  15:25.71 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  20:25.24 imaplib version 2.60
+  20:25.24 new IMAP4 connection, tag=b'IPBB'
+  20:25.95 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  25:24.93 imaplib version 2.60
+  25:24.93 new IMAP4 connection, tag=b'GFEL'
+  25:25.67 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  30:24.95 imaplib version 2.60
+  30:24.95 new IMAP4 connection, tag=b'DCBK'
+  30:25.61 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  35:24.98 imaplib version 2.60
+  35:24.98 new IMAP4 connection, tag=b'OJJJ'
+  35:25.63 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  40:25.01 imaplib version 2.60
+  40:25.01 new IMAP4 connection, tag=b'PMCF'
+  40:25.71 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  45:24.98 imaplib version 2.60
+  45:24.98 new IMAP4 connection, tag=b'MLCJ'
+  45:26.46 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  50:24.99 imaplib version 2.60
+  50:24.99 new IMAP4 connection, tag=b'FIEK'
+  50:25.59 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  55:25.08 imaplib version 2.60
+  55:25.08 new IMAP4 connection, tag=b'DEDA'
+  55:27.14 BYE response: b'LOGOUT Requested'
+  55:27.23 imaplib version 2.60
+  55:27.23 new IMAP4 connection, tag=b'JBJF'
+  55:27.90 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+
+[INFO] Line 129 Calling extract_original_sender_from_body(body: str)
+[INFO] Line 154 Calling is_relevant_job_email(body: str)
+[INFO] Not job-related.
+[INFO] Skipping non-job or empty body from noreply@glassdoor.com.
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 1 email(s).
+  00:25.05 imaplib version 2.60
+  00:25.05 new IMAP4 connection, tag=b'OMPB'
+  00:25.75 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  05:25.09 imaplib version 2.60
+  05:25.09 new IMAP4 connection, tag=b'HDIE'
+  05:25.86 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  10:25.02 imaplib version 2.60
+  10:25.02 new IMAP4 connection, tag=b'DHKL'
+  10:27.01 BYE response: b'LOGOUT Requested'
+  10:27.09 imaplib version 2.60
+  10:27.09 new IMAP4 connection, tag=b'DFOC'
+  10:27.83 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+
+[INFO] Line 129 Calling extract_original_sender_from_body(body: str)
+[INFO] Line 154 Calling is_relevant_job_email(body: str)
+[INFO] Not job-related.
+[INFO] Skipping non-job or empty body from noreply@redditmail.com.
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 1 email(s).
+  15:25.04 imaplib version 2.60
+  15:25.04 new IMAP4 connection, tag=b'FJDD'
+  15:25.78 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  20:25.09 imaplib version 2.60
+  20:25.09 new IMAP4 connection, tag=b'CLHL'
+  20:25.69 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  25:25.05 imaplib version 2.60
+  25:25.05 new IMAP4 connection, tag=b'NIIM'
+  25:25.83 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  30:25.02 imaplib version 2.60
+  30:25.02 new IMAP4 connection, tag=b'GCOK'
+  30:25.63 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  35:25.02 imaplib version 2.60
+  35:25.02 new IMAP4 connection, tag=b'BEGP'
+  35:25.66 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  40:25.03 imaplib version 2.60
+  40:25.03 new IMAP4 connection, tag=b'PLPE'
+  40:25.63 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  45:25.03 imaplib version 2.60
+  45:25.03 new IMAP4 connection, tag=b'CJCM'
+  45:25.58 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  50:25.05 imaplib version 2.60
+  50:25.05 new IMAP4 connection, tag=b'FLLE'
+  50:25.94 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  55:25.07 imaplib version 2.60
+  55:25.07 new IMAP4 connection, tag=b'LBEK'
+  55:25.76 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  00:25.10 imaplib version 2.60
+  00:25.10 new IMAP4 connection, tag=b'HEGC'
+  00:25.84 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  05:25.11 imaplib version 2.60
+  05:25.11 new IMAP4 connection, tag=b'GEHI'
+  05:25.83 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  10:25.09 imaplib version 2.60
+  10:25.09 new IMAP4 connection, tag=b'GLAK'
+  10:25.66 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  15:25.09 imaplib version 2.60
+  15:25.09 new IMAP4 connection, tag=b'DKBN'
+  15:26.15 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  20:25.11 imaplib version 2.60
+  20:25.11 new IMAP4 connection, tag=b'DIGC'
+  20:25.66 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  25:25.13 imaplib version 2.60
+  25:25.13 new IMAP4 connection, tag=b'MGIF'
+  25:25.75 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  30:25.16 imaplib version 2.60
+  30:25.16 new IMAP4 connection, tag=b'DLIA'
+  30:25.84 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  35:25.16 imaplib version 2.60
+  35:25.16 new IMAP4 connection, tag=b'CAFA'
+  35:25.86 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  40:25.16 imaplib version 2.60
+  40:25.16 new IMAP4 connection, tag=b'OGCN'
+  40:25.85 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  45:25.17 imaplib version 2.60
+  45:25.17 new IMAP4 connection, tag=b'FONN'
+  45:25.76 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  50:25.16 imaplib version 2.60
+  50:25.16 new IMAP4 connection, tag=b'POAI'
+  50:25.84 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  55:25.19 imaplib version 2.60
+  55:25.19 new IMAP4 connection, tag=b'KLCO'
+  55:25.76 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  00:25.62 imaplib version 2.60
+  00:25.62 new IMAP4 connection, tag=b'FJOA'
+  00:26.25 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  05:25.21 imaplib version 2.60
+  05:25.21 new IMAP4 connection, tag=b'GDHK'
+  05:25.98 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  10:25.21 imaplib version 2.60
+  10:25.21 new IMAP4 connection, tag=b'EHFB'
+  10:25.94 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  15:25.20 imaplib version 2.60
+  15:25.20 new IMAP4 connection, tag=b'DIJA'
+  15:25.94 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  20:25.27 imaplib version 2.60
+  20:25.27 new IMAP4 connection, tag=b'DMLM'
+  20:26.08 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  25:25.22 imaplib version 2.60
+  25:25.22 new IMAP4 connection, tag=b'KLPJ'
+  25:25.81 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  30:25.24 imaplib version 2.60
+  30:25.24 new IMAP4 connection, tag=b'IOPK'
+  30:26.07 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  35:25.25 imaplib version 2.60
+  35:25.25 new IMAP4 connection, tag=b'GPMI'
+  35:25.86 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  40:25.26 imaplib version 2.60
+  40:25.26 new IMAP4 connection, tag=b'BOJG'
+  40:25.85 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  45:25.27 imaplib version 2.60
+  45:25.27 new IMAP4 connection, tag=b'KFLO'
+  45:25.85 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  50:24.26 imaplib version 2.60
+  50:24.26 new IMAP4 connection, tag=b'LJAD'
+  50:24.87 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  55:24.28 imaplib version 2.60
+  55:24.28 new IMAP4 connection, tag=b'JMDI'
+  55:25.01 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  00:24.30 imaplib version 2.60
+  00:24.30 new IMAP4 connection, tag=b'DBJD'
+  00:24.97 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  05:24.30 imaplib version 2.60
+  05:24.30 new IMAP4 connection, tag=b'LNLB'
+  05:25.02 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  10:24.32 imaplib version 2.60
+  10:24.32 new IMAP4 connection, tag=b'HKFI'
+  10:24.98 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  15:24.32 imaplib version 2.60
+  15:24.32 new IMAP4 connection, tag=b'OBJD'
+  15:24.87 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  20:24.42 imaplib version 2.60
+  20:24.42 new IMAP4 connection, tag=b'ELGK'
+  20:25.14 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  25:24.33 imaplib version 2.60
+  25:24.33 new IMAP4 connection, tag=b'IPGK'
+  25:25.06 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  30:24.34 imaplib version 2.60
+  30:24.34 new IMAP4 connection, tag=b'FEDJ'
+  30:24.97 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  35:24.36 imaplib version 2.60
+  35:24.36 new IMAP4 connection, tag=b'NOKJ'
+  35:24.98 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  40:24.36 imaplib version 2.60
+  40:24.36 new IMAP4 connection, tag=b'GGHP'
+  40:24.97 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  45:24.36 imaplib version 2.60
+  45:24.36 new IMAP4 connection, tag=b'BPJG'
+  45:24.94 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  50:24.39 imaplib version 2.60
+  50:24.39 new IMAP4 connection, tag=b'GKOE'
+  50:25.08 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  55:24.51 imaplib version 2.60
+  55:24.51 new IMAP4 connection, tag=b'DPDC'
+  55:25.28 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  00:24.37 imaplib version 2.60
+  00:24.37 new IMAP4 connection, tag=b'KBGE'
+  00:24.96 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  05:24.39 imaplib version 2.60
+  05:24.39 new IMAP4 connection, tag=b'EHKL'
+  05:25.08 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  10:24.39 imaplib version 2.60
+  10:24.39 new IMAP4 connection, tag=b'PMHI'
+  10:25.09 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  15:24.40 imaplib version 2.60
+  15:24.40 new IMAP4 connection, tag=b'ILCI'
+  15:25.11 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  20:24.50 imaplib version 2.60
+  20:24.50 new IMAP4 connection, tag=b'BBDP'
+  20:25.12 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  25:24.39 imaplib version 2.60
+  25:24.39 new IMAP4 connection, tag=b'IEIH'
+  25:25.06 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  30:24.40 imaplib version 2.60
+  30:24.40 new IMAP4 connection, tag=b'GGGC'
+  30:25.07 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  35:24.41 imaplib version 2.60
+  35:24.41 new IMAP4 connection, tag=b'KECI'
+  35:24.96 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  40:24.41 imaplib version 2.60
+  40:24.42 new IMAP4 connection, tag=b'DHBA'
+  40:25.07 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  45:24.44 imaplib version 2.60
+  45:24.44 new IMAP4 connection, tag=b'FKFF'
+  45:25.01 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  50:24.45 imaplib version 2.60
+  50:24.45 new IMAP4 connection, tag=b'MGCI'
+  50:25.13 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  55:24.45 imaplib version 2.60
+  55:24.45 new IMAP4 connection, tag=b'DONF'
+  55:25.08 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  00:24.46 imaplib version 2.60
+  00:24.46 new IMAP4 connection, tag=b'DCHM'
+  00:25.22 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  05:24.49 imaplib version 2.60
+  05:24.49 new IMAP4 connection, tag=b'OMLH'
+  05:25.21 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  10:24.46 imaplib version 2.60
+  10:24.46 new IMAP4 connection, tag=b'MHKJ'
+  10:25.00 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  15:24.48 imaplib version 2.60
+  15:24.48 new IMAP4 connection, tag=b'BCDJ'
+  15:25.09 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  20:24.47 imaplib version 2.60
+  20:24.47 new IMAP4 connection, tag=b'EKGO'
+  20:25.17 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  25:25.25 imaplib version 2.60
+  25:25.26 new IMAP4 connection, tag=b'JMBH'
+  25:26.00 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  30:25.20 imaplib version 2.60
+  30:25.20 new IMAP4 connection, tag=b'CLFH'
+  30:25.86 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  35:25.29 imaplib version 2.60
+  35:25.29 new IMAP4 connection, tag=b'CPPG'
+  35:25.97 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  40:24.59 imaplib version 2.60
+  40:24.59 new IMAP4 connection, tag=b'JIOA'
+  40:25.25 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  45:24.54 imaplib version 2.60
+  45:24.54 new IMAP4 connection, tag=b'JPED'
+  45:25.11 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  50:24.57 imaplib version 2.60
+  50:24.57 new IMAP4 connection, tag=b'MPBI'
+  50:25.14 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  55:24.55 imaplib version 2.60
+  55:24.55 new IMAP4 connection, tag=b'LEIG'
+  55:25.19 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  00:25.01 imaplib version 2.60
+  00:25.01 new IMAP4 connection, tag=b'OFBO'
+  00:25.59 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  05:24.58 imaplib version 2.60
+  05:24.58 new IMAP4 connection, tag=b'CJPC'
+  05:25.18 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  10:24.58 imaplib version 2.60
+  10:24.58 new IMAP4 connection, tag=b'OEPM'
+  10:25.24 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  15:24.59 imaplib version 2.60
+  15:24.59 new IMAP4 connection, tag=b'KLIO'
+  15:25.24 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  20:24.61 imaplib version 2.60
+  20:24.61 new IMAP4 connection, tag=b'IOPJ'
+  20:25.22 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  25:24.61 imaplib version 2.60
+  25:24.61 new IMAP4 connection, tag=b'GAJH'
+  25:25.18 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  30:24.62 imaplib version 2.60
+  30:24.62 new IMAP4 connection, tag=b'LMDA'
+  30:25.32 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  35:24.64 imaplib version 2.60
+  35:24.64 new IMAP4 connection, tag=b'HLHH'
+  35:25.28 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  40:24.62 imaplib version 2.60
+  40:24.62 new IMAP4 connection, tag=b'GNEC'
+  40:25.20 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  45:24.64 imaplib version 2.60
+  45:24.64 new IMAP4 connection, tag=b'GMKA'
+  45:25.35 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  50:24.68 imaplib version 2.60
+  50:24.68 new IMAP4 connection, tag=b'JNHM'
+  50:25.40 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  55:24.67 imaplib version 2.60
+  55:24.67 new IMAP4 connection, tag=b'JKKA'
+  55:25.41 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  00:24.72 imaplib version 2.60
+  00:24.72 new IMAP4 connection, tag=b'MIGH'
+  00:25.31 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  05:24.71 imaplib version 2.60
+  05:24.71 new IMAP4 connection, tag=b'JNON'
+  05:25.31 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  10:24.72 imaplib version 2.60
+  10:24.72 new IMAP4 connection, tag=b'PAIB'
+  10:25.29 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  15:24.69 imaplib version 2.60
+  15:24.69 new IMAP4 connection, tag=b'MIDJ'
+  15:25.37 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  20:24.70 imaplib version 2.60
+  20:24.70 new IMAP4 connection, tag=b'LPIP'
+  20:25.40 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  25:24.73 imaplib version 2.60
+  25:24.73 new IMAP4 connection, tag=b'PKJE'
+  25:25.52 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  30:24.72 imaplib version 2.60
+  30:24.72 new IMAP4 connection, tag=b'BFBD'
+  30:25.45 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  35:24.79 imaplib version 2.60
+  35:24.79 new IMAP4 connection, tag=b'PNAC'
+  35:25.35 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  40:24.78 imaplib version 2.60
+  40:24.78 new IMAP4 connection, tag=b'BEHK'
+  40:25.76 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  45:24.74 imaplib version 2.60
+  45:24.74 new IMAP4 connection, tag=b'EJBK'
+  45:25.31 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  50:24.74 imaplib version 2.60
+  50:24.74 new IMAP4 connection, tag=b'COCN'
+  50:25.48 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  55:24.75 imaplib version 2.60
+  55:24.75 new IMAP4 connection, tag=b'EMML'
+  55:25.51 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  00:24.78 imaplib version 2.60
+  00:24.78 new IMAP4 connection, tag=b'MFNE'
+  00:25.53 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  05:24.81 imaplib version 2.60
+  05:24.81 new IMAP4 connection, tag=b'DCDE'
+  05:26.64 BYE response: b'LOGOUT Requested'
+  05:26.73 imaplib version 2.60
+  05:26.73 new IMAP4 connection, tag=b'IJCF'
+  05:27.39 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+
+[INFO] Line 129 Calling extract_original_sender_from_body(body: str)
+[INFO] Line 154 Calling is_relevant_job_email(body: str)
+[INFO] Not job-related.
+[INFO] Skipping non-job or empty body from newsletters@e.wmtw.com.
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 1 email(s).
+  10:24.84 imaplib version 2.60
+  10:24.84 new IMAP4 connection, tag=b'IAAA'
+  10:25.58 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  15:24.79 imaplib version 2.60
+  15:24.79 new IMAP4 connection, tag=b'PMHB'
+  15:25.51 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  20:24.83 imaplib version 2.60
+  20:24.83 new IMAP4 connection, tag=b'MPMK'
+  20:25.51 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  25:24.83 imaplib version 2.60
+  25:24.83 new IMAP4 connection, tag=b'IMND'
+  25:25.57 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  30:24.82 imaplib version 2.60
+  30:24.82 new IMAP4 connection, tag=b'JKIC'
+  30:25.45 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  35:24.82 imaplib version 2.60
+  35:24.82 new IMAP4 connection, tag=b'JEJG'
+  35:25.55 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  40:24.84 imaplib version 2.60
+  40:24.84 new IMAP4 connection, tag=b'CPCO'
+  40:25.57 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  45:24.88 imaplib version 2.60
+  45:24.88 new IMAP4 connection, tag=b'KECB'
+  45:25.59 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  50:24.83 imaplib version 2.60
+  50:24.83 new IMAP4 connection, tag=b'IBNA'
+  50:25.61 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  55:24.84 imaplib version 2.60
+  55:24.84 new IMAP4 connection, tag=b'GNOC'
+  55:25.45 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  00:24.86 imaplib version 2.60
+  00:24.86 new IMAP4 connection, tag=b'DAHK'
+  00:25.41 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  05:24.88 imaplib version 2.60
+  05:24.88 new IMAP4 connection, tag=b'JCDJ'
+  05:25.47 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  10:24.85 imaplib version 2.60
+  10:24.85 new IMAP4 connection, tag=b'LBNO'
+  10:25.41 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  15:24.89 imaplib version 2.60
+  15:24.89 new IMAP4 connection, tag=b'MAAF'
+  15:25.58 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  20:24.98 imaplib version 2.60
+  20:24.98 new IMAP4 connection, tag=b'HNGJ'
+  20:25.70 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  25:24.91 imaplib version 2.60
+  25:24.91 new IMAP4 connection, tag=b'DICL'
+  25:25.61 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  30:24.90 imaplib version 2.60
+  30:24.90 new IMAP4 connection, tag=b'ELFI'
+  30:25.61 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  35:24.89 imaplib version 2.60
+  35:24.89 new IMAP4 connection, tag=b'OPIG'
+  35:25.71 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  40:24.91 imaplib version 2.60
+  40:24.91 new IMAP4 connection, tag=b'DKOO'
+  40:25.49 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  45:24.92 imaplib version 2.60
+  45:24.92 new IMAP4 connection, tag=b'BFHI'
+  45:25.53 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  50:24.93 imaplib version 2.60
+  50:24.93 new IMAP4 connection, tag=b'DHFC'
+  50:25.63 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  55:24.94 imaplib version 2.60
+  55:24.94 new IMAP4 connection, tag=b'DIEN'
+  55:25.56 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  00:25.36 imaplib version 2.60
+  00:25.36 new IMAP4 connection, tag=b'NPLK'
+  00:26.10 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  05:24.95 imaplib version 2.60
+  05:24.95 new IMAP4 connection, tag=b'DDJP'
+  05:26.07 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  10:24.96 imaplib version 2.60
+  10:24.96 new IMAP4 connection, tag=b'BBCH'
+  10:25.71 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  15:24.95 imaplib version 2.60
+  15:24.95 new IMAP4 connection, tag=b'FLEC'
+  15:25.67 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  20:24.98 imaplib version 2.60
+  20:24.98 new IMAP4 connection, tag=b'JHKJ'
+  20:26.82 BYE response: b'LOGOUT Requested'
+  20:26.91 imaplib version 2.60
+  20:26.91 new IMAP4 connection, tag=b'IOMG'
+  20:27.60 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+
+[INFO] Line 129 Calling extract_original_sender_from_body(body: str)
+[INFO] Line 154 Calling is_relevant_job_email(body: str)
+[INFO] Not job-related.
+[INFO] Skipping non-job or empty body from kate.clements@higherhiremail.com.
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 1 email(s).
+  25:24.99 imaplib version 2.60
+  25:24.99 new IMAP4 connection, tag=b'PNEJ'
+  25:25.57 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  30:25.00 imaplib version 2.60
+  30:25.00 new IMAP4 connection, tag=b'PKAP'
+  30:25.64 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  35:24.99 imaplib version 2.60
+  35:24.99 new IMAP4 connection, tag=b'DLDA'
+  35:25.83 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  40:24.99 imaplib version 2.60
+  40:24.99 new IMAP4 connection, tag=b'BEBH'
+  40:25.70 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  45:25.00 imaplib version 2.60
+  45:25.00 new IMAP4 connection, tag=b'NADI'
+  45:25.77 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  50:25.02 imaplib version 2.60
+  50:25.02 new IMAP4 connection, tag=b'JMEO'
+  50:25.74 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  55:25.02 imaplib version 2.60
+  55:25.02 new IMAP4 connection, tag=b'GGFP'
+  55:25.58 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  00:25.03 imaplib version 2.60
+  00:25.03 new IMAP4 connection, tag=b'ODBJ'
+  00:25.76 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  05:25.08 imaplib version 2.60
+  05:25.08 new IMAP4 connection, tag=b'DLAO'
+  05:25.67 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  10:25.09 imaplib version 2.60
+  10:25.09 new IMAP4 connection, tag=b'BPLC'
+  10:26.84 BYE response: b'LOGOUT Requested'
+  11:17.18 imaplib version 2.60
+  11:17.18 new IMAP4 connection, tag=b'NIEI'
+  11:17.74 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+
+[INFO] Line 129 Calling extract_original_sender_from_body(body: str)
+[INFO] Line 154 Calling is_relevant_job_email(body: str)
+[INFO] Source email detected: jobalerts-noreply@linkedin.com
+
+[INFO] Line 167 AI extraction started…
+[INFO] AI request sent at 2025-11-15 09:10:26
+
+[INFO] Calling get_openai_client(cfg
+[INFO] AI response received at 2025-11-15 09:11:14
+[INFO] AI processing time: 48.136 seconds
+[INFO] AI extraction finished. 4 job(s).
+
+[INFO] Line 319 Calling append_jobs_to_sheet
+
+[INFO] Line 309 Calling get_gsheet_worksheet(cfg)
+[OK] Appended 4 row(s).
+[OK] Done.
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+
+[INFO] Run finished. Processed 1 email(s).
+  15:25.17 imaplib version 2.60
+  15:25.17 new IMAP4 connection, tag=b'DHKO'
+  15:25.84 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  20:25.13 imaplib version 2.60
+  20:25.13 new IMAP4 connection, tag=b'DKEB'
+  20:25.69 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  25:25.28 imaplib version 2.60
+  25:25.28 new IMAP4 connection, tag=b'BDIH'
+  25:25.84 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  30:25.20 imaplib version 2.60
+  30:25.20 new IMAP4 connection, tag=b'BEKJ'
+  30:25.90 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  35:25.19 imaplib version 2.60
+  35:25.19 new IMAP4 connection, tag=b'HGKP'
+  35:25.90 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
