@@ -6,7 +6,7 @@ from email.utils import parseaddr
 from datetime import datetime
 from openai import OpenAI
 import time
-imaplib.Debug = 4
+imaplib.Debug = 1
 base_dir = Path(__file__).resolve().parent
 os.chdir(base_dir)
 
@@ -88,15 +88,20 @@ If there is not enough information to say anything meaningful about the company,
 
 """
 
+
 def load_config():
     return json.loads((base_dir / "config.json").read_text())
 
 def get_openai_client(cfg):
+    print(f"\n[INFO] Calling get_openai_client(cfg")
+ 
     api_key = cfg.get("openai_api_key") or os.getenv("OPENAI_API_KEY")
     return OpenAI(api_key=api_key)
 
-
+#    print(f"[INFO] Line {inspect.currentframe().f_lineno} AI extraction started…")
+ 
 def mark_email_as_read(cfg, uid):
+    print(f"\n[INFO]  Line {inspect.currentframe().f_lineno} Calling mark_email_as_read(cfg, uid)")
     try:
         mail = imaplib.IMAP4_SSL("imap.gmail.com")
         mail.login(cfg["gmail_user"], cfg["gmail_app_password"])
@@ -118,9 +123,11 @@ def mark_email_as_read(cfg, uid):
     except Exception as e:
         print(f"[WARN] Could not mark {uid} read: {e}")
  
- 
+ #  print(f"[INFO] Calling ")
 
 def extract_original_sender_from_body(body: str) -> str | None:
+    print(f"\n[INFO] Line {inspect.currentframe().f_lineno} Calling extract_original_sender_from_body(body: str)")
+
     """
     Try to detect the original sender in a forwarded email body.
 
@@ -144,6 +151,7 @@ def extract_original_sender_from_body(body: str) -> str | None:
     return email_addr.strip()
 
 def is_relevant_job_email(body: str) -> bool:
+    print(f"[INFO] Line {inspect.currentframe().f_lineno} Calling is_relevant_job_email(body: str)")  
     if not body:
         return False
     text = body.lower()
@@ -156,7 +164,7 @@ def is_relevant_job_email(body: str) -> bool:
     return True
 
 def extract_jobs_from_email(body, cfg):
-    print(f"[INFO] Line {inspect.currentframe().f_lineno} AI extraction started…")
+    print(f"\n[INFO] Line {inspect.currentframe().f_lineno} AI extraction started…")
     ai_start = time.time()
     ai_start_timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     print(f"[INFO] AI request sent at {ai_start_timestamp}")
@@ -216,6 +224,8 @@ def extract_jobs_from_email(body, cfg):
 
 
 def get_unread_email_body(cfg):
+    print(f"\n[INFO] Line {inspect.currentframe().f_lineno} Calling get_unread_email_body(cfg)")
+    
     mail = imaplib.IMAP4_SSL("imap.gmail.com")
     mail.login(cfg["gmail_user"], cfg["gmail_app_password"])
     mail.select("INBOX")
@@ -276,9 +286,9 @@ def get_unread_email_body(cfg):
 
     if not is_relevant_job_email(body):
         print("[INFO] Not job-related.")
-        mail.uid("STORE", uid, "-FLAGS", "\Seen")
+        mail.uid("STORE", uid, "-FLAGS", "\\Seen")
         mail.uid("COPY", uid, "NotRead")
-        mail.uid("STORE", uid, "+FLAGS", "\Deleted")
+        mail.uid("STORE", uid, "+FLAGS", "\\Deleted")
         mail.expunge()
         # Logout cleanly before returning to caller
         mail.logout()
@@ -296,6 +306,8 @@ def get_unread_email_body(cfg):
 # end of copy email
 
 def get_gsheet_worksheet(cfg):
+    print(f"\n[INFO] Line {inspect.currentframe().f_lineno} Calling get_gsheet_worksheet(cfg)")
+
     sa=base_dir/cfg.get("service_account_json","sa_key.json")
     scopes=["https://www.googleapis.com/auth/spreadsheets","https://www.googleapis.com/auth/drive"]
     creds=Credentials.from_service_account_file(str(sa),scopes=scopes)
@@ -304,6 +316,7 @@ def get_gsheet_worksheet(cfg):
     return sh.worksheet(cfg["worksheet_name"])
 
 def append_jobs_to_sheet(jobs,cfg,from_email,elapsed):
+    print(f"\n[INFO] Line {inspect.currentframe().f_lineno} Calling append_jobs_to_sheet")
 
     ws=get_gsheet_worksheet(cfg)
     ts=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -338,6 +351,8 @@ def append_jobs_to_sheet(jobs,cfg,from_email,elapsed):
 
 
 def main():
+    print(f"\n[INFO] Line {inspect.currentframe().f_lineno} calling main process")
+
     cfg = load_config()
 
     # Debug mode: use a saved email body from file, process once, and exit.
@@ -415,7 +430,7 @@ def main():
         processed_any = True
         processed_count += 1
 
-    print(f"[INFO] Run finished. Processed {processed_count} email(s).")
+    print(f"\n[INFO] Run finished. Processed {processed_count} email(s).")
 
 if __name__=="__main__":
     main()

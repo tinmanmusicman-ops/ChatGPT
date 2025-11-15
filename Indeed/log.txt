@@ -1566,3 +1566,896 @@ TypeError: 'NoneType' object is not subscriptable
   40:26.33 < b'CHIH8 OK Success'
 [INFO] Not job-related.
 [INFO] No email body found.
+C:\ChatGPT\Indeed\Indeed.py:279: SyntaxWarning: "\S" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\S"? A raw string is also an option.
+  mail.uid("STORE", uid, "-FLAGS", "\Seen")
+C:\ChatGPT\Indeed\Indeed.py:281: SyntaxWarning: "\D" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\D"? A raw string is also an option.
+  mail.uid("STORE", uid, "+FLAGS", "\Deleted")
+  42:28.32 imaplib version 2.60
+  42:28.32 new IMAP4 connection, tag=b'EAKF'
+  42:28.37 < b'* OK Gimap ready for requests from 98.173.62.74 d2e1a72fcca58-7b76b225893mb152709398b3a'
+  42:28.37 > b'EAKF0 CAPABILITY'
+  42:28.43 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER'
+  42:28.43 < b'EAKF0 OK Thats all she wrote! d2e1a72fcca58-7b76b225893mb152709398b3a'
+  42:28.43 CAPABILITIES: ('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH2', 'AUTH=PLAIN', 'AUTH=PLAIN-CLIENTTOKEN', 'AUTH=OAUTHBEARER')
+  42:28.43 > b'EAKF1 LOGIN tinmanmusicman@gmail.com "jwhk piox dqnt jxqc"'
+  42:28.74 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 UIDPLUS COMPRESS=DEFLATE ENABLE MOVE CONDSTORE ESEARCH UTF8=ACCEPT LIST-EXTENDED LIST-STATUS LITERAL- SPECIAL-USE APPENDLIMIT=35651584'
+  42:28.74 < b'EAKF1 OK tinmanmusicman@gmail.com authenticated (Success)'
+  42:28.74 > b'EAKF2 SELECT INBOX'
+  42:28.85 < b'* FLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing)'
+  42:28.85 < b'* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing \\*)] Flags permitted.'
+  42:28.85 < b'* OK [UIDVALIDITY 1] UIDs valid.'
+  42:28.85 < b'* 8707 EXISTS'
+  42:28.85 < b'* 0 RECENT'
+  42:28.85 < b'* OK [UIDNEXT 17306] Predicted next UID.'
+  42:28.85 < b'* OK [HIGHESTMODSEQ 2006860]'
+  42:28.85 < b'EAKF2 OK [READ-WRITE] INBOX selected. (Success)'
+  42:28.85 > b'EAKF3 UID SEARCH X-GM-RAW "category:primary" UNSEEN'
+  42:28.96 < b'* SEARCH 17304 17305'
+  42:28.96 < b'EAKF3 OK SEARCH completed (Success)'
+  42:28.96 > b'EAKF4 UID FETCH 17304 (RFC822)'
+  42:29.05 < b'* 8706 FETCH (UID 17304 RFC822 {48880}'
+  42:29.05 read literal size 48880
+  42:29.11 < b' FLAGS (\\Seen))'
+  42:29.33 < b'* 8706 FETCH (UID 17304 FLAGS (\\Seen))'
+  42:29.33 < b'EAKF4 OK Success'
+  42:29.33 > b'EAKF5 UID STORE 17304 -FLAGS \\Seen'
+  42:29.63 < b'* 8706 FETCH (FLAGS () UID 17304)'
+  42:29.63 < b'* 8706 FETCH (UID 17304 FLAGS ())'
+  42:29.63 < b'EAKF5 OK Success'
+  42:29.63 > b'EAKF6 UID COPY 17304 NotRead'
+  42:29.93 < b'EAKF6 OK [COPYUID 16 17304 7] (Success)'
+  42:29.93 > b'EAKF7 UID STORE 17304 +FLAGS \\Deleted'
+  42:30.22 < b'* 8706 FETCH (FLAGS (\\Deleted) UID 17304)'
+  42:30.22 < b'* 8706 EXPUNGE'
+  42:30.22 < b'* 8706 EXISTS'
+  42:30.22 < b'EAKF7 OK Success'
+  42:30.22 > b'EAKF8 EXPUNGE'
+  42:30.30 < b'EAKF8 OK Success'
+  42:30.30 > b'EAKF9 LOGOUT'
+  42:30.39 < b'* BYE LOGOUT Requested'
+  42:30.39 BYE response: b'LOGOUT Requested'
+  42:30.47 imaplib version 2.60
+  42:30.47 new IMAP4 connection, tag=b'OLEA'
+  42:30.53 < b'* OK Gimap ready for requests from 98.173.62.74 d2e1a72fcca58-7b76b225898mb155637493b3a'
+  42:30.53 > b'OLEA0 CAPABILITY'
+  42:30.58 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER'
+  42:30.58 < b'OLEA0 OK Thats all she wrote! d2e1a72fcca58-7b76b225898mb155637493b3a'
+  42:30.58 CAPABILITIES: ('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH2', 'AUTH=PLAIN', 'AUTH=PLAIN-CLIENTTOKEN', 'AUTH=OAUTHBEARER')
+  42:30.58 > b'OLEA1 LOGIN tinmanmusicman@gmail.com "jwhk piox dqnt jxqc"'
+  42:30.91 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 UIDPLUS COMPRESS=DEFLATE ENABLE MOVE CONDSTORE ESEARCH UTF8=ACCEPT LIST-EXTENDED LIST-STATUS LITERAL- SPECIAL-USE APPENDLIMIT=35651584'
+  42:30.91 < b'OLEA1 OK tinmanmusicman@gmail.com authenticated (Success)'
+  42:30.91 > b'OLEA2 SELECT INBOX'
+  42:31.05 < b'* FLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing)'
+  42:31.05 < b'* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing \\*)] Flags permitted.'
+  42:31.05 < b'* OK [UIDVALIDITY 1] UIDs valid.'
+  42:31.05 < b'* 8706 EXISTS'
+  42:31.05 < b'* 0 RECENT'
+  42:31.05 < b'* OK [UIDNEXT 17306] Predicted next UID.'
+  42:31.05 < b'* OK [HIGHESTMODSEQ 2006956]'
+  42:31.05 < b'OLEA2 OK [READ-WRITE] INBOX selected. (Success)'
+  42:31.05 > b'OLEA3 UID SEARCH X-GM-RAW "category:primary" UNSEEN'
+  42:31.15 < b'* SEARCH 17305'
+  42:31.15 < b'OLEA3 OK SEARCH completed (Success)'
+  42:31.15 > b'OLEA4 UID FETCH 17305 (RFC822)'
+  42:31.24 < b'* 8706 FETCH (UID 17305 RFC822 {65874}'
+  42:31.24 read literal size 65874
+  42:31.30 < b' FLAGS (\\Seen))'
+  42:31.43 < b'* 8706 FETCH (UID 17305 FLAGS (\\Seen))'
+  42:31.43 < b'OLEA4 OK Success'
+  42:31.43 > b'OLEA5 UID COPY 17305 Processed'
+  42:31.71 < b'OLEA5 OK [COPYUID 17 17305 16] (Success)'
+  42:31.71 > b'OLEA6 UID STORE 17305 +FLAGS \\Deleted'
+  42:31.99 < b'* 8706 FETCH (FLAGS (\\Seen \\Deleted) UID 17305)'
+  42:31.99 < b'* 8706 EXPUNGE'
+  42:31.99 < b'* 8705 EXISTS'
+  42:31.99 < b'OLEA6 OK Success'
+  42:31.99 > b'OLEA7 EXPUNGE'
+  42:32.08 < b'OLEA7 OK Success'
+  42:32.08 > b'OLEA8 LOGOUT'
+  42:32.15 < b'* BYE LOGOUT Requested'
+  42:32.15 BYE response: b'LOGOUT Requested'
+  42:47.92 imaplib version 2.60
+  42:47.92 new IMAP4 connection, tag=b'MPIH'
+  42:47.97 < b'* OK Gimap ready for requests from 98.173.62.74 d2e1a72fcca58-7baaf270d8amb55900247b3a'
+  42:47.97 > b'MPIH0 CAPABILITY'
+  42:48.03 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER'
+  42:48.03 < b'MPIH0 OK Thats all she wrote! d2e1a72fcca58-7baaf270d8amb55900247b3a'
+  42:48.03 CAPABILITIES: ('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH2', 'AUTH=PLAIN', 'AUTH=PLAIN-CLIENTTOKEN', 'AUTH=OAUTHBEARER')
+  42:48.03 > b'MPIH1 LOGIN tinmanmusicman@gmail.com "jwhk piox dqnt jxqc"'
+  42:48.23 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 UIDPLUS COMPRESS=DEFLATE ENABLE MOVE CONDSTORE ESEARCH UTF8=ACCEPT LIST-EXTENDED LIST-STATUS LITERAL- SPECIAL-USE APPENDLIMIT=35651584'
+  42:48.23 < b'MPIH1 OK tinmanmusicman@gmail.com authenticated (Success)'
+  42:48.23 > b'MPIH2 SELECT INBOX'
+  42:48.36 < b'* FLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing)'
+  42:48.36 < b'* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing \\*)] Flags permitted.'
+  42:48.36 < b'* OK [UIDVALIDITY 1] UIDs valid.'
+  42:48.36 < b'* 8705 EXISTS'
+  42:48.36 < b'* 0 RECENT'
+  42:48.36 < b'* OK [UIDNEXT 17306] Predicted next UID.'
+  42:48.36 < b'* OK [HIGHESTMODSEQ 2007027]'
+  42:48.36 < b'MPIH2 OK [READ-WRITE] INBOX selected. (Success)'
+  42:48.36 > b'MPIH3 UID SEARCH X-GM-RAW "category:primary" UNSEEN'
+  42:48.45 < b'* SEARCH'
+  42:48.45 < b'MPIH3 OK SEARCH completed (Success)'
+  42:48.45 > b'MPIH4 LOGOUT'
+  42:48.53 < b'* BYE LOGOUT Requested'
+  42:48.53 BYE response: b'LOGOUT Requested'
+[INFO] Not job-related.
+[INFO] Skipping non-job or empty body from CalJOBS@edd.ca.gov.
+[INFO] Source email detected: jobalerts-noreply@linkedin.com
+[INFO] Line 159 AI extraction started…
+[INFO] AI request sent at 2025-11-14 17:42:32
+[INFO] AI response received at 2025-11-14 17:42:45
+[INFO] AI processing time: 13.250 seconds
+[INFO] AI extraction finished. 3 job(s).
+[OK] Appended 3 row(s).
+[OK] Done.
+[INFO] Run finished. Processed 2 email(s).
+C:\ChatGPT\Indeed\Indeed.py:279: SyntaxWarning: "\S" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\S"? A raw string is also an option.
+  mail.uid("STORE", uid, "-FLAGS", "\Seen")
+C:\ChatGPT\Indeed\Indeed.py:281: SyntaxWarning: "\D" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\D"? A raw string is also an option.
+  mail.uid("STORE", uid, "+FLAGS", "\Deleted")
+  45:25.59 imaplib version 2.60
+  45:25.59 new IMAP4 connection, tag=b'CONH'
+  45:25.65 < b'* OK Gimap ready for requests from 98.173.62.74 d2e1a72fcca58-7b76bc100a1mb155314562b3a'
+  45:25.65 > b'CONH0 CAPABILITY'
+  45:25.70 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER'
+  45:25.70 < b'CONH0 OK Thats all she wrote! d2e1a72fcca58-7b76bc100a1mb155314562b3a'
+  45:25.70 CAPABILITIES: ('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH2', 'AUTH=PLAIN', 'AUTH=PLAIN-CLIENTTOKEN', 'AUTH=OAUTHBEARER')
+  45:25.70 > b'CONH1 LOGIN tinmanmusicman@gmail.com "jwhk piox dqnt jxqc"'
+  45:26.10 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 UIDPLUS COMPRESS=DEFLATE ENABLE MOVE CONDSTORE ESEARCH UTF8=ACCEPT LIST-EXTENDED LIST-STATUS LITERAL- SPECIAL-USE APPENDLIMIT=35651584'
+  45:26.10 < b'CONH1 OK tinmanmusicman@gmail.com authenticated (Success)'
+  45:26.10 > b'CONH2 SELECT INBOX'
+  45:26.26 < b'* FLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing)'
+  45:26.26 < b'* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing \\*)] Flags permitted.'
+  45:26.26 < b'* OK [UIDVALIDITY 1] UIDs valid.'
+  45:26.26 < b'* 8705 EXISTS'
+  45:26.26 < b'* 0 RECENT'
+  45:26.26 < b'* OK [UIDNEXT 17306] Predicted next UID.'
+  45:26.26 < b'* OK [HIGHESTMODSEQ 2007040]'
+  45:26.26 < b'CONH2 OK [READ-WRITE] INBOX selected. (Success)'
+  45:26.26 > b'CONH3 UID SEARCH X-GM-RAW "category:primary" UNSEEN'
+  45:26.36 < b'* SEARCH'
+  45:26.36 < b'CONH3 OK SEARCH completed (Success)'
+  45:26.36 > b'CONH4 LOGOUT'
+  45:26.44 < b'* BYE LOGOUT Requested'
+  45:26.44 BYE response: b'LOGOUT Requested'
+[INFO] No email body found.
+[INFO] Run finished. Processed 0 email(s).
+C:\ChatGPT\Indeed\Indeed.py:279: SyntaxWarning: "\S" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\S"? A raw string is also an option.
+  mail.uid("STORE", uid, "-FLAGS", "\Seen")
+C:\ChatGPT\Indeed\Indeed.py:281: SyntaxWarning: "\D" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\D"? A raw string is also an option.
+  mail.uid("STORE", uid, "+FLAGS", "\Deleted")
+  50:24.79 imaplib version 2.60
+  50:24.79 new IMAP4 connection, tag=b'GBMA'
+  50:24.85 < b'* OK Gimap ready for requests from 98.173.62.74 41be03b00d2f7-bc885a55543mb63211565a12'
+  50:24.85 > b'GBMA0 CAPABILITY'
+  50:24.90 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER'
+  50:24.90 < b'GBMA0 OK Thats all she wrote! 41be03b00d2f7-bc885a55543mb63211565a12'
+  50:24.90 CAPABILITIES: ('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH2', 'AUTH=PLAIN', 'AUTH=PLAIN-CLIENTTOKEN', 'AUTH=OAUTHBEARER')
+  50:24.90 > b'GBMA1 LOGIN tinmanmusicman@gmail.com "jwhk piox dqnt jxqc"'
+  50:25.08 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 UIDPLUS COMPRESS=DEFLATE ENABLE MOVE CONDSTORE ESEARCH UTF8=ACCEPT LIST-EXTENDED LIST-STATUS LITERAL- SPECIAL-USE APPENDLIMIT=35651584'
+  50:25.08 < b'GBMA1 OK tinmanmusicman@gmail.com authenticated (Success)'
+  50:25.08 > b'GBMA2 SELECT INBOX'
+  50:25.18 < b'* FLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing)'
+  50:25.18 < b'* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing \\*)] Flags permitted.'
+  50:25.18 < b'* OK [UIDVALIDITY 1] UIDs valid.'
+  50:25.18 < b'* 8705 EXISTS'
+  50:25.18 < b'* 0 RECENT'
+  50:25.18 < b'* OK [UIDNEXT 17306] Predicted next UID.'
+  50:25.18 < b'* OK [HIGHESTMODSEQ 2007040]'
+  50:25.18 < b'GBMA2 OK [READ-WRITE] INBOX selected. (Success)'
+  50:25.18 > b'GBMA3 UID SEARCH X-GM-RAW "category:primary" UNSEEN'
+  50:25.27 < b'* SEARCH'
+  50:25.27 < b'GBMA3 OK SEARCH completed (Success)'
+  50:25.27 > b'GBMA4 LOGOUT'
+  50:25.35 < b'* BYE LOGOUT Requested'
+  50:25.35 BYE response: b'LOGOUT Requested'
+[INFO] No email body found.
+[INFO] Run finished. Processed 0 email(s).
+C:\ChatGPT\Indeed\Indeed.py:279: SyntaxWarning: "\S" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\S"? A raw string is also an option.
+  mail.uid("STORE", uid, "-FLAGS", "\Seen")
+C:\ChatGPT\Indeed\Indeed.py:281: SyntaxWarning: "\D" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\D"? A raw string is also an option.
+  mail.uid("STORE", uid, "+FLAGS", "\Deleted")
+  55:24.59 imaplib version 2.60
+  55:24.59 new IMAP4 connection, tag=b'FDOE'
+  55:24.64 < b'* OK Gimap ready for requests from 98.173.62.74 d2e1a72fcca58-7b8c4a01607mb123779116b3a'
+  55:24.64 > b'FDOE0 CAPABILITY'
+  55:24.69 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER'
+  55:24.69 < b'FDOE0 OK Thats all she wrote! d2e1a72fcca58-7b8c4a01607mb123779116b3a'
+  55:24.69 CAPABILITIES: ('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH2', 'AUTH=PLAIN', 'AUTH=PLAIN-CLIENTTOKEN', 'AUTH=OAUTHBEARER')
+  55:24.69 > b'FDOE1 LOGIN tinmanmusicman@gmail.com "jwhk piox dqnt jxqc"'
+  55:24.87 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 UIDPLUS COMPRESS=DEFLATE ENABLE MOVE CONDSTORE ESEARCH UTF8=ACCEPT LIST-EXTENDED LIST-STATUS LITERAL- SPECIAL-USE APPENDLIMIT=35651584'
+  55:24.87 < b'FDOE1 OK tinmanmusicman@gmail.com authenticated (Success)'
+  55:24.87 > b'FDOE2 SELECT INBOX'
+  55:24.98 < b'* FLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing)'
+  55:24.98 < b'* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing \\*)] Flags permitted.'
+  55:24.98 < b'* OK [UIDVALIDITY 1] UIDs valid.'
+  55:24.98 < b'* 8705 EXISTS'
+  55:24.98 < b'* 0 RECENT'
+  55:24.98 < b'* OK [UIDNEXT 17306] Predicted next UID.'
+  55:24.98 < b'* OK [HIGHESTMODSEQ 2007044]'
+  55:24.98 < b'FDOE2 OK [READ-WRITE] INBOX selected. (Success)'
+  55:24.98 > b'FDOE3 UID SEARCH X-GM-RAW "category:primary" UNSEEN'
+  55:25.08 < b'* SEARCH'
+  55:25.08 < b'FDOE3 OK SEARCH completed (Success)'
+  55:25.08 > b'FDOE4 LOGOUT'
+  55:25.17 < b'* BYE LOGOUT Requested'
+  55:25.17 BYE response: b'LOGOUT Requested'
+[INFO] No email body found.
+[INFO] Run finished. Processed 0 email(s).
+C:\ChatGPT\Indeed\Indeed.py:279: SyntaxWarning: "\S" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\S"? A raw string is also an option.
+  mail.uid("STORE", uid, "-FLAGS", "\Seen")
+C:\ChatGPT\Indeed\Indeed.py:281: SyntaxWarning: "\D" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\D"? A raw string is also an option.
+  mail.uid("STORE", uid, "+FLAGS", "\Deleted")
+  00:24.59 imaplib version 2.60
+  00:24.59 new IMAP4 connection, tag=b'PDEI'
+  00:24.64 < b'* OK Gimap ready for requests from 98.173.62.74 41be03b00d2f7-bbef5207c00mb265832049a12'
+  00:24.64 > b'PDEI0 CAPABILITY'
+  00:24.70 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER'
+  00:24.70 < b'PDEI0 OK Thats all she wrote! 41be03b00d2f7-bbef5207c00mb265832049a12'
+  00:24.70 CAPABILITIES: ('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH2', 'AUTH=PLAIN', 'AUTH=PLAIN-CLIENTTOKEN', 'AUTH=OAUTHBEARER')
+  00:24.70 > b'PDEI1 LOGIN tinmanmusicman@gmail.com "jwhk piox dqnt jxqc"'
+  00:25.16 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 UIDPLUS COMPRESS=DEFLATE ENABLE MOVE CONDSTORE ESEARCH UTF8=ACCEPT LIST-EXTENDED LIST-STATUS LITERAL- SPECIAL-USE APPENDLIMIT=35651584'
+  00:25.16 < b'PDEI1 OK tinmanmusicman@gmail.com authenticated (Success)'
+  00:25.16 > b'PDEI2 SELECT INBOX'
+  00:25.31 < b'* FLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing)'
+  00:25.31 < b'* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing \\*)] Flags permitted.'
+  00:25.31 < b'* OK [UIDVALIDITY 1] UIDs valid.'
+  00:25.31 < b'* 8705 EXISTS'
+  00:25.31 < b'* 0 RECENT'
+  00:25.31 < b'* OK [UIDNEXT 17306] Predicted next UID.'
+  00:25.31 < b'* OK [HIGHESTMODSEQ 2007044]'
+  00:25.31 < b'PDEI2 OK [READ-WRITE] INBOX selected. (Success)'
+  00:25.31 > b'PDEI3 UID SEARCH X-GM-RAW "category:primary" UNSEEN'
+  00:25.48 < b'* SEARCH'
+  00:25.48 < b'PDEI3 OK SEARCH completed (Success)'
+  00:25.48 > b'PDEI4 LOGOUT'
+  00:25.59 < b'* BYE LOGOUT Requested'
+  00:25.59 BYE response: b'LOGOUT Requested'
+[INFO] No email body found.
+[INFO] Run finished. Processed 0 email(s).
+C:\ChatGPT\Indeed\Indeed.py:279: SyntaxWarning: "\S" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\S"? A raw string is also an option.
+  mail.uid("STORE", uid, "-FLAGS", "\Seen")
+C:\ChatGPT\Indeed\Indeed.py:281: SyntaxWarning: "\D" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\D"? A raw string is also an option.
+  mail.uid("STORE", uid, "+FLAGS", "\Deleted")
+  05:24.59 imaplib version 2.60
+  05:24.59 new IMAP4 connection, tag=b'JBLD'
+  05:24.65 < b'* OK Gimap ready for requests from 98.173.62.74 41be03b00d2f7-bc2609f4c6cmb189704702a12'
+  05:24.65 > b'JBLD0 CAPABILITY'
+  05:24.71 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER'
+  05:24.71 < b'JBLD0 OK Thats all she wrote! 41be03b00d2f7-bc2609f4c6cmb189704702a12'
+  05:24.71 CAPABILITIES: ('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH2', 'AUTH=PLAIN', 'AUTH=PLAIN-CLIENTTOKEN', 'AUTH=OAUTHBEARER')
+  05:24.71 > b'JBLD1 LOGIN tinmanmusicman@gmail.com "jwhk piox dqnt jxqc"'
+  05:25.03 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 UIDPLUS COMPRESS=DEFLATE ENABLE MOVE CONDSTORE ESEARCH UTF8=ACCEPT LIST-EXTENDED LIST-STATUS LITERAL- SPECIAL-USE APPENDLIMIT=35651584'
+  05:25.03 < b'JBLD1 OK tinmanmusicman@gmail.com authenticated (Success)'
+  05:25.03 > b'JBLD2 SELECT INBOX'
+  05:25.16 < b'* FLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing)'
+  05:25.16 < b'* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing \\*)] Flags permitted.'
+  05:25.16 < b'* OK [UIDVALIDITY 1] UIDs valid.'
+  05:25.16 < b'* 8705 EXISTS'
+  05:25.16 < b'* 0 RECENT'
+  05:25.16 < b'* OK [UIDNEXT 17306] Predicted next UID.'
+  05:25.16 < b'* OK [HIGHESTMODSEQ 2007044]'
+  05:25.16 < b'JBLD2 OK [READ-WRITE] INBOX selected. (Success)'
+  05:25.16 > b'JBLD3 UID SEARCH X-GM-RAW "category:primary" UNSEEN'
+  05:25.32 < b'* SEARCH'
+  05:25.32 < b'JBLD3 OK SEARCH completed (Success)'
+  05:25.32 > b'JBLD4 LOGOUT'
+  05:25.42 < b'* BYE LOGOUT Requested'
+  05:25.42 BYE response: b'LOGOUT Requested'
+[INFO] No email body found.
+[INFO] Run finished. Processed 0 email(s).
+C:\ChatGPT\Indeed\Indeed.py:279: SyntaxWarning: "\S" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\S"? A raw string is also an option.
+  mail.uid("STORE", uid, "-FLAGS", "\Seen")
+C:\ChatGPT\Indeed\Indeed.py:281: SyntaxWarning: "\D" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\D"? A raw string is also an option.
+  mail.uid("STORE", uid, "+FLAGS", "\Deleted")
+  10:24.64 imaplib version 2.60
+  10:24.64 new IMAP4 connection, tag=b'JNFD'
+  10:24.69 < b'* OK Gimap ready for requests from 98.173.62.74 d2e1a72fcca58-7b76c1e9cb9mb155956962b3a'
+  10:24.69 > b'JNFD0 CAPABILITY'
+  10:24.75 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER'
+  10:24.75 < b'JNFD0 OK Thats all she wrote! d2e1a72fcca58-7b76c1e9cb9mb155956962b3a'
+  10:24.75 CAPABILITIES: ('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH2', 'AUTH=PLAIN', 'AUTH=PLAIN-CLIENTTOKEN', 'AUTH=OAUTHBEARER')
+  10:24.75 > b'JNFD1 LOGIN tinmanmusicman@gmail.com "jwhk piox dqnt jxqc"'
+  10:25.12 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 UIDPLUS COMPRESS=DEFLATE ENABLE MOVE CONDSTORE ESEARCH UTF8=ACCEPT LIST-EXTENDED LIST-STATUS LITERAL- SPECIAL-USE APPENDLIMIT=35651584'
+  10:25.12 < b'JNFD1 OK tinmanmusicman@gmail.com authenticated (Success)'
+  10:25.12 > b'JNFD2 SELECT INBOX'
+  10:25.24 < b'* FLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing)'
+  10:25.24 < b'* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing \\*)] Flags permitted.'
+  10:25.24 < b'* OK [UIDVALIDITY 1] UIDs valid.'
+  10:25.24 < b'* 8705 EXISTS'
+  10:25.24 < b'* 0 RECENT'
+  10:25.24 < b'* OK [UIDNEXT 17306] Predicted next UID.'
+  10:25.24 < b'* OK [HIGHESTMODSEQ 2007044]'
+  10:25.24 < b'JNFD2 OK [READ-WRITE] INBOX selected. (Success)'
+  10:25.24 > b'JNFD3 UID SEARCH X-GM-RAW "category:primary" UNSEEN'
+  10:25.33 < b'* SEARCH'
+  10:25.33 < b'JNFD3 OK SEARCH completed (Success)'
+  10:25.33 > b'JNFD4 LOGOUT'
+  10:25.41 < b'* BYE LOGOUT Requested'
+  10:25.41 BYE response: b'LOGOUT Requested'
+[INFO] No email body found.
+[INFO] Run finished. Processed 0 email(s).
+C:\ChatGPT\Indeed\Indeed.py:279: SyntaxWarning: "\S" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\S"? A raw string is also an option.
+  mail.uid("STORE", uid, "-FLAGS", "\Seen")
+C:\ChatGPT\Indeed\Indeed.py:281: SyntaxWarning: "\D" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\D"? A raw string is also an option.
+  mail.uid("STORE", uid, "+FLAGS", "\Deleted")
+  15:24.63 imaplib version 2.60
+  15:24.63 new IMAP4 connection, tag=b'NNDJ'
+  15:24.68 < b'* OK Gimap ready for requests from 98.173.62.74 d2e1a72fcca58-7b7677a769amb151775114b3a'
+  15:24.68 > b'NNDJ0 CAPABILITY'
+  15:24.73 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER'
+  15:24.73 < b'NNDJ0 OK Thats all she wrote! d2e1a72fcca58-7b7677a769amb151775114b3a'
+  15:24.73 CAPABILITIES: ('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH2', 'AUTH=PLAIN', 'AUTH=PLAIN-CLIENTTOKEN', 'AUTH=OAUTHBEARER')
+  15:24.73 > b'NNDJ1 LOGIN tinmanmusicman@gmail.com "jwhk piox dqnt jxqc"'
+  15:24.96 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 UIDPLUS COMPRESS=DEFLATE ENABLE MOVE CONDSTORE ESEARCH UTF8=ACCEPT LIST-EXTENDED LIST-STATUS LITERAL- SPECIAL-USE APPENDLIMIT=35651584'
+  15:24.96 < b'NNDJ1 OK tinmanmusicman@gmail.com authenticated (Success)'
+  15:24.96 > b'NNDJ2 SELECT INBOX'
+  15:25.11 < b'* FLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing)'
+  15:25.11 < b'* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing \\*)] Flags permitted.'
+  15:25.11 < b'* OK [UIDVALIDITY 1] UIDs valid.'
+  15:25.11 < b'* 8705 EXISTS'
+  15:25.11 < b'* 0 RECENT'
+  15:25.11 < b'* OK [UIDNEXT 17306] Predicted next UID.'
+  15:25.11 < b'* OK [HIGHESTMODSEQ 2007044]'
+  15:25.11 < b'NNDJ2 OK [READ-WRITE] INBOX selected. (Success)'
+  15:25.11 > b'NNDJ3 UID SEARCH X-GM-RAW "category:primary" UNSEEN'
+  15:25.20 < b'* SEARCH'
+  15:25.20 < b'NNDJ3 OK SEARCH completed (Success)'
+  15:25.20 > b'NNDJ4 LOGOUT'
+  15:25.28 < b'* BYE LOGOUT Requested'
+  15:25.28 BYE response: b'LOGOUT Requested'
+[INFO] No email body found.
+[INFO] Run finished. Processed 0 email(s).
+C:\ChatGPT\Indeed\Indeed.py:279: SyntaxWarning: "\S" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\S"? A raw string is also an option.
+  mail.uid("STORE", uid, "-FLAGS", "\Seen")
+C:\ChatGPT\Indeed\Indeed.py:281: SyntaxWarning: "\D" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\D"? A raw string is also an option.
+  mail.uid("STORE", uid, "+FLAGS", "\Deleted")
+  20:24.67 imaplib version 2.60
+  20:24.67 new IMAP4 connection, tag=b'JHLL'
+  20:24.72 < b'* OK Gimap ready for requests from 98.173.62.74 d2e1a72fcca58-7b768a1d746mb150134611b3a'
+  20:24.72 > b'JHLL0 CAPABILITY'
+  20:24.77 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER'
+  20:24.77 < b'JHLL0 OK Thats all she wrote! d2e1a72fcca58-7b768a1d746mb150134611b3a'
+  20:24.77 CAPABILITIES: ('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH2', 'AUTH=PLAIN', 'AUTH=PLAIN-CLIENTTOKEN', 'AUTH=OAUTHBEARER')
+  20:24.77 > b'JHLL1 LOGIN tinmanmusicman@gmail.com "jwhk piox dqnt jxqc"'
+  20:25.10 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 UIDPLUS COMPRESS=DEFLATE ENABLE MOVE CONDSTORE ESEARCH UTF8=ACCEPT LIST-EXTENDED LIST-STATUS LITERAL- SPECIAL-USE APPENDLIMIT=35651584'
+  20:25.10 < b'JHLL1 OK tinmanmusicman@gmail.com authenticated (Success)'
+  20:25.10 > b'JHLL2 SELECT INBOX'
+  20:25.21 < b'* FLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing)'
+  20:25.21 < b'* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing \\*)] Flags permitted.'
+  20:25.21 < b'* OK [UIDVALIDITY 1] UIDs valid.'
+  20:25.21 < b'* 8705 EXISTS'
+  20:25.21 < b'* 0 RECENT'
+  20:25.21 < b'* OK [UIDNEXT 17306] Predicted next UID.'
+  20:25.21 < b'* OK [HIGHESTMODSEQ 2007044]'
+  20:25.21 < b'JHLL2 OK [READ-WRITE] INBOX selected. (Success)'
+  20:25.21 > b'JHLL3 UID SEARCH X-GM-RAW "category:primary" UNSEEN'
+  20:25.31 < b'* SEARCH'
+  20:25.31 < b'JHLL3 OK SEARCH completed (Success)'
+  20:25.31 > b'JHLL4 LOGOUT'
+  20:25.39 < b'* BYE LOGOUT Requested'
+  20:25.39 BYE response: b'LOGOUT Requested'
+[INFO] No email body found.
+[INFO] Run finished. Processed 0 email(s).
+C:\ChatGPT\Indeed\Indeed.py:279: SyntaxWarning: "\S" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\S"? A raw string is also an option.
+  mail.uid("STORE", uid, "-FLAGS", "\Seen")
+C:\ChatGPT\Indeed\Indeed.py:281: SyntaxWarning: "\D" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\D"? A raw string is also an option.
+  mail.uid("STORE", uid, "+FLAGS", "\Deleted")
+  25:24.67 imaplib version 2.60
+  25:24.67 new IMAP4 connection, tag=b'HKIA'
+  25:24.72 < b'* OK Gimap ready for requests from 98.173.62.74 41be03b00d2f7-bc1d44e5644mb214215779a12'
+  25:24.72 > b'HKIA0 CAPABILITY'
+  25:24.77 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER'
+  25:24.77 < b'HKIA0 OK Thats all she wrote! 41be03b00d2f7-bc1d44e5644mb214215779a12'
+  25:24.77 CAPABILITIES: ('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH2', 'AUTH=PLAIN', 'AUTH=PLAIN-CLIENTTOKEN', 'AUTH=OAUTHBEARER')
+  25:24.77 > b'HKIA1 LOGIN tinmanmusicman@gmail.com "jwhk piox dqnt jxqc"'
+  25:25.02 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 UIDPLUS COMPRESS=DEFLATE ENABLE MOVE CONDSTORE ESEARCH UTF8=ACCEPT LIST-EXTENDED LIST-STATUS LITERAL- SPECIAL-USE APPENDLIMIT=35651584'
+  25:25.02 < b'HKIA1 OK tinmanmusicman@gmail.com authenticated (Success)'
+  25:25.02 > b'HKIA2 SELECT INBOX'
+  25:25.13 < b'* FLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing)'
+  25:25.13 < b'* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing \\*)] Flags permitted.'
+  25:25.13 < b'* OK [UIDVALIDITY 1] UIDs valid.'
+  25:25.13 < b'* 8705 EXISTS'
+  25:25.13 < b'* 0 RECENT'
+  25:25.13 < b'* OK [UIDNEXT 17306] Predicted next UID.'
+  25:25.13 < b'* OK [HIGHESTMODSEQ 2007044]'
+  25:25.13 < b'HKIA2 OK [READ-WRITE] INBOX selected. (Success)'
+  25:25.13 > b'HKIA3 UID SEARCH X-GM-RAW "category:primary" UNSEEN'
+  25:25.22 < b'* SEARCH'
+  25:25.22 < b'HKIA3 OK SEARCH completed (Success)'
+  25:25.22 > b'HKIA4 LOGOUT'
+  25:25.30 < b'* BYE LOGOUT Requested'
+  25:25.30 BYE response: b'LOGOUT Requested'
+[INFO] No email body found.
+[INFO] Run finished. Processed 0 email(s).
+C:\ChatGPT\Indeed\Indeed.py:279: SyntaxWarning: "\S" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\S"? A raw string is also an option.
+  mail.uid("STORE", uid, "-FLAGS", "\Seen")
+C:\ChatGPT\Indeed\Indeed.py:281: SyntaxWarning: "\D" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\D"? A raw string is also an option.
+  mail.uid("STORE", uid, "+FLAGS", "\Deleted")
+  30:24.71 imaplib version 2.60
+  30:24.71 new IMAP4 connection, tag=b'FJPH'
+  30:24.77 < b'* OK Gimap ready for requests from 98.173.62.74 41be03b00d2f7-bc77f441717mb88329454a12'
+  30:24.77 > b'FJPH0 CAPABILITY'
+  30:24.82 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER'
+  30:24.82 < b'FJPH0 OK Thats all she wrote! 41be03b00d2f7-bc77f441717mb88329454a12'
+  30:24.82 CAPABILITIES: ('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH2', 'AUTH=PLAIN', 'AUTH=PLAIN-CLIENTTOKEN', 'AUTH=OAUTHBEARER')
+  30:24.82 > b'FJPH1 LOGIN tinmanmusicman@gmail.com "jwhk piox dqnt jxqc"'
+  30:25.09 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 UIDPLUS COMPRESS=DEFLATE ENABLE MOVE CONDSTORE ESEARCH UTF8=ACCEPT LIST-EXTENDED LIST-STATUS LITERAL- SPECIAL-USE APPENDLIMIT=35651584'
+  30:25.09 < b'FJPH1 OK tinmanmusicman@gmail.com authenticated (Success)'
+  30:25.09 > b'FJPH2 SELECT INBOX'
+  30:25.22 < b'* FLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing)'
+  30:25.22 < b'* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing \\*)] Flags permitted.'
+  30:25.22 < b'* OK [UIDVALIDITY 1] UIDs valid.'
+  30:25.22 < b'* 8705 EXISTS'
+  30:25.22 < b'* 0 RECENT'
+  30:25.22 < b'* OK [UIDNEXT 17306] Predicted next UID.'
+  30:25.22 < b'* OK [HIGHESTMODSEQ 2007044]'
+  30:25.22 < b'FJPH2 OK [READ-WRITE] INBOX selected. (Success)'
+  30:25.22 > b'FJPH3 UID SEARCH X-GM-RAW "category:primary" UNSEEN'
+  30:25.31 < b'* SEARCH'
+  30:25.31 < b'FJPH3 OK SEARCH completed (Success)'
+  30:25.31 > b'FJPH4 LOGOUT'
+  30:25.39 < b'* BYE LOGOUT Requested'
+  30:25.39 BYE response: b'LOGOUT Requested'
+[INFO] No email body found.
+[INFO] Run finished. Processed 0 email(s).
+C:\ChatGPT\Indeed\Indeed.py:279: SyntaxWarning: "\S" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\S"? A raw string is also an option.
+  mail.uid("STORE", uid, "-FLAGS", "\Seen")
+C:\ChatGPT\Indeed\Indeed.py:281: SyntaxWarning: "\D" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\D"? A raw string is also an option.
+  mail.uid("STORE", uid, "+FLAGS", "\Deleted")
+  35:24.73 imaplib version 2.60
+  35:24.73 new IMAP4 connection, tag=b'EEAK'
+  35:24.78 < b'* OK Gimap ready for requests from 98.173.62.74 41be03b00d2f7-bc0d5b58499mb205244762a12'
+  35:24.78 > b'EEAK0 CAPABILITY'
+  35:24.83 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER'
+  35:24.83 < b'EEAK0 OK Thats all she wrote! 41be03b00d2f7-bc0d5b58499mb205244762a12'
+  35:24.83 CAPABILITIES: ('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH2', 'AUTH=PLAIN', 'AUTH=PLAIN-CLIENTTOKEN', 'AUTH=OAUTHBEARER')
+  35:24.83 > b'EEAK1 LOGIN tinmanmusicman@gmail.com "jwhk piox dqnt jxqc"'
+  35:25.04 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 UIDPLUS COMPRESS=DEFLATE ENABLE MOVE CONDSTORE ESEARCH UTF8=ACCEPT LIST-EXTENDED LIST-STATUS LITERAL- SPECIAL-USE APPENDLIMIT=35651584'
+  35:25.04 < b'EEAK1 OK tinmanmusicman@gmail.com authenticated (Success)'
+  35:25.04 > b'EEAK2 SELECT INBOX'
+  35:25.17 < b'* FLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing)'
+  35:25.17 < b'* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing \\*)] Flags permitted.'
+  35:25.17 < b'* OK [UIDVALIDITY 1] UIDs valid.'
+  35:25.17 < b'* 8705 EXISTS'
+  35:25.17 < b'* 0 RECENT'
+  35:25.17 < b'* OK [UIDNEXT 17306] Predicted next UID.'
+  35:25.17 < b'* OK [HIGHESTMODSEQ 2007044]'
+  35:25.17 < b'EEAK2 OK [READ-WRITE] INBOX selected. (Success)'
+  35:25.17 > b'EEAK3 UID SEARCH X-GM-RAW "category:primary" UNSEEN'
+  35:25.27 < b'* SEARCH'
+  35:25.27 < b'EEAK3 OK SEARCH completed (Success)'
+  35:25.27 > b'EEAK4 LOGOUT'
+  35:25.35 < b'* BYE LOGOUT Requested'
+  35:25.35 BYE response: b'LOGOUT Requested'
+[INFO] No email body found.
+[INFO] Run finished. Processed 0 email(s).
+C:\ChatGPT\Indeed\Indeed.py:279: SyntaxWarning: "\S" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\S"? A raw string is also an option.
+  mail.uid("STORE", uid, "-FLAGS", "\Seen")
+C:\ChatGPT\Indeed\Indeed.py:281: SyntaxWarning: "\D" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\D"? A raw string is also an option.
+  mail.uid("STORE", uid, "+FLAGS", "\Deleted")
+  40:24.65 imaplib version 2.60
+  40:24.65 new IMAP4 connection, tag=b'OJIK'
+  40:24.70 < b'* OK Gimap ready for requests from 98.173.62.74 d2e1a72fcca58-7b7e06699e9mb144136707b3a'
+  40:24.70 > b'OJIK0 CAPABILITY'
+  40:24.74 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER'
+  40:24.74 < b'OJIK0 OK Thats all she wrote! d2e1a72fcca58-7b7e06699e9mb144136707b3a'
+  40:24.74 CAPABILITIES: ('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH2', 'AUTH=PLAIN', 'AUTH=PLAIN-CLIENTTOKEN', 'AUTH=OAUTHBEARER')
+  40:24.74 > b'OJIK1 LOGIN tinmanmusicman@gmail.com "jwhk piox dqnt jxqc"'
+  40:25.06 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 UIDPLUS COMPRESS=DEFLATE ENABLE MOVE CONDSTORE ESEARCH UTF8=ACCEPT LIST-EXTENDED LIST-STATUS LITERAL- SPECIAL-USE APPENDLIMIT=35651584'
+  40:25.06 < b'OJIK1 OK tinmanmusicman@gmail.com authenticated (Success)'
+  40:25.06 > b'OJIK2 SELECT INBOX'
+  40:25.17 < b'* FLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing)'
+  40:25.17 < b'* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing \\*)] Flags permitted.'
+  40:25.17 < b'* OK [UIDVALIDITY 1] UIDs valid.'
+  40:25.17 < b'* 8705 EXISTS'
+  40:25.17 < b'* 0 RECENT'
+  40:25.17 < b'* OK [UIDNEXT 17306] Predicted next UID.'
+  40:25.17 < b'* OK [HIGHESTMODSEQ 2007044]'
+  40:25.17 < b'OJIK2 OK [READ-WRITE] INBOX selected. (Success)'
+  40:25.17 > b'OJIK3 UID SEARCH X-GM-RAW "category:primary" UNSEEN'
+  40:25.27 < b'* SEARCH'
+  40:25.27 < b'OJIK3 OK SEARCH completed (Success)'
+  40:25.27 > b'OJIK4 LOGOUT'
+  40:25.35 < b'* BYE LOGOUT Requested'
+  40:25.35 BYE response: b'LOGOUT Requested'
+[INFO] No email body found.
+[INFO] Run finished. Processed 0 email(s).
+C:\ChatGPT\Indeed\Indeed.py:279: SyntaxWarning: "\S" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\S"? A raw string is also an option.
+  mail.uid("STORE", uid, "-FLAGS", "\Seen")
+C:\ChatGPT\Indeed\Indeed.py:281: SyntaxWarning: "\D" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\D"? A raw string is also an option.
+  mail.uid("STORE", uid, "+FLAGS", "\Deleted")
+  45:24.64 imaplib version 2.60
+  45:24.64 new IMAP4 connection, tag=b'KDEO'
+  45:24.70 < b'* OK Gimap ready for requests from 98.173.62.74 d2e1a72fcca58-7b7677a74d2mb149330649b3a'
+  45:24.70 > b'KDEO0 CAPABILITY'
+  45:24.75 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER'
+  45:24.75 < b'KDEO0 OK Thats all she wrote! d2e1a72fcca58-7b7677a74d2mb149330649b3a'
+  45:24.75 CAPABILITIES: ('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH2', 'AUTH=PLAIN', 'AUTH=PLAIN-CLIENTTOKEN', 'AUTH=OAUTHBEARER')
+  45:24.75 > b'KDEO1 LOGIN tinmanmusicman@gmail.com "jwhk piox dqnt jxqc"'
+  45:25.08 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 UIDPLUS COMPRESS=DEFLATE ENABLE MOVE CONDSTORE ESEARCH UTF8=ACCEPT LIST-EXTENDED LIST-STATUS LITERAL- SPECIAL-USE APPENDLIMIT=35651584'
+  45:25.08 < b'KDEO1 OK tinmanmusicman@gmail.com authenticated (Success)'
+  45:25.08 > b'KDEO2 SELECT INBOX'
+  45:25.18 < b'* FLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing)'
+  45:25.18 < b'* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing \\*)] Flags permitted.'
+  45:25.18 < b'* OK [UIDVALIDITY 1] UIDs valid.'
+  45:25.18 < b'* 8705 EXISTS'
+  45:25.18 < b'* 0 RECENT'
+  45:25.18 < b'* OK [UIDNEXT 17306] Predicted next UID.'
+  45:25.18 < b'* OK [HIGHESTMODSEQ 2007044]'
+  45:25.18 < b'KDEO2 OK [READ-WRITE] INBOX selected. (Success)'
+  45:25.18 > b'KDEO3 UID SEARCH X-GM-RAW "category:primary" UNSEEN'
+  45:25.28 < b'* SEARCH'
+  45:25.28 < b'KDEO3 OK SEARCH completed (Success)'
+  45:25.28 > b'KDEO4 LOGOUT'
+  45:25.35 < b'* BYE LOGOUT Requested'
+  45:25.35 BYE response: b'LOGOUT Requested'
+[INFO] No email body found.
+[INFO] Run finished. Processed 0 email(s).
+C:\ChatGPT\Indeed\Indeed.py:279: SyntaxWarning: "\S" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\S"? A raw string is also an option.
+  mail.uid("STORE", uid, "-FLAGS", "\Seen")
+C:\ChatGPT\Indeed\Indeed.py:281: SyntaxWarning: "\D" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\D"? A raw string is also an option.
+  mail.uid("STORE", uid, "+FLAGS", "\Deleted")
+  50:24.62 imaplib version 2.60
+  50:24.62 new IMAP4 connection, tag=b'PFLM'
+  50:24.68 < b'* OK Gimap ready for requests from 98.173.62.74 41be03b00d2f7-bc0e3d9648amb206834794a12'
+  50:24.68 > b'PFLM0 CAPABILITY'
+  50:24.72 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER'
+  50:24.72 < b'PFLM0 OK Thats all she wrote! 41be03b00d2f7-bc0e3d9648amb206834794a12'
+  50:24.72 CAPABILITIES: ('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH2', 'AUTH=PLAIN', 'AUTH=PLAIN-CLIENTTOKEN', 'AUTH=OAUTHBEARER')
+  50:24.72 > b'PFLM1 LOGIN tinmanmusicman@gmail.com "jwhk piox dqnt jxqc"'
+  50:24.92 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 UIDPLUS COMPRESS=DEFLATE ENABLE MOVE CONDSTORE ESEARCH UTF8=ACCEPT LIST-EXTENDED LIST-STATUS LITERAL- SPECIAL-USE APPENDLIMIT=35651584'
+  50:24.92 < b'PFLM1 OK tinmanmusicman@gmail.com authenticated (Success)'
+  50:24.92 > b'PFLM2 SELECT INBOX'
+  50:25.04 < b'* FLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing)'
+  50:25.04 < b'* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing \\*)] Flags permitted.'
+  50:25.04 < b'* OK [UIDVALIDITY 1] UIDs valid.'
+  50:25.04 < b'* 8705 EXISTS'
+  50:25.04 < b'* 0 RECENT'
+  50:25.04 < b'* OK [UIDNEXT 17306] Predicted next UID.'
+  50:25.04 < b'* OK [HIGHESTMODSEQ 2007044]'
+  50:25.04 < b'PFLM2 OK [READ-WRITE] INBOX selected. (Success)'
+  50:25.04 > b'PFLM3 UID SEARCH X-GM-RAW "category:primary" UNSEEN'
+  50:25.14 < b'* SEARCH'
+  50:25.14 < b'PFLM3 OK SEARCH completed (Success)'
+  50:25.14 > b'PFLM4 LOGOUT'
+  50:25.23 < b'* BYE LOGOUT Requested'
+  50:25.23 BYE response: b'LOGOUT Requested'
+[INFO] No email body found.
+[INFO] Run finished. Processed 0 email(s).
+C:\ChatGPT\Indeed\Indeed.py:279: SyntaxWarning: "\S" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\S"? A raw string is also an option.
+  mail.uid("STORE", uid, "-FLAGS", "\Seen")
+C:\ChatGPT\Indeed\Indeed.py:281: SyntaxWarning: "\D" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\D"? A raw string is also an option.
+  mail.uid("STORE", uid, "+FLAGS", "\Deleted")
+  55:24.69 imaplib version 2.60
+  55:24.69 new IMAP4 connection, tag=b'FLHB'
+  55:24.74 < b'* OK Gimap ready for requests from 98.173.62.74 41be03b00d2f7-bc41e1e6a42mb160798239a12'
+  55:24.74 > b'FLHB0 CAPABILITY'
+  55:24.79 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER'
+  55:24.79 < b'FLHB0 OK Thats all she wrote! 41be03b00d2f7-bc41e1e6a42mb160798239a12'
+  55:24.79 CAPABILITIES: ('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH2', 'AUTH=PLAIN', 'AUTH=PLAIN-CLIENTTOKEN', 'AUTH=OAUTHBEARER')
+  55:24.79 > b'FLHB1 LOGIN tinmanmusicman@gmail.com "jwhk piox dqnt jxqc"'
+  55:24.99 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 UIDPLUS COMPRESS=DEFLATE ENABLE MOVE CONDSTORE ESEARCH UTF8=ACCEPT LIST-EXTENDED LIST-STATUS LITERAL- SPECIAL-USE APPENDLIMIT=35651584'
+  55:24.99 < b'FLHB1 OK tinmanmusicman@gmail.com authenticated (Success)'
+  55:24.99 > b'FLHB2 SELECT INBOX'
+  55:25.12 < b'* FLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing)'
+  55:25.12 < b'* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing \\*)] Flags permitted.'
+  55:25.12 < b'* OK [UIDVALIDITY 1] UIDs valid.'
+  55:25.12 < b'* 8705 EXISTS'
+  55:25.12 < b'* 0 RECENT'
+  55:25.12 < b'* OK [UIDNEXT 17306] Predicted next UID.'
+  55:25.12 < b'* OK [HIGHESTMODSEQ 2007044]'
+  55:25.12 < b'FLHB2 OK [READ-WRITE] INBOX selected. (Success)'
+  55:25.12 > b'FLHB3 UID SEARCH X-GM-RAW "category:primary" UNSEEN'
+  55:25.24 < b'* SEARCH'
+  55:25.24 < b'FLHB3 OK SEARCH completed (Success)'
+  55:25.24 > b'FLHB4 LOGOUT'
+  55:25.32 < b'* BYE LOGOUT Requested'
+  55:25.32 BYE response: b'LOGOUT Requested'
+[INFO] No email body found.
+[INFO] Run finished. Processed 0 email(s).
+C:\ChatGPT\Indeed\Indeed.py:279: SyntaxWarning: "\S" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\S"? A raw string is also an option.
+  mail.uid("STORE", uid, "-FLAGS", "\Seen")
+C:\ChatGPT\Indeed\Indeed.py:281: SyntaxWarning: "\D" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\D"? A raw string is also an option.
+  mail.uid("STORE", uid, "+FLAGS", "\Deleted")
+  00:24.67 imaplib version 2.60
+  00:24.67 new IMAP4 connection, tag=b'BOCJ'
+  00:24.72 < b'* OK Gimap ready for requests from 98.173.62.74 d2e1a72fcca58-7b8e2727f2cmb119875585b3a'
+  00:24.72 > b'BOCJ0 CAPABILITY'
+  00:24.77 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER'
+  00:24.77 < b'BOCJ0 OK Thats all she wrote! d2e1a72fcca58-7b8e2727f2cmb119875585b3a'
+  00:24.77 CAPABILITIES: ('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH2', 'AUTH=PLAIN', 'AUTH=PLAIN-CLIENTTOKEN', 'AUTH=OAUTHBEARER')
+  00:24.77 > b'BOCJ1 LOGIN tinmanmusicman@gmail.com "jwhk piox dqnt jxqc"'
+  00:25.11 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 UIDPLUS COMPRESS=DEFLATE ENABLE MOVE CONDSTORE ESEARCH UTF8=ACCEPT LIST-EXTENDED LIST-STATUS LITERAL- SPECIAL-USE APPENDLIMIT=35651584'
+  00:25.11 < b'BOCJ1 OK tinmanmusicman@gmail.com authenticated (Success)'
+  00:25.11 > b'BOCJ2 SELECT INBOX'
+  00:25.21 < b'* FLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing)'
+  00:25.21 < b'* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing \\*)] Flags permitted.'
+  00:25.21 < b'* OK [UIDVALIDITY 1] UIDs valid.'
+  00:25.21 < b'* 8705 EXISTS'
+  00:25.21 < b'* 0 RECENT'
+  00:25.21 < b'* OK [UIDNEXT 17306] Predicted next UID.'
+  00:25.21 < b'* OK [HIGHESTMODSEQ 2007044]'
+  00:25.21 < b'BOCJ2 OK [READ-WRITE] INBOX selected. (Success)'
+  00:25.21 > b'BOCJ3 UID SEARCH X-GM-RAW "category:primary" UNSEEN'
+  00:25.32 < b'* SEARCH'
+  00:25.32 < b'BOCJ3 OK SEARCH completed (Success)'
+  00:25.32 > b'BOCJ4 LOGOUT'
+  00:25.41 < b'* BYE LOGOUT Requested'
+  00:25.41 BYE response: b'LOGOUT Requested'
+[INFO] No email body found.
+[INFO] Run finished. Processed 0 email(s).
+C:\ChatGPT\Indeed\Indeed.py:279: SyntaxWarning: "\S" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\S"? A raw string is also an option.
+  mail.uid("STORE", uid, "-FLAGS", "\Seen")
+C:\ChatGPT\Indeed\Indeed.py:281: SyntaxWarning: "\D" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\D"? A raw string is also an option.
+  mail.uid("STORE", uid, "+FLAGS", "\Deleted")
+  05:24.64 imaplib version 2.60
+  05:24.64 new IMAP4 connection, tag=b'GGHP'
+  05:24.70 < b'* OK Gimap ready for requests from 98.173.62.74 616947a28c9db-6901deb74c5mb11466561b6c'
+  05:24.70 > b'GGHP0 CAPABILITY'
+  05:24.76 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER'
+  05:24.76 < b'GGHP0 OK Thats all she wrote! 616947a28c9db-6901deb74c5mb11466561b6c'
+  05:24.76 CAPABILITIES: ('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH2', 'AUTH=PLAIN', 'AUTH=PLAIN-CLIENTTOKEN', 'AUTH=OAUTHBEARER')
+  05:24.76 > b'GGHP1 LOGIN tinmanmusicman@gmail.com "jwhk piox dqnt jxqc"'
+  05:24.97 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 UIDPLUS COMPRESS=DEFLATE ENABLE MOVE CONDSTORE ESEARCH UTF8=ACCEPT LIST-EXTENDED LIST-STATUS LITERAL- SPECIAL-USE APPENDLIMIT=35651584'
+  05:24.97 < b'GGHP1 OK tinmanmusicman@gmail.com authenticated (Success)'
+  05:24.97 > b'GGHP2 SELECT INBOX'
+  05:25.09 < b'* FLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing)'
+  05:25.09 < b'* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing \\*)] Flags permitted.'
+  05:25.09 < b'* OK [UIDVALIDITY 1] UIDs valid.'
+  05:25.09 < b'* 8705 EXISTS'
+  05:25.09 < b'* 0 RECENT'
+  05:25.09 < b'* OK [UIDNEXT 17306] Predicted next UID.'
+  05:25.09 < b'* OK [HIGHESTMODSEQ 2007044]'
+  05:25.09 < b'GGHP2 OK [READ-WRITE] INBOX selected. (Success)'
+  05:25.09 > b'GGHP3 UID SEARCH X-GM-RAW "category:primary" UNSEEN'
+  05:25.20 < b'* SEARCH'
+  05:25.20 < b'GGHP3 OK SEARCH completed (Success)'
+  05:25.20 > b'GGHP4 LOGOUT'
+  05:25.29 < b'* BYE LOGOUT Requested'
+  05:25.29 BYE response: b'LOGOUT Requested'
+[INFO] No email body found.
+[INFO] Run finished. Processed 0 email(s).
+C:\ChatGPT\Indeed\Indeed.py:279: SyntaxWarning: "\S" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\S"? A raw string is also an option.
+  mail.uid("STORE", uid, "-FLAGS", "\Seen")
+C:\ChatGPT\Indeed\Indeed.py:281: SyntaxWarning: "\D" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\D"? A raw string is also an option.
+  mail.uid("STORE", uid, "+FLAGS", "\Deleted")
+  10:24.77 imaplib version 2.60
+  10:24.77 new IMAP4 connection, tag=b'IBMF'
+  10:24.83 < b'* OK Gimap ready for requests from 98.173.62.74 d2e1a72fcca58-7b767f6dbfdmb152387374b3a'
+  10:24.83 > b'IBMF0 CAPABILITY'
+  10:24.88 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER'
+  10:24.88 < b'IBMF0 OK Thats all she wrote! d2e1a72fcca58-7b767f6dbfdmb152387374b3a'
+  10:24.88 CAPABILITIES: ('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH2', 'AUTH=PLAIN', 'AUTH=PLAIN-CLIENTTOKEN', 'AUTH=OAUTHBEARER')
+  10:24.88 > b'IBMF1 LOGIN tinmanmusicman@gmail.com "jwhk piox dqnt jxqc"'
+  10:25.26 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 UIDPLUS COMPRESS=DEFLATE ENABLE MOVE CONDSTORE ESEARCH UTF8=ACCEPT LIST-EXTENDED LIST-STATUS LITERAL- SPECIAL-USE APPENDLIMIT=35651584'
+  10:25.26 < b'IBMF1 OK tinmanmusicman@gmail.com authenticated (Success)'
+  10:25.26 > b'IBMF2 SELECT INBOX'
+  10:25.39 < b'* FLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing)'
+  10:25.39 < b'* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing \\*)] Flags permitted.'
+  10:25.39 < b'* OK [UIDVALIDITY 1] UIDs valid.'
+  10:25.39 < b'* 8706 EXISTS'
+  10:25.39 < b'* 0 RECENT'
+  10:25.39 < b'* OK [UIDNEXT 17307] Predicted next UID.'
+  10:25.39 < b'* OK [HIGHESTMODSEQ 2007109]'
+  10:25.39 < b'IBMF2 OK [READ-WRITE] INBOX selected. (Success)'
+  10:25.39 > b'IBMF3 UID SEARCH X-GM-RAW "category:primary" UNSEEN'
+  10:25.49 < b'* SEARCH'
+  10:25.49 < b'IBMF3 OK SEARCH completed (Success)'
+  10:25.49 > b'IBMF4 LOGOUT'
+  10:25.58 < b'* BYE LOGOUT Requested'
+  10:25.58 BYE response: b'LOGOUT Requested'
+[INFO] No email body found.
+[INFO] Run finished. Processed 0 email(s).
+C:\ChatGPT\Indeed\Indeed.py:279: SyntaxWarning: "\S" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\S"? A raw string is also an option.
+  mail.uid("STORE", uid, "-FLAGS", "\Seen")
+C:\ChatGPT\Indeed\Indeed.py:281: SyntaxWarning: "\D" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\D"? A raw string is also an option.
+  mail.uid("STORE", uid, "+FLAGS", "\Deleted")
+  15:24.66 imaplib version 2.60
+  15:24.66 new IMAP4 connection, tag=b'IANM'
+  15:24.71 < b'* OK Gimap ready for requests from 98.173.62.74 d2e1a72fcca58-7b915617947mb116378969b3a'
+  15:24.71 > b'IANM0 CAPABILITY'
+  15:24.77 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER'
+  15:24.77 < b'IANM0 OK Thats all she wrote! d2e1a72fcca58-7b915617947mb116378969b3a'
+  15:24.77 CAPABILITIES: ('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH2', 'AUTH=PLAIN', 'AUTH=PLAIN-CLIENTTOKEN', 'AUTH=OAUTHBEARER')
+  15:24.77 > b'IANM1 LOGIN tinmanmusicman@gmail.com "jwhk piox dqnt jxqc"'
+  15:25.07 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 UIDPLUS COMPRESS=DEFLATE ENABLE MOVE CONDSTORE ESEARCH UTF8=ACCEPT LIST-EXTENDED LIST-STATUS LITERAL- SPECIAL-USE APPENDLIMIT=35651584'
+  15:25.07 < b'IANM1 OK tinmanmusicman@gmail.com authenticated (Success)'
+  15:25.07 > b'IANM2 SELECT INBOX'
+  15:25.17 < b'* FLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing)'
+  15:25.17 < b'* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing \\*)] Flags permitted.'
+  15:25.17 < b'* OK [UIDVALIDITY 1] UIDs valid.'
+  15:25.17 < b'* 8706 EXISTS'
+  15:25.17 < b'* 0 RECENT'
+  15:25.17 < b'* OK [UIDNEXT 17307] Predicted next UID.'
+  15:25.17 < b'* OK [HIGHESTMODSEQ 2007109]'
+  15:25.17 < b'IANM2 OK [READ-WRITE] INBOX selected. (Success)'
+  15:25.17 > b'IANM3 UID SEARCH X-GM-RAW "category:primary" UNSEEN'
+  15:25.27 < b'* SEARCH'
+  15:25.27 < b'IANM3 OK SEARCH completed (Success)'
+  15:25.27 > b'IANM4 LOGOUT'
+  15:25.35 < b'* BYE LOGOUT Requested'
+  15:25.35 BYE response: b'LOGOUT Requested'
+[INFO] No email body found.
+[INFO] Run finished. Processed 0 email(s).
+C:\ChatGPT\Indeed\Indeed.py:279: SyntaxWarning: "\S" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\S"? A raw string is also an option.
+  mail.uid("STORE", uid, "-FLAGS", "\Seen")
+C:\ChatGPT\Indeed\Indeed.py:281: SyntaxWarning: "\D" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\D"? A raw string is also an option.
+  mail.uid("STORE", uid, "+FLAGS", "\Deleted")
+  20:24.77 imaplib version 2.60
+  20:24.77 new IMAP4 connection, tag=b'PJAD'
+  20:24.82 < b'* OK Gimap ready for requests from 98.173.62.74 d2e1a72fcca58-7b768b13a2dmb155188961b3a'
+  20:24.82 > b'PJAD0 CAPABILITY'
+  20:24.87 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER'
+  20:24.87 < b'PJAD0 OK Thats all she wrote! d2e1a72fcca58-7b768b13a2dmb155188961b3a'
+  20:24.87 CAPABILITIES: ('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH2', 'AUTH=PLAIN', 'AUTH=PLAIN-CLIENTTOKEN', 'AUTH=OAUTHBEARER')
+  20:24.87 > b'PJAD1 LOGIN tinmanmusicman@gmail.com "jwhk piox dqnt jxqc"'
+  20:25.16 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 UIDPLUS COMPRESS=DEFLATE ENABLE MOVE CONDSTORE ESEARCH UTF8=ACCEPT LIST-EXTENDED LIST-STATUS LITERAL- SPECIAL-USE APPENDLIMIT=35651584'
+  20:25.16 < b'PJAD1 OK tinmanmusicman@gmail.com authenticated (Success)'
+  20:25.16 > b'PJAD2 SELECT INBOX'
+  20:25.27 < b'* FLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing)'
+  20:25.27 < b'* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing \\*)] Flags permitted.'
+  20:25.27 < b'* OK [UIDVALIDITY 1] UIDs valid.'
+  20:25.27 < b'* 8706 EXISTS'
+  20:25.27 < b'* 0 RECENT'
+  20:25.27 < b'* OK [UIDNEXT 17307] Predicted next UID.'
+  20:25.27 < b'* OK [HIGHESTMODSEQ 2007117]'
+  20:25.27 < b'PJAD2 OK [READ-WRITE] INBOX selected. (Success)'
+  20:25.27 > b'PJAD3 UID SEARCH X-GM-RAW "category:primary" UNSEEN'
+  20:25.36 < b'* SEARCH'
+  20:25.36 < b'PJAD3 OK SEARCH completed (Success)'
+  20:25.36 > b'PJAD4 LOGOUT'
+  20:25.43 < b'* BYE LOGOUT Requested'
+  20:25.43 BYE response: b'LOGOUT Requested'
+[INFO] No email body found.
+[INFO] Run finished. Processed 0 email(s).
+C:\ChatGPT\Indeed\Indeed.py:279: SyntaxWarning: "\S" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\S"? A raw string is also an option.
+  mail.uid("STORE", uid, "-FLAGS", "\Seen")
+C:\ChatGPT\Indeed\Indeed.py:281: SyntaxWarning: "\D" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\D"? A raw string is also an option.
+  mail.uid("STORE", uid, "+FLAGS", "\Deleted")
+  25:25.17 imaplib version 2.60
+  25:25.17 new IMAP4 connection, tag=b'LFIN'
+  25:25.23 < b'* OK Gimap ready for requests from 98.173.62.74 d2e1a72fcca58-7babe418bbamb53765006b3a'
+  25:25.23 > b'LFIN0 CAPABILITY'
+  25:25.28 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER'
+  25:25.28 < b'LFIN0 OK Thats all she wrote! d2e1a72fcca58-7babe418bbamb53765006b3a'
+  25:25.28 CAPABILITIES: ('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH2', 'AUTH=PLAIN', 'AUTH=PLAIN-CLIENTTOKEN', 'AUTH=OAUTHBEARER')
+  25:25.28 > b'LFIN1 LOGIN tinmanmusicman@gmail.com "jwhk piox dqnt jxqc"'
+  25:25.61 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 UIDPLUS COMPRESS=DEFLATE ENABLE MOVE CONDSTORE ESEARCH UTF8=ACCEPT LIST-EXTENDED LIST-STATUS LITERAL- SPECIAL-USE APPENDLIMIT=35651584'
+  25:25.61 < b'LFIN1 OK tinmanmusicman@gmail.com authenticated (Success)'
+  25:25.61 > b'LFIN2 SELECT INBOX'
+  25:25.72 < b'* FLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing)'
+  25:25.72 < b'* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing \\*)] Flags permitted.'
+  25:25.72 < b'* OK [UIDVALIDITY 1] UIDs valid.'
+  25:25.72 < b'* 8706 EXISTS'
+  25:25.72 < b'* 0 RECENT'
+  25:25.72 < b'* OK [UIDNEXT 17307] Predicted next UID.'
+  25:25.72 < b'* OK [HIGHESTMODSEQ 2007117]'
+  25:25.72 < b'LFIN2 OK [READ-WRITE] INBOX selected. (Success)'
+  25:25.72 > b'LFIN3 UID SEARCH X-GM-RAW "category:primary" UNSEEN'
+  25:25.82 < b'* SEARCH'
+  25:25.82 < b'LFIN3 OK SEARCH completed (Success)'
+  25:25.82 > b'LFIN4 LOGOUT'
+  25:25.90 < b'* BYE LOGOUT Requested'
+  25:25.90 BYE response: b'LOGOUT Requested'
+[INFO] No email body found.
+[INFO] Run finished. Processed 0 email(s).
+C:\ChatGPT\Indeed\Indeed.py:279: SyntaxWarning: "\S" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\S"? A raw string is also an option.
+  mail.uid("STORE", uid, "-FLAGS", "\Seen")
+C:\ChatGPT\Indeed\Indeed.py:281: SyntaxWarning: "\D" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\D"? A raw string is also an option.
+  mail.uid("STORE", uid, "+FLAGS", "\Deleted")
+  30:24.74 imaplib version 2.60
+  30:24.74 new IMAP4 connection, tag=b'HEOD'
+  30:24.79 < b'* OK Gimap ready for requests from 98.173.62.74 41be03b00d2f7-bbeeec5ef01mb258601160a12'
+  30:24.79 > b'HEOD0 CAPABILITY'
+  30:24.84 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER'
+  30:24.84 < b'HEOD0 OK Thats all she wrote! 41be03b00d2f7-bbeeec5ef01mb258601160a12'
+  30:24.84 CAPABILITIES: ('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH2', 'AUTH=PLAIN', 'AUTH=PLAIN-CLIENTTOKEN', 'AUTH=OAUTHBEARER')
+  30:24.84 > b'HEOD1 LOGIN tinmanmusicman@gmail.com "jwhk piox dqnt jxqc"'
+  30:25.18 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 UIDPLUS COMPRESS=DEFLATE ENABLE MOVE CONDSTORE ESEARCH UTF8=ACCEPT LIST-EXTENDED LIST-STATUS LITERAL- SPECIAL-USE APPENDLIMIT=35651584'
+  30:25.18 < b'HEOD1 OK tinmanmusicman@gmail.com authenticated (Success)'
+  30:25.18 > b'HEOD2 SELECT INBOX'
+  30:25.28 < b'* FLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing)'
+  30:25.28 < b'* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing \\*)] Flags permitted.'
+  30:25.28 < b'* OK [UIDVALIDITY 1] UIDs valid.'
+  30:25.28 < b'* 8706 EXISTS'
+  30:25.28 < b'* 0 RECENT'
+  30:25.28 < b'* OK [UIDNEXT 17307] Predicted next UID.'
+  30:25.28 < b'* OK [HIGHESTMODSEQ 2007117]'
+  30:25.28 < b'HEOD2 OK [READ-WRITE] INBOX selected. (Success)'
+  30:25.28 > b'HEOD3 UID SEARCH X-GM-RAW "category:primary" UNSEEN'
+  30:25.38 < b'* SEARCH'
+  30:25.38 < b'HEOD3 OK SEARCH completed (Success)'
+  30:25.38 > b'HEOD4 LOGOUT'
+  30:25.46 < b'* BYE LOGOUT Requested'
+  30:25.46 BYE response: b'LOGOUT Requested'
+[INFO] No email body found.
+[INFO] Run finished. Processed 0 email(s).
+C:\ChatGPT\Indeed\Indeed.py:279: SyntaxWarning: "\S" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\S"? A raw string is also an option.
+  mail.uid("STORE", uid, "-FLAGS", "\Seen")
+C:\ChatGPT\Indeed\Indeed.py:281: SyntaxWarning: "\D" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\D"? A raw string is also an option.
+  mail.uid("STORE", uid, "+FLAGS", "\Deleted")
+  35:24.78 imaplib version 2.60
+  35:24.78 new IMAP4 connection, tag=b'MMMC'
+  35:24.84 < b'* OK Gimap ready for requests from 98.173.62.74 d2e1a72fcca58-7b767e783ecmb148494544b3a'
+  35:24.84 > b'MMMC0 CAPABILITY'
+  35:24.89 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 XYZZY SASL-IR AUTH=XOAUTH2 AUTH=PLAIN AUTH=PLAIN-CLIENTTOKEN AUTH=OAUTHBEARER'
+  35:24.89 < b'MMMC0 OK Thats all she wrote! d2e1a72fcca58-7b767e783ecmb148494544b3a'
+  35:24.89 CAPABILITIES: ('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH2', 'AUTH=PLAIN', 'AUTH=PLAIN-CLIENTTOKEN', 'AUTH=OAUTHBEARER')
+  35:24.89 > b'MMMC1 LOGIN tinmanmusicman@gmail.com "jwhk piox dqnt jxqc"'
+  35:25.26 < b'* CAPABILITY IMAP4rev1 UNSELECT IDLE NAMESPACE QUOTA ID XLIST CHILDREN X-GM-EXT-1 UIDPLUS COMPRESS=DEFLATE ENABLE MOVE CONDSTORE ESEARCH UTF8=ACCEPT LIST-EXTENDED LIST-STATUS LITERAL- SPECIAL-USE APPENDLIMIT=35651584'
+  35:25.26 < b'MMMC1 OK tinmanmusicman@gmail.com authenticated (Success)'
+  35:25.26 > b'MMMC2 SELECT INBOX'
+  35:25.37 < b'* FLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing)'
+  35:25.37 < b'* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Draft \\Deleted \\Seen $NotPhishing $Phishing \\*)] Flags permitted.'
+  35:25.37 < b'* OK [UIDVALIDITY 1] UIDs valid.'
+  35:25.37 < b'* 8706 EXISTS'
+  35:25.37 < b'* 0 RECENT'
+  35:25.37 < b'* OK [UIDNEXT 17307] Predicted next UID.'
+  35:25.37 < b'* OK [HIGHESTMODSEQ 2007117]'
+  35:25.37 < b'MMMC2 OK [READ-WRITE] INBOX selected. (Success)'
+  35:25.37 > b'MMMC3 UID SEARCH X-GM-RAW "category:primary" UNSEEN'
+  35:25.46 < b'* SEARCH'
+  35:25.46 < b'MMMC3 OK SEARCH completed (Success)'
+  35:25.46 > b'MMMC4 LOGOUT'
+  35:25.54 < b'* BYE LOGOUT Requested'
+  35:25.54 BYE response: b'LOGOUT Requested'
+[INFO] No email body found.
+[INFO] Run finished. Processed 0 email(s).
+C:\ChatGPT\Indeed\Indeed.py:289: SyntaxWarning: "\S" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\S"? A raw string is also an option.
+  mail.uid("STORE", uid, "-FLAGS", "\Seen")
+C:\ChatGPT\Indeed\Indeed.py:291: SyntaxWarning: "\D" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\D"? A raw string is also an option.
+  mail.uid("STORE", uid, "+FLAGS", "\Deleted")
+  40:24.70 imaplib version 2.60
+  40:24.70 new IMAP4 connection, tag=b'OHAM'
+  40:25.34 BYE response: b'LOGOUT Requested'
+[INFO] Line 353 calling main process
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+[INFO] Run finished. Processed 0 email(s).
+C:\ChatGPT\Indeed\Indeed.py:289: SyntaxWarning: "\S" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\S"? A raw string is also an option.
+  mail.uid("STORE", uid, "-FLAGS", "\Seen")
+C:\ChatGPT\Indeed\Indeed.py:291: SyntaxWarning: "\D" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\D"? A raw string is also an option.
+  mail.uid("STORE", uid, "+FLAGS", "\Deleted")
+  45:24.71 imaplib version 2.60
+  45:24.71 new IMAP4 connection, tag=b'DEEC'
+  45:25.33 BYE response: b'LOGOUT Requested'
+[INFO] Line 353 calling main process
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+[INFO] Run finished. Processed 0 email(s).
+  50:24.74 imaplib version 2.60
+  50:24.74 new IMAP4 connection, tag=b'HLMH'
+  50:25.47 BYE response: b'LOGOUT Requested'
+[INFO] Line 353 calling main process
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+[INFO] Run finished. Processed 0 email(s).
+  55:25.34 imaplib version 2.60
+  55:25.34 new IMAP4 connection, tag=b'LPOM'
+  55:26.02 BYE response: b'LOGOUT Requested'
+[INFO] Line 353 calling main process
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+[INFO] Run finished. Processed 0 email(s).
+  00:25.32 imaplib version 2.60
+  00:25.32 new IMAP4 connection, tag=b'CKOL'
+  00:25.90 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  05:24.87 imaplib version 2.60
+  05:24.87 new IMAP4 connection, tag=b'NOON'
+  05:25.46 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
