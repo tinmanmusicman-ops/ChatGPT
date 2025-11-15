@@ -4161,3 +4161,71 @@ C:\ChatGPT\Indeed\Indeed.py:291: SyntaxWarning: "\D" is an invalid escape sequen
 [INFO] No email body found.
 
 [INFO] Run finished. Processed 0 email(s).
+  40:25.26 imaplib version 2.60
+  40:25.26 new IMAP4 connection, tag=b'PKBJ'
+  40:25.95 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  45:25.20 imaplib version 2.60
+  45:25.20 new IMAP4 connection, tag=b'HPBN'
+  45:25.90 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  50:25.25 imaplib version 2.60
+  50:25.25 new IMAP4 connection, tag=b'HBJP'
+  50:25.86 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  55:25.14 imaplib version 2.60
+  55:25.14 new IMAP4 connection, tag=b'JOPF'
+  55:25.69 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  00:25.15 imaplib version 2.60
+  00:25.15 new IMAP4 connection, tag=b'KPPB'
+  00:25.76 BYE response: b'LOGOUT Requested'
+
+[INFO] Line 354 calling main process
+
+[INFO] Line 227 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+
+[INFO] Line 354 calling main process
+Traceback (most recent call last):
+  File "C:\ChatGPT\Indeed\Indeed.py", line 436, in <module>
+    main()
+    ~~~~^^
+  File "C:\ChatGPT\Indeed\Indeed.py", line 356, in main
+    cfg = load_config()
+  File "C:\ChatGPT\Indeed\Indeed.py", line 93, in load_config
+    return json.loads((base_dir / "config.json").read_text())
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\SCRC\AppData\Local\Programs\Python\Python314\Lib\pathlib\__init__.py", line 792, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\SCRC\AppData\Local\Programs\Python\Python314\Lib\pathlib\__init__.py", line 776, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'C:\\ChatGPT\\Indeed\\config.json'
