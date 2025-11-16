@@ -1,0 +1,41 @@
+WORKFLOW SUMMARY: Indeed Email Processor
+=======================================
+
+1. Startup
+   - `main()` logs start and loads config (UTF-8, validated).
+   - Optionally runs in debug mode using `email_body.txt` once and exits.
+
+2. Normal Run
+   - Loop up to `cfg.max_emails_per_run`.
+   - `get_unread_email_body`
+        • Connects to Gmail (IMAP, Primary category, unseen).
+        • Extracts HTML/plain body, original sender, checks job relevance.
+        • Non-job -> label `NotRead`, delete, return empty body.
+        • Job -> copy to `Processed`, delete original, return body+UID+source.
+   - `process_email_payload`
+        • Skips empty trimmed body.
+        • Logs source email, calls `extract_jobs_from_email`.
+        • On success, calls `append_jobs_to_sheet`.
+
+3. AI Extraction (`extract_jobs_from_email`)
+   - Sends `EXTRACTION_PROMPT` to OpenAI (model from config).
+   - Parses JSON, clamps jobs to `cfg.max_jobs_per_email`.
+   - Each job carries name, company, salary, summary, decision_factors, location, URL.
+
+4. Sheets Append (`append_jobs_to_sheet`)
+   - Ensures headers match canonical schema, caches worksheet and URLs.
+   - Rejects duplicate URLs with log.
+   - Builds rows with timestamp, elapsed, hyperlink formula, metadata.
+   - Appends rows via gspread.
+   - Adds hover notes to every inserted cell (timestamp through source email).
+
+5. Helpers
+   - `_get_existing_sheet_urls` loads column C formulas to avoid duplicates.
+   - `_ensure_sheet_headers` refreshes `A1:I1` when needed.
+   - `is_relevant_job_email`, `extract_original_sender_from_body`, `mark_email_as_read` (unused).
+
+Output Files
+------------
+- `Indeed/flowchart.txt` – Textual flowchart for reference.
+- `flowchart.txt` – Same content at repo root (earlier version).
+

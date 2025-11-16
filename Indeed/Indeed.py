@@ -110,6 +110,8 @@ JOB_DOMAINS = (
     "linkedin",
 )
 
+COLUMN_LETTERS = ["A", "B", "C", "D", "E", "F", "G", "H", "I"]
+
 SHEET_HEADERS = [
     "Timestamp",
     "Elapsed Seconds",
@@ -473,12 +475,18 @@ def append_jobs_to_sheet(jobs,cfg,from_email,elapsed):
     _ensure_sheet_headers(ws)
     existing_urls = _get_existing_sheet_urls(ws)
     ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    try:
+        current_row_count = len(ws.col_values(1, value_render_option="UNFORMATTED_VALUE"))
+    except Exception:
+        current_row_count = ws.row_count or 1
+    row_base = current_row_count + 1
 
     def _escape_for_formula(text: str | None) -> str:
         return (text or "").replace('"', '""')
 
     rows = []
     new_urls = []
+    note_rows = []
     for i, job in enumerate(jobs):
         url = job.get("url") or ""
         job_name = job.get("job_name") or "Job Link"
@@ -506,6 +514,19 @@ def append_jobs_to_sheet(jobs,cfg,from_email,elapsed):
         )
         if url:
             new_urls.append(url)
+        note_rows.append(
+            [
+                ts if i == 0 else "",
+                f"{elapsed:.3f}" if i == 0 else "",
+                url or job_name,
+                job.get("company_name") or "",
+                job.get("location") or "",
+                job.get("salary") or "",
+                job.get("company_summary") or "",
+                job.get("decision_factors") or "",
+                from_email if i == 0 else "",
+            ]
+        )
     if not rows:
         print("[INFO] No new rows to append after removing duplicates.")
         return
@@ -515,6 +536,17 @@ def append_jobs_to_sheet(jobs,cfg,from_email,elapsed):
         for url in new_urls:
             existing_urls.add(url)
         print(f"[OK] Appended {len(rows)} row(s).")
+        for row_offset, note_values in enumerate(note_rows):
+            row_number = row_base + row_offset
+            for col_idx, note in enumerate(note_values):
+                if not note:
+                    continue
+                column_letter = COLUMN_LETTERS[col_idx]
+                cell = f"{column_letter}{row_number}"
+                try:
+                    ws.update_note(cell, note)
+                except Exception as exc:
+                    print(f"[WARN] Failed to set note for {cell}: {exc}")
     except Exception as exc:
         print(f"[WARN] Failed to append rows to sheet: {exc}")
 
