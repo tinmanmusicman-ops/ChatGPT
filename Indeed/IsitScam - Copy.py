@@ -2,9 +2,7 @@ import email
 import imaplib
 import json
 import re
-import smtplib
-from email.message import EmailMessage
-from email.utils import formatdate, make_msgid, parseaddr
+from email.utils import parseaddr
 from pathlib import Path
 
 import requests
@@ -14,7 +12,6 @@ CONFIG_NAME = "config.json"
 GMAIL_HOST = "imap.gmail.com"
 GMAIL_FOLDER = "inbox"
 RAW_QUERY = 'category:primary is:unread subject:Scam'
-SCAM_FOLDER = "Scam"
 FROM_LINE_PATTERN = re.compile(r"^[>\s\-\|]*from:\s*(.+)$", flags=re.IGNORECASE | re.MULTILINE)
 PROMPT = (
     "You are a security analyst. Decide whether the email below is a scam. "
@@ -50,47 +47,13 @@ def extract_body(message):
     return message.get_payload()
 
 
-def collect_from_blocks(text):
-    matches = list(FROM_LINE_PATTERN.finditer(text))
-    senders = []
-    blocks = []
-
-    if not matches:
-        return [], [text]
-
-    for idx, match in enumerate(matches):
-        start = match.end()
-        end = matches[idx + 1].start() if idx + 1 < len(matches) else len(text)
-        segment = text[start:end].strip()
+def extract_from_lines(text):
+    matches = []
+    for match in FROM_LINE_PATTERN.finditer(text):
         addr = parseaddr(match.group(1).strip())[1]
         if addr:
-            senders.append(addr)
-            blocks.append(segment)
-
-    if not senders:
-        return [], [text]
-    return senders, blocks
-
-
-def strip_scam_prefix(subject):
-    if not subject:
-        return ""
-    return re.sub(r"^\s*scam[:\-\s]*", "", subject, flags=re.IGNORECASE, count=1).strip()
-
-
-def forward_message(body, recipient, subject, username, password):
-    msg = EmailMessage()
-    safe_subject = re.sub(r"[\r\n]+", " ", subject or "Forwarded message").strip()
-    msg["From"] = username.strip()
-    msg["To"] = recipient.strip()
-    msg["Subject"] = safe_subject or "Forwarded message"
-    msg["Date"] = formatdate(localtime=True)
-    msg["Message-ID"] = make_msgid()
-    msg.set_content(body or "(Empty body)")
-
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
-        smtp.login(username, password)
-        smtp.send_message(msg)
+            matches.append(addr)
+    return matches
 
 
 def analyze_body(body, sender, config):
@@ -150,53 +113,11 @@ def fetch_unread_scam():
             raise RuntimeError(f"Unable to fetch email UID {latest_uid!r}")
 
         message = email.message_from_bytes(payload[0][1])
-        subject = message.get("Subject", "")
-        subject_prefix = (subject.lstrip()[:4] or "").lower()
-        if subject_prefix != "scam":
-            print(f"Skipping email UID {latest_uid.decode() if isinstance(latest_uid, bytes) else latest_uid}: subject '{subject}' does not start with 'Scam'.")
-            client.uid("STORE", latest_uid, "-FLAGS", r"(\Seen)")
-            return
-        cleaned_subject = strip_scam_prefix(subject)
-
         body = extract_body(message)
-        from_addresses, body_segments = collect_from_blocks(body)
-        if from_addresses:
-            sender_for_ai = from_addresses[-1]
-            body_for_ai = body_segments[-1] if body_segments else body
-            body_for_ai = body_for_ai or body
-        else:
-            sender_for_ai = ""
-            body_for_ai = body
-
-        analysis = analyze_body(body_for_ai, sender_for_ai, config)
-        summary = analysis.get("summary", "No summary provided.")
-        is_scam = bool(analysis.get("is_scam"))
-
-        action_msg = "Forwarded sanitized copy back to inbox."
-        if is_scam:
-            copy_status, copy_data = client.uid("COPY", latest_uid, SCAM_FOLDER)
-            if copy_status != "OK":
-                raise RuntimeError(f"Failed to copy email {latest_uid!r} to {SCAM_FOLDER}: {copy_data}")
-            store_status, store_data = client.uid("STORE", latest_uid, "+FLAGS", r"(\Deleted)")
-            if store_status != "OK":
-                raise RuntimeError(f"Failed to mark email {latest_uid!r} for deletion: {store_data}")
-            client.expunge()
-            action_msg = f"Moved to '{SCAM_FOLDER}' (copied + deleted original)."
-        else:
-            envelope_sender = config.get("gmail_user") or config.get("user")
-            if envelope_sender and username and password:
-                forward_message(body_for_ai, envelope_sender, cleaned_subject, username, password)
-            delete_status, delete_data = client.uid("STORE", latest_uid, "+FLAGS", r"(\Deleted)")
-            if delete_status != "OK":
-                raise RuntimeError(f"Failed to mark legitimate email {latest_uid!r} for deletion: {delete_data}")
-            client.expunge()
-            action_msg = "Forwarded sanitized copy and removed original."
-
-        print(
-            f"Sender: {sender_for_ai or 'unknown'} | Subject: {subject} | "
-            f"Summary: {summary} | Action: {action_msg}"
-        )
-
+        from_addresses = extract_from_lines(body)
+        sender_for_ai = from_addresses[1] if len(from_addresses) > 1 else (from_addresses[0] if from_addresses else "")
+        analysis = analyze_body(body, sender_for_ai, config)
+        breakpoint()  # Inspect `body`, `from_addresses`, `analysis`.
 
 
 if __name__ == "__main__":

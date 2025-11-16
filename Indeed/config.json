@@ -16,6 +16,12 @@
     "donotreply@match.indeed.com"
   ],
   "gmail_from_filter": "jobalerts-noreply@linkedin.com",
+  "trusted_senders": [
+    "donotreply@match.indeed.com",
+    "noreply@indeed.com",
+    "alerts@indeed.com",
+    "jobalerts-noreply@linkedin.com"
+  ],
  "spreadsheet_id": "1IYrpGlyCSIilIEyRA70Uq2iUofl-sPA94ygH9ZL-2ag",
   "worksheet_name": "Inbox",
   "service_account_json": "sa_key.json",
