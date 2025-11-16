@@ -88,45 +88,82 @@ If there is not enough information to say anything meaningful about the company,
 
 """
 
+JOB_KEYWORDS = (
+    "linkedin",
+    "automation",
+    "jobalerts",
+    "job_alert",
+    "job alert",
+    "job",
+    "jobs",
+    "view job",
+    "apply now",
+    "new job",
+)
+
+JOB_DOMAINS = (
+    "indeed",
+    "linkedin",
+)
+
 
 def load_config():
-    return json.loads((base_dir / "config.json").read_text())
+    cfg_path = base_dir / "config.json"
+    try:
+        raw = cfg_path.read_text(encoding="utf-8")
+    except FileNotFoundError as exc:
+        raise SystemExit(f"Missing config file: {cfg_path}") from exc
+
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise SystemExit(f"Malformed JSON in config file: {cfg_path}") from exc
 
 def get_openai_client(cfg):
-    print(f"\n[INFO] Calling get_openai_client(cfg")
- 
+    print(f"\n[INFO] Calling get_openai_client(cfg)")
+
     api_key = cfg.get("openai_api_key") or os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        raise SystemExit("Missing OpenAI API key. Set openai_api_key in config.json or OPENAI_API_KEY env var.")
+
     return OpenAI(api_key=api_key)
 
 #    print(f"[INFO] Line {inspect.currentframe().f_lineno} AI extraction started…")
  
 def mark_email_as_read(cfg, uid):
-    print(f"\n[INFO]  Line {inspect.currentframe().f_lineno} Calling mark_email_as_read(cfg, uid)")
+    print(f"\n[INFO] Calling mark_email_as_read for UID {uid}")
+    mail = None
     try:
         mail = imaplib.IMAP4_SSL("imap.gmail.com")
         mail.login(cfg["gmail_user"], cfg["gmail_app_password"])
         mail.select("INBOX")
- 
+
         res_lbl, data_lbl = mail.uid("FETCH", uid, "(X-GM-LABELS)")
         print("[DEBUG] CURRENT LABELS:", res_lbl, data_lbl)
-        input(">>> PAUSED — press Enter to continue...")
- 
- #
-        mail.uid("STORE", uid, "+X-GM-LABELS", "(\\P)")
+
+        mail.uid("STORE", uid, "+X-GM-LABELS", "(\\Processed)")
         mail.uid("STORE", uid, "-X-GM-LABELS", "(\\Inbox)")
         print(f"[INFO] Labeled UID {uid} as Processed.")
- #
- 
- 
-        mail.logout()
+
         print(f"[INFO] Marked UID {uid} as read.")
     except Exception as e:
         print(f"[WARN] Could not mark {uid} read: {e}")
- 
+    finally:
+        if mail is not None:
+            try:
+                mail.logout()
+            except Exception:
+                pass
  #  print(f"[INFO] Calling ")
 
+_FORWARDED_FROM_PATTERN = re.compile(
+    r"^\s*>?\s*From:\s*(?:.*<([^>]+)>|([^ \r\n]+@[^ \r\n]+))",
+    re.IGNORECASE | re.MULTILINE,
+)
+
+
 def extract_original_sender_from_body(body: str) -> str | None:
-    print(f"\n[INFO] Line {inspect.currentframe().f_lineno} Calling extract_original_sender_from_body(body: str)")
+    print(f"\n[INFO] Calling extract_original_sender_from_body(body: str)")
 
     """
     Try to detect the original sender in a forwarded email body.
@@ -136,30 +173,37 @@ def extract_original_sender_from_body(body: str) -> str | None:
       From: email@example.com
     """
     if not body:
+        print("[DEBUG] extract_original_sender_from_body: empty body")
         return None
 
-    pattern = re.compile(
-        r"^From:\s*(?:.*<([^>]+)>|([^ \r\n]+@[^ \r\n]+))",
-        re.IGNORECASE | re.MULTILINE,
-    )
-    match = pattern.search(body)
-    if not match:
+    # Grab the portion below a forwarded separator if available to reduce noise.
+    separator = "-----Original Message-----"
+    forwarded_section = body.split(separator, 1)[-1] if separator in body else body
+
+    matches = list(_FORWARDED_FROM_PATTERN.finditer(forwarded_section))
+    if not matches:
+        print("[DEBUG] extract_original_sender_from_body: no From lines found")
         return None
 
-    email_addr = match.group(1) or match.group(2)
-#    breakpoint()
-    return email_addr.strip()
+    for match in reversed(matches):
+        email_addr = match.group(1) or match.group(2)
+        if email_addr:
+            sender = email_addr.strip()
+            print(f"[DEBUG] extract_original_sender_from_body: found {sender}")
+            return sender
+    print("[DEBUG] extract_original_sender_from_body: matches lacked addresses")
+    return None
 
 def is_relevant_job_email(body: str) -> bool:
-    print(f"[INFO] Line {inspect.currentframe().f_lineno} Calling is_relevant_job_email(body: str)")  
+    print("[INFO] Checking whether email appears job-related.")
     if not body:
         return False
+
     text = body.lower()
-    job_keywords = ("linkedin", "automation", "jobalerts", "job_alert", "job alert","job","jobs","view job","apply now","new job")
-    if not any(k in text for k in job_keywords):
+    if not any(keyword in text for keyword in JOB_KEYWORDS):
         return False
-    domains = ("indeed","linkedin")
-    if not any(d in body for d in domains):
+
+    if not any(domain in text for domain in JOB_DOMAINS):
         return False
     return True
 
@@ -305,49 +349,110 @@ def get_unread_email_body(cfg):
     return body, uid, source_email
 # end of copy email
 
+_GSHEET_WORKSHEET = None
+
+
 def get_gsheet_worksheet(cfg):
-    print(f"\n[INFO] Line {inspect.currentframe().f_lineno} Calling get_gsheet_worksheet(cfg)")
+    print("[INFO] Obtaining Google Sheet worksheet.")
+    global _GSHEET_WORKSHEET
+    if _GSHEET_WORKSHEET is not None:
+        return _GSHEET_WORKSHEET
 
-    sa=base_dir/cfg.get("service_account_json","sa_key.json")
-    scopes=["https://www.googleapis.com/auth/spreadsheets","https://www.googleapis.com/auth/drive"]
-    creds=Credentials.from_service_account_file(str(sa),scopes=scopes)
-    client=gspread.authorize(creds)
-    sh=client.open_by_key(cfg["spreadsheet_id"])
-    return sh.worksheet(cfg["worksheet_name"])
+    sa = base_dir / cfg.get("service_account_json", "sa_key.json")
+    if not sa.exists():
+        raise SystemExit(f"Missing Google service account file: {sa}")
 
-def append_jobs_to_sheet(jobs,cfg,from_email,elapsed):
-    print(f"\n[INFO] Line {inspect.currentframe().f_lineno} Calling append_jobs_to_sheet")
-
-    ws=get_gsheet_worksheet(cfg)
-    ts=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
- 
- 
- 
-    rows = [
- 
-    [
-        ts if i == 0 else "",
-        f"{elapsed:.3f}" if i == 0 else "",
-        f'=HYPERLINK("{j["url"]}", "{j["job_name"] or "Job Link"}")',
-        j["company_name"] or "",
-        j["location"] or "",
-        j["company_summary"] or "",
-        j["decision_factors"] or "",
-        from_email if i == 0 else ""
+    scopes = [
+        "https://www.googleapis.com/auth/spreadsheets",
+        "https://www.googleapis.com/auth/drive",
     ]
- 
-    for i, j in enumerate(jobs)
-    ]
- 
+    creds = Credentials.from_service_account_file(str(sa), scopes=scopes)
+    client = gspread.authorize(creds)
+    spreadsheet_id = cfg.get("spreadsheet_id")
+    worksheet_name = cfg.get("worksheet_name")
+
+    if not spreadsheet_id or not worksheet_name:
+        raise SystemExit("spreadsheet_id and worksheet_name must be set in config.json")
+
+    try:
+        sh = client.open_by_key(spreadsheet_id)
+    except gspread.SpreadsheetNotFound as exc:
+        raise SystemExit(f"Spreadsheet not found: {spreadsheet_id}") from exc
+
+    try:
+        _GSHEET_WORKSHEET = sh.worksheet(worksheet_name)
+    except gspread.WorksheetNotFound as exc:
+        raise SystemExit(f"Worksheet not found: {worksheet_name}") from exc
+
+    return _GSHEET_WORKSHEET
+
+def append_jobs_to_sheet(jobs, cfg, from_email, elapsed):
+    print("[INFO] Preparing to append jobs to Google Sheet.")
+    if not jobs:
+        print("[INFO] No jobs to append.")
+        return
+
+    ws = get_gsheet_worksheet(cfg)
+    ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    def _escape_for_formula(text: str | None) -> str:
+        return (text or "").replace('"', '""')
+
+    rows = []
+    for i, job in enumerate(jobs):
+        url = job.get("url") or ""
+        job_name = job.get("job_name") or "Job Link"
+        hyperlink = (
+            f'=HYPERLINK("{_escape_for_formula(url)}", "{_escape_for_formula(job_name)}")'
+            if url
+            else job_name
+        )
+
+        rows.append(
+            [
+                ts if i == 0 else "",
+                f"{elapsed:.3f}" if i == 0 else "",
+                hyperlink,
+                job.get("company_name") or "",
+                job.get("location") or "",
+                job.get("company_summary") or "",
+                job.get("decision_factors") or "",
+                from_email if i == 0 else "",
+            ]
+        )
+
+    try:
+        ws.append_rows(rows, value_input_option="USER_ENTERED")
+        print(f"[OK] Appended {len(rows)} row(s).")
+    except Exception as exc:
+        print(f"[WARN] Failed to append rows to sheet: {exc}")
 
 
+def process_email_payload(body, uid, from_email, cfg, context=""):
+    label = f" ({context})" if context else ""
+    trimmed_body = body.strip() if body else ""
 
+    if not trimmed_body:
+        if from_email:
+            print(f"[INFO] Skipping non-job or empty body from {from_email}{label}.")
+        else:
+            print(f"[INFO] Empty body{label}.")
+        return False
 
-#    rows=[[ts,j["job_name"] or "",j["company_name"] or "",j["url"],j["company_summary"] or ""] for j in jobs]
-    ws.append_rows(rows,value_input_option="USER_ENTERED")
-    print(f"[OK] Appended {len(rows)} row(s).")
+    sender = (from_email or "").strip()
+    if sender:
+        print(f"[INFO] Source email detected{label}: {sender}")
 
+    jobs, elapsed = extract_jobs_from_email(trimmed_body, cfg)
+    if not jobs:
+        print(f"[INFO] Looked job-related but no jobs extracted{label}.")
+        return False
 
+    append_jobs_to_sheet(jobs, cfg, sender, elapsed)
+
+    if uid:
+        print(f"[OK] Done{label}.")
+    return True
 
 
 def main():
