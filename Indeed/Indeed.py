@@ -20,7 +20,7 @@ EXTRACTION_PROMPT = """
 You are a data extraction assistant.
 
 Task:
-Given the full HTML or plain-text body of an email that may contain multiple links, do the following:
+Given the email subject and the full HTML or plain-text body of an email that may contain multiple links, do the following:
 
 1. Extract only job-related URLs:
    - Job posting links
@@ -38,7 +38,9 @@ Ignore:
 2. For each job URL:
    - Infer job_name
    - Infer company_name
+   - Infer whether the role is remote, hybrid, or on-site (call this field work_arrangement). If unclear, return null.
    - Infer salary information (exact figure or range if provided; otherwise null)
+   - Infer the location. Prefer explicit location info in the email body; if the body lacks it, extract just the City and State from the subject line.
    - If unsure, return null
    
 3. For each job URL, also extract a single field called decision_factors:
@@ -81,6 +83,7 @@ If there is not enough information to say anything meaningful about the company,
       "company_name": string|null,
       "url": string,
       "company_summary": string|null,
+      "work_arrangement": string|null,
       "salary": string|null,
       "decision_factors": string|null
       "location": string|null
@@ -110,7 +113,7 @@ JOB_DOMAINS = (
     "linkedin",
 )
 
-COLUMN_LETTERS = ["A", "B", "C", "D", "E", "F", "G", "H", "I"]
+COLUMN_LETTERS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]
 
 SHEET_HEADERS = [
     "Timestamp",
@@ -118,6 +121,7 @@ SHEET_HEADERS = [
     "Job Link",
     "Company",
     "Location",
+    "Work Arrangement",
     "Salary",
     "Company Summary",
     "Decision Factors",
@@ -128,6 +132,33 @@ _FORWARDED_FROM_PATTERN = re.compile(
     r"^\s*>?\s*From:\s*(?:.*<([^>]+)>|([^ \r\n]+@[^ \r\n]+))",
     re.IGNORECASE | re.MULTILINE,
 )
+_CITY_STATE_PATTERN = re.compile(r"([A-Za-z][A-Za-z .'-]+,\s?[A-Z]{2})(?=[^A-Za-z]|$)")
+
+
+def _decode_mime_header(value: str | None) -> str:
+    """Decode MIME-encoded headers (like Subject) into a readable string."""
+    if not value:
+        return ""
+    parts = []
+    for text, charset in decode_header(value):
+        if isinstance(text, bytes):
+            try:
+                parts.append(text.decode(charset or "utf-8", "replace"))
+            except Exception:
+                parts.append(text.decode("utf-8", "replace"))
+        else:
+            parts.append(text)
+    return "".join(parts).strip()
+
+
+def _extract_city_state_from_subject(subject: str) -> str:
+    """Extract the last 'City, ST' pattern from a subject line, if present."""
+    if not subject:
+        return ""
+    match = None
+    for match in _CITY_STATE_PATTERN.finditer(subject):
+        pass
+    return match.group(1).strip() if match else ""
 
 
 def load_config():
@@ -221,17 +252,22 @@ def is_relevant_job_email(body: str) -> bool:
         return False
     return True
 
-def extract_jobs_from_email(body, cfg):
+def extract_jobs_from_email(body, cfg, subject=""):
     print(f"\n[INFO] Line {inspect.currentframe().f_lineno} AI extraction started…")
     ai_start = time.time()
     ai_start_timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     print(f"[INFO] AI request sent at {ai_start_timestamp}")
 
     client = get_openai_client(cfg)
+    formatted_subject = (subject or "").strip()
+    if formatted_subject:
+        model_input = f"Email Subject:\n{formatted_subject}\n\nEmail Body:\n{body}"
+    else:
+        model_input = body
     response = client.responses.create(
         model=cfg.get("openai_model","gpt-4.1-mini"),
         instructions=EXTRACTION_PROMPT.strip(),
-        input=body,
+        input=model_input,
         temperature=0.1,
     )
 
@@ -280,6 +316,7 @@ def extract_jobs_from_email(body, cfg):
                 "job_name":j.get("job_name"),
                 "company_name":j.get("company_name"),
                 "company_summary":j.get("company_summary"),
+                "work_arrangement": j.get("work_arrangement"),
                 "salary": j.get("salary"),
                 "location": j.get("location"),
                 "decision_factors": j.get("decision_factors"),
@@ -325,6 +362,7 @@ def get_unread_email_body(cfg):
     from_header = (msg.get("From", "") or "").strip()
     name, addr = parseaddr(from_header)
     header_from_email = (addr or from_header).strip()
+    subject = _decode_mime_header(msg.get("Subject", ""))
 
     body = ""
     if msg.is_multipart():
@@ -362,7 +400,7 @@ def get_unread_email_body(cfg):
         # Logout cleanly before returning to caller
         mail.logout()
         # Return an empty body so the caller continues the loop
-        return "", None, source_email
+        return "", None, source_email, subject
 
     try:
         mail.uid("COPY", uid, "Processed")
@@ -371,7 +409,7 @@ def get_unread_email_body(cfg):
     except Exception:
         pass
     mail.logout()
-    return body, uid, source_email
+    return body, uid, source_email, subject
 # end of copy email
 
 _GSHEET_WORKSHEET = None
@@ -460,10 +498,18 @@ def _ensure_sheet_headers(ws):
         return
 
     try:
-        ws.update("A1:I1", [SHEET_HEADERS])
+        ws.update("A1:J1", [SHEET_HEADERS])
         print("[INFO] Sheet headers refreshed.")
     except Exception as exc:
         print(f"[WARN] Failed to update sheet headers: {exc}")
+
+def _ensure_wrap_clip(ws):
+    '''Ensure sheet columns retain CLIP wrapping.'''
+    try:
+        ws.format('A:J', {'wrapStrategy': 'CLIP'})
+    except Exception as exc:
+        print(f"[WARN] Failed to enforce wrap strategy: {exc}")
+
 
 def append_jobs_to_sheet(jobs,cfg,from_email,elapsed):
     print("[INFO] Preparing to append jobs to Google Sheet.")
@@ -473,12 +519,16 @@ def append_jobs_to_sheet(jobs,cfg,from_email,elapsed):
 
     ws = get_gsheet_worksheet(cfg)
     _ensure_sheet_headers(ws)
+    _ensure_wrap_clip(ws)
     existing_urls = _get_existing_sheet_urls(ws)
     ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     try:
-        current_row_count = len(ws.col_values(1, value_render_option="UNFORMATTED_VALUE"))
+        current_row_count = len(ws.col_values(3, value_render_option="UNFORMATTED_VALUE"))
     except Exception:
-        current_row_count = ws.row_count or 1
+        try:
+            current_row_count = len(ws.get_all_values())
+        except Exception:
+            current_row_count = ws.row_count or 1
     row_base = current_row_count + 1
 
     def _escape_for_formula(text: str | None) -> str:
@@ -506,6 +556,7 @@ def append_jobs_to_sheet(jobs,cfg,from_email,elapsed):
                 hyperlink,
                 job.get("company_name") or "",
                 job.get("location") or "",
+                job.get("work_arrangement") or "",
                 job.get("salary") or "",
                 job.get("company_summary") or "",
                 job.get("decision_factors") or "",
@@ -521,6 +572,7 @@ def append_jobs_to_sheet(jobs,cfg,from_email,elapsed):
                 url or job_name,
                 job.get("company_name") or "",
                 job.get("location") or "",
+                job.get("work_arrangement") or "",
                 job.get("salary") or "",
                 job.get("company_summary") or "",
                 job.get("decision_factors") or "",
@@ -551,7 +603,7 @@ def append_jobs_to_sheet(jobs,cfg,from_email,elapsed):
         print(f"[WARN] Failed to append rows to sheet: {exc}")
 
 
-def process_email_payload(body, uid, from_email, cfg, context=""):
+def process_email_payload(body, uid, from_email, cfg, subject="", context=""):
     label = f" ({context})" if context else ""
     trimmed_body = body.strip() if body else ""
 
@@ -566,10 +618,27 @@ def process_email_payload(body, uid, from_email, cfg, context=""):
     if sender:
         print(f"[INFO] Source email detected{label}: {sender}")
 
-    jobs, elapsed = extract_jobs_from_email(trimmed_body, cfg)
+    jobs, elapsed = extract_jobs_from_email(trimmed_body, cfg, subject=subject)
     if not jobs:
         print(f"[INFO] Looked job-related but no jobs extracted{label}.")
         return False
+
+    subject_text = (subject or "").strip()
+    fallback_location = ""
+    city_state_only = ""
+    if subject_text:
+        city_state_only = _extract_city_state_from_subject(subject_text)
+        fallback_location = city_state_only or subject_text
+    if fallback_location:
+        lowered_subject = subject_text.lower()
+        for job in jobs:
+            loc = (job.get("location") or "").strip()
+            if not loc:
+                job["location"] = fallback_location
+            elif city_state_only:
+                loc_lower = loc.lower()
+                if loc_lower == lowered_subject or lowered_subject in loc_lower:
+                    job["location"] = city_state_only
 
     append_jobs_to_sheet(jobs, cfg, sender, elapsed)
 
@@ -600,6 +669,7 @@ def main():
             uid=None,
             from_email=from_email,
             cfg=cfg,
+            subject=cfg.get("debug_subject", ""),
             context="debug mode",
         )
         if processed:
@@ -631,8 +701,8 @@ def main():
                 print("[INFO] No email body found.")
             break
 
-        body, uid, from_email = result
-        processed = process_email_payload(body, uid, from_email, cfg)
+        body, uid, from_email, subject = result
+        processed = process_email_payload(body, uid, from_email, cfg, subject=subject)
         processed_any = processed_any or processed
         processed_count += 1
 
