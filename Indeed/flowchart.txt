@@ -1,0 +1,80 @@
+FLOWCHART: Indeed Email Processor
+=================================
+
+[Start]
+  |
+  v
+[main()]
+  - Log run start
+  - load_config()
+  - Debug mode? (cfg.debug_use_email_body_file)
+        | Yes                            | No
+        v                                v
+  [Read email_body.txt]          [Normal processing loop]
+        |                                |
+        v                                v
+  process_email_payload()        Loop (processed_count < max_emails_per_run)
+        |                                |
+        v                                v
+  [Done (debug mode)]            get_unread_email_body(cfg)
+                                         |
+                                         v
+                               Result? ------------> No
+                                 |Yes                 |
+                                 v                   v
+                       process_email_payload()   Log "No email body"
+                                 |
+                                 v
+                         processed_any updated
+                                 |
+                                 v
+                       processed_count incremented
+                                 |
+                                 v
+                               Loop End?
+                                 |
+                                 v
+                              [Finish]
+                                 |
+                                 v
+                    Log total processed emails
+
+process_email_payload()
+  - Trim body; skip empty
+  - Log source email (if present)
+  - extract_jobs_from_email()
+  - Append jobs to sheet (append_jobs_to_sheet)
+  - Log completion
+
+extract_jobs_from_email()
+  - Build OpenAI client
+  - Call Responses API with EXTRACTION_PROMPT
+  - Parse response text -> JSON
+  - Iterate data.jobs (stop at cfg.max_jobs_per_email)
+  - Return jobs + elapsed time
+
+get_unread_email_body()
+  - Connect via IMAP
+  - Search Gmail inbox for unseen primary emails
+  - Fetch message body (prefers HTML)
+  - Detect original sender
+  - Filter with is_relevant_job_email()
+      * Non-job -> move to NotRead label, delete, return ""
+      * Job -> copy to Processed, delete original, return body/uid/from
+
+append_jobs_to_sheet()
+  - Obtain cached worksheet via get_gsheet_worksheet()
+  - Build rows with timestamp, elapsed, hyperlinks, metadata
+  - Append rows via gspread
+
+get_gsheet_worksheet()
+  - Load service account credentials (sa_key.json)
+  - Authorize gspread client
+  - Open spreadsheet and worksheet (cached)
+
+Supporting helpers
+  - is_relevant_job_email(): keyword + domain heuristics
+  - extract_original_sender_from_body(): regex search of forwarded headers
+  - mark_email_as_read(): Gmail labeling (unused in main loop)
+
+[End]

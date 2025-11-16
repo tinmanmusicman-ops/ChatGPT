@@ -92,11 +92,13 @@ JOB_KEYWORDS = (
     "linkedin",
     "automation",
     "jobalerts",
+    "jobalert",
     "job_alert",
     "job alert",
     "job",
     "jobs",
     "view job",
+    "view openings",
     "apply now",
     "new job",
 )
@@ -247,6 +249,14 @@ def extract_jobs_from_email(body, cfg):
     except:
         print("[ERROR] JSON load fail")
         return []
+    max_jobs = cfg.get("max_jobs_per_email", 5)
+    try:
+        max_jobs = int(max_jobs)
+    except (TypeError, ValueError):
+        max_jobs = 5
+    if max_jobs < 1:
+        max_jobs = 1
+
     jobs=[]
     for j in data.get("jobs",[]):
         if isinstance(j,dict) and j.get("url"):
@@ -258,6 +268,8 @@ def extract_jobs_from_email(body, cfg):
                 "decision_factors": j.get("decision_factors"),
                 "url":j.get("url")
             })
+            if len(jobs) >= max_jobs:
+                break
     print(f"[INFO] AI extraction finished. {len(jobs)} job(s).")
 #    breakpoint()
     return jobs, elapsed
