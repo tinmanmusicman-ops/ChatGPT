@@ -38,6 +38,7 @@ Ignore:
 2. For each job URL:
    - Infer job_name
    - Infer company_name
+   - Infer salary information (exact figure or range if provided; otherwise null)
    - If unsure, return null
    
 3. For each job URL, also extract a single field called decision_factors:
@@ -80,6 +81,7 @@ If there is not enough information to say anything meaningful about the company,
       "company_name": string|null,
       "url": string,
       "company_summary": string|null,
+      "salary": string|null,
       "decision_factors": string|null
       "location": string|null
     }
@@ -107,6 +109,18 @@ JOB_DOMAINS = (
     "indeed",
     "linkedin",
 )
+
+SHEET_HEADERS = [
+    "Timestamp",
+    "Elapsed Seconds",
+    "Job Link",
+    "Company",
+    "Location",
+    "Salary",
+    "Company Summary",
+    "Decision Factors",
+    "Source Email",
+]
 
 _FORWARDED_FROM_PATTERN = re.compile(
     r"^\s*>?\s*From:\s*(?:.*<([^>]+)>|([^ \r\n]+@[^ \r\n]+))",
@@ -264,6 +278,7 @@ def extract_jobs_from_email(body, cfg):
                 "job_name":j.get("job_name"),
                 "company_name":j.get("company_name"),
                 "company_summary":j.get("company_summary"),
+                "salary": j.get("salary"),
                 "location": j.get("location"),
                 "decision_factors": j.get("decision_factors"),
                 "url":j.get("url")
@@ -430,6 +445,24 @@ def _get_existing_sheet_urls(ws):
     _GSHEET_EXISTING_URLS = urls
     return _GSHEET_EXISTING_URLS
 
+
+def _ensure_sheet_headers(ws):
+    try:
+        current = ws.row_values(1)
+    except Exception as exc:
+        print(f"[WARN] Could not read sheet headers: {exc}")
+        return
+
+    normalized = [cell.strip() for cell in current[:len(SHEET_HEADERS)]]
+    if normalized == SHEET_HEADERS and len(current) == len(SHEET_HEADERS):
+        return
+
+    try:
+        ws.update("A1:I1", [SHEET_HEADERS])
+        print("[INFO] Sheet headers refreshed.")
+    except Exception as exc:
+        print(f"[WARN] Failed to update sheet headers: {exc}")
+
 def append_jobs_to_sheet(jobs,cfg,from_email,elapsed):
     print("[INFO] Preparing to append jobs to Google Sheet.")
     if not jobs:
@@ -437,6 +470,7 @@ def append_jobs_to_sheet(jobs,cfg,from_email,elapsed):
         return
 
     ws = get_gsheet_worksheet(cfg)
+    _ensure_sheet_headers(ws)
     existing_urls = _get_existing_sheet_urls(ws)
     ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -464,6 +498,7 @@ def append_jobs_to_sheet(jobs,cfg,from_email,elapsed):
                 hyperlink,
                 job.get("company_name") or "",
                 job.get("location") or "",
+                job.get("salary") or "",
                 job.get("company_summary") or "",
                 job.get("decision_factors") or "",
                 from_email if i == 0 else "",
