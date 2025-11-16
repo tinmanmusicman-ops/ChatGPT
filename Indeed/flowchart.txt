@@ -43,14 +43,14 @@ process_email_payload()
   - Trim body; skip empty
   - Log source email (if present)
   - extract_jobs_from_email()
-  - Append jobs to sheet (append_jobs_to_sheet)
+  - Append jobs to sheet (append_jobs_to_sheet) with duplicate filtering
   - Log completion
 
 extract_jobs_from_email()
   - Build OpenAI client
   - Call Responses API with EXTRACTION_PROMPT
   - Parse response text -> JSON
-  - Iterate data.jobs (stop at cfg.max_jobs_per_email)
+  - Iterate data.jobs (stop at cfg.max_jobs_per_email from config)
   - Return jobs + elapsed time
 
 get_unread_email_body()
@@ -64,8 +64,10 @@ get_unread_email_body()
 
 append_jobs_to_sheet()
   - Obtain cached worksheet via get_gsheet_worksheet()
+  - Load cached existing URLs from sheet column C
+  - Skip new jobs whose URLs already exist (log each skip)
   - Build rows with timestamp, elapsed, hyperlinks, metadata
-  - Append rows via gspread
+  - Append rows via gspread and update cached URL set
 
 get_gsheet_worksheet()
   - Load service account credentials (sa_key.json)
@@ -75,6 +77,7 @@ get_gsheet_worksheet()
 Supporting helpers
   - is_relevant_job_email(): keyword + domain heuristics
   - extract_original_sender_from_body(): regex search of forwarded headers
+  - _get_existing_sheet_urls(): caches sheet URLs to prevent duplicates
   - mark_email_as_read(): Gmail labeling (unused in main loop)
 
 [End]

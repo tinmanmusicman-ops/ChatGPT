@@ -358,6 +358,7 @@ def get_unread_email_body(cfg):
 # end of copy email
 
 _GSHEET_WORKSHEET = None
+_GSHEET_EXISTING_URLS = None
 
 
 def get_gsheet_worksheet(cfg):
@@ -394,6 +395,41 @@ def get_gsheet_worksheet(cfg):
 
     return _GSHEET_WORKSHEET
 
+
+def _get_existing_sheet_urls(ws):
+    global _GSHEET_EXISTING_URLS
+    if _GSHEET_EXISTING_URLS is not None:
+        return _GSHEET_EXISTING_URLS
+
+    urls = set()
+    def _fetch_column(value_render_option):
+        try:
+            return ws.col_values(3, value_render_option=value_render_option)
+        except Exception as exc:
+            print(f"[WARN] Could not read sheet URLs (render={value_render_option}): {exc}")
+            return None
+
+    values = _fetch_column("FORMULA")
+    if values is None:
+        values = _fetch_column("UNFORMATTED_VALUE")
+    if values is None:
+        _GSHEET_EXISTING_URLS = urls
+        return _GSHEET_EXISTING_URLS
+
+    hyperlink_pattern = re.compile(r'^=HYPERLINK\("([^"]+)"', re.IGNORECASE)
+    for value in values:
+        value = (value or "").strip()
+        if not value:
+            continue
+        match = hyperlink_pattern.match(value)
+        if match:
+            urls.add(match.group(1))
+        elif value.startswith("http"):
+            urls.add(value)
+
+    _GSHEET_EXISTING_URLS = urls
+    return _GSHEET_EXISTING_URLS
+
 def append_jobs_to_sheet(jobs,cfg,from_email,elapsed):
     print("[INFO] Preparing to append jobs to Google Sheet.")
     if not jobs:
@@ -401,15 +437,20 @@ def append_jobs_to_sheet(jobs,cfg,from_email,elapsed):
         return
 
     ws = get_gsheet_worksheet(cfg)
+    existing_urls = _get_existing_sheet_urls(ws)
     ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     def _escape_for_formula(text: str | None) -> str:
         return (text or "").replace('"', '""')
 
     rows = []
+    new_urls = []
     for i, job in enumerate(jobs):
         url = job.get("url") or ""
         job_name = job.get("job_name") or "Job Link"
+        if url and url in existing_urls:
+            print(f"[INFO] Skipping duplicate job URL: {url}")
+            continue
         hyperlink = (
             f'=HYPERLINK("{_escape_for_formula(url)}", "{_escape_for_formula(job_name)}")'
             if url
@@ -428,9 +469,16 @@ def append_jobs_to_sheet(jobs,cfg,from_email,elapsed):
                 from_email if i == 0 else "",
             ]
         )
+        if url:
+            new_urls.append(url)
+    if not rows:
+        print("[INFO] No new rows to append after removing duplicates.")
+        return
 
     try:
         ws.append_rows(rows, value_input_option="USER_ENTERED")
+        for url in new_urls:
+            existing_urls.add(url)
         print(f"[OK] Appended {len(rows)} row(s).")
     except Exception as exc:
         print(f"[WARN] Failed to append rows to sheet: {exc}")
