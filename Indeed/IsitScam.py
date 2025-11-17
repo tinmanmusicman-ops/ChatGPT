@@ -3,6 +3,7 @@ import imaplib
 import json
 import re
 import smtplib
+from email.header import decode_header, make_header
 from email.message import EmailMessage
 from email.utils import formatdate, make_msgid, parseaddr
 from pathlib import Path
@@ -72,18 +73,35 @@ def collect_from_blocks(text):
     return senders, blocks
 
 
+def decode_subject(raw_subject):
+    if not raw_subject:
+        return ""
+    try:
+        return str(make_header(decode_header(raw_subject)))
+    except Exception:
+        return raw_subject
+
+
 def strip_scam_prefix(subject):
     if not subject:
         return ""
     return re.sub(r"^\s*scam[:\-\s]*", "", subject, flags=re.IGNORECASE, count=1).strip()
 
 
+def clean_header_value(value):
+    if not value:
+        return ""
+    return re.sub(r"[\r\n]+", " ", value).strip()
+
+
 def forward_message(body, recipient, subject, username, password):
     msg = EmailMessage()
-    safe_subject = re.sub(r"[\r\n]+", " ", subject or "Forwarded message").strip()
-    msg["From"] = username.strip()
-    msg["To"] = recipient.strip()
-    msg["Subject"] = safe_subject or "Forwarded message"
+    safe_subject = clean_header_value(subject or "Forwarded message") or "Forwarded message"
+    safe_sender = clean_header_value(username)
+    safe_recipient = clean_header_value(recipient)
+    msg["From"] = safe_sender
+    msg["To"] = safe_recipient
+    msg["Subject"] = safe_subject
     msg["Date"] = formatdate(localtime=True)
     msg["Message-ID"] = make_msgid()
     msg.set_content(body or "(Empty body)")
@@ -150,7 +168,8 @@ def fetch_unread_scam():
             raise RuntimeError(f"Unable to fetch email UID {latest_uid!r}")
 
         message = email.message_from_bytes(payload[0][1])
-        subject = message.get("Subject", "")
+        raw_subject = message.get("Subject", "")
+        subject = decode_subject(raw_subject)
         subject_prefix = (subject.lstrip()[:4] or "").lower()
         if subject_prefix != "scam":
             print(f"Skipping email UID {latest_uid.decode() if isinstance(latest_uid, bytes) else latest_uid}: subject '{subject}' does not start with 'Scam'.")

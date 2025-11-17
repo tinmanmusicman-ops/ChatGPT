@@ -4239,3 +4239,9 @@ FileNotFoundError: [Errno 2] No such file or directory: 'C:\\ChatGPT\\Indeed\\co
 [INFO] No email body found.
 
 [INFO] Run finished. Processed 0 email(s).
+  53:43.63 imaplib version 2.60
+  53:43.63 new IMAP4 connection, tag=b'OPLM'
+  53:45.22 BYE response: b'LOGOUT Requested'
+  54:02.97 imaplib version 2.60
+  54:02.97 new IMAP4 connection, tag=b'ILKL'
+^C

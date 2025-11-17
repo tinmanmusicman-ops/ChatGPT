@@ -1,0 +1,20 @@
+IsitScam.py Flow
+=================
+
+1. Start
+2. Load config from config.json
+3. Connect to Gmail IMAP (imap.gmail.com)
+4. Search inbox for unread messages whose subject starts with "Scam"
+5. Fetch newest matching email
+6. Decode subject; if not prefixed "Scam", mark unread and exit
+7. Extract plain-text body
+8. Parse forwarded blocks to get last sender/body segment
+9. Send body + sender to OpenAI for scam analysis
+10. If analysis says scam:
+      a. Copy email to "Scam" folder
+      b. Mark original deleted & expunge
+11. Else (legit):
+      a. Forward sanitized copy via SMTP with stripped subject
+      b. Delete original email & expunge
+12. Log sender, subject, summary, action
+13. End (breakpoint for debugging)
