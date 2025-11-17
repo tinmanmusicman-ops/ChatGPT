@@ -27,10 +27,18 @@ PROMPT = (
 OPENAI_URL = "https://api.openai.com/v1/chat/completions"
 
 
+def log(message):
+    print("")
+    print(f"[IsitScam] {message}")
+
+
 def load_config():
     config_path = Path(__file__).with_name(CONFIG_NAME)
     with config_path.open("r", encoding="utf-8") as handle:
-        return json.load(handle)
+        config = json.load(handle)
+    print("")
+    log("Configuration loaded successfully.")
+    return config
 
 
 def extract_body(message):
@@ -43,11 +51,15 @@ def extract_body(message):
                     if payload:
                         charset = part.get_content_charset() or "utf-8"
                         return payload.decode(charset, errors="replace")
+        log("extract_body: no inline text/plain part found; returning empty string.")
         return ""
     payload = message.get_payload(decode=True)
     if payload:
         charset = message.get_content_charset() or "utf-8"
-        return payload.decode(charset, errors="replace")
+        body = payload.decode(charset, errors="replace")
+        log("extract_body: extracted single-part text body.")
+        return body
+    log("extract_body: returning raw payload as string.")
     return message.get_payload()
 
 
@@ -57,6 +69,7 @@ def collect_from_blocks(text):
     blocks = []
 
     if not matches:
+        log("collect_from_blocks: no forwarded From: markers detected.")
         return [], [text]
 
     for idx, match in enumerate(matches):
@@ -69,7 +82,9 @@ def collect_from_blocks(text):
             blocks.append(segment)
 
     if not senders:
+        log("collect_from_blocks: markers found but no valid email addresses detected.")
         return [], [text]
+    log(f"collect_from_blocks: extracted {len(senders)} sender blocks.")
     return senders, blocks
 
 
@@ -109,6 +124,7 @@ def forward_message(body, recipient, subject, username, password):
     with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
         smtp.login(username, password)
         smtp.send_message(msg)
+    log(f"forward_message: forwarded sanitized copy to {safe_recipient}.")
 
 
 def analyze_body(body, sender, config):
@@ -139,6 +155,7 @@ def analyze_body(body, sender, config):
     )
     response.raise_for_status()
     content = response.json()["choices"][0]["message"]["content"].strip()
+    log(f"analyze_body: received response for sender {sender or 'unknown'}.")
 
     try:
         return json.loads(content)
@@ -159,7 +176,7 @@ def fetch_unread_scam():
         client.select(GMAIL_FOLDER)
         status, data = client.uid("search", None, "X-GM-RAW", f'"{RAW_QUERY}"')
         if status != "OK" or not data or not data[0]:
-            print("No unread Primary emails with 'Scam' in the subject.")
+            log("No unread Primary emails with 'Scam' in the subject.")
             return
 
         latest_uid = data[0].split()[-1]
@@ -172,7 +189,10 @@ def fetch_unread_scam():
         subject = decode_subject(raw_subject)
         subject_prefix = (subject.lstrip()[:4] or "").lower()
         if subject_prefix != "scam":
-            print(f"Skipping email UID {latest_uid.decode() if isinstance(latest_uid, bytes) else latest_uid}: subject '{subject}' does not start with 'Scam'.")
+            log(
+                f"Skipping email UID {latest_uid.decode() if isinstance(latest_uid, bytes) else latest_uid}: "
+                f"subject '{subject}' does not start with 'Scam'."
+            )
             client.uid("STORE", latest_uid, "-FLAGS", r"(\Seen)")
             return
         cleaned_subject = strip_scam_prefix(subject)
@@ -211,7 +231,7 @@ def fetch_unread_scam():
             client.expunge()
             action_msg = "Forwarded sanitized copy and removed original."
 
-        print(
+        log(
             f"Sender: {sender_for_ai or 'unknown'} | Subject: {subject} | "
             f"Summary: {summary} | Action: {action_msg}"
         )

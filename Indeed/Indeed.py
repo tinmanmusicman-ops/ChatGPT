@@ -42,7 +42,8 @@ Ignore:
    - Infer salary information (exact figure or range if provided; otherwise null)
    - Infer the location. Prefer explicit location info in the email body; if the body lacks it, extract just the City and State from the subject line.
    - If unsure, return null
-   
+   - Build a field named TTT that contains the company's SWOT insights plus any automation recommendations relevant to the role or org. Label Strengths, Weaknesses, Opportunities, Threats explicitly in that text; if a dimension is missing evidence, state it as "Strengths: null" (etc.) rather than guessing.
+
 3. For each job URL, also extract a single field called decision_factors:
    - A short, compact description using only info from the email.
    - Include things like:
@@ -85,9 +86,11 @@ If there is not enough information to say anything meaningful about the company,
       "company_summary": string|null,
       "work_arrangement": string|null,
       "salary": string|null,
-      "decision_factors": string|null
+      "decision_factors": string|null,
+      "TTT": string|null,
       "location": string|null
-    }
+
+          }
   ]
 }
 
@@ -113,7 +116,7 @@ JOB_DOMAINS = (
     "linkedin",
 )
 
-COLUMN_LETTERS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]
+COLUMN_LETTERS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"]
 
 SHEET_HEADERS = [
     "Timestamp",
@@ -126,6 +129,7 @@ SHEET_HEADERS = [
     "Company Summary",
     "Decision Factors",
     "Source Email",
+    "TTT",
 ]
 
 _FORWARDED_FROM_PATTERN = re.compile(
@@ -320,6 +324,7 @@ def extract_jobs_from_email(body, cfg, subject=""):
                 "salary": j.get("salary"),
                 "location": j.get("location"),
                 "decision_factors": j.get("decision_factors"),
+                "TTT": j.get("TTT"),
                 "url":j.get("url")
             })
             if len(jobs) >= max_jobs:
@@ -498,7 +503,7 @@ def _ensure_sheet_headers(ws):
         return
 
     try:
-        ws.update("A1:J1", [SHEET_HEADERS])
+        ws.update(range_name="A1:K1", values=[SHEET_HEADERS])
         print("[INFO] Sheet headers refreshed.")
     except Exception as exc:
         print(f"[WARN] Failed to update sheet headers: {exc}")
@@ -521,14 +526,13 @@ def append_jobs_to_sheet(jobs,cfg,from_email,elapsed):
     _ensure_sheet_headers(ws)
     _ensure_wrap_clip(ws)
     existing_urls = _get_existing_sheet_urls(ws)
-    ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    now = datetime.now()
+    ts_cell = now.strftime("%Y-%m-%d %H:%M:%S")
+    ts_note = now.strftime("%A, %B %d, %I:%M %p")
     try:
-        current_row_count = len(ws.col_values(3, value_render_option="UNFORMATTED_VALUE"))
+        current_row_count = len(ws.get_all_values())
     except Exception:
-        try:
-            current_row_count = len(ws.get_all_values())
-        except Exception:
-            current_row_count = ws.row_count or 1
+        current_row_count = ws.row_count or 1
     row_base = current_row_count + 1
 
     def _escape_for_formula(text: str | None) -> str:
@@ -549,25 +553,25 @@ def append_jobs_to_sheet(jobs,cfg,from_email,elapsed):
             else job_name
         )
 
-        rows.append(
-            [
-                ts if i == 0 else "",
-                f"{elapsed:.3f}" if i == 0 else "",
-                hyperlink,
-                job.get("company_name") or "",
-                job.get("location") or "",
-                job.get("work_arrangement") or "",
-                job.get("salary") or "",
-                job.get("company_summary") or "",
-                job.get("decision_factors") or "",
-                from_email if i == 0 else "",
-            ]
-        )
+        row_values = [
+            ts_cell if i == 0 else "",
+            f"{elapsed:.3f}" if i == 0 else "",
+            hyperlink,
+            job.get("company_name") or "",
+            job.get("location") or "",
+            job.get("work_arrangement") or "",
+            job.get("salary") or "",
+            job.get("company_summary") or "",
+            job.get("decision_factors") or "",
+            from_email if i == 0 else "",
+            job.get("TTT") or "",
+        ]
+        rows.append(row_values)
         if url:
             new_urls.append(url)
         note_rows.append(
             [
-                ts if i == 0 else "",
+                ts_note if i == 0 else "",
                 f"{elapsed:.3f}" if i == 0 else "",
                 url or job_name,
                 job.get("company_name") or "",
@@ -577,6 +581,7 @@ def append_jobs_to_sheet(jobs,cfg,from_email,elapsed):
                 job.get("company_summary") or "",
                 job.get("decision_factors") or "",
                 from_email if i == 0 else "",
+                job.get("TTT") or "",
             ]
         )
     if not rows:
@@ -588,15 +593,19 @@ def append_jobs_to_sheet(jobs,cfg,from_email,elapsed):
         for url in new_urls:
             existing_urls.add(url)
         print(f"[OK] Appended {len(rows)} row(s).")
+
         for row_offset, note_values in enumerate(note_rows):
             row_number = row_base + row_offset
             for col_idx, note in enumerate(note_values):
-                if not note:
+                note_text = (note or "").strip()
+                if not note_text:
+                    continue
+                if col_idx >= len(COLUMN_LETTERS):
                     continue
                 column_letter = COLUMN_LETTERS[col_idx]
                 cell = f"{column_letter}{row_number}"
                 try:
-                    ws.update_note(cell, note)
+                    ws.update_note(cell, note_text)
                 except Exception as exc:
                     print(f"[WARN] Failed to set note for {cell}: {exc}")
     except Exception as exc:
