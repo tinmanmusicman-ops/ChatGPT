@@ -42,7 +42,7 @@ Ignore:
    - Infer salary information (exact figure or range if provided; otherwise null)
    - Infer the location. Prefer explicit location info in the email body; if the body lacks it, extract just the City and State from the subject line.
    - If unsure, return null
-   - Build a field named TTT that contains the company's SWOT insights plus any automation recommendations relevant to the role or org. Label Strengths, Weaknesses, Opportunities, Threats explicitly in that text; if a dimension is missing evidence, state it as "Strengths: null" (etc.) rather than guessing.
+   - Build a field named TTT that contains a detailed SWOT + automation analysis for the company. For each label (Strengths, Weaknesses, Opportunities, Threats), provide 1�2 sentences filled with concrete facts from the email: capabilities, differentiators, product lines, customer/region focus, hiring or automation cues, metrics/ranges, competitive or regulatory risks. If a section still lacks evidence after scanning the job description, company summary, and subject line, explicitly state "Strengths: null" (etc.) rather than inventing information.
 
 3. For each job URL, also extract a single field called decision_factors:
    - A short, compact description using only info from the email.
@@ -72,6 +72,7 @@ If there is not enough information to say anything meaningful about the company,
    - ONLY return a JSON object
    - MUST NOT use markdown or code fences
    - JSON must start with '{' and end with '}'
+   - The TTT field must include the full SWOT analysis with at least three distinct factual points across the Strengths/Weaknesses/Opportunities/Threats segments whenever information is available; set TTT to null only when absolutely no company detail exists in the email.
 
    
 
