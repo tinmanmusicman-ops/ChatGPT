@@ -1,0 +1,109 @@
+2025-11-17 21:08:00,192 [INFO] test entry
+2025-11-17 21:14:52,053 [DEBUG] Entering fetch_unread_scam
+2025-11-17 21:14:52,053 [DEBUG] Entering load_config
+2025-11-17 21:14:52,065 [INFO] Configuration loaded successfully.
+2025-11-17 21:14:53,117 [DEBUG] Entering decode_subject
+2025-11-17 21:14:53,117 [DEBUG] Entering strip_scam_prefix
+2025-11-17 21:14:53,117 [DEBUG] Entering extract_body
+2025-11-17 21:14:53,118 [DEBUG] Entering collect_from_blocks
+2025-11-17 21:14:53,118 [INFO] collect_from_blocks: extracted 1 sender blocks.
+2025-11-17 21:14:53,118 [DEBUG] Entering analyze_body
+2025-11-17 21:14:53,120 [DEBUG] Starting new HTTPS connection (1): api.openai.com:443
+2025-11-17 21:14:55,821 [DEBUG] https://api.openai.com:443 "POST /v1/chat/completions HTTP/1.1" 200 None
+2025-11-17 21:14:55,822 [INFO] analyze_body: received response for sender updates@pmail.jobcase.com.
+2025-11-17 21:14:55,824 [INFO] Evaluation -> sender=updates@pmail.jobcase.com subject=Are you available for an in-person interview on Thursday (11/13)? is_scam=False confidence=0.8 summary=The email appears to be a legitimate job interview invitation.
+2025-11-17 21:14:55,824 [DEBUG] Entering forward_message
+2025-11-17 21:14:55,831 [DEBUG] Entering clean_header_value
+2025-11-17 21:14:55,831 [DEBUG] Entering clean_header_value
+2025-11-17 21:14:55,831 [DEBUG] Entering clean_header_value
+2025-11-17 21:14:57,151 [INFO] forward_message: forwarded sanitized copy to tinmanmusicman@gmail.com.
+2025-11-17 21:14:57,581 [INFO] Sender: updates@pmail.jobcase.com | Subject: Scam Fwd: Are you available for an in-person interview on Thursday (11/13)? | Summary: The email appears to be a legitimate job interview invitation. | Action: Forwarded sanitized copy and removed original.
+2025-11-17 21:17:05,822 [DEBUG] Entering fetch_unread_scam
+2025-11-17 21:17:05,822 [DEBUG] Entering load_config
+2025-11-17 21:17:05,822 [INFO] Configuration loaded successfully.
+2025-11-17 21:17:07,067 [DEBUG] Entering decode_subject
+2025-11-17 21:17:07,067 [DEBUG] Entering strip_scam_prefix
+2025-11-17 21:17:07,067 [DEBUG] Entering extract_body
+2025-11-17 21:17:07,067 [DEBUG] Entering collect_from_blocks
+2025-11-17 21:17:07,067 [INFO] collect_from_blocks: extracted 1 sender blocks.
+2025-11-17 21:17:07,067 [DEBUG] Entering analyze_body
+2025-11-17 21:17:07,070 [DEBUG] Starting new HTTPS connection (1): api.openai.com:443
+2025-11-17 21:17:10,245 [DEBUG] https://api.openai.com:443 "POST /v1/chat/completions HTTP/1.1" 200 None
+2025-11-17 21:17:10,249 [INFO] analyze_body: received response for sender noreply@findcareer.pmta.sailthru.com.
+2025-11-17 21:17:10,250 [INFO] Evaluation -> sender=noreply@findcareer.pmta.sailthru.com subject=Loan Verification for Timothy ($1,610) is_scam=True confidence=0.9 summary=The email contains a suspicious loan offer and prompts clicking a link, indicating a scam.
+2025-11-17 21:17:10,849 [DEBUG] Entering send_scam_notification
+2025-11-17 21:17:10,855 [DEBUG] Entering clean_header_value
+2025-11-17 21:17:10,856 [DEBUG] Entering clean_header_value
+2025-11-17 21:17:11,928 [INFO] send_scam_notification: sent analysis reply to tim.inman.2024@gmail.com.
+2025-11-17 21:17:11,928 [INFO] Notification sent to tim.inman.2024@gmail.com about sender=noreply@findcareer.pmta.sailthru.com subject=Loan Verification for Timothy ($1,610)
+2025-11-17 21:17:11,928 [INFO] Sender: noreply@findcareer.pmta.sailthru.com | Subject: Scam Fwd: Loan Verification for Timothy ($1,610) | Summary: The email contains a suspicious loan offer and prompts clicking a link, indicating a scam. | Action: Moved to 'Scam' (copied + deleted original).
+2025-11-17 21:25:36,927 [DEBUG] Entering fetch_unread_scam
+2025-11-17 21:25:36,927 [DEBUG] Entering load_config
+2025-11-17 21:25:36,928 [INFO] Configuration loaded successfully.
+2025-11-17 21:25:38,052 [DEBUG] Entering decode_subject
+2025-11-17 21:25:38,052 [DEBUG] Entering strip_scam_prefix
+2025-11-17 21:25:38,052 [DEBUG] Entering extract_body
+2025-11-17 21:25:38,052 [DEBUG] Entering collect_from_blocks
+2025-11-17 21:25:38,052 [INFO] collect_from_blocks: extracted 1 sender blocks.
+2025-11-17 21:25:38,052 [DEBUG] Entering analyze_body
+2025-11-17 21:25:38,055 [DEBUG] Starting new HTTPS connection (1): api.openai.com:443
+2025-11-17 21:25:42,056 [DEBUG] https://api.openai.com:443 "POST /v1/chat/completions HTTP/1.1" 200 None
+2025-11-17 21:25:42,063 [INFO] analyze_body: received response for sender noreply@findcareer.pmta.sailthru.com.
+2025-11-17 21:25:42,065 [INFO] Evaluation -> sender=noreply@findcareer.pmta.sailthru.com subject=Loan Verification for Timothy ($1,610) is_scam=True confidence=0.9 summary=The email is likely a scam due to an unsolicited loan offer and suspicious links.
+2025-11-17 21:25:42,707 [DEBUG] Entering send_scam_notification
+2025-11-17 21:25:42,714 [DEBUG] Entering clean_header_value
+2025-11-17 21:25:42,715 [DEBUG] Entering clean_header_value
+2025-11-17 21:25:43,678 [INFO] send_scam_notification: sent analysis reply to tim.inman.2024@gmail.com.
+2025-11-17 21:25:43,678 [INFO] Notification sent to tim.inman.2024@gmail.com about sender=noreply@findcareer.pmta.sailthru.com subject=Loan Verification for Timothy ($1,610)
+2025-11-17 21:25:43,678 [INFO] Sender: noreply@findcareer.pmta.sailthru.com | Subject: Scam Fwd: Loan Verification for Timothy ($1,610) | Summary: The email is likely a scam due to an unsolicited loan offer and suspicious links. | Action: Moved to 'Scam' (copied + deleted original).
+2025-11-17 21:29:57,181 [DEBUG] Entering fetch_unread_scam
+2025-11-17 21:29:57,181 [DEBUG] Entering load_config
+2025-11-17 21:29:57,182 [INFO] Configuration loaded successfully.
+2025-11-17 21:29:57,854 [INFO] No unread Primary emails with 'Scam' in the subject.
+2025-11-17 21:30:00,253 [DEBUG] Entering fetch_unread_scam
+2025-11-17 21:30:00,253 [DEBUG] Entering load_config
+2025-11-17 21:30:00,254 [INFO] Configuration loaded successfully.
+2025-11-17 21:30:00,904 [INFO] No unread Primary emails with 'Scam' in the subject.
+2025-11-17 21:31:33,410 [DEBUG] Entering fetch_unread_scam
+2025-11-17 21:31:33,411 [DEBUG] Entering load_config
+2025-11-17 21:31:33,411 [INFO] Configuration loaded successfully.
+2025-11-17 21:31:34,502 [DEBUG] Entering decode_subject
+2025-11-17 21:31:34,502 [DEBUG] Entering strip_scam_prefix
+2025-11-17 21:31:34,503 [DEBUG] Entering extract_body
+2025-11-17 21:31:34,503 [DEBUG] Entering collect_from_blocks
+2025-11-17 21:31:34,503 [INFO] collect_from_blocks: extracted 1 sender blocks.
+2025-11-17 21:31:34,503 [DEBUG] Entering analyze_body
+2025-11-17 21:31:34,506 [DEBUG] Starting new HTTPS connection (1): api.openai.com:443
+2025-11-17 21:31:37,794 [DEBUG] https://api.openai.com:443 "POST /v1/chat/completions HTTP/1.1" 200 None
+2025-11-17 21:31:37,800 [INFO] analyze_body: received response for sender noreply@findcareer.pmta.sailthru.com.
+2025-11-17 21:31:37,802 [INFO] Evaluation -> sender=noreply@findcareer.pmta.sailthru.com subject=Loan Verification for Timothy ($1,610) is_scam=True confidence=0.9 summary=The email is likely a scam due to an unsolicited loan offer and suspicious links.
+2025-11-17 21:31:38,425 [DEBUG] Entering send_scam_notification
+2025-11-17 21:31:38,431 [DEBUG] Entering clean_header_value
+2025-11-17 21:31:38,432 [DEBUG] Entering clean_header_value
+2025-11-17 21:31:39,442 [INFO] send_scam_notification: sent analysis reply to tim.inman.2024@gmail.com.
+2025-11-17 21:31:39,442 [INFO] Notification sent to tim.inman.2024@gmail.com about sender=noreply@findcareer.pmta.sailthru.com subject=Loan Verification for Timothy ($1,610)
+2025-11-17 21:31:39,442 [INFO] Sender: noreply@findcareer.pmta.sailthru.com | Subject: Scam Fwd: Loan Verification for Timothy ($1,610) | Summary: The email is likely a scam due to an unsolicited loan offer and suspicious links. | Action: Moved to 'Scam' (copied + deleted original).
+2025-11-17 21:35:00,843 [DEBUG] Entering fetch_unread_scam
+2025-11-17 21:35:00,843 [DEBUG] Entering load_config
+2025-11-17 21:35:00,844 [INFO] Configuration loaded successfully.
+2025-11-17 21:35:01,460 [INFO] No unread Primary emails with 'Scam' in the subject.
+2025-11-17 21:40:00,819 [DEBUG] Entering fetch_unread_scam
+2025-11-17 21:40:00,819 [DEBUG] Entering load_config
+2025-11-17 21:40:00,820 [INFO] Configuration loaded successfully.
+2025-11-17 21:40:02,331 [INFO] No unread Primary emails with 'Scam' in the subject.
+2025-11-17 21:45:00,757 [DEBUG] Entering fetch_unread_scam
+2025-11-17 21:45:00,757 [DEBUG] Entering load_config
+2025-11-17 21:45:00,758 [INFO] Configuration loaded successfully.
+2025-11-17 21:45:01,493 [INFO] No unread Primary emails with 'Scam' in the subject.
+2025-11-17 21:50:00,779 [DEBUG] Entering fetch_unread_scam
+2025-11-17 21:50:00,779 [DEBUG] Entering load_config
+2025-11-17 21:50:00,780 [INFO] Configuration loaded successfully.
+2025-11-17 21:50:01,361 [INFO] No unread Primary emails with 'Scam' in the subject.
+2025-11-17 21:55:00,761 [DEBUG] Entering fetch_unread_scam
+2025-11-17 21:55:00,761 [DEBUG] Entering load_config
+2025-11-17 21:55:00,762 [INFO] Configuration loaded successfully.
+2025-11-17 21:55:01,363 [INFO] No unread Primary emails with 'Scam' in the subject.
+2025-11-17 22:00:00,868 [DEBUG] Entering fetch_unread_scam
+2025-11-17 22:00:00,868 [DEBUG] Entering load_config
+2025-11-17 22:00:00,868 [INFO] Configuration loaded successfully.
+2025-11-17 22:00:01,629 [INFO] No unread Primary emails with 'Scam' in the subject.

@@ -29,5 +29,7 @@
   "openai_temperature": 0.1,
   "max_emails_per_run": 10,
   "max_jobs_per_email": 6,
-  "test": 123
+  "test": 123,
+  "clear_sheet_before_run": false,
+  "enable_google_debug_logging": true
 }

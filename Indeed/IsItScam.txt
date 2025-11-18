@@ -1,0 +1,86 @@
+C:\Users\SCRC\AppData\Local\Programs\Python\Python314\python.exe: can't open file 'C:\\ChatGPT\\Indeed\\IsItScan.py': [Errno 2] No such file or directory
+C:\Users\SCRC\AppData\Local\Programs\Python\Python314\python.exe: can't open file 'C:\\ChatGPT\\Indeed\\IsItScan.py': [Errno 2] No such file or directory
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] collect_from_blocks: extracted 1 sender blocks.
+
+[IsitScam] analyze_body: received response for sender updates@pmail.jobcase.com.
+
+[IsitScam] forward_message: forwarded sanitized copy to tinmanmusicman@gmail.com.
+
+[IsitScam] Sender: updates@pmail.jobcase.com | Subject: Scam Fwd: Are you available for an in-person interview on Thursday (11/13)? | Summary: The email appears to be a legitimate job interview invitation. | Action: Forwarded sanitized copy and removed original.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] collect_from_blocks: extracted 1 sender blocks.
+
+[IsitScam] analyze_body: received response for sender noreply@findcareer.pmta.sailthru.com.
+
+[IsitScam] send_scam_notification: sent analysis reply to tim.inman.2024@gmail.com.
+
+[IsitScam] Sender: noreply@findcareer.pmta.sailthru.com | Subject: Scam Fwd: Loan Verification for Timothy ($1,610) | Summary: The email contains a suspicious loan offer and prompts clicking a link, indicating a scam. | Action: Moved to 'Scam' (copied + deleted original).
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] collect_from_blocks: extracted 1 sender blocks.
+
+[IsitScam] analyze_body: received response for sender noreply@findcareer.pmta.sailthru.com.
+
+[IsitScam] send_scam_notification: sent analysis reply to tim.inman.2024@gmail.com.
+
+[IsitScam] Sender: noreply@findcareer.pmta.sailthru.com | Subject: Scam Fwd: Loan Verification for Timothy ($1,610) | Summary: The email is likely a scam due to an unsolicited loan offer and suspicious links. | Action: Moved to 'Scam' (copied + deleted original).
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] collect_from_blocks: extracted 1 sender blocks.
+
+[IsitScam] analyze_body: received response for sender noreply@findcareer.pmta.sailthru.com.
+
+[IsitScam] send_scam_notification: sent analysis reply to tim.inman.2024@gmail.com.
+
+[IsitScam] Sender: noreply@findcareer.pmta.sailthru.com | Subject: Scam Fwd: Loan Verification for Timothy ($1,610) | Summary: The email is likely a scam due to an unsolicited loan offer and suspicious links. | Action: Moved to 'Scam' (copied + deleted original).
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.

@@ -1,6 +1,7 @@
 import email
 import imaplib
 import json
+import logging
 import re
 import smtplib
 from email.header import decode_header, make_header
@@ -25,14 +26,24 @@ PROMPT = (
     "is provided."
 )
 OPENAI_URL = "https://api.openai.com/v1/chat/completions"
+LOG_FILE = Path(__file__).with_name("isit.log")
+
+logging.basicConfig(
+    filename=LOG_FILE,
+    level=logging.DEBUG,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+)
+logger = logging.getLogger("IsitScam")
 
 
 def log(message):
+    logger.info(message)
     print("")
     print(f"[IsitScam] {message}")
 
 
 def load_config():
+    logger.debug("Entering load_config")
     config_path = Path(__file__).with_name(CONFIG_NAME)
     with config_path.open("r", encoding="utf-8") as handle:
         config = json.load(handle)
@@ -42,6 +53,7 @@ def load_config():
 
 
 def extract_body(message):
+    logger.debug("Entering extract_body")
     if message.is_multipart():
         for part in message.walk():
             if part.get_content_type() == "text/plain":
@@ -64,6 +76,7 @@ def extract_body(message):
 
 
 def collect_from_blocks(text):
+    logger.debug("Entering collect_from_blocks")
     matches = list(FROM_LINE_PATTERN.finditer(text))
     senders = []
     blocks = []
@@ -89,6 +102,7 @@ def collect_from_blocks(text):
 
 
 def decode_subject(raw_subject):
+    logger.debug("Entering decode_subject")
     if not raw_subject:
         return ""
     try:
@@ -98,18 +112,21 @@ def decode_subject(raw_subject):
 
 
 def strip_scam_prefix(subject):
+    logger.debug("Entering strip_scam_prefix")
     if not subject:
         return ""
-    return re.sub(r"^\s*scam[:\-\s]*", "", subject, flags=re.IGNORECASE, count=1).strip()
+    return re.sub(r"^\s*scam\s*fwd[:\-\s]*", "", subject, flags=re.IGNORECASE, count=1).strip()
 
 
 def clean_header_value(value):
+    logger.debug("Entering clean_header_value")
     if not value:
         return ""
     return re.sub(r"[\r\n]+", " ", value).strip()
 
 
 def forward_message(body, recipient, subject, username, password):
+    logger.debug("Entering forward_message")
     msg = EmailMessage()
     safe_subject = clean_header_value(subject or "Forwarded message") or "Forwarded message"
     safe_sender = clean_header_value(username)
@@ -127,7 +144,60 @@ def forward_message(body, recipient, subject, username, password):
     log(f"forward_message: forwarded sanitized copy to {safe_recipient}.")
 
 
+def send_scam_notification(
+    analysis, recipient, original_subject, original_sender, username, password
+):
+    logger.debug("Entering send_scam_notification")
+    """Email the AI analysis back to whoever forwarded the scam."""
+    if not recipient:
+        log("send_scam_notification: no recipient provided; skipping notification.")
+        return
+
+    msg = EmailMessage()
+    msg["Subject"] = "Scam Evaluation"
+    msg["From"] = clean_header_value(username)
+    msg["To"] = clean_header_value(recipient)
+    msg["Date"] = formatdate(localtime=True)
+    msg["Message-ID"] = make_msgid()
+
+    summary = analysis.get("summary") or "The forwarded email appears to be a scam."
+    confidence = analysis.get("confidence")
+    signals = analysis.get("signals") or []
+    confidence_line = (
+        f"Confidence: {confidence:.2%}" if isinstance(confidence, (int, float)) else ""
+    )
+    body_lines = [
+        "Automated Scam Analysis Result:",
+        "",
+        f"Original sender: {original_sender or 'unknown'}",
+        f"Original subject: {original_subject or '(unknown)'}",
+        "",
+        summary,
+    ]
+    if confidence_line:
+        body_lines.append(confidence_line)
+    if signals:
+        body_lines.append("")
+        body_lines.append("Signals observed:")
+        for sig in signals:
+            body_lines.append(f" - {sig}")
+    msg.set_content("\n".join(body_lines).strip())
+
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
+        smtp.login(username, password)
+        smtp.send_message(msg)
+
+    log(f"send_scam_notification: sent analysis reply to {recipient}.")
+    logger.info(
+        "Notification sent to %s about sender=%s subject=%s",
+        recipient,
+        original_sender or "unknown",
+        original_subject or "(unknown)",
+    )
+
+
 def analyze_body(body, sender, config):
+    logger.debug("Entering analyze_body")
     api_key = config.get("openai_api_key")
     if not api_key:
         raise RuntimeError("Missing openai_api_key in config.json")
@@ -164,6 +234,7 @@ def analyze_body(body, sender, config):
 
 
 def fetch_unread_scam():
+    logger.debug("Entering fetch_unread_scam")
     config = load_config()
     username = config.get("gmail_user") or config.get("user")
     password = config.get("gmail_app_password") or config.get("app_password")
@@ -210,6 +281,15 @@ def fetch_unread_scam():
         analysis = analyze_body(body_for_ai, sender_for_ai, config)
         summary = analysis.get("summary", "No summary provided.")
         is_scam = bool(analysis.get("is_scam"))
+        forwarder_email = parseaddr(message.get("Reply-To") or message.get("From") or "")[1]
+        logger.info(
+            "Evaluation -> sender=%s subject=%s is_scam=%s confidence=%s summary=%s",
+            sender_for_ai or "unknown",
+            cleaned_subject or subject,
+            is_scam,
+            analysis.get("confidence"),
+            summary,
+        )
 
         action_msg = "Forwarded sanitized copy back to inbox."
         if is_scam:
@@ -221,6 +301,9 @@ def fetch_unread_scam():
                 raise RuntimeError(f"Failed to mark email {latest_uid!r} for deletion: {store_data}")
             client.expunge()
             action_msg = f"Moved to '{SCAM_FOLDER}' (copied + deleted original)."
+            send_scam_notification(
+                analysis, forwarder_email, cleaned_subject, sender_for_ai, username, password
+            )
         else:
             envelope_sender = config.get("gmail_user") or config.get("user")
             if envelope_sender and username and password:
