@@ -33,3 +33,288 @@
 [INFO] No email body found.
 
 [INFO] Run finished. Processed 0 email(s).
+  45:25.55 imaplib version 2.60
+  45:25.55 new IMAP4 connection, tag=b'KCJH'
+  45:27.03 BYE response: b'LOGOUT Requested'
+  46:17.33 imaplib version 2.60
+  46:17.33 new IMAP4 connection, tag=b'OEJJ'
+  46:17.85 BYE response: b'LOGOUT Requested'
+[INFO] Starting email processing run.
+[INFO] Google API debug logging enabled.
+
+[INFO] Line 407 Calling get_unread_email_body(cfg)
+
+[INFO] Calling extract_original_sender_from_body(body: str)
+[DEBUG] extract_original_sender_from_body: found alert@indeed.com
+[INFO] Checking whether email appears job-related.
+[INFO] Source email detected: alert@indeed.com
+
+[INFO] Line 329 AI extraction started…
+[INFO] AI request sent at 2025-11-17 23:45:27
+
+[INFO] Calling get_openai_client(cfg)
+[INFO] AI response received at 2025-11-17 23:46:11
+[INFO] AI processing time: 44.093 seconds
+[INFO] AI extraction finished. 2 job(s).
+[INFO] Preparing to append jobs to Google Sheet.
+[INFO] Obtaining Google Sheet worksheet.
+[OK] Appended 2 row(s).
+[OK] Done.
+
+[INFO] Line 407 Calling get_unread_email_body(cfg)
+
+[INFO] Run finished. Processed 1 email(s).
+  56:00.34 imaplib version 2.60
+  56:00.34 new IMAP4 connection, tag=b'NIFI'
+  56:01.85 BYE response: b'LOGOUT Requested'
+  56:52.75 imaplib version 2.60
+  56:52.75 new IMAP4 connection, tag=b'DAHI'
+  56:55.23 BYE response: b'LOGOUT Requested'
+  58:39.01 imaplib version 2.60
+  58:39.01 new IMAP4 connection, tag=b'FEAB'
+  58:39.60 BYE response: b'LOGOUT Requested'
+[INFO] Starting email processing run.
+[INFO] Google API debug logging enabled.
+
+[INFO] Line 407 Calling get_unread_email_body(cfg)
+
+[INFO] Calling extract_original_sender_from_body(body: str)
+[DEBUG] extract_original_sender_from_body: found alert@indeed.com
+[INFO] Checking whether email appears job-related.
+[INFO] Source email detected: alert@indeed.com
+
+[INFO] Line 329 AI extraction started…
+[INFO] AI request sent at 2025-11-17 23:56:01
+
+[INFO] Calling get_openai_client(cfg)
+[INFO] AI response received at 2025-11-17 23:56:44
+[INFO] AI processing time: 42.456 seconds
+[INFO] AI extraction finished. 2 job(s).
+[INFO] Preparing to append jobs to Google Sheet.
+[INFO] Obtaining Google Sheet worksheet.
+[OK] Appended 2 row(s).
+[OK] Done.
+
+[INFO] Line 407 Calling get_unread_email_body(cfg)
+
+[INFO] Calling extract_original_sender_from_body(body: str)
+[DEBUG] extract_original_sender_from_body: found jobalerts-noreply@linkedin.com
+[INFO] Checking whether email appears job-related.
+[INFO] Source email detected: jobalerts-noreply@linkedin.com
+
+[INFO] Line 329 AI extraction started…
+[INFO] AI request sent at 2025-11-17 23:56:55
+
+[INFO] Calling get_openai_client(cfg)
+[INFO] AI response received at 2025-11-17 23:58:28
+[INFO] AI processing time: 92.851 seconds
+[INFO] AI extraction finished. 5 job(s).
+[INFO] Preparing to append jobs to Google Sheet.
+[INFO] Obtaining Google Sheet worksheet.
+[OK] Appended 5 row(s).
+[OK] Done.
+
+[INFO] Line 407 Calling get_unread_email_body(cfg)
+
+[INFO] Run finished. Processed 2 email(s).
+  20:31.94 imaplib version 2.60
+  20:31.94 new IMAP4 connection, tag=b'KHMN'
+  20:33.43 BYE response: b'LOGOUT Requested'
+  22:22.40 imaplib version 2.60
+  22:22.40 new IMAP4 connection, tag=b'GOLC'
+  22:24.02 BYE response: b'LOGOUT Requested'
+  22:48.26 imaplib version 2.60
+  22:48.26 new IMAP4 connection, tag=b'CFJM'
+  22:49.98 BYE response: b'LOGOUT Requested'
+  23:25.96 imaplib version 2.60
+  23:25.96 new IMAP4 connection, tag=b'IKAM'
+  23:27.73 BYE response: b'LOGOUT Requested'
+  23:49.48 imaplib version 2.60
+  23:49.48 new IMAP4 connection, tag=b'CPBB'
+  23:50.26 BYE response: b'LOGOUT Requested'
+[INFO] Starting email processing run.
+[INFO] Google API debug logging enabled.
+
+[INFO] Line 407 Calling get_unread_email_body(cfg)
+
+[INFO] Calling extract_original_sender_from_body(body: str)
+[DEBUG] extract_original_sender_from_body: found donotreply@match.indeed.com
+[INFO] Checking whether email appears job-related.
+[INFO] Source email detected: donotreply@match.indeed.com
+
+[INFO] Line 329 AI extraction started…
+[INFO] AI request sent at 2025-11-18 00:20:33
+
+[INFO] Calling get_openai_client(cfg)
+[INFO] AI response received at 2025-11-18 00:22:07
+[INFO] AI processing time: 94.451 seconds
+[INFO] AI extraction finished. 5 job(s).
+[INFO] Preparing to append jobs to Google Sheet.
+[INFO] Obtaining Google Sheet worksheet.
+[OK] Appended 5 row(s).
+[OK] Done.
+
+[INFO] Line 407 Calling get_unread_email_body(cfg)
+
+[INFO] Calling extract_original_sender_from_body(body: str)
+[DEBUG] extract_original_sender_from_body: found alert@indeed.com
+[INFO] Checking whether email appears job-related.
+[INFO] Source email detected: alert@indeed.com
+
+[INFO] Line 329 AI extraction started…
+[INFO] AI request sent at 2025-11-18 00:22:24
+
+[INFO] Calling get_openai_client(cfg)
+[INFO] AI response received at 2025-11-18 00:22:43
+[INFO] AI processing time: 19.351 seconds
+[INFO] AI extraction finished. 2 job(s).
+[INFO] Preparing to append jobs to Google Sheet.
+[INFO] Obtaining Google Sheet worksheet.
+[OK] Appended 2 row(s).
+[OK] Done.
+
+[INFO] Line 407 Calling get_unread_email_body(cfg)
+
+[INFO] Calling extract_original_sender_from_body(body: str)
+[DEBUG] extract_original_sender_from_body: no From lines found
+[INFO] Checking whether email appears job-related.
+[INFO] Source email detected: jobalerts-noreply@linkedin.com
+
+[INFO] Line 329 AI extraction started…
+[INFO] AI request sent at 2025-11-18 00:22:49
+
+[INFO] Calling get_openai_client(cfg)
+[INFO] AI response received at 2025-11-18 00:23:20
+[INFO] AI processing time: 30.328 seconds
+[INFO] AI extraction finished. 4 job(s).
+[INFO] Preparing to append jobs to Google Sheet.
+[INFO] Obtaining Google Sheet worksheet.
+[WARN] Failed to enforce wrap strategy: APIError: [429]: Quota exceeded for quota metric 'Write requests' and limit 'Write requests per minute per user' of service 'sheets.googleapis.com' for consumer 'project_number:39211561999'.
+[OK] Appended 4 row(s).
+[OK] Done.
+
+[INFO] Line 407 Calling get_unread_email_body(cfg)
+
+[INFO] Calling extract_original_sender_from_body(body: str)
+[DEBUG] extract_original_sender_from_body: found alert@indeed.com
+[INFO] Checking whether email appears job-related.
+[INFO] Source email detected: alert@indeed.com
+
+[INFO] Line 329 AI extraction started…
+[INFO] AI request sent at 2025-11-18 00:23:27
+
+[INFO] Calling get_openai_client(cfg)
+[INFO] AI response received at 2025-11-18 00:23:46
+[INFO] AI processing time: 18.732 seconds
+[INFO] AI extraction finished. 1 job(s).
+[INFO] Preparing to append jobs to Google Sheet.
+[INFO] Obtaining Google Sheet worksheet.
+[OK] Appended 1 row(s).
+[OK] Done.
+
+[INFO] Line 407 Calling get_unread_email_body(cfg)
+
+[INFO] Run finished. Processed 4 email(s).
+  35:28.81 imaplib version 2.60
+  35:28.82 new IMAP4 connection, tag=b'NEJB'
+  35:33.85 BYE response: b'LOGOUT Requested'
+  35:58.57 imaplib version 2.60
+  35:58.57 new IMAP4 connection, tag=b'JGGE'
+  35:59.49 BYE response: b'LOGOUT Requested'
+[INFO] Starting email processing run.
+[INFO] Google API debug logging enabled.
+
+[INFO] Line 407 Calling get_unread_email_body(cfg)
+
+[INFO] Calling extract_original_sender_from_body(body: str)
+[DEBUG] extract_original_sender_from_body: found donotreply@match.indeed.com
+[INFO] Checking whether email appears job-related.
+[INFO] Source email detected: donotreply@match.indeed.com
+
+[INFO] Line 329 AI extraction started…
+[INFO] AI request sent at 2025-11-18 00:35:33
+
+[INFO] Calling get_openai_client(cfg)
+[INFO] AI response received at 2025-11-18 00:35:56
+[INFO] AI processing time: 22.325 seconds
+[INFO] AI extraction finished. 1 job(s).
+[INFO] Preparing to append jobs to Google Sheet.
+[INFO] Obtaining Google Sheet worksheet.
+[INFO] Skipping duplicate job URL: https://www.indeed.com/pagead/clk/dl?from=jobi2a_multijob-en-US_email&jrtk=5-cmh1-1-1ja6341jinlu1800-d91e06afc75a45d1&mo=r&ad=-6NYlbfkN0BKkHZu3wF05EeDimN_p6sYpKCMArvwa95YdH7UpkaBCkNa5UcBOkN82tbBI5wGD8apCJPr86ZNJ2MYD_bjQpwoCtWoQkcjmxQrr7CkQ3czqSZv9MQW22WWeJ8TyjfDov5KgJKRoT50uTQpnfg1R-Lsl_R_3KpUqxERwzk6mQRr9JibOd2_1lXsBhsZVkiTsPfOmQo3eYRKTLmyvCt-yw6hjq67QWu4rrp3nyFW2L86tKdmZNP9byhfiuZdMEmJuC_CnZFeLXM_RFvVRd6prmdKu-ASte2-pw1M04dM8mJnaiHgt3A_wWJu_UTOHn9vVyVzhIW4rSsaIk5f7syGNttjV4XyLzbAgI4JHaDwbqNp0TnxFtcgvZCCDmId5RCRv6sYEdLHhNI8uN_s_b7oAFYB8lLQWrtUfD-d5xkIKZhlvKqpKvA76qkJeewKh5sielQWkOx7LzOPa55XM1j6HJxV7OYmuCCCeYe5Jp-iO1r0isW2LZDXim0yKhZzQjNJiehpKtLcyY_BH0jyCcvygtVhQxNt4CajNOEoR3Y06jcUcMTRcLT3c4V9jO_U-efOVG81Oe9y_LKquX0uLKc9wYOzImrRAmAt0L07lDJUfoMf7iClFiZolhB6a2Q0-ozeroE4DaGBzPCEkI1TrkHfFJak7yI2DSHx4B8isoW-xkD5550DheegcwMk6zEMb2jmuV9vy8QMzO5YCGCNNMVxnakq&rm=2&jsa=1776&camk=f416UQcMBpB_B2vhGYf0IA%3D%3D
+[INFO] No new rows to append after removing duplicates.
+[OK] Done.
+
+[INFO] Line 407 Calling get_unread_email_body(cfg)
+
+[INFO] Run finished. Processed 1 email(s).
+  40:25.92 imaplib version 2.60
+  40:25.92 new IMAP4 connection, tag=b'IOGE'
+  40:27.63 BYE response: b'LOGOUT Requested'
+  40:54.55 imaplib version 2.60
+  40:54.55 new IMAP4 connection, tag=b'BIKO'
+  40:55.16 BYE response: b'LOGOUT Requested'
+[INFO] Starting email processing run.
+[INFO] Google API debug logging enabled.
+
+[INFO] Line 407 Calling get_unread_email_body(cfg)
+
+[INFO] Calling extract_original_sender_from_body(body: str)
+[DEBUG] extract_original_sender_from_body: found donotreply@match.indeed.com
+[INFO] Checking whether email appears job-related.
+[INFO] Source email detected: donotreply@match.indeed.com
+
+[INFO] Line 329 AI extraction started…
+[INFO] AI request sent at 2025-11-18 00:40:27
+
+[INFO] Calling get_openai_client(cfg)
+[INFO] AI response received at 2025-11-18 00:40:48
+[INFO] AI processing time: 21.202 seconds
+[INFO] AI extraction finished. 1 job(s).
+[INFO] Preparing to append jobs to Google Sheet.
+[INFO] Obtaining Google Sheet worksheet.
+[OK] Appended 1 row(s).
+[OK] Done.
+
+[INFO] Line 407 Calling get_unread_email_body(cfg)
+
+[INFO] Run finished. Processed 1 email(s).
+  45:25.88 imaplib version 2.60
+  45:25.88 new IMAP4 connection, tag=b'CCIN'
+  45:26.57 BYE response: b'LOGOUT Requested'
+[INFO] Starting email processing run.
+[INFO] Google API debug logging enabled.
+
+[INFO] Line 407 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  50:28.09 imaplib version 2.60
+  50:28.09 new IMAP4 connection, tag=b'BPMH'
+  50:28.64 BYE response: b'LOGOUT Requested'
+[INFO] Starting email processing run.
+[INFO] Google API debug logging enabled.
+
+[INFO] Line 407 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  55:25.88 imaplib version 2.60
+  55:25.88 new IMAP4 connection, tag=b'CKGF'
+  55:26.57 BYE response: b'LOGOUT Requested'
+[INFO] Starting email processing run.
+[INFO] Google API debug logging enabled.
+
+[INFO] Line 407 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  00:28.03 imaplib version 2.60
+  00:28.03 new IMAP4 connection, tag=b'JCHP'
+  00:28.82 BYE response: b'LOGOUT Requested'
+[INFO] Starting email processing run.
+[INFO] Google API debug logging enabled.
+
+[INFO] Line 407 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).

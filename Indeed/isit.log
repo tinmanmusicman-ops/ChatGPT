@@ -187,3 +187,86 @@
 2025-11-17 23:40:00,939 [DEBUG] Entering load_config
 2025-11-17 23:40:00,940 [INFO] Configuration loaded successfully.
 2025-11-17 23:40:01,707 [INFO] No unread Primary emails with 'Scam' in the subject.
+2025-11-17 23:45:00,752 [DEBUG] Entering fetch_unread_scam
+2025-11-17 23:45:00,752 [DEBUG] Entering load_config
+2025-11-17 23:45:00,753 [INFO] Configuration loaded successfully.
+2025-11-17 23:45:01,362 [INFO] No unread Primary emails with 'Scam' in the subject.
+2025-11-17 23:50:01,294 [DEBUG] Entering fetch_unread_scam
+2025-11-17 23:50:01,294 [DEBUG] Entering load_config
+2025-11-17 23:50:01,295 [INFO] Configuration loaded successfully.
+2025-11-17 23:50:02,080 [INFO] No unread Primary emails with 'Scam' in the subject.
+2025-11-17 23:55:00,926 [DEBUG] Entering fetch_unread_scam
+2025-11-17 23:55:00,926 [DEBUG] Entering load_config
+2025-11-17 23:55:00,927 [INFO] Configuration loaded successfully.
+2025-11-17 23:55:01,675 [INFO] No unread Primary emails with 'Scam' in the subject.
+2025-11-18 00:00:00,819 [DEBUG] Entering fetch_unread_scam
+2025-11-18 00:00:00,819 [DEBUG] Entering load_config
+2025-11-18 00:00:00,820 [INFO] Configuration loaded successfully.
+2025-11-18 00:00:01,573 [INFO] No unread Primary emails with 'Scam' in the subject.
+2025-11-18 00:05:00,878 [DEBUG] Entering fetch_unread_scam
+2025-11-18 00:05:00,878 [DEBUG] Entering load_config
+2025-11-18 00:05:00,878 [INFO] Configuration loaded successfully.
+2025-11-18 00:05:01,475 [INFO] No unread Primary emails with 'Scam' in the subject.
+2025-11-18 00:10:00,764 [DEBUG] Entering fetch_unread_scam
+2025-11-18 00:10:00,764 [DEBUG] Entering load_config
+2025-11-18 00:10:00,765 [INFO] Configuration loaded successfully.
+2025-11-18 00:10:01,394 [INFO] No unread Primary emails with 'Scam' in the subject.
+2025-11-18 00:15:01,059 [DEBUG] Entering fetch_unread_scam
+2025-11-18 00:15:01,060 [DEBUG] Entering load_config
+2025-11-18 00:15:01,060 [INFO] Configuration loaded successfully.
+2025-11-18 00:15:01,781 [INFO] No unread Primary emails with 'Scam' in the subject.
+2025-11-18 00:19:14,530 [DEBUG] Entering fetch_unread_scam
+2025-11-18 00:19:14,530 [DEBUG] Entering load_config
+2025-11-18 00:19:14,544 [INFO] Configuration loaded successfully.
+2025-11-18 00:19:15,799 [DEBUG] Entering decode_subject
+2025-11-18 00:19:15,799 [DEBUG] Entering strip_scam_prefix
+2025-11-18 00:19:15,800 [DEBUG] Entering extract_body
+2025-11-18 00:19:15,800 [DEBUG] Entering collect_from_blocks
+2025-11-18 00:19:15,800 [INFO] collect_from_blocks: extracted 1 sender blocks.
+2025-11-18 00:19:15,800 [DEBUG] Entering analyze_body
+2025-11-18 00:19:15,805 [DEBUG] Starting new HTTPS connection (1): api.openai.com:443
+2025-11-18 00:19:21,158 [DEBUG] https://api.openai.com:443 "POST /v1/chat/completions HTTP/1.1" 200 None
+2025-11-18 00:19:21,161 [INFO] analyze_body: received response for sender noreply@findcareer.pmta.sailthru.com.
+2025-11-18 00:19:21,162 [INFO] Evaluation -> sender=noreply@findcareer.pmta.sailthru.com subject=PAYPAL Balance: SPEND IT or LOSE IT ($1000.00) is_scam=True confidence=0.9 summary=The email is likely a phishing scam attempting to steal personal information.
+2025-11-18 00:19:21,798 [DEBUG] Entering send_scam_notification
+2025-11-18 00:19:21,807 [DEBUG] Entering clean_header_value
+2025-11-18 00:19:21,807 [DEBUG] Entering clean_header_value
+2025-11-18 00:19:22,933 [INFO] send_scam_notification: sent analysis reply to tim.inman.2024@gmail.com.
+2025-11-18 00:19:22,933 [INFO] Notification sent to tim.inman.2024@gmail.com about sender=noreply@findcareer.pmta.sailthru.com subject=PAYPAL Balance: SPEND IT or LOSE IT ($1000.00)
+2025-11-18 00:19:22,933 [INFO] Sender: noreply@findcareer.pmta.sailthru.com | Subject: Scam Fwd: PAYPAL Balance: SPEND IT or LOSE IT ($1000.00) | Summary: The email is likely a phishing scam attempting to steal personal information. | Action: Moved to 'Scam' (copied + deleted original).
+2025-11-18 00:20:00,928 [DEBUG] Entering fetch_unread_scam
+2025-11-18 00:20:00,928 [DEBUG] Entering load_config
+2025-11-18 00:20:00,928 [INFO] Configuration loaded successfully.
+2025-11-18 00:20:01,544 [INFO] No unread Primary emails with 'Scam' in the subject.
+2025-11-18 00:25:01,791 [DEBUG] Entering fetch_unread_scam
+2025-11-18 00:25:01,791 [DEBUG] Entering load_config
+2025-11-18 00:25:01,791 [INFO] Configuration loaded successfully.
+2025-11-18 00:25:02,375 [INFO] No unread Primary emails with 'Scam' in the subject.
+2025-11-18 00:30:01,796 [DEBUG] Entering fetch_unread_scam
+2025-11-18 00:30:01,796 [DEBUG] Entering load_config
+2025-11-18 00:30:01,805 [INFO] Configuration loaded successfully.
+2025-11-18 00:30:02,441 [INFO] No unread Primary emails with 'Scam' in the subject.
+2025-11-18 00:35:01,756 [DEBUG] Entering fetch_unread_scam
+2025-11-18 00:35:01,756 [DEBUG] Entering load_config
+2025-11-18 00:35:01,757 [INFO] Configuration loaded successfully.
+2025-11-18 00:35:02,502 [INFO] No unread Primary emails with 'Scam' in the subject.
+2025-11-18 00:40:00,804 [DEBUG] Entering fetch_unread_scam
+2025-11-18 00:40:00,805 [DEBUG] Entering load_config
+2025-11-18 00:40:00,805 [INFO] Configuration loaded successfully.
+2025-11-18 00:40:01,507 [INFO] No unread Primary emails with 'Scam' in the subject.
+2025-11-18 00:45:01,761 [DEBUG] Entering fetch_unread_scam
+2025-11-18 00:45:01,761 [DEBUG] Entering load_config
+2025-11-18 00:45:01,762 [INFO] Configuration loaded successfully.
+2025-11-18 00:45:02,505 [INFO] No unread Primary emails with 'Scam' in the subject.
+2025-11-18 00:50:01,943 [DEBUG] Entering fetch_unread_scam
+2025-11-18 00:50:01,944 [DEBUG] Entering load_config
+2025-11-18 00:50:01,946 [INFO] Configuration loaded successfully.
+2025-11-18 00:50:02,606 [INFO] No unread Primary emails with 'Scam' in the subject.
+2025-11-18 00:55:01,753 [DEBUG] Entering fetch_unread_scam
+2025-11-18 00:55:01,753 [DEBUG] Entering load_config
+2025-11-18 00:55:01,753 [INFO] Configuration loaded successfully.
+2025-11-18 00:55:02,359 [INFO] No unread Primary emails with 'Scam' in the subject.
+2025-11-18 01:00:02,224 [DEBUG] Entering fetch_unread_scam
+2025-11-18 01:00:02,225 [DEBUG] Entering load_config
+2025-11-18 01:00:02,226 [INFO] Configuration loaded successfully.
+2025-11-18 01:00:02,831 [INFO] No unread Primary emails with 'Scam' in the subject.

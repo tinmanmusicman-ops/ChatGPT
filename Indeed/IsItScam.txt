@@ -184,3 +184,94 @@ C:\Users\SCRC\AppData\Local\Programs\Python\Python314\python.exe: can't open fil
 [IsitScam] Configuration loaded successfully.
 
 [IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] collect_from_blocks: extracted 1 sender blocks.
+
+[IsitScam] analyze_body: received response for sender noreply@findcareer.pmta.sailthru.com.
+
+[IsitScam] send_scam_notification: sent analysis reply to tim.inman.2024@gmail.com.
+
+[IsitScam] Sender: noreply@findcareer.pmta.sailthru.com | Subject: Scam Fwd: PAYPAL Balance: SPEND IT or LOSE IT ($1000.00) | Summary: The email is likely a phishing scam attempting to steal personal information. | Action: Moved to 'Scam' (copied + deleted original).
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
