@@ -1,6 +1,6 @@
-from pathlib import Path
+﻿from pathlib import Path
 from typing import Iterable, List, Set, Tuple
-import os, json, imaplib, email, inspect, re, time, logging
+import os, json, imaplib, email, inspect, re, time
 from email.header import decode_header
 from email.utils import parseaddr
 from datetime import datetime
@@ -13,7 +13,6 @@ os.chdir(base_dir)
 try:
     import gspread
     from google.oauth2.service_account import Credentials
-    from googleapiclient.discovery import build
 except ImportError:
     raise SystemExit("Install gspread + google-auth")
 
@@ -21,7 +20,7 @@ EXTRACTION_PROMPT = """
 You are a data extraction assistant.
 
 Task:
-Given the email subject and the full HTML or plain-text body of an email that may contain multiple links, do the following:
+Given the full HTML or plain-text body of an email that may contain multiple links, do the following:
 
 1. Extract only job-related URLs:
    - Job posting links
@@ -39,28 +38,25 @@ Ignore:
 2. For each job URL:
    - Infer job_name
    - Infer company_name
-   - Infer whether the role is remote, hybrid, or on-site (call this field work_arrangement). If unclear, return null.
    - Infer salary information (exact figure or range if provided; otherwise null)
-   - Infer the location. Prefer explicit location info in the email body; if the body lacks it, extract just the City and State from the subject line.
    - If unsure, return null
-   - Build a field named SWOT that contains a detailed SWOT + automation analysis for the company. For each label (Strengths, Weaknesses, Opportunities, Threats), provide 1�2 sentences filled with concrete facts from the email: capabilities, differentiators, product lines, customer/region focus, hiring or automation cues, metrics/ranges, competitive or regulatory risks. If a section still lacks evidence after scanning the job description, company summary, and subject line, explicitly state "Strengths: null" (etc.) rather than inventing information.
-
+   
 3. For each job URL, also extract a single field called decision_factors:
    - A short, compact description using only info from the email.
    - Include things like:
      - salary / pay range
      - remote / hybrid / on-site
-     - location (city/state or “multiple locations”)
+     - location (city/state or ΓÇ£multiple locationsΓÇ¥)
      - job type (full-time, part-time, contract, etc.)
      - schedule hints (weekends, evenings, flexible)
-   - Keep it to 1–2 sentences max.
+   - Keep it to 1ΓÇô2 sentences max.
    - If there is not enough info, set decision_factors to null.
    
    
 
       
    
-   Generate a company_summary for the company, based only on information available in the email body. The summary should briefly describe the company’s type (e.g., staffing agency, tech company, healthcare provider) and any clearly stated details (e.g., location, industry, pay range hints, “Easily apply”, etc.).
+   Generate a company_summary for the company, based only on information available in the email body. The summary should briefly describe the companyΓÇÖs type (e.g., staffing agency, tech company, healthcare provider) and any clearly stated details (e.g., location, industry, pay range hints, ΓÇ£Easily applyΓÇ¥, etc.).
    What is the physical address for the company that is associated with the URL info
       
 
@@ -73,7 +69,6 @@ If there is not enough information to say anything meaningful about the company,
    - ONLY return a JSON object
    - MUST NOT use markdown or code fences
    - JSON must start with '{' and end with '}'
-   - The SWOT field must include the full SWOT analysis with at least three distinct factual points across the Strengths/Weaknesses/Opportunities/Threats segments whenever information is available; set SWOT to null only when absolutely no company detail exists in the email.
 
    
 
@@ -86,13 +81,10 @@ If there is not enough information to say anything meaningful about the company,
       "company_name": string|null,
       "url": string,
       "company_summary": string|null,
-      "work_arrangement": string|null,
       "salary": string|null,
-      "decision_factors": string|null,
-      "SWOT": string|null,
+      "decision_factors": string|null
       "location": string|null
-
-          }
+    }
   ]
 }
 
@@ -118,7 +110,7 @@ JOB_DOMAINS = (
     "linkedin",
 )
 
-COLUMN_LETTERS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"]
+COLUMN_LETTERS = ["A", "B", "C", "D", "E", "F", "G", "H", "I"]
 
 SHEET_HEADERS = [
     "Timestamp",
@@ -126,112 +118,16 @@ SHEET_HEADERS = [
     "Job Link",
     "Company",
     "Location",
-    "Work Arrangement",
     "Salary",
     "Company Summary",
     "Decision Factors",
     "Source Email",
-    "SWOT",
 ]
 
 _FORWARDED_FROM_PATTERN = re.compile(
     r"^\s*>?\s*From:\s*(?:.*<([^>]+)>|([^ \r\n]+@[^ \r\n]+))",
     re.IGNORECASE | re.MULTILINE,
 )
-_CITY_STATE_PATTERN = re.compile(r"([A-Za-z][A-Za-z .'-]+,\s?[A-Z]{2})(?=[^A-Za-z]|$)")
-_SWOT_HEADING_PATTERN = re.compile(
-    r"(Strengths[:\-]|Weaknesses[:\-]|Opportunities[:\-]|Threats[:\-])",
-    re.IGNORECASE,
-)
-_SWOT_HEADINGS = ("Strengths", "Weaknesses", "Opportunities", "Threats")
-
-
-def _format_swot_text(value) -> str:
-    """Return a nicely formatted SWOT string with blank lines between sections."""
-    if value is None:
-        return ""
-    if isinstance(value, str):
-        stripped = value.strip()
-        if stripped.startswith("{") and stripped.endswith("}"):
-            try:
-                value = json.loads(stripped)
-            except Exception:
-                pass
-        elif stripped.startswith("[") and stripped.endswith("]"):
-            try:
-                value = json.loads(stripped)
-            except Exception:
-                pass
-    if isinstance(value, dict):
-        sections = []
-        for key in _SWOT_HEADINGS:
-            snippet = (value.get(key) or "").strip()
-            if snippet:
-                sections.append(f"{key}: {snippet}")
-        return "\n\n".join(sections)
-    if isinstance(value, list):
-        try:
-            value = " ".join(str(item) for item in value if item)
-        except Exception:
-            value = str(value)
-    else:
-        value = str(value)
-    cleaned = value.strip()
-    if not cleaned:
-        return ""
-    parts = _SWOT_HEADING_PATTERN.split(cleaned)
-    if len(parts) <= 1:
-        return cleaned
-    sections = []
-    lead = parts[0].strip()
-    if lead:
-        sections.append(lead)
-
-    def _canonical_heading(raw: str) -> str:
-        lowered = raw.lower()
-        if lowered.startswith("strength"):
-            return "Strengths:"
-        if lowered.startswith("weakness"):
-            return "Weaknesses:"
-        if lowered.startswith("opportunit"):
-            return "Opportunities:"
-        if lowered.startswith("threat"):
-            return "Threats:"
-        return raw.strip()
-
-    for heading, body in zip(parts[1::2], parts[2::2]):
-        canon = _canonical_heading(heading)
-        trimmed_body = body.strip()
-        entry = f"{canon} {trimmed_body}".strip()
-        if entry:
-            sections.append(entry)
-    return "\n\n".join(sections)
-
-
-def _decode_mime_header(value: str | None) -> str:
-    """Decode MIME-encoded headers (like Subject) into a readable string."""
-    if not value:
-        return ""
-    parts = []
-    for text, charset in decode_header(value):
-        if isinstance(text, bytes):
-            try:
-                parts.append(text.decode(charset or "utf-8", "replace"))
-            except Exception:
-                parts.append(text.decode("utf-8", "replace"))
-        else:
-            parts.append(text)
-    return "".join(parts).strip()
-
-
-def _extract_city_state_from_subject(subject: str) -> str:
-    """Extract the last 'City, ST' pattern from a subject line, if present."""
-    if not subject:
-        return ""
-    match = None
-    for match in _CITY_STATE_PATTERN.finditer(subject):
-        pass
-    return match.group(1).strip() if match else ""
 
 
 def load_config():
@@ -254,7 +150,7 @@ def get_openai_client(cfg):
         raise SystemExit("Missing OpenAI API key. Set openai_api_key in config.json or OPENAI_API_KEY env var.")
     return OpenAI(api_key=api_key)
 
-#    print(f"[INFO] Line {inspect.currentframe().f_lineno} AI extraction started…")
+#    print(f"[INFO] Line {inspect.currentframe().f_lineno} AI extraction startedΓÇª")
  
 def mark_email_as_read(cfg, uid):
     print(f"\n[INFO] Calling mark_email_as_read for UID {uid}")
@@ -325,22 +221,17 @@ def is_relevant_job_email(body: str) -> bool:
         return False
     return True
 
-def extract_jobs_from_email(body, cfg, subject=""):
-    print(f"\n[INFO] Line {inspect.currentframe().f_lineno} AI extraction started…")
+def extract_jobs_from_email(body, cfg):
+    print(f"\n[INFO] Line {inspect.currentframe().f_lineno} AI extraction startedΓÇª")
     ai_start = time.time()
     ai_start_timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     print(f"[INFO] AI request sent at {ai_start_timestamp}")
 
     client = get_openai_client(cfg)
-    formatted_subject = (subject or "").strip()
-    if formatted_subject:
-        model_input = f"Email Subject:\n{formatted_subject}\n\nEmail Body:\n{body}"
-    else:
-        model_input = body
     response = client.responses.create(
         model=cfg.get("openai_model","gpt-4.1-mini"),
         instructions=EXTRACTION_PROMPT.strip(),
-        input=model_input,
+        input=body,
         temperature=0.1,
     )
 
@@ -389,11 +280,9 @@ def extract_jobs_from_email(body, cfg, subject=""):
                 "job_name":j.get("job_name"),
                 "company_name":j.get("company_name"),
                 "company_summary":j.get("company_summary"),
-                "work_arrangement": j.get("work_arrangement"),
                 "salary": j.get("salary"),
                 "location": j.get("location"),
                 "decision_factors": j.get("decision_factors"),
-                "SWOT": j.get("SWOT"),
                 "url":j.get("url")
             })
             if len(jobs) >= max_jobs:
@@ -436,7 +325,6 @@ def get_unread_email_body(cfg):
     from_header = (msg.get("From", "") or "").strip()
     name, addr = parseaddr(from_header)
     header_from_email = (addr or from_header).strip()
-    subject = _decode_mime_header(msg.get("Subject", ""))
 
     body = ""
     if msg.is_multipart():
@@ -474,7 +362,7 @@ def get_unread_email_body(cfg):
         # Logout cleanly before returning to caller
         mail.logout()
         # Return an empty body so the caller continues the loop
-        return "", None, source_email, subject
+        return "", None, source_email
 
     try:
         mail.uid("COPY", uid, "Processed")
@@ -483,13 +371,11 @@ def get_unread_email_body(cfg):
     except Exception:
         pass
     mail.logout()
-    return body, uid, source_email, subject
+    return body, uid, source_email
 # end of copy email
 
 _GSHEET_WORKSHEET = None
 _GSHEET_EXISTING_URLS = None
-_DRIVE_SERVICE = None
-_CLEARED_THIS_RUN = False
 
 
 def get_gsheet_worksheet(cfg):
@@ -525,105 +411,6 @@ def get_gsheet_worksheet(cfg):
         raise SystemExit(f"Worksheet not found: {worksheet_name}") from exc
 
     return _GSHEET_WORKSHEET
-
-
-def _clear_data_rows_and_comments(ws, cfg, start_row: int = 2):
-    """Remove all data rows (and associated comments) starting at start_row."""
-    last_col = COLUMN_LETTERS[len(SHEET_HEADERS) - 1]
-    clear_range = f"A{start_row}:{last_col}"
-    try:
-        ws.batch_clear([clear_range])
-        print(f"[INFO] Cleared worksheet range {clear_range}.")
-    except Exception as exc:
-        print(f"[WARN] Failed to clear worksheet values: {exc}")
-
-    drive = _get_drive_service(cfg)
-    file_id = ws.spreadsheet.id
-    removed = 0
-    page_token = None
-    target_col = COLUMN_LETTERS.index("K")
-
-    while True:
-        resp = drive.comments().list(
-            fileId=file_id,
-            pageToken=page_token,
-            fields="nextPageToken, comments(id, anchor)"
-        ).execute()
-        for comment in resp.get("comments", []):
-            anchor_blob = comment.get("anchor")
-            if not anchor_blob:
-                continue
-            try:
-                anchor_data = json.loads(anchor_blob).get("rangedCommentAnchor")
-            except (json.JSONDecodeError, AttributeError):
-                continue
-            if not anchor_data:
-                continue
-            start_row_idx = anchor_data.get("startRowIndex")
-            start_col_idx = anchor_data.get("startColumnIndex")
-            if start_row_idx is None or start_col_idx is None:
-                continue
-            if start_col_idx != target_col:
-                continue
-            if start_row_idx + 1 < start_row:
-                continue
-            try:
-                drive.comments().delete(fileId=file_id, commentId=comment["id"]).execute()
-                removed += 1
-            except Exception as exc:
-                print(f"[WARN] Failed to delete Drive comment {comment.get('id')}: {exc}")
-        page_token = resp.get("nextPageToken")
-        if not page_token:
-            break
-    if removed:
-        print(f"[INFO] Removed {removed} Drive comment(s) from column K.")
-
-
-def _get_drive_service(cfg):
-    """Create (or reuse) Drive API client for sheet comments."""
-    global _DRIVE_SERVICE
-    if _DRIVE_SERVICE is not None:
-        return _DRIVE_SERVICE
-
-    sa = base_dir / cfg.get("service_account_json", "sa_key.json")
-    if not sa.exists():
-        raise SystemExit(f"Missing Google service account file: {sa}")
-
-    scopes = [
-        "https://www.googleapis.com/auth/spreadsheets",
-        "https://www.googleapis.com/auth/drive",
-    ]
-    creds = Credentials.from_service_account_file(str(sa), scopes=scopes)
-    _DRIVE_SERVICE = build("drive", "v3", credentials=creds, cache_discovery=False)
-    return _DRIVE_SERVICE
-
-
-def _create_ttt_comment(ws, cfg, row_number, col_idx, note_text):
-    """Attach a Drive comment to the TTT cell for better readability."""
-    drive = _get_drive_service(cfg)
-    try:
-        sheet_id = int(ws.id)
-    except (TypeError, ValueError):
-        sheet_id = ws.id
-    anchor = json.dumps({
-        "rangedCommentAnchor": {
-            "sheetId": sheet_id,
-            "startRowIndex": row_number - 1,
-            "endRowIndex": row_number,
-            "startColumnIndex": col_idx,
-            "endColumnIndex": col_idx + 1,
-        }
-    })
-    body = {
-        "content": note_text,
-        "anchor": anchor,
-    }
-    result = drive.comments().create(
-        fileId=ws.spreadsheet.id,
-        body=body,
-        fields="id",
-    ).execute()
-    print(f"[DEBUG] Created Drive comment {result.get('id')} for row {row_number} col {col_idx+1}")
 
 
 def _get_existing_sheet_urls(ws):
@@ -673,18 +460,10 @@ def _ensure_sheet_headers(ws):
         return
 
     try:
-        ws.update(range_name="A1:K1", values=[SHEET_HEADERS])
+        ws.update("A1:I1", [SHEET_HEADERS])
         print("[INFO] Sheet headers refreshed.")
     except Exception as exc:
         print(f"[WARN] Failed to update sheet headers: {exc}")
-
-def _ensure_wrap_clip(ws):
-    '''Ensure sheet columns retain CLIP wrapping.'''
-    try:
-        ws.format('A:J', {'wrapStrategy': 'CLIP'})
-    except Exception as exc:
-        print(f"[WARN] Failed to enforce wrap strategy: {exc}")
-
 
 def append_jobs_to_sheet(jobs,cfg,from_email,elapsed):
     print("[INFO] Preparing to append jobs to Google Sheet.")
@@ -694,13 +473,10 @@ def append_jobs_to_sheet(jobs,cfg,from_email,elapsed):
 
     ws = get_gsheet_worksheet(cfg)
     _ensure_sheet_headers(ws)
-    _ensure_wrap_clip(ws)
     existing_urls = _get_existing_sheet_urls(ws)
-    now = datetime.now()
-    ts_cell = now.strftime("%Y-%m-%d %H:%M:%S")
-    ts_note = now.strftime("%A, %B %d, %I:%M %p")
+    ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     try:
-        current_row_count = len(ws.get_all_values())
+        current_row_count = len(ws.col_values(1, value_render_option="UNFORMATTED_VALUE"))
     except Exception:
         current_row_count = ws.row_count or 1
     row_base = current_row_count + 1
@@ -708,20 +484,9 @@ def append_jobs_to_sheet(jobs,cfg,from_email,elapsed):
     def _escape_for_formula(text: str | None) -> str:
         return (text or "").replace('"', '""')
 
-    def _cell_value(value):
-        """Convert nested structures into a plain string for Google Sheets."""
-        if value is None:
-            return ""
-        if isinstance(value, (dict, list)):
-            try:
-                return json.dumps(value, ensure_ascii=False)
-            except Exception:
-                return str(value)
-        return str(value)
     rows = []
     new_urls = []
     note_rows = []
-
     for i, job in enumerate(jobs):
         url = job.get("url") or ""
         job_name = job.get("job_name") or "Job Link"
@@ -733,39 +498,33 @@ def append_jobs_to_sheet(jobs,cfg,from_email,elapsed):
             if url
             else job_name
         )
-        raw_swot = _cell_value(job.get("SWOT"))
-        swot_value = _format_swot_text(raw_swot)
-        # Only the note should get the formatted version; keep cell contents unchanged.
 
-        row_values = [
-            ts_cell if i == 0 else "",
-            f"{elapsed:.3f}" if i == 0 else "",
-            hyperlink,
-            _cell_value(job.get("company_name")),
-            _cell_value(job.get("location")),
-            _cell_value(job.get("work_arrangement")),
-            _cell_value(job.get("salary")),
-            _cell_value(job.get("company_summary")),
-            _cell_value(job.get("decision_factors")),
-            _cell_value(from_email if i == 0 else ""),
-            raw_swot,
-        ]
-        rows.append(row_values)
+        rows.append(
+            [
+                ts if i == 0 else "",
+                f"{elapsed:.3f}" if i == 0 else "",
+                hyperlink,
+                job.get("company_name") or "",
+                job.get("location") or "",
+                job.get("salary") or "",
+                job.get("company_summary") or "",
+                job.get("decision_factors") or "",
+                from_email if i == 0 else "",
+            ]
+        )
         if url:
             new_urls.append(url)
         note_rows.append(
             [
-                ts_note if i == 0 else "",
+                ts if i == 0 else "",
                 f"{elapsed:.3f}" if i == 0 else "",
-                _cell_value(url or job_name),
-                _cell_value(job.get("company_name")),
-                _cell_value(job.get("location")),
-                _cell_value(job.get("work_arrangement")),
-                _cell_value(job.get("salary")),
-                _cell_value(job.get("company_summary")),
-                _cell_value(job.get("decision_factors")),
-                _cell_value(from_email if i == 0 else ""),
-                swot_value,
+                url or job_name,
+                job.get("company_name") or "",
+                job.get("location") or "",
+                job.get("salary") or "",
+                job.get("company_summary") or "",
+                job.get("decision_factors") or "",
+                from_email if i == 0 else "",
             ]
         )
     if not rows:
@@ -777,30 +536,22 @@ def append_jobs_to_sheet(jobs,cfg,from_email,elapsed):
         for url in new_urls:
             existing_urls.add(url)
         print(f"[OK] Appended {len(rows)} row(s).")
-
         for row_offset, note_values in enumerate(note_rows):
             row_number = row_base + row_offset
             for col_idx, note in enumerate(note_values):
-                note_text = (note or "").strip()
-                if not note_text:
-                    continue
-                if col_idx >= len(COLUMN_LETTERS):
-                    continue
-                if row_number == 1:
+                if not note:
                     continue
                 column_letter = COLUMN_LETTERS[col_idx]
-                if column_letter == "K":
-                    note_text = _format_swot_text(note_text)
                 cell = f"{column_letter}{row_number}"
                 try:
-                    ws.update_note(cell, note_text)
+                    ws.update_note(cell, note)
                 except Exception as exc:
                     print(f"[WARN] Failed to set note for {cell}: {exc}")
     except Exception as exc:
         print(f"[WARN] Failed to append rows to sheet: {exc}")
 
 
-def process_email_payload(body, uid, from_email, cfg, subject="", context=""):
+def process_email_payload(body, uid, from_email, cfg, context=""):
     label = f" ({context})" if context else ""
     trimmed_body = body.strip() if body else ""
 
@@ -815,27 +566,10 @@ def process_email_payload(body, uid, from_email, cfg, subject="", context=""):
     if sender:
         print(f"[INFO] Source email detected{label}: {sender}")
 
-    jobs, elapsed = extract_jobs_from_email(trimmed_body, cfg, subject=subject)
+    jobs, elapsed = extract_jobs_from_email(trimmed_body, cfg)
     if not jobs:
         print(f"[INFO] Looked job-related but no jobs extracted{label}.")
         return False
-
-    subject_text = (subject or "").strip()
-    fallback_location = ""
-    city_state_only = ""
-    if subject_text:
-        city_state_only = _extract_city_state_from_subject(subject_text)
-        fallback_location = city_state_only or subject_text
-    if fallback_location:
-        lowered_subject = subject_text.lower()
-        for job in jobs:
-            loc = (job.get("location") or "").strip()
-            if not loc:
-                job["location"] = fallback_location
-            elif city_state_only:
-                loc_lower = loc.lower()
-                if loc_lower == lowered_subject or lowered_subject in loc_lower:
-                    job["location"] = city_state_only
 
     append_jobs_to_sheet(jobs, cfg, sender, elapsed)
 
@@ -850,17 +584,6 @@ def main():
     print("[INFO] Starting email processing run.")
 
     cfg = load_config()
-    if cfg.get("enable_google_debug_logging"):
-        logging.getLogger("googleapiclient.discovery").setLevel(logging.DEBUG)
-        logging.getLogger("googleapiclient.http").setLevel(logging.DEBUG)
-        logging.getLogger("uritemplate").setLevel(logging.DEBUG)
-        print("[INFO] Google API debug logging enabled.")
-
-    global _CLEARED_THIS_RUN
-    if cfg.get("clear_sheet_before_run") and not _CLEARED_THIS_RUN:
-        ws = get_gsheet_worksheet(cfg)
-        _clear_data_rows_and_comments(ws, cfg, start_row=2)
-        _CLEARED_THIS_RUN = True
 
     # Debug mode: use a saved email body from file, process once, and exit.
     if cfg.get("debug_use_email_body_file"):
@@ -877,7 +600,6 @@ def main():
             uid=None,
             from_email=from_email,
             cfg=cfg,
-            subject=cfg.get("debug_subject", ""),
             context="debug mode",
         )
         if processed:
@@ -909,8 +631,8 @@ def main():
                 print("[INFO] No email body found.")
             break
 
-        body, uid, from_email, subject = result
-        processed = process_email_payload(body, uid, from_email, cfg, subject=subject)
+        body, uid, from_email = result
+        processed = process_email_payload(body, uid, from_email, cfg)
         processed_any = processed_any or processed
         processed_count += 1
 

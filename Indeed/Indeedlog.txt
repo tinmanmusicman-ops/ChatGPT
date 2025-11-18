@@ -23,3 +23,13 @@
 [IsitScam] Configuration loaded successfully.
 
 [IsitScam] No unread Primary emails with 'Scam' in the subject.
+  45:25.47 imaplib version 2.60
+  45:25.47 new IMAP4 connection, tag=b'IBMC'
+  45:26.13 BYE response: b'LOGOUT Requested'
+[INFO] Starting email processing run.
+[INFO] Google API debug logging enabled.
+
+[INFO] Line 340 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
