@@ -275,3 +275,2769 @@ C:\Users\SCRC\AppData\Local\Programs\Python\Python314\python.exe: can't open fil
 [IsitScam] Configuration loaded successfully.
 
 [IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] collect_from_blocks: extracted 1 sender blocks.
+
+[IsitScam] analyze_body: received response for sender noreply@findcareer.pmta.sailthru.com.
+
+[IsitScam] send_scam_notification: sent analysis reply to tim.inman.2024@gmail.com.
+
+[IsitScam] Sender: noreply@findcareer.pmta.sailthru.com | Subject: Scam Fwd: NICELY DONE! $1,000,000 | Timothy! | Summary: The email is likely a scam due to promises of money and suspicious links. | Action: Moved to 'Scam' (copied + deleted original).
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+Traceback (most recent call last):
+  File "C:\ChatGPT\Indeed\IsItScam.py", line 325, in <module>
+    fetch_unread_scam()
+    ~~~~~~~~~~~~~~~~~^^
+  File "C:\ChatGPT\Indeed\IsItScam.py", line 245, in fetch_unread_scam
+    with imaplib.IMAP4_SSL(GMAIL_HOST) as client:
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "C:\Users\SCRC\AppData\Local\Programs\Python\Python314\Lib\imaplib.py", line 1639, in __init__
+    IMAP4.__init__(self, host, port, timeout)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\SCRC\AppData\Local\Programs\Python\Python314\Lib\imaplib.py", line 208, in __init__
+    self.open(host, port, timeout)
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\SCRC\AppData\Local\Programs\Python\Python314\Lib\imaplib.py", line 1652, in open
+    IMAP4.open(self, host, port, timeout)
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\SCRC\AppData\Local\Programs\Python\Python314\Lib\imaplib.py", line 318, in open
+    self.sock = self._create_socket(timeout)
+                ~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\SCRC\AppData\Local\Programs\Python\Python314\Lib\imaplib.py", line 1642, in _create_socket
+    sock = IMAP4._create_socket(self, timeout)
+  File "C:\Users\SCRC\AppData\Local\Programs\Python\Python314\Lib\imaplib.py", line 308, in _create_socket
+    return socket.create_connection(address)
+           ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\SCRC\AppData\Local\Programs\Python\Python314\Lib\socket.py", line 846, in create_connection
+    for res in getaddrinfo(host, port, 0, SOCK_STREAM):
+               ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\SCRC\AppData\Local\Programs\Python\Python314\Lib\socket.py", line 983, in getaddrinfo
+    for res in _socket.getaddrinfo(host, port, family, type, proto, flags):
+               ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+socket.gaierror: [Errno 11001] getaddrinfo failed
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] collect_from_blocks: extracted 1 sender blocks.
+
+[IsitScam] analyze_body: received response for sender noreply@findcareer.pmta.sailthru.com.
+
+[IsitScam] send_scam_notification: sent analysis reply to tim.inman.2024@gmail.com.
+
+[IsitScam] Sender: noreply@findcareer.pmta.sailthru.com | Subject: Scam Fwd: PAYPAL: Timothy, Please Confirm Card | Summary: The email is likely a scam attempting to lure the recipient into providing personal information. | Action: Moved to 'Scam' (copied + deleted original).
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] No unread Primary emails with 'Scam' in the subject.

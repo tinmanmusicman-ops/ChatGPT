@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Mermaid Flowchart</title>
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: true, theme: 'base', flowchart: { curve: 'basis' } });
+  </script>
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #070712;
+      color: #fff;
+      font-family: "Segoe UI", system-ui;
+      display: flex;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+    .diagram-wrapper {
+      width: min(1100px, 100%);
+      background: #0c1224;
+      border-radius: 20px;
+      padding: 2rem;
+      box-shadow: 0 10px 50px rgba(0, 0, 0, 0.4);
+    }
+    .diagram-wrapper h1 {
+      margin-top: 0;
+      font-size: 1.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: #8b9eff;
+    }
+  </style>
+</head>
+<body>
+  <div class="diagram-wrapper">
+    <h1>Mermaid Flowchart</h1>
+    <div class="mermaid">
+      flowchart TD
+        start([Start / main()])
+        config[/"Load config + enable debug logging?"/]
+        clear{Clear sheet flag?}
+        debug{Debug mode?}
+        debug_yes[/"Read email_body.txt"/]
+        debug_proc["process_email_payload(context=debug mode)"]
+        loop["Loop until max_emails_per_run"]
+        fetch[get_unread_email_body()]
+        proc[process_email_payload()]
+        helper["Helper utilities"]
+        extract[extract_jobs_from_email()]
+        append[append_jobs_to_sheet()]
+        end([Finish / Exit])
+
+        start --> config --> clear --> debug
+        debug -->|yes| debug_yes --> debug_proc --> end
+        debug -->|no| loop --> fetch --> proc --> extract --> append --> helper --> end
+        helper --> end
+
+        proc -->|subject fallback| proc
+        extract -->|AI response| append
+        fetch -->|filtered| proc
+        helper -->|supports| proc
+    </div>
+  </div>
+</body>
+</html>

@@ -7,7 +7,6 @@
   "subject_term": "",
   "gmail_use_category": true,
   "gmail_category": "primary",
-  "gmail_search_scope": "inbox",
   "gmail_only_unseen": true,
   "mark_read": true,
   "gmail_search_scope": "anywhere",
@@ -31,5 +30,13 @@
   "max_jobs_per_email": 6,
   "test": 123,
   "clear_sheet_before_run": false,
-  "enable_google_debug_logging": true
+  "enable_google_debug_logging": true,
+  "fax_gateway_address": "tinmanmusicman@yahoo.com",
+  "fax_gateway_subject_template": "Fax to {phone}: {subject}",
+  "fax_gateway_body": "PDF attached from IRSFax automation.",
+  "fax_subject_keyword": "IRSFax",
+  "fax_subject_pattern": "\\b\\d{3}-\\d{3}-\\d{4}\\b",
+  "move_processed": true,
+  "processed_folder": "Faxes",
+  "TestFlag": false
 }

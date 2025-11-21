@@ -1,0 +1,253 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+5 0 obj
+<< /Length 3534 >>
+stream
+0.95 0.95 0.95 rg
+BT
+/F1 20 Tf
+1 0 0 1 110 770 Tm
+(Indeed Email Processor Flow) Tj
+ET
+0.78 0.86 1 rg
+BT
+/F1 11 Tf
+1 0 0 1 110 748 Tm
+(Detailed Vizeo-style pipeline with helper steps) Tj
+ET
+0.22 0.66 0.94 rg
+116 690 380 90 re
+f
+0.95 0.95 0.95 rg
+BT
+/F1 14 Tf
+18 TL
+1 0 0 1 257.00 756.00 Tm
+(Start / main\(\)) Tj
+ET
+0.95 0.95 0.95 rg
+BT
+/F1 10 Tf
+12 TL
+1 0 0 1 130.00 738.00 Tm
+(Load config, enable debug logging when requested) Tj
+T*
+(Clear sheet once when flagged per run) Tj
+T*
+(Debug mode reads email_body.txt and exits) Tj
+T*
+(Normal loop runs until max_emails_per_run) Tj
+ET
+0.12 0.18 0.39 rg
+116 580 380 90 re
+f
+0.95 0.95 0.95 rg
+BT
+/F1 14 Tf
+18 TL
+1 0 0 1 225.50 646.00 Tm
+(get_unread_email_body\(\)) Tj
+ET
+0.95 0.95 0.95 rg
+BT
+/F1 10 Tf
+12 TL
+1 0 0 1 130.00 628.00 Tm
+(Login IMAP, select INBOX, search Primary unseen) Tj
+T*
+(Fetch first message \(HTML preferred\)) Tj
+T*
+(Detect forwarded sender via regex) Tj
+T*
+(Filter body with keywords/domains; non-job -> NotRead) Tj
+ET
+0.1 0.25 0.34 rg
+116 470 380 90 re
+f
+0.95 0.95 0.95 rg
+BT
+/F1 14 Tf
+18 TL
+1 0 0 1 225.50 536.00 Tm
+(process_email_payload\(\)) Tj
+ET
+0.95 0.95 0.95 rg
+BT
+/F1 10 Tf
+12 TL
+1 0 0 1 130.00 518.00 Tm
+(Trim body, skip empty payloads, log source) Tj
+T*
+(Call extract_jobs_from_email\(\) for AI parse) Tj
+T*
+(Subject fallback populates missing locations) Tj
+T*
+(Append jobs to sheet, log completion status) Tj
+ET
+0.58 0.29 0.88 rg
+116 360 380 90 re
+f
+0.95 0.95 0.95 rg
+BT
+/F1 14 Tf
+18 TL
+1 0 0 1 218.50 426.00 Tm
+(extract_jobs_from_email\(\)) Tj
+ET
+0.95 0.95 0.95 rg
+BT
+/F1 10 Tf
+12 TL
+1 0 0 1 130.00 408.00 Tm
+(Build OpenAI client, combine subject + body) Tj
+T*
+(Call Responses.create with EXTRACTION_PROMPT) Tj
+T*
+(Parse JSON, enforce max_jobs_per_email) Tj
+T*
+(Normalize job_name/salary/location/SWOT) Tj
+ET
+0.24 0.34 0.64 rg
+116 250 380 90 re
+f
+0.95 0.95 0.95 rg
+BT
+/F1 14 Tf
+18 TL
+1 0 0 1 229.00 316.00 Tm
+(append_jobs_to_sheet\(\)) Tj
+ET
+0.95 0.95 0.95 rg
+BT
+/F1 10 Tf
+12 TL
+1 0 0 1 130.00 298.00 Tm
+(Get worksheet via service account credentials) Tj
+T*
+(Ensure headers, wrapping, and cached URLs) Tj
+T*
+(Build rows with hyperlink, company, metadata) Tj
+T*
+(Append rows, update URL cache, add notes) Tj
+ET
+0.07 0.15 0.31 rg
+116 140 380 90 re
+f
+0.95 0.95 0.95 rg
+BT
+/F1 14 Tf
+18 TL
+1 0 0 1 250.00 206.00 Tm
+(Helper utilities) Tj
+ET
+0.95 0.95 0.95 rg
+BT
+/F1 10 Tf
+12 TL
+1 0 0 1 130.00 188.00 Tm
+(is_relevant_job_email\(\) enforces heuristics) Tj
+T*
+(extract_original_sender_from_body\(\) finds forwarded from) Tj
+T*
+(_format_swot_text\(\) cleans JSON/string notes) Tj
+T*
+(get_gsheet_worksheet\(\) caches client/worksheet) Tj
+ET
+0.22 0.66 0.94 rg
+116 30 380 90 re
+f
+0.95 0.95 0.95 rg
+BT
+/F1 14 Tf
+18 TL
+1 0 0 1 260.50 96.00 Tm
+(Finish / Exit) Tj
+ET
+0.95 0.95 0.95 rg
+BT
+/F1 10 Tf
+12 TL
+1 0 0 1 130.00 78.00 Tm
+(Log processed_count and run summary) Tj
+T*
+(Exit after the loop finishes) Tj
+ET
+0.38 0.91 0.78 RG
+3 w
+306 684.00 m 306 676.00 l S
+0.38 0.91 0.78 rg
+301 680.00 m
+311 680.00 l
+306 676.00 l
+h
+f
+0.38 0.91 0.78 RG
+3 w
+306 574.00 m 306 566.00 l S
+0.38 0.91 0.78 rg
+301 570.00 m
+311 570.00 l
+306 566.00 l
+h
+f
+0.38 0.91 0.78 RG
+3 w
+306 464.00 m 306 456.00 l S
+0.38 0.91 0.78 rg
+301 460.00 m
+311 460.00 l
+306 456.00 l
+h
+f
+0.38 0.91 0.78 RG
+3 w
+306 354.00 m 306 346.00 l S
+0.38 0.91 0.78 rg
+301 350.00 m
+311 350.00 l
+306 346.00 l
+h
+f
+0.38 0.91 0.78 RG
+3 w
+306 244.00 m 306 236.00 l S
+0.38 0.91 0.78 rg
+301 240.00 m
+311 240.00 l
+306 236.00 l
+h
+f
+0.38 0.91 0.78 RG
+3 w
+306 134.00 m 306 126.00 l S
+0.38 0.91 0.78 rg
+301 130.00 m
+311 130.00 l
+306 126.00 l
+h
+f
+endstream
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000000311 00000 n trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+3896
+%%EOF

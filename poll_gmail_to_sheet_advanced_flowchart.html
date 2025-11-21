@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>poll_gmail_to_sheet_advanced Flowchart</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      color-scheme: dark;
+    }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: linear-gradient(135deg, #050a1d 0%, #111a33 45%, #0f1d36 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      color: #f3f6ff;
+    }
+    .card {
+      width: min(1200px, 100%);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 24px;
+      padding: 2rem;
+      background: rgba(11, 20, 36, 0.85);
+      box-shadow: 0 25px 60px rgba(3, 5, 12, 0.75);
+    }
+    h1 {
+      margin: 0;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+    p {
+      margin-top: 0.5rem;
+      margin-bottom: 1.5rem;
+      color: #a6b7d6;
+    }
+    .mermaid {
+      border-radius: 16px;
+      padding: 1.5rem;
+      background: #08102a;
+      border: 1px solid rgba(76, 121, 211, 0.2);
+    }
+    @media (max-width: 640px) {
+      body {
+        padding: 1rem;
+      }
+      .card {
+        padding: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>poll_gmail_to_sheet_advanced</h1>
+    <p>High-level Visio-style flow of the Gmail to Sheets poller.</p>
+    <div class="mermaid">
+%%{init: {"theme":"dark","themeVariables":{"primaryColor":"#0063B1","secondaryColor":"#1f4a7a","tertiaryColor":"#00a7c7","lineColor":"#0094de","textColor":"#f3f6ff","fontFamily":"Segoe UI, system-ui, sans-serif","edgeLabelBackground":"#101430","nodeBorder":"2px","clusterBkg":"#0d1a33"}}}%%
+flowchart LR
+    Start(["Start<br>poll_gmail_to_sheet_advanced.py"])
+    Config(["load_config(config.json)"])
+    IMAP(["open_imap(user, app_password)<br>select INBOX"])
+    Search(["search_uids(unseen/subject)"])
+    Sheet(["open_sheet(service_account)<br>ensure header"])
+    ProcessedWS(["_processed_uids worksheet"])
+    Dedup(["filter out processed UIDs"])
+    LoopStart(["iterate todo UIDs"])
+    Fetch(["fetch_rfc822(model message)"])
+    Clean(["extract_text_from_msg<br>clean HTML + boilerplate"])
+    Collect(["bundle rows + processed UIDs"])
+    ThreadMark(["thread/mark list logic"])
+    RowsReady(["rows ready for worksheet"])
+    AppendRows(["append_rows(rows)"])
+    AppendProcessed(["append_processed(processed worksheet)"])
+    MarkSeen(["mark_seen / thread logic"])
+    Logout(["imap.logout()"])
+    End(["Finish / log status"])
+
+    Start --> Config --> IMAP --> Search --> Sheet --> ProcessedWS --> Dedup
+    Dedup --> LoopStart
+    LoopStart --> Fetch --> Clean --> Collect --> ThreadMark --> LoopStart
+    LoopStart -->|done| RowsReady
+    RowsReady --> AppendRows --> AppendProcessed --> MarkSeen --> Logout --> End
+    Dedup -->|no rows| Logout
+    Collect -->|keep rows| RowsReady
+    RowsReady -->|none| Logout
+    ThreadMark -->|adds marks| MarkSeen
+    MarkSeen --> Logout
+    AppendProcessed -->|recorded| Logout
+    Logout --> End
+    </div>
+  </div>
+</body>
+</html>

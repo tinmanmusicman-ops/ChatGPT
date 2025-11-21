@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Detailed Vizeo-style Flowchart : Indeed Processor</title>
+  <style>
+    :root {
+      --bg: #030711;
+      --panel: #0c182a;
+      --panel-alt: #131f36;
+      --accent: #5fe2c2;
+      --accent-strong: #4a6bff;
+      --text: #eaf1ff;
+      --border: rgba(255, 255, 255, 0.22);
+    }
+    body {
+      margin: 0;
+      background: radial-gradient(circle at 20% 10%, rgba(94, 206, 255, 0.2), transparent 45%), 
+                  radial-gradient(circle at 80% 0%, rgba(255, 156, 85, 0.08), transparent 50%),
+                  var(--bg);
+      font-family: 'Segoe UI', Inter, 'Open Sans', sans-serif;
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      padding: 2rem 1rem 3rem;
+    }
+    .card {
+      width: min(1300px, 100%);
+      background: rgba(5,12,28,0.94);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 1.5rem 2rem 2rem;
+      box-shadow: 0 40px 80px rgba(2, 5, 15, 0.95);
+    }
+    h1 {
+      margin: 0;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      font-size: 2rem;
+      text-align: center;
+    }
+    svg {
+      width: 100%;
+      height: auto;
+      margin-top: 1.5rem;
+    }
+    .node-text {
+      font-size: 0.95rem;
+      fill: var(--text);
+      font-weight: 500;
+    }
+    .subtext {
+      font-size: 0.78rem;
+      fill: rgba(255, 255, 255, 0.75);
+    }
+    .desc-list {
+      font-size: 0.75rem;
+      fill: #c6d3ff;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Detailed Vizeo-style Flowchart</h1>
+    <svg viewBox="0 0 1300 820" aria-label="Detailed flowchart of Indeed email pipeline">
+      <defs>
+        <linearGradient id="gradient-main" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#5fe2c2"/>
+          <stop offset="100%" stop-color="#4a6bff"/>
+        </linearGradient>
+        <linearGradient id="gradient-accent" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#8e24aa"/>
+          <stop offset="100%" stop-color="#512da8"/>
+        </linearGradient>
+        <filter id="soft-shadow" x="-50%" y="-50%" width="200%" height="200%">
+          <feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#050f20" flood-opacity="0.7"/>
+        </filter>
+        <marker id="arrow-head" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" fill="#5fe2c2"/>
+        </marker>
+      </defs>
+
+      <!-- Main Getter -->
+      <g filter="url(#soft-shadow)">
+        <rect x="420" y="20" width="420" height="120" rx="24" fill="url(#gradient-main)"/>
+        <text x="630" y="60" text-anchor="middle" class="node-text" font-size="20px" font-weight="700">Start / main()</text>
+        <text x="630" y="88" text-anchor="middle" class="subtext">Load config | optional debug logging | clear sheet flag</text>
+        <text x="630" y="110" text-anchor="middle" class="desc-list">• Debug mode reads <code>email_body.txt</code> and exits<br/>• Normal mode loops until <code>max_emails_per_run</code></text>
+      </g>
+
+      <!-- Node: get_unread_email_body -->
+      <g filter="url(#soft-shadow)">
+        <rect x="220" y="180" width="260" height="150" rx="18" fill="var(--panel)"/>
+        <text x="350" y="215" text-anchor="middle" class="node-text">get_unread_email_body()</text>
+        <text x="350" y="237" text-anchor="middle" class="subtext">IMAP login → select INBOX → search unseen</text>
+        <text x="350" y="260" text-anchor="middle" class="desc-list">
+          • Fetch first message (HTML preferred)<br/>
+          • Detect forwarded sender via regex<br/>
+          • Validate body with keyword/domain heuristics
+        </text>
+      </g>
+
+      <!-- Node: process_email_payload -->
+      <g filter="url(#soft-shadow)">
+        <rect x="690" y="180" width="300" height="170" rx="20" fill="var(--panel-alt)"/>
+        <text x="840" y="215" text-anchor="middle" class="node-text">process_email_payload()</text>
+        <text x="840" y="238" text-anchor="middle" class="subtext">Trim body → log source → call AI</text>
+        <text x="840" y="268" text-anchor="middle" class="desc-list">
+          • Skip empty bodies and log context<br/>
+          • Infer fallback location from subject line<br/>
+          • Fill missing job locations with fallback
+        </text>
+        <text x="840" y="305" text-anchor="middle" class="desc-list">
+          • Append jobs to sheet (with duplicates guarded)<br/>
+          • Return True when jobs processed
+        </text>
+      </g>
+
+      <!-- Node: AI extraction -->
+      <g filter="url(#soft-shadow)">
+        <rect x="420" y="360" width="320" height="170" rx="20" fill="url(#gradient-accent)"/>
+        <text x="580" y="400" text-anchor="middle" class="node-text">extract_jobs_from_email()</text>
+        <text x="580" y="425" text-anchor="middle" class="subtext">Prompt OpenAI Responses API</text>
+        <text x="580" y="450" text-anchor="middle" class="desc-list">
+          • Build prompt from subject + body<br/>
+          • Use <code>EXTRACTION_PROMPT</code> + model (cfg or gpt-4.1-mini)<br/>
+          • Parse JSON, clip to <code>max_jobs_per_email</code>
+        </text>
+        <text x="580" y="485" text-anchor="middle" class="desc-list">
+          • Normalize job_name, url, SWOT, decision factors, salary, work_arrangement<br/>
+          • Return jobs + elapsed time for logging
+        </text>
+      </g>
+
+      <!-- Node: append to sheet -->
+      <g filter="url(#soft-shadow)">
+        <rect x="750" y="360" width="360" height="180" rx="20" fill="#1b2648"/>
+        <text x="930" y="400" text-anchor="middle" class="node-text">append_jobs_to_sheet()</text>
+        <text x="930" y="425" text-anchor="middle" class="subtext">Ensure worksheet + headers</text>
+        <text x="930" y="450" text-anchor="middle" class="desc-list">
+          • Cache worksheet/client; load service account<br/>
+          • Pull existing URLs (helps avoid dupes) and clamp header row<br/>
+          • Build rows with hyperlink, company, location, salary, summary, etc.
+        </text>
+        <text x="930" y="490" text-anchor="middle" class="desc-list">
+          • Append rows USER_ENTERED, update URL cache<br/>
+          • Add cell notes for each row (formatted SWOT, elapsed, source)
+        </text>
+      </g>
+
+      <!-- Node: Helpers -->
+      <g filter="url(#soft-shadow)">
+        <rect x="480" y="560" width="320" height="150" rx="18" fill="#121b34"/>
+        <text x="640" y="600" text-anchor="middle" class="node-text">Helper utilities</text>
+        <text x="640" y="625" text-anchor="middle" class="desc-list">
+          • <code>is_relevant_job_email()</code> filters by keywords + domains<br/>
+          • <code>extract_original_sender_from_body()</code> finds forwarded senders<br/>
+          • <code>_format_swot_text()</code> cleans JSON/strings for notes
+        </text>
+        <text x="640" y="655" text-anchor="middle" class="desc-list">
+          • <code>get_gsheet_worksheet()</code> caches worksheet + credentials<br/>
+          • <code>_clear_data_rows_and_comments()</code> wipes old rows if flagged
+        </text>
+      </g>
+
+      <!-- Node: End -->
+      <g filter="url(#soft-shadow)">
+        <rect x="520" y="730" width="260" height="120" rx="24" fill="url(#gradient-main)"/>
+        <text x="650" y="765" text-anchor="middle" class="node-text">Finish / Exit</text>
+        <text x="650" y="795" text-anchor="middle" class="desc-list">Log processed count and stop the script</text>
+      </g>
+
+      <!-- Connectors -->
+      <line x1="610" y1="140" x2="610" y2="180" stroke="#5fe2c2" stroke-width="4" marker-end="url(#arrow-head)"/>
+      <line x1="610" y1="140" x2="350" y2="180" stroke="#5fe2c2" stroke-width="4" marker-end="url(#arrow-head)" />
+      <line x1="610" y1="140" x2="940" y2="180" stroke="#5fe2c2" stroke-width="4" marker-end="url(#arrow-head)" />
+      <line x1="350" y1="330" x2="550" y2="360" stroke="#4a6bff" stroke-width="4" marker-end="url(#arrow-head)"/>
+      <line x1="940" y1="330" x2="760" y2="360" stroke="#4a6bff" stroke-width="4" marker-end="url(#arrow-head)"/>
+      <line x1="680" y1="530" x2="640" y2="560" stroke="#5fe2c2" stroke-width="4" marker-end="url(#arrow-head)"/>
+      <line x1="930" y1="540" x2="930" y2="560" stroke="#5fe2c2" stroke-width="4" marker-end="url(#arrow-head)"/>
+      <line x1="640" y1="710" x2="640" y2="730" stroke="#5fe2c2" stroke-width="4" marker-end="url(#arrow-head)"/>
+    </svg>
+  </div>
+</body>
+</html>

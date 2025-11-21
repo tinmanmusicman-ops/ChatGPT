@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Vizeo-style Flowchart with Connectors</title>
+  <style>
+    :root {
+      --bg-dark: #020510;
+      --panel: #0c1726;
+      --panel-alt: #141e2c;
+      --accent: #5fe2c2;
+      --accent-strong: #3d5afe;
+      --muted: #b2cae8;
+      --border: rgba(255, 255, 255, 0.16);
+    }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(circle at 15% 15%, rgba(77, 208, 225, 0.28), transparent 40%), #020510;
+      font-family: "Segoe UI", Inter, system-ui, sans-serif;
+      color: #f4f7ff;
+      display: flex;
+      justify-content: center;
+      padding: 2rem 1rem 3rem;
+    }
+    .frame {
+      width: min(1150px, 100%);
+      background: #070c1c;
+      border-radius: 28px;
+      padding: 2rem;
+      border: 1px solid var(--border);
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.65);
+    }
+    header {
+      text-transform: uppercase;
+      letter-spacing: 0.3em;
+      font-size: 1.5rem;
+      text-align: center;
+      margin-bottom: 0.3rem;
+      color: var(--accent);
+    }
+    .subhead {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin-bottom: 1.5rem;
+    }
+    .flow {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.25rem;
+    }
+    .step {
+      position: relative;
+      background: var(--panel);
+      border-radius: 20px;
+      padding: 1.5rem;
+      border: 1px solid rgba(255,255,255,0.04);
+      overflow: hidden;
+    }
+    .step-icon {
+      width: 52px;
+      height: 52px;
+      margin-bottom: 0.75rem;
+    }
+    .step h3 {
+      margin: 0;
+      font-size: 1.1rem;
+    }
+    .step-meta {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin: 0.35rem 0 0.6rem;
+    }
+    .step ul {
+      margin: 0;
+      padding-left: 1.1rem;
+      color: var(--muted);
+      font-size: 0.8rem;
+      line-height: 1.6;
+    }
+    .step ul li strong {
+      color: #fff;
+    }
+    .connector {
+      position: relative;
+      height: 32px;
+      margin: -10px auto 10px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(77,208,225,0), rgba(77,208,225,0.7), rgba(77,208,225,0));
+      width: 80%;
+      max-width: 620px;
+      display: block;
+    }
+    .connector::after {
+      content: "";
+      position: absolute;
+      right: 8px;
+      top: 4px;
+      width: 16px;
+      height: 16px;
+      border-top: 4px solid rgba(77,208,225,0.3);
+      border-right: 4px solid rgba(77,208,225,0.3);
+      transform: rotate(45deg);
+    }
+    .emphasis {
+      border: 1px solid rgba(255,255,255,0.08);
+      background: var(--panel-alt);
+    }
+    .finals {
+      background: linear-gradient(130deg, #1b2947, #0f1a32);
+    }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <header>Indeed Flowchart</header>
+    <p class="subhead">Detailed Vizeo-style boxes supported by connectors to guide each decision branch.</p>
+    <div class="flow">
+      <article class="step">
+        <img class="step-icon" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxNDAnIGhlaWdodD0nODAnPjxjaXJjbGUgY3g9JzcwJyBjeT0nNDAnIHI9JzMwJyBmaWxsPScjMWU4OGU1Jy8+PHRleHQgeD0nNzAnIHk9JzQ1JyBmb250LXNpemU9JzE0JyBmaWxsPSd3aGl0ZScgdGV4dC1hbmNob3I9J21pZGRsZSc+U3RhcnQ8L3RleHQ+PC9zdmc+" alt="Start icon">
+        <h3>Start / main()</h3>
+        <p class="step-meta">Entry, configuration, and mode selection.</p>
+        <ul>
+          <li>Load <code>config.json</code>; optional Google debug logging.</li>
+          <li>Clear sheet if <code>clear_sheet_before_run</code> flag is set.</li>
+          <li>Switch to debug mode when requested (single execution) or continue to normal loop.</li>
+        </ul>
+      </article>
+
+      <span class="connector"></span>
+
+      <article class="step emphasis">
+        <img class="step-icon" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyMDAnIGhlaWdodD0nODAnPjxyZWN0IHdpZHRoPScyMDAnIGhlaWdodD0nODAnIHJ4PScxNCcgcnk9JzE0JyBmaWxsPScjNDNhMDQ3Jy8+PHRleHQgeD0nMTAwJyB5PSc0NScgZm9udC1zaXplPScxNCcgZmlsbD0nd2hpdGUnIHRleHQtYW5jaG9yPSdtaWRkbGUnPm1haW4oKTwvdGV4dD48L3N2Zz4=" alt="Main icon">
+        <h3>Mode decision</h3>
+        <p class="step-meta">Debug branch vs normal loop.</p>
+        <ul>
+          <li><strong>Debug:</strong> load <code>email_body.txt</code>, run <code>process_email_payload()</code> once.</li>
+          <li><strong>Normal:</strong> loop while under <code>max_emails_per_run</code> and fetch each unread email.</li>
+        </ul>
+      </article>
+
+      <span class="connector"></span>
+
+      <article class="step">
+        <img class="step-icon" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyMjAnIGhlaWdodD0nMTAwJz48cG9seWdvbiBwb2ludHM9JzQwLDEwIDE4MCwxMCAyMTAsNTAgMTgwLDkwIDQwLDkwIDEwLDUwJyBmaWxsPScjZmI4YzAwJy8+PHRleHQgeD0nMTEwJyB5PSc1NScgZm9udC1zaXplPScxNCcgZmlsbD0nd2hpdGUnIHRleHQtYW5jaG9yPSdtaWRkbGUnPklNQVA8L3RleHQ+PC9zdmc+" alt="IMAP icon">
+        <h3>get_unread_email_body()</h3>
+        <p class="step-meta">IMAP access + filtering.</p>
+        <ul>
+          <li>IMAP SSL login, select INBOX, search Primary unseen messages.</li>
+          <li>Fetch first email; prefer HTML part, detect forwarded sender.</li>
+          <li>Use <code>is_relevant_job_email()</code>; non-job emails are relabeled to <code>NotRead</code> and deleted.</li>
+        </ul>
+      </article>
+
+      <span class="connector"></span>
+
+      <article class="step">
+        <img class="step-icon" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyMDAnIGhlaWdodD0nODAnPjxyZWN0IHdpZHRoPScyMDAnIGhlaWdodD0nODAnIHJ4PScxNCcgcnk9JzE0JyBmaWxsPScjOGUyNGFhJy8+PHRleHQgeD0nMTAwJyB5PSc0NScgZm9udC1zaXplPScxNCcgZmlsbD0nd2hpdGUnIHRleHQtYW5jaG9yPSdtaWRkbGUnPkFJIEV4dHJhY3Rpb248L3RleHQ+PC9zdmc+" alt="AI icon">
+        <h3>extract_jobs_from_email()</h3>
+        <p class="step-meta">AI extraction & normalization.</p>
+        <ul>
+          <li>Build prompt from subject + body; call OpenAI Responses API with <code>EXTRACTION_PROMPT</code>.</li>
+          <li>Parse the returned JSON, clamp to <code>max_jobs_per_email</code>.</li>
+          <li>Extract job_name, company summary, work arrangement, salary, location, decision factors, SWOT, and URLs.</li>
+        </ul>
+        <p class="details">Elapsed time is captured for annotation.</p>
+      </article>
+
+      <span class="connector"></span>
+
+      <article class="step emphasis">
+        <img class="step-icon" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyMDAnIGhlaWdodD0nODAnPjxyZWN0IHdpZHRoPScyMDAnIGhlaWdodD0nODAnIHJ4PScxNCcgcnk9JzE0JyBmaWxsPScjMzk0OWFiJy8+PHRleHQgeD0nMTAwJyB5PSc0NScgZm9udC1zaXplPScxNCcgZmlsbD0nd2hpdGUnIHRleHQtYW5jaG9yPSdtaWRkbGUnPlNoZWV0PC90ZXh0Pjwvc3ZnPg==" alt="Sheet icon">
+        <h3>append_jobs_to_sheet()</h3>
+        <p class="step-meta">Sheet writes + notes.</p>
+        <ul>
+          <li>Authorize via service account, open spreadsheet, cache worksheet handle.</li>
+          <li>Ensure headers, wrap/clipping, and load cached URLs to avoid duplicates.</li>
+          <li>Build rows with timestamp, elapsed seconds, hyperlinks, metadata, and raw SWOT.</li>
+          <li>Append rows with <code>USER_ENTERED</code>, update URL cache, and add notes via <code>update_note()</code>.</li>
+        </ul>
+      </article>
+
+      <span class="connector"></span>
+
+      <article class="step finals">
+        <img class="step-icon" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxNDAnIGhlaWdodD0nODAnPjxjaXJjbGUgY3g9JzcwJyBjeT0nNDAnIHI9JzMwJyBmaWxsPScjZDMyZjJmJy8+PHRleHQgeD0nNzAnIHk9JzQ1JyBmb250LXNpemU9JzE0JyBmaWxsPSd3aGl0ZScgdGV4dC1hbmNob3I9J21pZGRsZSc+RW5kPC90ZXh0Pjwvc3ZnPg==" alt="End icon">
+        <h3>Finish / Exit</h3>
+        <p class="step-meta">Log totals and terminate.</p>
+        <ul>
+          <li>After loop finishes, report how many emails were processed.</li>
+          <li>Exit cleanly.</li>
+        </ul>
+      </article>
+    </div>
+  </div>
+</body>
+</html>

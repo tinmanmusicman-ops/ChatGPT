@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Flowchart: Indeed Email-to-Sheet Processor</title>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.5; margin: 2rem; }
+    h1 { margin-bottom: 0.25rem; }
+    h2 { margin-top: 1.5rem; }
+    .step-group { margin-left: 1rem; }
+    .step-group ul { margin-top: 0.25rem; }
+    .branch { margin-left: 2rem; font-style: italic; }
+    .note { color: #555; }
+  </style>
+</head>
+<body>
+  <h1>Flowchart: Indeed Email-to-Sheet Processor (detailed)</h1>
+
+  <section>
+    <h2>[Start] → main()</h2>
+    <div class="step-group">
+      <ul>
+        <li>Log run start, load configuration, and optionally enable Google API debug logging.</li>
+        <li>If requested, clear the worksheet before the run on the first execution.</li>
+        <li>Debug mode flag? 
+          <div class="branch">
+            Yes:
+            <ul>
+              <li>Read <code>email_body.txt</code>.</li>
+              <li>Process the payload with <code>process_email_payload()</code> (context = "debug mode").</li>
+              <li>Finish after debug dispatch.</li>
+            </ul>
+          </div>
+          <div class="branch">
+            No:
+            <ul>
+              <li>Enter the loop until <code>processed_count</code> reaches <code>max_emails_per_run</code>.</li>
+              <li>Fetch the next unread message via <code>get_unread_email_body()</code>.</li>
+              <li>If no email is returned, exit loop with status logs.</li>
+              <li>Otherwise, forward (body, uid, sender, subject) to <code>process_email_payload()</code> and update counters.</li>
+              <li>After the loop ends, log the total processed count.</li>
+            </ul>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>[get_unread_email_body(cfg)]</h2>
+    <div class="step-group">
+      <ul>
+        <li>Connect to Gmail IMAP with SSL and select INBOX.</li>
+        <li>Search for unseen messages in the Primary category via <code>X-GM-RAW</code>.</li>
+        <li>Fetch the first message; decode headers and prefer the original sender if found in a forwarded section.</li>
+        <li>Prefer the HTML part of the payload, and fall back to plain text if needed.</li>
+        <li>Validate the body with <code>is_relevant_job_email()</code>:
+          <div class="branch">
+            False:
+            <ul>
+              <li>Unmark the message as seen, copy it to <code>NotRead</code>, delete, logout, return an empty body tuple.</li>
+            </ul>
+          </div>
+          <div class="branch">
+            True:
+            <ul>
+              <li>Copy to the <code>Processed</code> label, delete the original, logout, and return (body, uid, source_email, subject).</li>
+            </ul>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>[process_email_payload(...)]</h2>
+    <div class="step-group">
+      <ul>
+        <li>Trim the body and skip if empty, logging the context.</li>
+        <li>Log the source email when provided.</li>
+        <li>Call <code>extract_jobs_from_email()</code>. If no jobs result, log and return <code>False</code>.</li>
+        <li>Use the subject line as a fallback location, enriching missing job locations.</li>
+        <li>Append the extracted jobs to the sheet with <code>append_jobs_to_sheet()</code>.</li>
+        <li>Log completion (if a UID exists) and return <code>True</code>.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>[extract_jobs_from_email(...)]</h2>
+    <div class="step-group">
+      <ul>
+        <li>Track timing and instantiate the OpenAI client.</li>
+        <li>Create the prompt by combining the subject and body, then call the Responses API with <code>EXTRACTION_PROMPT</code>.</li>
+        <li>Parse the raw response, extract the first JSON object, and limit jobs to <code>cfg["max_jobs_per_email"]</code> (default 5).</li>
+        <li>Normalize each job dictionary to include <code>job_name</code>, company info, location, work details, salary, SWOT, decision factors, and URL.</li>
+        <li>Log and return the processed jobs along with the elapsed time.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>[append_jobs_to_sheet(...)]</h2>
+    <div class="step-group">
+      <ul>
+        <li>Obtain the cached worksheet via <code>get_gsheet_worksheet(cfg)</code>.</li>
+        <li>Ensure headers and wrapping/formatting helpers are ready, and load cached URLs.</li>
+        <li>Skip rows whose URLs already exist, build new row values (timestamp, elapsed, hyperlink, metadata, raw SWOT).</li>
+        <li>Append rows through <code>gspread</code>, add new URLs to the cache.</li>
+        <li>Annotate each new row with hover notes, formatting SWOT text for readability.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>[Helper branches]</h2>
+    <div class="step-group">
+      <ul>
+        <li><code>is_relevant_job_email()</code>: Checks keywords/domains to heuristically accept job alerts.</li>
+        <li><code>extract_original_sender_from_body()</code>: Uses regex to pull the true sender from forwarded headers.</li>
+        <li><code>get_gsheet_worksheet()</code>: Authorizes the service account, opens the spreadsheet and worksheet, and caches the handle.</li>
+        <li><code>_format_swot_text()</code> and related helpers ensure human-readable notes.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>[End]</h2>
+    <p class="note">Logs completion details and exits.</p>
+  </section>
+
+</body>
+</html>

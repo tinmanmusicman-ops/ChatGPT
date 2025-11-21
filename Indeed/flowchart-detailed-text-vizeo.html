@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Vizeo-style Flowchart with Text Details</title>
+  <style>
+    :root {
+      --bg: #020510;
+      --panel: #0c1726;
+      --panel-alt: #131c2a;
+      --border: rgba(255, 255, 255, 0.2);
+      --accent: #4dd0e1;
+      --accent-strong: #3d5afe;
+      --text: #e5ecff;
+      --muted: #a9b4d6;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", Inter, system-ui, sans-serif;
+      background: radial-gradient(circle at top, rgba(77,208,225,0.25), transparent 45%), var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 2rem 1rem 3rem;
+    }
+    .canvas {
+      width: min(1200px, 100%);
+      background: rgba(6, 12, 24, 0.95);
+      border-radius: 28px;
+      padding: 2rem;
+      border: 1px solid var(--border);
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+    }
+    header {
+      text-transform: uppercase;
+      letter-spacing: 0.4em;
+      font-size: 1.4rem;
+      text-align: center;
+      margin-bottom: 1rem;
+      color: var(--accent);
+    }
+    .subtitle {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-bottom: 2rem;
+    }
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.25rem;
+    }
+    .step {
+      background: var(--panel);
+      border-radius: 20px;
+      padding: 1.25rem;
+      border: 1px solid rgba(255,255,255,0.04);
+      position: relative;
+      overflow: hidden;
+    }
+    .step::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      border: 1px solid transparent;
+      box-shadow: inset 0 0 40px rgba(77,208,225,0.2);
+    }
+    .step img {
+      width: 60px;
+      height: 60px;
+      display: block;
+      margin-bottom: 0.75rem;
+    }
+    .step h3 {
+      margin: 0;
+      font-size: 1.1rem;
+      color: var(--text);
+    }
+    .step p {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin: 0.35rem 0 0.5rem;
+    }
+    .step ul {
+      margin: 0;
+      padding-left: 1rem;
+      color: var(--muted);
+      font-size: 0.8rem;
+      line-height: 1.5;
+    }
+    .connector {
+      width: 100%;
+      height: 40px;
+      margin: 0.5rem auto;
+      border-radius: 20px;
+      background: linear-gradient(90deg, rgba(77,208,225,0), rgba(77,208,225,0.6), rgba(77,208,225,0));
+    }
+    .details {
+      margin-top: 0.5rem;
+      font-size: 0.78rem;
+      color: #9ec4ff;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+  <div class="canvas">
+    <header>Indeed Processor Flow</header>
+    <div class="subtitle">A Vizio-inspired layout that pairs text depth with iconography for each step.</div>
+    <div class="flow">
+      <article class="step">
+        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxNDAnIGhlaWdodD0nODAnPjxjaXJjbGUgY3g9JzcwJyBjeT0nNDAnIHI9JzMwJyBmaWxsPScjMWU4OGU1Jy8+PHRleHQgeD0nNzAnIHk9JzQ1JyBmb250LXNpemU9JzE0JyBmaWxsPSd3aGl0ZScgdGV4dC1hbmNob3I9J21pZGRsZSc+U3RhcnQ8L3RleHQ+PC9zdmc+" alt="Start icon">
+        <h3>Start / main()</h3>
+        <p>Configuration, debug gating, and loop control.</p>
+        <ul>
+          <li>Load <code>config.json</code> and optionally enable Google API debug logs.</li>
+          <li>Clear sheet once if <code>clear_sheet_before_run</code> is true.</li>
+          <li>Choose debug mode (single file) else normal mode loop.</li>
+        </ul>
+      </article>
+
+      <article class="step">
+        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyMDAnIGhlaWdodD0nODAnPjxyZWN0IHdpZHRoPScyMDAnIGhlaWdodD0nODAnIHJ4PScxNCcgcnk9JzE0JyBmaWxsPScjNDNhMDQ3Jy8+PHRleHQgeD0nMTAwJyB5PSc0NScgZm9udC1zaXplPScxNCcgZmlsbD0nd2hpdGUnIHRleHQtYW5jaG9yPSdtaWRkbGUnPm1haW4oKTwvdGV4dD48L3N2Zz4=" alt="Main icon">
+        <h3>Debug / Normal Branch</h3>
+        <p>Decide execution flow.</p>
+        <ul>
+          <li><strong>Debug:</strong> read <code>email_body.txt</code>, run <code>process_email_payload()</code> with context, and exit.</li>
+          <li><strong>Normal:</strong> loop until <code>max_emails_per_run</code>; each iteration fetches an unseen email.</li>
+        </ul>
+      </article>
+
+      <article class="step">
+        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyMjAnIGhlaWdodD0nMTAwJz48cG9seWdvbiBwb2ludHM9JzQwLDEwIDE4MCwxMCAyMTAsNTAgMTgwLDkwIDQwLDkwIDEwLDUwJyBmaWxsPScjZmI4YzAwJy8+PHRleHQgeD0nMTEwJyB5PSc1NScgZm9udC1zaXplPScxNCcgZmlsbD0nd2hpdGUnIHRleHQtYW5jaG9yPSdtaWRkbGUnPklNQVA8L3RleHQ+PC9zdmc+" alt="IMAP icon">
+        <h3>get_unread_email_body()</h3>
+        <p>Fetches Gmail alerts and filters.</p>
+        <ul>
+          <li>Connect IMAP SSL, search Primary unseen, fetch first match.</li>
+          <li>Prefer HTML payload; detect original sender from forwarded blocks.</li>
+          <li>Apply <code>is_relevant_job_email()</code>; non-job → copy to <code>NotRead</code> and delete.</li>
+        </ul>
+      </article>
+
+      <article class="step">
+        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyMDAnIGhlaWdodD0nODAnPjxyZWN0IHdpZHRoPScyMDAnIGhlaWdodD0nODAnIHJ4PScxNCcgcnk9JzE0JyBmaWxsPScjOGUyNGFhJy8+PHRleHQgeD0nMTAwJyB5PSc0NScgZm9udC1zaXplPScxNCcgZmlsbD0nd2hpdGUnIHRleHQtYW5jaG9yPSdtaWRkbGUnPkFJIEV4dHJhY3Rpb248L3RleHQ+PC9zdmc+" alt="AI icon">
+        <h3>extract_jobs_from_email()</h3>
+        <p>Calls OpenAI and parses responses.</p>
+        <ul>
+          <li>Build prompt (subject + body) and call <code>Responses.create</code> with <code>EXTRACTION_PROMPT</code>.</li>
+          <li>Parse JSON output, strip everything beyond the first object, and limit jobs to <code>max_jobs_per_email</code>.</li>
+          <li>Normalize fields (job_name, company_summary, location, salary, work_arrangement, SWOT, decision factors, URL).</li>
+        </ul>
+        <div class="details">
+          AI elapsed time is returned to annotate the sheet and log the run.
+        </div>
+      </article>
+
+      <article class="step">
+        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyMDAnIGhlaWdodD0nODAnPjxyZWN0IHdpZHRoPScyMDAnIGhlaWdodD0nODAnIHJ4PScxNCcgcnk9JzE0JyBmaWxsPScjMzk0OWFiJy8+PHRleHQgeD0nMTAwJyB5PSc0NScgZm9udC1zaXplPScxNCcgZmlsbD0nd2hpdGUnIHRleHQtYW5jaG9yPSdtaWRkbGUnPlNoZWV0PC90ZXh0Pjwvc3ZnPg==" alt="Sheet icon">
+        <h3>append_jobs_to_sheet()</h3>
+        <p>Writes jobs with metadata and notes.</p>
+        <ul>
+          <li>Get worksheet via service account and cache the handle.</li>
+          <li>Ensure headers + wrapping; read cached URLs to skip duplicates.</li>
+          <li>Build rows with timestamp, elapsed seconds, hyperlink, company, location, salary, decisions, and raw SWOT.</li>
+          <li>Append rows with <code>USER_ENTERED</code> and add hover notes through <code>update_note</code>.</li>
+        </ul>
+      </article>
+
+      <article class="step">
+        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxNDAnIGhlaWdodD0nODAnPjxjaXJjbGUgY3g9JzcwJyBjeT0nNDAnIHI9JzMwJyBmaWxsPScjNTQ2ZTdhJy8+PHRleHQgeD0nNzAnIHk9JzQ1JyBmb250LXNpemU9JzE0JyBmaWxsPSd3aGl0ZScgdGV4dC1hbmNob3I9J21pZGRsZSc+SGVscGVyczwvdGV4dD48L3N2Zz4=" alt="Helpers icon">
+        <h3>Helper utilities</h3>
+        <p>Support functions and formatting.</p>
+        <ul>
+          <li><code>is_relevant_job_email()</code>: keyword/domain heuristics.</li>
+          <li><code>extract_original_sender_from_body()</code>: regex for forwarded From lines.</li>
+          <li><code>_format_swot_text()</code>: cleans up multi-line SWOT for notes.</li>
+          <li><code>get_gsheet_worksheet()</code> caches credentials; <code>_clear_data_rows_and_comments()</code> cleans sheet when flagged.</li>
+        </ul>
+      </article>
+
+      <article class="step">
+        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxNDAnIGhlaWdodD0nODAnPjxjaXJjbGUgY3g9JzcwJyBjeT0nNDAnIHI9JzMwJyBmaWxsPScjZDMyZjJmJy8+PHRleHQgeD0nNzAnIHk9JzQ1JyBmb250LXNpemU9JzE0JyBmaWxsPSd3aGl0ZScgdGV4dC1hbmNob3I9J21pZGRsZSc+RW5kPC90ZXh0Pjwvc3ZnPg==" alt="End icon">
+        <h3>Finish / Exit</h3>
+        <p>Log totals and exit.</p>
+        <ul>
+          <li>After the loop finishes, log how many emails were processed.</li>
+          <li>Terminate the script cleanly.</li>
+        </ul>
+      </article>
+    </div>
+  </div>
+</body>
+</html>

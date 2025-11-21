@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Flowchart with Images: Indeed Email-to-Sheet Processor</title>
+  <style>
+    body { font-family: "Segoe UI", Arial, sans-serif; margin: 2rem; color: #212121; }
+    h1 { font-size: 1.9rem; margin-bottom: 0.5rem; }
+    h2 { margin-top: 2rem; font-size: 1.3rem; }
+    .flow { display: flex; flex-direction: column; gap: 1.5rem; max-width: 960px; }
+    .step { background: #f5f5f5; border-radius: 14px; padding: 1rem 1.5rem; display: flex; gap: 1rem; align-items: flex-start; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .step img { width: 140px; height: auto; flex-shrink: 0; }
+    .step-content { flex: 1; }
+    .step-content ul { margin: 0.4rem 0 0; padding-left: 1.4rem; }
+    .step-content li { margin-bottom: 0.35rem; }
+    .branch { margin-top: 0.5rem; padding-left: 1rem; border-left: 3px solid #bdbdbd; }
+    .branch h3 { font-size: 1rem; margin-bottom: 0.25rem; }
+    .branch ul { margin-top: 0; }
+    .note { font-size: 0.9rem; color: #555; margin-top: 0.25rem; }
+    @media (max-width: 768px) {
+      .step { flex-direction: column; align-items: center; text-align: center; }
+      .step img { width: 160px; }
+      .step-content ul { padding-left: 0; }
+    }
+  </style>
+</head>
+<body>
+  <h1>Flowchart with Images: Indeed Email-to-Sheet Processor</h1>
+  <p class="note">Each section includes a flow icon rendered as an inline SVG via a data URL.</p>
+  <div class="flow">
+    <section class="step">
+      <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxNDAnIGhlaWdodD0nODAnPjxjaXJjbGUgY3g9JzcwJyBjeT0nNDAnIHI9JzMwJyBmaWxsPScjMWU4OGU1Jy8+PHRleHQgeD0nNzAnIHk9JzQ1JyBmb250LXNpemU9JzE0JyBmaWxsPSd3aGl0ZScgdGV4dC1hbmNob3I9J21pZGRsZSc+U3RhcnQ8L3RleHQ+PC9zdmc+" alt="Start icon">
+      <div class="step-content">
+        <h2>[Start] → main()</h2>
+        <ul>
+          <li>Start by logging the run, loading <code>config.json</code>, and enabling Google API debug logging if requested.</li>
+          <li>Optionally clear the worksheet before the run when the earliest execution of the day needs a clean slate.</li>
+          <li>Choose between debug mode (process a saved body) or normal processing (loop over up to <code>max_emails_per_run</code> emails).</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="step">
+      <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyMDAnIGhlaWdodD0nODAnPjxyZWN0IHdpZHRoPScyMDAnIGhlaWdodD0nODAnIHJ4PScxNCcgcnk9JzE0JyBmaWxsPScjNDNhMDQ3Jy8+PHRleHQgeD0nMTAwJyB5PSc0NScgZm9udC1zaXplPScxNCcgZmlsbD0nd2hpdGUnIHRleHQtYW5jaG9yPSdtaWRkbGUnPm1haW4oKTwvdGV4dD48L3N2Zz4=" alt="main icon">
+      <div class="step-content">
+        <h2>Debug vs Normal Loop</h2>
+        <div class="branch">
+          <h3>Debug branch</h3>
+          <ul>
+            <li>Read <code>email_body.txt</code>, optionally provided in debugging mode.</li>
+            <li>Run <code>process_email_payload()</code> with the saved content.</li>
+            <li>Finish immediately after logging completion.</li>
+          </ul>
+        </div>
+        <div class="branch">
+          <h3>Normal branch</h3>
+          <ul>
+            <li>Iterate while <code>processed_count</code> is below <code>max_emails_per_run</code>.</li>
+            <li>Fetch next unread job alert via <code>get_unread_email_body()</code>.</li>
+            <li>If no message is found, exit the loop and log that zero emails were processed.</li>
+            <li>Otherwise, feed the message to <code>process_email_payload()</code> and increment the counter.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="step">
+      <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyMjAnIGhlaWdodD0nMTAwJz48cG9seWdvbiBwb2ludHM9JzQwLDEwIDE4MCwxMCAyMTAsNTAgMTgwLDkwIDQwLDkwIDEwLDUwJyBmaWxsPScjZmI4YzAwJy8+PHRleHQgeD0nMTEwJyB5PSc1NScgZm9udC1zaXplPScxNCcgZmlsbD0nd2hpdGUnIHRleHQtYW5jaG9yPSdtaWRkbGUnPklNQVA8L3RleHQ+PC9zdmc+" alt="IMAP icon">
+      <div class="step-content">
+        <h2>get_unread_email_body(cfg)</h2>
+        <ul>
+          <li>Connect to Gmail via secure IMAP, select the inbox, and search for unseen Primary-category emails.</li>
+          <li>Fetch the first match, prefer HTML parts, decode headers, and find forwarded original senders.</li>
+          <li>Call <code>is_relevant_job_email()</code> to ensure the body likely contains job alerts.</li>
+        </ul>
+        <div class="branch">
+          <h3>Relevance result</h3>
+          <ul>
+            <li><strong>False</strong>: copy to <code>NotRead</code>, delete the original, logout, and return an empty tuple.</li>
+            <li><strong>True</strong>: label as <code>Processed</code>, delete original, logout, and return the body tuple.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="step">
+      <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyMDAnIGhlaWdodD0nODAnPjxyZWN0IHdpZHRoPScyMDAnIGhlaWdodD0nODAnIHJ4PScxNCcgcnk9JzE0JyBmaWxsPScjOGUyNGFhJy8+PHRleHQgeD0nMTAwJyB5PSc0NScgZm9udC1zaXplPScxNCcgZmlsbD0nd2hpdGUnIHRleHQtYW5jaG9yPSdtaWRkbGUnPkFJIEV4dHJhY3Rpb248L3RleHQ+PC9zdmc+" alt="AI icon">
+      <div class="step-content">
+        <h2>extract_jobs_from_email(...)</h2>
+        <ul>
+          <li>Start a timer, build an OpenAI client, and craft the prompt by concatenating the subject and body.</li>
+          <li>Call the Responses API with <code>EXTRACTION_PROMPT</code> and parse the first JSON chunk from the output.</li>
+          <li>Respect <code>max_jobs_per_email</code> from the configuration while normalizing each job’s fields.</li>
+          <li>Return the job list plus elapsed AI time for sheet annotations.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="step">
+      <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyMDAnIGhlaWdodD0nODAnPjxyZWN0IHdpZHRoPScyMDAnIGhlaWdodD0nODAnIHJ4PScxNCcgcnk9JzE0JyBmaWxsPScjMzk0OWFiJy8+PHRleHQgeD0nMTAwJyB5PSc0NScgZm9udC1zaXplPScxNCcgZmlsbD0nd2hpdGUnIHRleHQtYW5jaG9yPSdtaWRkbGUnPlNoZWV0PC90ZXh0Pjwvc3ZnPg==" alt="Sheet icon">
+      <div class="step-content">
+        <h2>append_jobs_to_sheet(...)</h2>
+        <ul>
+          <li>Obtain the worksheet via <code>get_gsheet_worksheet()</code>, ensuring headers and formatting helpers are satisfied.</li>
+          <li>Load cached URLs to avoid duplicates and build row data with timestamp, elapsed time, job metadata, and raw SWOT.</li>
+          <li>Append rows via <code>gspread</code> and annotate every new cell with hover notes, including formatted SWOT details.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="step">
+      <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxNDAnIGhlaWdodD0nODAnPjxjaXJjbGUgY3g9JzcwJyBjeT0nNDAnIHI9JzMwJyBmaWxsPScjNTQ2ZTdhJy8+PHRleHQgeD0nNzAnIHk9JzQ1JyBmb250LXNpemU9JzE0JyBmaWxsPSd3aGl0ZScgdGV4dC1hbmNob3I9J21pZGRsZSc+SGVscGVyczwvdGV4dD48L3N2Zz4=" alt="Helper icon">
+      <div class="step-content">
+        <h2>Helper branches</h2>
+        <ul>
+          <li><code>is_relevant_job_email()</code> checks keywords/domains for job-related clues before any AI call.</li>
+          <li><code>extract_original_sender_from_body()</code> finds forwarded “From:” lines when present.</li>
+          <li><code>get_gsheet_worksheet()</code> authorizes the service account, opens the spreadsheet/workbook, and caches handles.</li>
+          <li><code>_format_swot_text()</code> makes notes human-friendly when creating cell comments.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="step">
+      <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxNDAnIGhlaWdodD0nODAnPjxjaXJjbGUgY3g9JzcwJyBjeT0nNDAnIHI9JzMwJyBmaWxsPScjZDMyZjJmJy8+PHRleHQgeD0nNzAnIHk9JzQ1JyBmb250LXNpemU9JzE0JyBmaWxsPSd3aGl0ZScgdGV4dC1hbmNob3I9J21pZGRsZSc+RW5kPC90ZXh0Pjwvc3ZnPg==" alt="End icon">
+      <div class="step-content">
+        <h2>[End]</h2>
+        <p class="note">Logs final summary and exits once the processing loop finishes.</p>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

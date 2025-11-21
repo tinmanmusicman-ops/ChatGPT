@@ -1,0 +1,70 @@
+Flowchart: Indeed Email-to-Sheet Processor (detailed)
+====================================================
+
+[Start]
+  |
+  v
+[main()]
+  - log run start
+  - cfg = load_config()
+  - optional debug logging switch
+  - if cfg["clear_sheet_before_run"] and first run -> clear worksheet
+  - debug mode flag?
+       | Yes
+       v
+    - read email_body.txt
+    - process_email_payload() with context="debug mode"
+    - stop
+       | No
+       v
+    - enter loop while processed_count < max_emails_per_run
+        * call get_unread_email_body()
+        * if it returns falsy -> exit loop (log if nothing processed)
+        * otherwise feed returned (body, uid, from_email, subject) to process_email_payload()
+        * increment processed_count, track processed_any
+    - loop exit -> log processed_count
+
+[get_unread_email_body(cfg)]
+  - open IMAP SSL session with Gmail, select INBOX
+  - search for UNSEEN primary emails (X-GM-RAW category filter)
+  - fetch first matching message
+  - decode headers, prefer original sender if forwarded
+  - prefer text/html payload, fallback to text/plain
+  - call is_relevant_job_email(body)
+       | False -> remove GENERATED flag of processed label, copy to "NotRead", delete original, logout, return ("", None, source_email, subject)
+       | True
+          * copy to "Processed" label, delete original
+          * logout and return (body, uid, source_email, subject)
+
+[process_email_payload(body, uid, from_email, cfg, subject, context)]
+  - trim body; skip if empty, log reason
+  - log source email if present
+  - call extract_jobs_from_email(body, cfg, subject)
+      * if extraction produces no jobs -> log & return False
+  - fallback location/prefix of subject -> fill missing location for each job
+  - append_jobs_to_sheet(jobs, cfg, from_email, elapsed)
+  - log completion and return True
+
+[extract_jobs_from_email(body, cfg, subject)]
+  - start AI timer, instantiate OpenAI client (get_openai_client(cfg))
+  - build prompt with subject + body, call Responses.create with EXTRACTION_PROMPT
+  - parse response output_text or fallback fields to string, extract first JSON object
+  - limit to cfg["max_jobs_per_email"] (default 5)
+  - normalize job dicts (job_name, company_name, summary, work arrangement, salary, location, decision factors, SWOT, url)
+  - log count and return jobs + elapsed_seconds
+
+[append_jobs_to_sheet(jobs, cfg, from_email, elapsed)]
+  - obtain worksheet via get_gsheet_worksheet(cfg) (caches service account auth)
+  - ensure headers and wrap/clipping helpers have been set
+  - load existing URLs to skip duplicates
+  - build row values (timestamp, elapsed, hyperlink, company, location, arrangement, salary, summary, decision factors, source, raw SWOT)
+  - append rows via gspread append_rows
+  - add per-cell notes (formatted SWOT text, metadata) using update_note
+
+[Helper branches]
+  - is_relevant_job_email() -> keyword+ domain heuristics on body text
+  - extract_original_sender_from_body() -> regex search for forwarded original "From:" lines
+  - get_gsheet_worksheet() -> authorize service account, open spreadsheet and worksheet, cache references
+  - _format_swot_text() and related helpers to ensure notes look readable
+
+[End]

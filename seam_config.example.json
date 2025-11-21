@@ -1,0 +1,9 @@
+{
+  "base_url": "https://sandbox.seam.io",
+  "client_id": "your-client-id",
+  "client_secret": "your-client-secret",
+  "thermostat_id": "your-thermostat-id",
+  "token_url": "https://sandbox.seam.io/oauth/token",
+  "thermostat_endpoint": "https://sandbox.seam.io/v1/thermostats/your-thermostat-id",
+  "timeout_seconds": 25
+}

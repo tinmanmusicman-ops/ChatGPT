@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Vizeo-style Flowchart: Indeed Processor</title>
+  <style>
+    :root {
+      --bg: #050914;
+      --panel: #0d1b2a;
+      --accent: #4dd0e1;
+      --accent-strong: #3d5afe;
+      --text: #e8ecff;
+      --border: rgba(255,255,255,0.2);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: linear-gradient(145deg, #021026 0%, #070c1c 55%, #03060f 100%);
+      min-height: 100vh;
+      color: var(--text);
+      font-family: "Segoe UI", Inter, system-ui, sans-serif;
+      display: flex;
+      justify-content: center;
+      padding: 2rem;
+    }
+    .canvas-wrapper {
+      width: min(1200px, 100%);
+      background: rgba(13, 27, 42, 0.9);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 2rem;
+      box-shadow: 0 20px 60px rgba(2, 7, 20, 0.7);
+    }
+    h1 {
+      margin: 0 0 1rem 0;
+      font-size: 2rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-weight: 600;
+      text-align: center;
+    }
+    svg {
+      width: 100%;
+      height: auto;
+      max-height: 720px;
+    }
+    .annotation {
+      font-size: 1.1rem;
+      fill: var(--accent);
+      font-weight: 600;
+    }
+    .desc {
+      font-size: 0.9rem;
+      fill: #b9c3ff;
+    }
+  </style>
+</head>
+<body>
+  <div class="canvas-wrapper">
+    <h1>Vizeo-style Flowchart</h1>
+    <svg viewBox="0 0 1200 750" role="img" aria-label="Flowchart of Indeed processor">
+      <defs>
+        <linearGradient id="blue-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#4dd0e1"/>
+          <stop offset="100%" stop-color="#3d5afe"/>
+        </linearGradient>
+        <linearGradient id="violet-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#8e24aa"/>
+          <stop offset="100%" stop-color="#5e35b1"/>
+        </linearGradient>
+        <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+          <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#0f2340" flood-opacity="0.8"/>
+        </filter>
+        <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#4dd0e1"/>
+        </marker>
+      </defs>
+
+      <!-- Nodes -->
+      <g filter="url(#shadow)">
+        <rect x="460" y="40" width="280" height="90" rx="18" fill="url(#blue-grad)"></rect>
+        <text x="600" y="75" text-anchor="middle" class="annotation">Start / main()</text>
+        <text x="600" y="95" text-anchor="middle" class="desc">Load config → debug toggle → loop</text>
+      </g>
+
+      <g filter="url(#shadow)">
+        <rect x="220" y="170" width="220" height="90" rx="18" fill="#1c2b47"></rect>
+        <text x="330" y="205" text-anchor="middle" class="annotation">get_unread_email_body</text>
+        <text x="330" y="225" text-anchor="middle" class="desc">IMAP → fetch → relevance</text>
+      </g>
+
+      <g filter="url(#shadow)">
+        <rect x="580" y="170" width="220" height="90" rx="18" fill="#1c2b47"></rect>
+        <text x="690" y="205" text-anchor="middle" class="annotation">process_email_payload</text>
+        <text x="690" y="225" text-anchor="middle" class="desc">trim body → feed AI → append</text>
+      </g>
+
+      <g filter="url(#shadow)">
+        <rect x="420" y="320" width="250" height="90" rx="18" fill="url(#violet-grad)"></rect>
+        <text x="545" y="355" text-anchor="middle" class="annotation">extract_jobs_from_email</text>
+        <text x="545" y="375" text-anchor="middle" class="desc">OpenAI prompt, parse JSON</text>
+      </g>
+
+      <g filter="url(#shadow)">
+        <rect x="760" y="320" width="240" height="90" rx="18" fill="#2d3b63"></rect>
+        <text x="880" y="355" text-anchor="middle" class="annotation">append_jobs_to_sheet</text>
+        <text x="880" y="375" text-anchor="middle" class="desc">Sheet append + notes</text>
+      </g>
+
+      <g filter="url(#shadow)">
+        <rect x="470" y="470" width="260" height="90" rx="18" fill="#1f2f44"></rect>
+        <text x="600" y="505" text-anchor="middle" class="annotation">Helpers</text>
+        <text x="600" y="525" text-anchor="middle" class="desc">SWOT formatting, GUIDs</text>
+      </g>
+
+      <g filter="url(#shadow)">
+        <rect x="480" y="620" width="240" height="90" rx="18" fill="url(#blue-grad)"></rect>
+        <text x="600" y="655" text-anchor="middle" class="annotation">End</text>
+        <text x="600" y="675" text-anchor="middle" class="desc">Log results → exit</text>
+      </g>
+
+      <!-- Connectors -->
+      <line x1="600" y1="130" x2="330" y2="170" stroke="#4dd0e1" stroke-width="3" marker-end="url(#arrow)" opacity="0.8"/>
+      <line x1="600" y1="130" x2="690" y2="170" stroke="#4dd0e1" stroke-width="3" marker-end="url(#arrow)" opacity="0.8"/>
+      <line x1="330" y1="260" x2="545" y2="320" stroke="#3d5afe" stroke-width="3" marker-end="url(#arrow)" opacity="0.9"/>
+      <line x1="690" y1="260" x2="545" y2="320" stroke="#3d5afe" stroke-width="3" marker-end="url(#arrow)" opacity="0.9"/>
+      <line x1="545" y1="410" x2="880" y2="410" stroke="#4dd0e1" stroke-width="3" marker-end="url(#arrow)" opacity="0.9"/>
+      <line x1="880" y1="410" x2="600" y2="470" stroke="#4dd0e1" stroke-width="3" marker-end="url(#arrow)" opacity="0.9"/>
+      <line x1="600" y1="560" x2="600" y2="620" stroke="#3d5afe" stroke-width="3" marker-end="url(#arrow)" opacity="0.9"/>
+    </svg>
+  </div>
+</body>
+</html>

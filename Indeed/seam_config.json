@@ -1,0 +1,10 @@
+{
+  "base_url": "https://connect.getseam.com",
+  "api_key": "seam_test4d51_8XGZAiNKLBwhVaGwybxkQALD",
+  "thermostat_id": "6c89f5f4-568b-44ff-b585-10132bd7e9e9",
+  "timeout_seconds": 25,
+  "cool_threshold_f": 77,
+  "fan_on_above_f": 78,
+  "fan_circulate_below_f": 78,
+  "temp_adjust": 3
+}
