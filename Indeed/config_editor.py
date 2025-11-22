@@ -62,11 +62,12 @@ def coerce_value(text: str, mode: str):
 class ToolTip:
     """Simple tooltip helper for Tk widgets (theme-aware)."""
 
-    def __init__(self, widget, text: str, theme_fn):
+    def __init__(self, widget, text: str, theme_fn, font_fn):
         self.widget = widget
         self.text = text
         self.tipwindow = None
         self.theme_fn = theme_fn
+        self.font_fn = font_fn
         widget.bind("<Enter>", self.show)
         widget.bind("<Leave>", self.hide)
 
@@ -74,6 +75,7 @@ class ToolTip:
         if self.tipwindow or not self.text:
             return
         theme = self.theme_fn()
+        font_val = self.font_fn()
         x = self.widget.winfo_rootx() + 10
         y = self.widget.winfo_rooty() + self.widget.winfo_height() + 5
         self.tipwindow = tw = tk.Toplevel(self.widget)
@@ -87,7 +89,7 @@ class ToolTip:
             relief=tk.SOLID,
             borderwidth=1,
             fg=theme.get("tooltip_fg"),
-            font=("Segoe UI", 9),
+            font=font_val,
             padx=6,
             pady=4,
         )
@@ -120,6 +122,11 @@ class ConfigEditor:
         self.history_path = self.base_dir / "config_editor_history.json"
         self.prefs_path = self.base_dir / "config_editor_prefs.json"
         self.prefs = {"theme": "high_contrast_dark"}
+        self.font_sizes = {
+            "small": {"base": 9, "rowheight": 20},
+            "medium": {"base": 11, "rowheight": 24},
+            "large": {"base": 14, "rowheight": 30},
+        }
         # Pre-populated choices for known keys (editable combobox).
         self.known_choices = {
             "openai_temperature": ["0.0", "0.2", "0.5", "0.7", "1.0"],
@@ -144,17 +151,18 @@ class ConfigEditor:
         # Themes for accessibility.
         self.themes = {
             "high_contrast_dark": {
-                "bg": "#020617",
-                "fg": "#f9fafb",
-                "entry_bg": "#020617",
-                "entry_fg": "#f9fafb",
-                "tree_bg": "#020617",
+            "bg": "#020617",
+            "fg": "#f9fafb",
+            "entry_bg": "#020617",
+            "entry_fg": "#f9fafb",
+            "tree_bg": "#2b2b2b",
                 "tree_fg": "#f9fafb",
                 "status_info": "#38bdf8",
                 "status_success": "#22c55e",
                 "status_error": "#f43f5e",
                 "tooltip_bg": "#0b1224",
                 "tooltip_fg": "#f9fafb",
+                "selection_bg": "#2b0f3f",
             },
             "light": {
                 "bg": "#ffffff",
@@ -177,6 +185,7 @@ class ConfigEditor:
         self.status_var = tk.StringVar()
         self.type_var = tk.StringVar(value="auto")
         self.theme_var = tk.StringVar(value=self.current_theme)
+        self.font_size_var = tk.StringVar(value="medium")
         self.value_widget = None
         self.tooltip = None
         self.selection_popup = None
@@ -191,10 +200,48 @@ class ConfigEditor:
         self.apply_theme(self.current_theme)
 
     def _build_ui(self):
-        top = ttk.Frame(self.root, padding=10)
-        top.grid(row=0, column=0, sticky="nsew")
         self.root.columnconfigure(0, weight=1)
         self.root.rowconfigure(0, weight=1)
+
+        # Scrollable container
+        container = ttk.Frame(self.root)
+        container.grid(row=0, column=0, sticky="nsew")
+        container.columnconfigure(0, weight=1)
+        container.rowconfigure(0, weight=1)
+
+        canvas = tk.Canvas(container, highlightthickness=0)
+        self.canvas = canvas
+        vscroll = ttk.Scrollbar(container, orient="vertical", command=canvas.yview)
+        hscroll = ttk.Scrollbar(container, orient="horizontal", command=canvas.xview)
+        canvas.configure(yscrollcommand=vscroll.set, xscrollcommand=hscroll.set)
+        canvas.grid(row=0, column=0, sticky="nsew")
+        vscroll.grid(row=0, column=1, sticky="ns")
+        hscroll.grid(row=1, column=0, sticky="ew")
+        container.rowconfigure(0, weight=1)
+        container.columnconfigure(0, weight=1)
+
+        top = ttk.Frame(canvas, padding=10)
+        self.top_frame = top
+        self._canvas_window_id = canvas.create_window((0, 0), window=top, anchor="nw")
+
+        def _on_top_config(event):
+            canvas.configure(scrollregion=canvas.bbox("all"))
+
+        def _on_canvas_config(event):
+            if getattr(self, "_canvas_window_id", None) is not None:
+                # Do not force width; allow horizontal overflow for hscroll to work
+                pass
+
+        top.bind("<Configure>", _on_top_config)
+        canvas.bind("<Configure>", _on_canvas_config)
+        canvas.bind_all(
+            "<MouseWheel>",
+            lambda e: canvas.yview_scroll(int(-1 * (e.delta / 120)), "units"),
+        )
+        canvas.bind_all(
+            "<Shift-MouseWheel>",
+            lambda e: canvas.xview_scroll(int(-1 * (e.delta / 120)), "units"),
+        )
 
         # Menubar for theme selection
         menubar = tk.Menu(self.root)
@@ -223,6 +270,16 @@ class ConfigEditor:
         ttk.Button(path_row, text="Load", command=self.load_action).grid(row=0, column=3, padx=3)
         ttk.Button(path_row, text="Save", command=self.save_action).grid(row=0, column=4, padx=(3, 3))
         ttk.Button(path_row, text="Toggle Theme", command=self.toggle_theme).grid(row=0, column=5, padx=(3, 0))
+        ttk.Label(path_row, text="Font Size:").grid(row=0, column=6, sticky="e", padx=(8, 4))
+        font_combo = ttk.Combobox(
+            path_row,
+            values=["Small", "Medium", "Large"],
+            state="readonly",
+            textvariable=self.font_size_var,
+            width=8,
+        )
+        font_combo.grid(row=0, column=7, sticky="w")
+        font_combo.bind("<<ComboboxSelected>>", lambda e: self.set_font_size(self.font_size_var.get().lower()))
 
         cols = ("key", "value")
         self.tree = ttk.Treeview(top, columns=cols, show="headings", height=14)
@@ -420,6 +477,9 @@ class ConfigEditor:
             return self.value_widget.get()
         return self.val_var.get()
 
+    def _get_font(self):
+        return self.current_font
+
     def _build_value_widget(self, kind: str, key_hint: str = ""):
         """Create the value input widget: entry (with history/choices) or boolean dropdown."""
         # Destroy prior widget if present.
@@ -453,7 +513,7 @@ class ConfigEditor:
         self.value_widget.grid(row=self.value_row, column=self.value_col, sticky="ew", padx=(4, 8))
         # Attach tooltip if available.
         if key_hint in self.help_text and isinstance(self.value_widget, ttk.Combobox):
-            self.tooltip = ToolTip(self.value_widget, self.help_text[key_hint], self._get_theme)
+            self.tooltip = ToolTip(self.value_widget, self.help_text[key_hint], self._get_theme, self._get_font)
             # Also show a timed popup when a value is selected.
             self.value_widget.bind("<<ComboboxSelected>>", lambda e, k=key_hint: self._show_selection_popup(k))
         elif self.tooltip:
@@ -544,7 +604,7 @@ class ConfigEditor:
             relief=tk.SOLID,
             borderwidth=1,
             fg=theme.get("tooltip_fg"),
-            font=("Segoe UI", 9),
+            font=self._get_font(),
             padx=6,
             pady=4,
         )
@@ -590,31 +650,112 @@ class ConfigEditor:
             background=theme["bg"],
             foreground=theme["fg"],
         )
+        # Fonts and sizes
+        font_conf = self.font_sizes.get(self.font_size_var.get(), self.font_sizes["medium"])
+        base_font = ("Segoe UI", font_conf["base"])
+        self.current_font = base_font
         style.configure(
             "Treeview",
             background=theme["tree_bg"],
             fieldbackground=theme["tree_bg"],
             foreground=theme["tree_fg"],
-            rowheight=22,
+            rowheight=font_conf["rowheight"],
+            font=base_font,
         )
-        style.configure("Treeview.Heading", background=theme["bg"], foreground=theme["fg"])
-        style.configure("TLabel", background=theme["bg"], foreground=theme["fg"])
+        style.configure("Treeview.Heading", background=theme["bg"], foreground=theme["fg"], font=base_font)
+        style.configure("TLabel", background=theme["bg"], foreground=theme["fg"], font=base_font)
         style.configure("TFrame", background=theme["bg"])
-        style.configure("TEntry", fieldbackground=theme["entry_bg"], foreground=theme["entry_fg"])
-        style.configure("TCombobox", fieldbackground=theme["entry_bg"], foreground=theme["entry_fg"])
+        style.configure("TEntry", fieldbackground=theme["entry_bg"], foreground=theme["entry_fg"], font=base_font)
+        style.configure(
+            "TCombobox",
+            fieldbackground=theme["entry_bg"],
+            foreground=theme["entry_fg"],
+            background=theme["entry_bg"],
+            font=base_font,
+        )
+        style.configure("TButton", font=base_font)
+        style.configure("TScrollbar", background=theme["tree_bg"], troughcolor=theme["tree_bg"])
+        style.configure("TButton", background=theme["tree_bg"], foreground=theme["fg"])
+        style.configure("TMenubutton", background=theme["entry_bg"], foreground=theme["entry_fg"], font=base_font)
+        style.configure("Horizontal.TScrollbar", background=theme["tree_bg"], troughcolor=theme["tree_bg"])
+        style.map(
+            "TButton",
+            background=[
+                ("active", theme.get("selection_bg", theme["tree_bg"])),
+                ("pressed", theme.get("selection_bg", theme["tree_bg"])),
+                ("focus", theme.get("selection_bg", theme["tree_bg"])),
+            ],
+            foreground=[("active", theme["fg"]), ("pressed", theme["fg"]), ("focus", theme["fg"])],
+        )
+        style.map(
+            "TScrollbar",
+            background=[("active", theme["tree_bg"]), ("!disabled", theme["tree_bg"])],
+            troughcolor=[("active", theme["tree_bg"]), ("!disabled", theme["tree_bg"])],
+        )
+        style.map(
+            "Horizontal.TScrollbar",
+            background=[("active", theme["tree_bg"]), ("!disabled", theme["tree_bg"])],
+            troughcolor=[("active", theme["tree_bg"]), ("!disabled", theme["tree_bg"])],
+        )
+        style.map(
+            "TEntry",
+            fieldbackground=[
+                ("active", theme["entry_bg"]),
+                ("focus", theme["entry_bg"]),
+                ("!disabled", theme["entry_bg"]),
+            ],
+            background=[
+                ("active", theme["entry_bg"]),
+                ("focus", theme["entry_bg"]),
+                ("!disabled", theme["entry_bg"]),
+            ],
+            foreground=[("!disabled", theme["entry_fg"])],
+        )
+        style.map(
+            "TCombobox",
+            fieldbackground=[("readonly", theme["entry_bg"]), ("!disabled", theme["entry_bg"])],
+            background=[("readonly", theme["entry_bg"]), ("!disabled", theme["entry_bg"])],
+            foreground=[("readonly", theme["entry_fg"]), ("!disabled", theme["entry_fg"])],
+        )
         style.map(
             "Treeview",
-            background=[("selected", theme.get("status_info", theme["fg"]))],
-            foreground=[("selected", theme.get("bg", "#000000"))],
+            background=[("selected", theme.get("selection_bg", theme.get("status_info", theme["fg"])))],
+            foreground=[("selected", theme.get("tree_fg", "#ffffff"))],
+        )
+        style.map(
+            "Treeview.Heading",
+            background=[("active", theme["tree_bg"]), ("pressed", theme["tree_bg"])],
+            foreground=[("active", theme["tree_fg"]), ("pressed", theme["tree_fg"])],
         )
         # Root background
-        self.root.configure(background=theme["bg"])
+        self.root.configure(background=theme["tree_bg"] if self.current_theme == "high_contrast_dark" else theme["bg"])
+        if hasattr(self, "canvas"):
+            self.canvas.configure(background=theme["tree_bg"] if self.current_theme == "high_contrast_dark" else theme["bg"])
+        if self.current_theme == "high_contrast_dark":
+            list_bg = "#3a3a3a"
+            list_fg = theme["fg"]
+        else:
+            list_bg = "#f4f4f4"
+            list_fg = "black"
+        self.root.option_add("*TCombobox*Listbox.background", list_bg)
+        self.root.option_add("*TCombobox*Listbox.foreground", list_fg)
+        self.root.option_add("*Listbox.background", list_bg)
+        self.root.option_add("*Listbox.foreground", list_fg)
         # Update status colors now.
         self.set_status(self.status_var.get(), kind="info")
 
     def set_theme(self, name: str) -> None:
         self.apply_theme(name)
         self.prefs["theme"] = name
+        self._save_prefs()
+
+    def set_font_size(self, size_name: str) -> None:
+        size_key = size_name.lower()
+        if size_key not in self.font_sizes:
+            size_key = "medium"
+        self.font_size_var.set(size_key)
+        self.prefs["font_size"] = size_key
+        self.apply_theme(self.current_theme)
         self._save_prefs()
 
     def toggle_theme(self):
@@ -630,6 +771,10 @@ class ConfigEditor:
                         self.prefs.update(data)
                         self.current_theme = data.get("theme", "high_contrast_dark")
                         self.theme_var.set(self.current_theme)
+                    if isinstance(data, dict) and "font_size" in data:
+                        size_val = data.get("font_size", "medium")
+                        self.font_size_var.set(size_val)
+                        self.prefs["font_size"] = size_val
         except Exception:
             pass
 
