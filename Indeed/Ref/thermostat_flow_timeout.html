@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Thermostat Script Flow</title>
+<style>
+  body { font-family: Arial, sans-serif; background:#0f172a; color:#e5e7eb; margin:0; padding:24px; }
+  h1 { margin:0 0 12px; }
+  .canvas { display:grid; grid-template-columns: repeat(3, 320px); gap:18px; align-items:start; }
+  .card { background:#111827; border:1px solid #1f2937; border-radius:10px; padding:14px; position:relative; box-shadow:0 8px 24px rgba(0,0,0,0.35); }
+  .card:before { content: attr(data-step); position:absolute; top:-10px; right:12px; background:#2563eb; color:white; border-radius:20px; padding:2px 8px; font-size:12px; }
+  .title { font-weight:700; margin-bottom:6px; color:#93c5fd; }
+  .line { font-size:13px; color:#cbd5e1; margin:2px 0; }
+  .arrow { text-align:center; font-size:26px; color:#64748b; margin:-6px 0 -12px; }
+  .span2 { grid-column: span 2; }
+  .span3 { grid-column: span 3; }
+</style>
+</head>
+<body>
+<h1>Seam Thermostat Script Flow</h1>
+<div class="canvas">
+  <div class="card" data-step="1">
+    <div class="title">Bootstrap</div>
+    <div class="line">Read config (defaults include request_timeout_minutes, temp_adjust).</div>
+    <div class="line">Load saved request_state; drop if expired.</div>
+  </div>
+  <div class="arrow">?</div>
+  <div class="card" data-step="2">
+    <div class="title">Email Scan</div>
+    <div class="line">IMAP Primary UNSEEN.</div>
+    <div class="line">Match subjects starting with AC.</div>
+    <div class="line">Extract studio + optional minutes (AC21 15).</div>
+    <div class="line">Persist request window (expires_at, studio, zone).</div>
+  </div>
+  <div class="arrow">?</div>
+  <div class="card" data-step="3">
+    <div class="title">Active Request?</div>
+    <div class="line">Yes: keep request state; Type becomes “request (studio N, Xm)”.</div>
+    <div class="line">No: Type = system.</div>
+    <div class="line">If prior request expired: plan to revert to schedule.</div>
+  </div>
+
+  <div class="card span3" data-step="4">
+    <div class="title">Seam Auth</div>
+    <div class="line">Use API key or OAuth token for headers.</div>
+  </div>
+
+  <div class="card" data-step="5">
+    <div class="title">Expiration Revert</div>
+    <div class="line">If request just expired: set cooling to cool_threshold_f, fan auto.</div>
+  </div>
+  <div class="arrow">?</div>
+  <div class="card" data-step="6">
+    <div class="title">Apply Request</div>
+    <div class="line">If active: fetch reading, set cooling to (current - 2°F), fan on.</div>
+  </div>
+  <div class="arrow">?</div>
+  <div class="card" data-step="7">
+    <div class="title">Fetch Telemetry</div>
+    <div class="line">Call /v1/devices/get; extract temps, modes, equipment.</div>
+  </div>
+
+  <div class="card span3" data-step="8">
+    <div class="title">System Auto-Adjust</div>
+    <div class="line">If no active request: apply temp_adjust, compare to thresholds.</div>
+    <div class="line">Set cooling to threshold if over; fan on above fan_on_above_f; circulate below fan_circulate_below_f.</div>
+  </div>
+
+  <div class="card span3" data-step="9">
+    <div class="title">Output & Log</div>
+    <div class="line">Print current/target/mode to stdout.</div>
+    <div class="line">Append row to Google Sheet “Thermostats”: Timestamp, Type, Current Temp, Cooling Set Point, Climate Setting, Fan Setting, Equipment Status, Studio.</div>
+    <div class="line">Type carries studio + hold minutes when request-driven.</div>
+  </div>
+</div>
+</body>
+</html>

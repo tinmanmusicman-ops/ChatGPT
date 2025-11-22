@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Thermostat Flow (Visio-style)</title>
+<style>
+  :root {
+    --bg: #0b1224;
+    --panel: #0f172a;
+    --card: #111827;
+    --line: #1f2937;
+    --text: #e5e7eb;
+    --muted: #94a3b8;
+    --accent: #22d3ee;
+    --accent-2: #a78bfa;
+    --accent-3: #34d399;
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; padding:24px; font-family: "Segoe UI", Arial, sans-serif; background: radial-gradient(circle at 20% 20%, #0f1a33, #0b1224 40%), #0b1224; color: var(--text); }
+  h1 { margin: 0 0 6px; font-size: 22px; }
+  p.sub { margin: 0 0 18px; color: var(--muted); }
+  .flow { position: relative; max-width: 1100px; }
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px 26px; }
+  .node { position: relative; background: linear-gradient(135deg, var(--card), #0c1327); border: 1px solid var(--line); border-radius: 14px; padding: 12px 12px 14px; box-shadow: 0 14px 30px rgba(0,0,0,0.4); }
+  .node .icon { width: 40px; height: 40px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; color: #0b1224; font-weight: 800; margin-bottom: 6px; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06); }
+  .node .title { font-weight: 700; margin-bottom: 4px; }
+  .node .desc { font-size: 13px; color: var(--muted); line-height: 1.35; }
+  .icon.blue { background: var(--accent); }
+  .icon.purple { background: var(--accent-2); }
+  .icon.green { background: var(--accent-3); }
+  .icon.gray { background: #cbd5e1; color: #0f172a; }
+  /* connector lines */
+  .line-h { position: absolute; height: 2px; background: var(--line); }
+  .line-v { position: absolute; width: 2px; background: var(--line); }
+  .dot { position: absolute; width: 8px; height: 8px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 0 4px rgba(34,211,238,0.18); }
+  .legend { margin-top: 18px; color: var(--muted); font-size: 12px; }
+  @media (max-width: 900px) {
+    .grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 600px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+  <h1>Seam Thermostat – Email ? Action Flow</h1>
+  <p class="sub">Gmail AC request ? Apply override ? Log to Google Sheet ? Revert after timeout</p>
+  <div class="flow">
+    <div class="grid">
+      <div class="node" id="n1">
+        <div class="icon blue">1</div>
+        <div class="title">Load Config</div>
+        <div class="desc">Read <code>config.json</code>: Seam API key, Gmail creds, Sheet ID, thresholds, timeout, time zone, test flag.</div>
+      </div>
+      <div class="node" id="n2">
+        <div class="icon purple">2</div>
+        <div class="title">Restore State</div>
+        <div class="desc">Check <code>request_state.json</code>. If expired, clear it; otherwise, keep active request info.</div>
+      </div>
+      <div class="node" id="n3">
+        <div class="icon blue">3</div>
+        <div class="title">Scan Gmail</div>
+        <div class="desc">Primary inbox, unseen. Pull subject+body. Clean body to plain text.</div>
+      </div>
+      <div class="node" id="n4">
+        <div class="icon green">4</div>
+        <div class="title">Parse Request</div>
+        <div class="desc">Find user text like “AC10 30”. Extract studio=10, timeout=30m, map to zone thermostat.</div>
+      </div>
+
+      <div class="node" id="n5">
+        <div class="icon purple">5</div>
+        <div class="title">Save Window</div>
+        <div class="desc">Store request + expiration in <code>request_state.json</code>. Build Type label for Sheet.</div>
+      </div>
+      <div class="node" id="n6">
+        <div class="icon gray">6</div>
+        <div class="title">Expired?</div>
+        <div class="desc">If a previous request just expired: plan to revert set point + fan to schedule.</div>
+      </div>
+      <div class="node" id="n7">
+        <div class="icon blue">7</div>
+        <div class="title">Fetch Telemetry</div>
+        <div class="desc">Call Seam /devices/get. Read current temp, target, mode, fan, equipment status.</div>
+      </div>
+      <div class="node" id="n8">
+        <div class="icon green">8</div>
+        <div class="title">Apply Request</div>
+        <div class="desc">If active request: set cooling to current minus 2°F, turn fan on.</div>
+      </div>
+
+      <div class="node" id="n9">
+        <div class="icon green">9</div>
+        <div class="title">System Safety</div>
+        <div class="desc">If no request: temp_adjust then compare thresholds; set cooling, fan on, or circulate.</div>
+      </div>
+      <div class="node" id="n10">
+        <div class="icon purple">10</div>
+        <div class="title">Revert</div>
+        <div class="desc">If request expired: reset set point to threshold, fan to auto.</div>
+      </div>
+      <div class="node" id="n11">
+        <div class="icon blue">11</div>
+        <div class="title">Log & Output</div>
+        <div class="desc">Print reading. Append to Sheet: Timestamp, Type (studio, zone, minutes), temps, mode, fan, equipment, studio, expiration time.</div>
+      </div>
+      <div class="node" id="n12">
+        <div class="icon green">12</div>
+        <div class="title">Sheet Result</div>
+        <div class="desc">Row added to “Thermostats” tab with local timestamps (Pacific) and expiration time.</div>
+      </div>
+    </div>
+
+    <!-- connectors -->
+    <div class="line-h" style="top:78px; left:150px; width:190px;"></div>
+    <div class="line-h" style="top:78px; left:440px; width:190px;"></div>
+    <div class="line-h" style="top:78px; left:730px; width:190px;"></div>
+    <div class="line-v" style="left:925px; top:78px; height:120px;"></div>
+    <div class="line-h" style="top:198px; left:730px; width:190px;"></div>
+    <div class="line-h" style="top:198px; left:440px; width:190px;"></div>
+    <div class="line-h" style="top:198px; left:150px; width:190px;"></div>
+    <div class="line-v" style="left:150px; top:198px; height:120px;"></div>
+    <div class="line-h" style="top:318px; left:150px; width:190px;"></div>
+    <div class="line-h" style="top:318px; left:440px; width:190px;"></div>
+    <div class="line-h" style="top:318px; left:730px; width:190px;"></div>
+    <div class="line-v" style="left:925px; top:318px; height:120px;"></div>
+    <div class="line-h" style="top:438px; left:730px; width:190px;"></div>
+    <div class="line-h" style="top:438px; left:440px; width:190px;"></div>
+    <div class="line-h" style="top:438px; left:150px; width:190px;"></div>
+    <div class="line-v" style="left:150px; top:438px; height:120px;"></div>
+    <div class="line-h" style="top:558px; left:150px; width:190px;"></div>
+    <div class="line-h" style="top:558px; left:440px; width:190px;"></div>
+
+    <!-- dots to suggest direction -->
+    <div class="dot" style="top:73px; left:330px;"></div>
+    <div class="dot" style="top:73px; left:620px;"></div>
+    <div class="dot" style="top:73px; left:910px;"></div>
+    <div class="dot" style="top:193px; left:910px;"></div>
+    <div class="dot" style="top:193px; left:620px;"></div>
+    <div class="dot" style="top:193px; left:330px;"></div>
+    <div class="dot" style="top:313px; left:330px;"></div>
+    <div class="dot" style="top:313px; left:620px;"></div>
+    <div class="dot" style="top:313px; left:910px;"></div>
+    <div class="dot" style="top:433px; left:910px;"></div>
+    <div class="dot" style="top:433px; left:620px;"></div>
+    <div class="dot" style="top:433px; left:330px;"></div>
+    <div class="dot" style="top:553px; left:330px;"></div>
+    <div class="dot" style="top:553px; left:620px;"></div>
+  </div>
+  <div class="legend">Icons denote step order. Lines indicate flow from left to right, top to bottom.</div>
+</body>
+</html>

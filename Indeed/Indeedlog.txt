@@ -6372,3 +6372,232 @@
 [INFO] Line 407 Calling get_unread_email_body(cfg)
 
 [INFO] Run finished. Processed 7 email(s).
+  12:05.76 imaplib version 2.60
+  12:05.76 new IMAP4 connection, tag=b'PFBK'
+  12:07.63 BYE response: b'LOGOUT Requested'
+  13:07.79 imaplib version 2.60
+  13:07.79 new IMAP4 connection, tag=b'LNEG'
+  13:09.39 BYE response: b'LOGOUT Requested'
+  14:18.12 imaplib version 2.60
+  14:18.12 new IMAP4 connection, tag=b'LIIL'
+  14:20.04 BYE response: b'LOGOUT Requested'
+  14:20.12 imaplib version 2.60
+  14:20.12 new IMAP4 connection, tag=b'KKPH'
+  14:21.76 BYE response: b'LOGOUT Requested'
+  14:45.11 imaplib version 2.60
+  14:45.11 new IMAP4 connection, tag=b'KDEJ'
+  14:46.65 BYE response: b'LOGOUT Requested'
+  14:49.58 imaplib version 2.60
+  14:49.58 new IMAP4 connection, tag=b'HFID'
+  14:51.35 BYE response: b'LOGOUT Requested'
+  14:51.43 imaplib version 2.60
+  14:51.43 new IMAP4 connection, tag=b'MPLD'
+  14:52.13 BYE response: b'LOGOUT Requested'
+[INFO] Starting email processing run.
+[INFO] Google API debug logging enabled.
+
+[INFO] Line 407 Calling get_unread_email_body(cfg)
+
+[INFO] Calling extract_original_sender_from_body(body: str)
+[DEBUG] extract_original_sender_from_body: no From lines found
+[INFO] Checking whether email appears job-related.
+[INFO] Source email detected: jobalerts-noreply@linkedin.com
+
+[INFO] Line 329 AI extraction started…
+[INFO] AI request sent at 2025-11-20 19:12:07
+
+[INFO] Calling get_openai_client(cfg)
+[INFO] AI response received at 2025-11-20 19:12:57
+[INFO] AI processing time: 49.379 seconds
+[INFO] AI extraction finished. 4 job(s).
+[INFO] Preparing to append jobs to Google Sheet.
+[INFO] Obtaining Google Sheet worksheet.
+[OK] Appended 4 row(s).
+[OK] Done.
+
+[INFO] Line 407 Calling get_unread_email_body(cfg)
+
+[INFO] Calling extract_original_sender_from_body(body: str)
+[DEBUG] extract_original_sender_from_body: no From lines found
+[INFO] Checking whether email appears job-related.
+[INFO] Source email detected: jobalerts-noreply@linkedin.com
+
+[INFO] Line 329 AI extraction started…
+[INFO] AI request sent at 2025-11-20 19:13:09
+
+[INFO] Calling get_openai_client(cfg)
+[INFO] AI response received at 2025-11-20 19:14:08
+[INFO] AI processing time: 59.477 seconds
+[INFO] AI extraction finished. 6 job(s).
+[INFO] Preparing to append jobs to Google Sheet.
+[INFO] Obtaining Google Sheet worksheet.
+[OK] Appended 6 row(s).
+[OK] Done.
+
+[INFO] Line 407 Calling get_unread_email_body(cfg)
+
+[INFO] Calling extract_original_sender_from_body(body: str)
+[DEBUG] extract_original_sender_from_body: no From lines found
+[INFO] Checking whether email appears job-related.
+[INFO] Not job-related.
+[INFO] Skipping non-job or empty body from kate.clements@higherhiremail.com.
+
+[INFO] Line 407 Calling get_unread_email_body(cfg)
+
+[INFO] Calling extract_original_sender_from_body(body: str)
+[DEBUG] extract_original_sender_from_body: no From lines found
+[INFO] Checking whether email appears job-related.
+[INFO] Source email detected: donotreply@match.indeed.com
+
+[INFO] Line 329 AI extraction started…
+[INFO] AI request sent at 2025-11-20 19:14:21
+
+[INFO] Calling get_openai_client(cfg)
+[INFO] AI response received at 2025-11-20 19:14:41
+[INFO] AI processing time: 19.746 seconds
+[INFO] AI extraction finished. 1 job(s).
+[INFO] Preparing to append jobs to Google Sheet.
+[INFO] Obtaining Google Sheet worksheet.
+[OK] Appended 1 row(s).
+[OK] Done.
+
+[INFO] Line 407 Calling get_unread_email_body(cfg)
+
+[INFO] Calling extract_original_sender_from_body(body: str)
+[DEBUG] extract_original_sender_from_body: no From lines found
+[INFO] Checking whether email appears job-related.
+[INFO] Source email detected: editors-noreply@linkedin.com
+
+[INFO] Line 329 AI extraction started…
+[INFO] AI request sent at 2025-11-20 19:14:46
+
+[INFO] Calling get_openai_client(cfg)
+[INFO] AI response received at 2025-11-20 19:14:49
+[INFO] AI processing time: 2.838 seconds
+[INFO] AI extraction finished. 0 job(s).
+[INFO] Looked job-related but no jobs extracted.
+
+[INFO] Line 407 Calling get_unread_email_body(cfg)
+
+[INFO] Calling extract_original_sender_from_body(body: str)
+[DEBUG] extract_original_sender_from_body: no From lines found
+[INFO] Checking whether email appears job-related.
+[INFO] Not job-related.
+[INFO] Skipping non-job or empty body from phil@ziprecruiter.com.
+
+[INFO] Line 407 Calling get_unread_email_body(cfg)
+
+[INFO] Run finished. Processed 6 email(s).
+  10:32.04 imaplib version 2.60
+  10:32.04 new IMAP4 connection, tag=b'CKIJ'
+  10:32.82 BYE response: b'LOGOUT Requested'
+[INFO] Starting email processing run.
+[INFO] Google API debug logging enabled.
+
+[INFO] Line 407 Calling get_unread_email_body(cfg)
+[INFO] No email body found.
+
+[INFO] Run finished. Processed 0 email(s).
+  28:28.59 imaplib version 2.60
+  28:28.59 new IMAP4 connection, tag=b'ECED'
+  28:30.62 BYE response: b'LOGOUT Requested'
+  28:30.71 imaplib version 2.60
+  28:30.71 new IMAP4 connection, tag=b'MBCF'
+  28:32.68 BYE response: b'LOGOUT Requested'
+  28:32.77 imaplib version 2.60
+  28:32.77 new IMAP4 connection, tag=b'GKNA'
+  28:34.82 BYE response: b'LOGOUT Requested'
+  28:34.90 imaplib version 2.60
+  28:34.90 new IMAP4 connection, tag=b'NIDJ'
+  28:36.69 BYE response: b'LOGOUT Requested'
+  29:52.60 imaplib version 2.60
+  29:52.60 new IMAP4 connection, tag=b'PPKH'
+  29:54.28 BYE response: b'LOGOUT Requested'
+[INFO] Starting email processing run.
+[INFO] Google API debug logging enabled.
+
+[INFO] Line 407 Calling get_unread_email_body(cfg)
+
+[INFO] Calling extract_original_sender_from_body(body: str)
+[DEBUG] extract_original_sender_from_body: no From lines found
+[INFO] Checking whether email appears job-related.
+[INFO] Not job-related.
+[INFO] Skipping non-job or empty body from noreply@glassdoor.com.
+
+[INFO] Line 407 Calling get_unread_email_body(cfg)
+
+[INFO] Calling extract_original_sender_from_body(body: str)
+[DEBUG] extract_original_sender_from_body: no From lines found
+[INFO] Checking whether email appears job-related.
+[INFO] Not job-related.
+[INFO] Skipping non-job or empty body from newsletters@e.wmtw.com.
+
+[INFO] Line 407 Calling get_unread_email_body(cfg)
+
+[INFO] Calling extract_original_sender_from_body(body: str)
+[DEBUG] extract_original_sender_from_body: no From lines found
+[INFO] Checking whether email appears job-related.
+[INFO] Not job-related.
+[INFO] Skipping non-job or empty body from kate.clements@higherhiremail.com.
+
+[INFO] Line 407 Calling get_unread_email_body(cfg)
+
+[INFO] Calling extract_original_sender_from_body(body: str)
+[DEBUG] extract_original_sender_from_body: no From lines found
+[INFO] Checking whether email appears job-related.
+[INFO] Source email detected: jobalerts-noreply@linkedin.com
+
+[INFO] Line 329 AI extraction started…
+[INFO] AI request sent at 2025-11-21 13:28:36
+
+[INFO] Calling get_openai_client(cfg)
+[INFO] AI response received at 2025-11-21 13:29:45
+[INFO] AI processing time: 68.981 seconds
+[INFO] AI extraction finished. 2 job(s).
+[INFO] Preparing to append jobs to Google Sheet.
+[INFO] Obtaining Google Sheet worksheet.
+[OK] Appended 2 row(s).
+[OK] Done.
+
+[INFO] Line 407 Calling get_unread_email_body(cfg)
+
+[INFO] Calling extract_original_sender_from_body(body: str)
+[DEBUG] extract_original_sender_from_body: no From lines found
+[INFO] Checking whether email appears job-related.
+[INFO] Source email detected: jobalerts-noreply@linkedin.com
+
+[INFO] Line 329 AI extraction started…
+[INFO] AI request sent at 2025-11-21 13:29:54
+
+[INFO] Calling get_openai_client(cfg)
+Traceback (most recent call last):
+  File "C:\ChatGPT\Indeed\Indeed.py", line 920, in <module>
+    main()
+    ~~~~^^
+  File "C:\ChatGPT\Indeed\Indeed.py", line 913, in main
+    processed = process_email_payload(body, uid, from_email, cfg, subject=subject)
+  File "C:\ChatGPT\Indeed\Indeed.py", line 818, in process_email_payload
+    jobs, elapsed = extract_jobs_from_email(trimmed_body, cfg, subject=subject)
+                    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ChatGPT\Indeed\Indeed.py", line 340, in extract_jobs_from_email
+    response = client.responses.create(
+        model=cfg.get("openai_model","gpt-4.1-mini"),
+    ...<2 lines>...
+        temperature=0.1,
+    )
+  File "C:\Users\SCRC\AppData\Local\Programs\Python\Python314\Lib\site-packages\openai\resources\responses\responses.py", line 840, in create
+    return self._post(
+           ~~~~~~~~~~^
+        "/responses",
+        ^^^^^^^^^^^^^
+    ...<39 lines>...
+        stream_cls=Stream[ResponseStreamEvent],
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\SCRC\AppData\Local\Programs\Python\Python314\Lib\site-packages\openai\_base_client.py", line 1259, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\SCRC\AppData\Local\Programs\Python\Python314\Lib\site-packages\openai\_base_client.py", line 1047, in request
+    raise self._make_status_error_from_response(err.response) from None
+openai.InternalServerError: Error code: 500 - {'error': {'message': 'An error occurred while processing your request. You can retry your request, or contact us through our help center at help.openai.com if the error persists. Please include the request ID req_daf530c4736748c692a22a40d911193a in your message.', 'type': 'server_error', 'param': None, 'code': 'server_error'}}

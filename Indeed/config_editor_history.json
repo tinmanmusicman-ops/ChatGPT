@@ -1,0 +1,19 @@
+{
+  "cool_threshold_f": [
+    "78",
+    "77"
+  ],
+  "openai_temperature": [
+    "0.5",
+    "7"
+  ],
+  "openai_model": [
+    "gpt-4.1-mini"
+  ],
+  "fan_on_above_f": [
+    "72"
+  ],
+  "fan_circulate_below_f": [
+    "75"
+  ]
+}

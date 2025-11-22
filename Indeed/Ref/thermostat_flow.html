@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Thermostat Script Flow</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", sans-serif;
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      color: #e2e8f0;
+      display: flex;
+      justify-content: center;
+      padding: 40px 16px;
+    }
+    .canvas {
+      max-width: 900px;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 32px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 26px;
+      letter-spacing: 0.5px;
+    }
+    p.lede {
+      margin: 0 0 24px;
+      color: #cbd5e1;
+    }
+    .flow {
+      display: grid;
+      gap: 18px;
+    }
+    .step {
+      background: linear-gradient(135deg, #1f2937, #111827);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+    .step::before {
+      content: attr(data-step);
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      font-size: 12px;
+      color: #94a3b8;
+      letter-spacing: 1px;
+    }
+    .step h3 {
+      margin: 0 0 6px;
+      font-size: 16px;
+      color: #f8fafc;
+    }
+    .step p {
+      margin: 0;
+      color: #cbd5e1;
+      line-height: 1.45;
+      font-size: 14px;
+    }
+    code {
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 6px;
+      padding: 2px 6px;
+      font-size: 13px;
+      color: #fbbf24;
+    }
+  </style>
+</head>
+<body>
+  <div class="canvas">
+    <h1>Thermostat Script Flow</h1>
+    <p class="lede">How the script scans email, maps studios to zones, updates devices, and logs to Sheets.</p>
+    <div class="flow">
+      <div class="step" data-step="01">
+        <h3>Load Settings</h3>
+        <p>Read <code>config.json</code> for Gmail, Seam, Sheet, and thresholds. Derive API endpoints and defaults.</p>
+      </div>
+      <div class="step" data-step="02">
+        <h3>Scan Primary Inbox (Unread)</h3>
+        <p>IMAP <code>UID SEARCH UNSEEN X-GM-RAW "category:primary"</code>. Fetch full messages and filter subjects starting with <code>AC</code>.</p>
+      </div>
+      <div class="step" data-step="03">
+        <h3>Route to Zone</h3>
+        <p>Parse the studio number from <code>ACNN</code>. Map to zones (Z1: 4,6,8; Z2: 3,5,7,2,9,20,21; Z3: 10–13; Z4: 16–19) and select the thermostat id (defaults to base id).</p>
+      </div>
+      <div class="step" data-step="04">
+        <h3>Apply Request Actions</h3>
+        <p>For matched requests: set cooling to <code>72°F</code> and fan <code>on</code> via Seam API. AC emails are marked seen and moved to <code>Thermostats</code> folder.</p>
+      </div>
+      <div class="step" data-step="05">
+        <h3>Fetch Live Telemetry</h3>
+        <p>Call <code>/v1/devices/get</code> to pull current temperature, climate, fan, and equipment status. System path also auto-adjusts based on thresholds.</p>
+      </div>
+      <div class="step" data-step="06">
+        <h3>Log to Google Sheet</h3>
+        <p>Append to <code>Thermostats</code> tab: Timestamp, Type (system or request + studio), Current Temp, Cooling Set Point, Climate Setting, Fan Setting, Equipment Status, Studio.</p>
+      </div>
+      <div class="step" data-step="07">
+        <h3>Report to Console</h3>
+        <p>Print email matches (if any), zone/studio mapping, and the final Seam thermostat reading.</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

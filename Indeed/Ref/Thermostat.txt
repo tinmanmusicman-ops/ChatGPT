@@ -1,0 +1,15 @@
+[email] UID search status=OK, response entries=1
+[email] No messages found in INBOX.
+[email] AC match failed (no subject starting with AC).
+Seam Thermostat Reading
+------------------------
+Current: 76.0 F (unknown time)
+C:\ChatGPT\Indeed\seam_thermostat_temp.py:292: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  return datetime.utcnow() < expires
+C:\ChatGPT\Indeed\seam_thermostat_temp.py:533: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  remaining = (exp_ts - datetime.utcnow()).total_seconds() / 60.0
+[email] UID search status=OK, response entries=1
+[email] Continuing active request from subject 'Ac15 45' (expires in 38.6 min).
+Seam Thermostat Reading
+------------------------
+Current: 76 F (unknown time)
