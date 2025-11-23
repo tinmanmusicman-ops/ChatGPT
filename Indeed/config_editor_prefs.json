@@ -1,4 +1,34 @@
 {
   "theme": "high_contrast_dark",
-  "font_size": "large"
+  "font_size": "medium",
+  "custom_themes": {
+    "Green Screen Custom": {
+      "colors": {
+        "primary_bg": "#001b00",
+        "secondary_bg": "#002200",
+        "entry_bg": "#002200",
+        "entry_fg": "#66ff99",
+        "list_bg": "#001b00",
+        "list_fg": "#00ff66",
+        "list_highlight": "#004d00",
+        "tree_bg": "#001b00",
+        "tree_fg": "#00ff66",
+        "text_color": "#00ff66",
+        "accent_color": "#00ff66",
+        "selection_bg": "#003300",
+        "status_info": "#00ff66",
+        "status_success": "#68b97a",
+        "status_error": "#9ae7b1",
+        "dirty_color": "#51ffa8",
+        "tooltip_bg": "#003c00",
+        "tooltip_fg": "#4aff85"
+      },
+      "metadata": {
+        "mode": "dark",
+        "high_contrast": false,
+        "base_theme": "green_screen"
+      }
+    }
+  },
+  "ei_guide_url": "https://cdn.botpress.cloud/webchat/v3.4/shareable.html?configUrl=https://files.bpcontent.cloud/2025/11/23/04/20251123044527-N8XXQ6V7.json"
 }

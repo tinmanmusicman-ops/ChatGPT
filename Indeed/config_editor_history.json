@@ -5,6 +5,7 @@
   ],
   "openai_temperature": [
     "0.5",
+    "0.2",
     "7"
   ],
   "openai_model": [
@@ -15,5 +16,8 @@
   ],
   "fan_circulate_below_f": [
     "75"
+  ],
+  "fax_gateway_address": [
+    "tinmanmusicman@yahoo.com"
   ]
 }
