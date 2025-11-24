@@ -13,7 +13,7 @@
   "gmail_user": "tinmanmusicman@gmail.com",
   "request_state_file": "request_state.json",
   "request_timeout_minutes": 60,
-  "service_account_json": "Glocal.json",
+  "service_account_json": "Global.json",
   "spreadsheet_id": "1IYrpGlyCSIilIEyRA70Uq2iUofl-sPA94ygH9ZL-2ag",
   "temp_adjust": 0,
   "test": false,

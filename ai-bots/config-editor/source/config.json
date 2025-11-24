@@ -32,7 +32,7 @@
   "openai_model": "gpt-4o-mini",
   "openai_temperature": 0.5,
   "processed_folder": "Faxes",
-  "service_account_json": "Glocal.json",
+  "service_account_json": "Global.json",
   "spreadsheet_id": "1IYrpGlyCSIilIEyRA70Uq2iUofl-sPA94ygH9ZL-2ag",
   "subject_term": "",
   "temp_adjust": 0,

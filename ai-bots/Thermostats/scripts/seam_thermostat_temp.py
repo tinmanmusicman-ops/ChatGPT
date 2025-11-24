@@ -25,7 +25,7 @@ import gspread  # For Google Sheets logging
 import pytz  # For timezone-aware timestamps
 import requests  # For Seam API calls
 
-SA_KEY_PATH = Path(__file__).resolve().parents[2] / "shared" / "Glocal.json"
+SA_KEY_PATH = Path(__file__).resolve().parents[2] / "shared" / "Global.json"
 SHARED_FIELDS = {"gmail_user", "gmail_app_password", "spreadsheet_id"}
 
 

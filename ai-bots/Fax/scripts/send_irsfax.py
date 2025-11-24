@@ -24,7 +24,7 @@ import gspread
 import pytz
 from gspread.exceptions import WorksheetNotFound
 
-SHARED_CONFIG_PATH = Path(__file__).resolve().parents[2] / "shared" / "Glocal.json"
+SHARED_CONFIG_PATH = Path(__file__).resolve().parents[2] / "shared" / "Global.json"
 
 
 def parse_args() -> argparse.Namespace:

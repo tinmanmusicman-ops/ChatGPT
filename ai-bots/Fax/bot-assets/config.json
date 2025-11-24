@@ -18,5 +18,5 @@
   "mailbox": "INBOX",
   "timezone": "America/Los_Angeles",
   "TestFlag": false,
-  "service_account_json": "../../shared/Glocal.json"
+  "service_account_json": "../../shared/Global.json"
 }

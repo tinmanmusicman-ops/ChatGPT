@@ -14,7 +14,7 @@ import requests
 
 
 CONFIG_PATH = Path(__file__).resolve().parents[1] / "bot-assets" / "config.json"
-SHARED_CONFIG_PATH = Path(__file__).resolve().parents[2] / "shared" / "Glocal.json"
+SHARED_CONFIG_PATH = Path(__file__).resolve().parents[2] / "shared" / "Global.json"
 GMAIL_HOST = "imap.gmail.com"
 GMAIL_FOLDER = "inbox"
 RAW_QUERY = 'category:primary is:unread subject:Scam'

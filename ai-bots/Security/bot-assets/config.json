@@ -1,0 +1,11 @@
+{
+  "spreadsheet_id": "1IYrpGlyCSIilIEyRA70Uq2iUofl-sPA94ygH9ZL-2ag",
+  "worksheet_name": "Security Inbox",
+  "service_account_json": "../../shared/Global.json",
+  "subject_term": "760-672-7323",
+  "unseen_only": true,
+  "max_per_run": 25,
+  "mark_read": false,
+  "mark_read_thread": false,
+  "timezone": "America/Los_Angeles"
+}

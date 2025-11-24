@@ -10,7 +10,7 @@ imaplib.Debug = 1
 base_dir = Path(__file__).resolve().parent
 os.chdir(base_dir)
 
-SHARED_CONFIG_PATH = base_dir.parent.parent / "shared" / "Glocal.json"
+SHARED_CONFIG_PATH = base_dir.parent.parent / "shared" / "Global.json"
 PROJECT_CONFIG_PATH = base_dir.parent / "bot-assets" / "config.json"
 CURRENT_CONFIG_PATH: Optional[Path] = None
 
@@ -28,7 +28,7 @@ def load_shared_defaults() -> dict:
     return data
 
 def resolve_service_account_path(cfg: dict, cfg_path: Path) -> Path:
-    sa_value = cfg.get("service_account_json", "Glocal.json")
+    sa_value = cfg.get("service_account_json", "Global.json")
     sa_path = Path(sa_value)
     candidates = []
     if not sa_path.is_absolute():
@@ -47,7 +47,7 @@ def resolve_service_account_path(cfg: dict, cfg_path: Path) -> Path:
             return candidate
     raise FileNotFoundError(f"Service account file not found: {sa_value}")
 
-SHARED_CONFIG_PATH = base_dir.parent.parent / "shared" / "Glocal.json"
+SHARED_CONFIG_PATH = base_dir.parent.parent / "shared" / "Global.json"
 PROJECT_CONFIG_PATH = base_dir.parent / "bot-assets" / "config.json"
 
 
