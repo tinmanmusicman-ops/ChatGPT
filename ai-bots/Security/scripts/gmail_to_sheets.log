@@ -1,0 +1,86 @@
+2025-11-23 21:17:09,198 [ERROR] Fatal error: Config file not found: config.json
+Traceback (most recent call last):
+  File "C:\ChatGPT\ai-bots\Security\scripts\poll_gmail_to_sheet_advanced.py", line 455, in <module>
+    main()
+    ~~~~^^
+  File "C:\ChatGPT\ai-bots\Security\scripts\poll_gmail_to_sheet_advanced.py", line 374, in main
+    cfg = load_config(CONFIG_FILE)
+  File "C:\ChatGPT\ai-bots\Security\scripts\poll_gmail_to_sheet_advanced.py", line 60, in load_config
+    raise FileNotFoundError(f"Config file not found: {path}")
+FileNotFoundError: Config file not found: config.json
+2025-11-23 21:21:49,433 [ERROR] Fatal error: "Missing required config key: 'user'"
+Traceback (most recent call last):
+  File "C:\ChatGPT\ai-bots\Security\scripts\poll_gmail_to_sheet_advanced.py", line 510, in <module>
+    main()
+    ~~~~^^
+  File "C:\ChatGPT\ai-bots\Security\scripts\poll_gmail_to_sheet_advanced.py", line 429, in main
+    cfg = load_config(CONFIG_FILE)
+  File "C:\ChatGPT\ai-bots\Security\scripts\poll_gmail_to_sheet_advanced.py", line 122, in load_config
+    raise KeyError(f"Missing required config key: '{k}'")
+KeyError: "Missing required config key: 'user'"
+2025-11-23 21:26:48,274 [INFO] Starting poller (max_per_run=25, unseen_only=True, mark_read=True, thread=False)
+2025-11-23 21:26:48,966 [INFO] Searching with IMAP terms: UNSEEN SUBJECT "Scam"
+2025-11-23 21:26:49,073 [INFO] No matching messages found.
+2025-11-23 21:35:04,547 [INFO] Starting poller (max_per_run=25, unseen_only=True, mark_read=True, thread=False)
+2025-11-23 21:35:07,324 [INFO] Searching with IMAP terms: UNSEEN SUBJECT "Scam"
+2025-11-23 21:35:07,795 [INFO] No matching messages found.
+2025-11-23 21:40:44,519 [INFO] Starting poller (max_per_run=25, unseen_only=True, mark_read=True, thread=False)
+2025-11-23 21:43:19,399 [INFO] Starting poller (max_per_run=25, unseen_only=True, mark_read=False, thread=False)
+2025-11-23 21:44:01,359 [INFO] Starting poller (max_per_run=25, unseen_only=True, mark_read=False, thread=False)
+2025-11-23 21:44:13,564 [INFO] Searching with IMAP terms: UNSEEN SUBJECT "SC "
+2025-11-23 21:44:13,658 [INFO] No matching messages found.
+2025-11-23 21:45:18,131 [INFO] Starting poller (max_per_run=25, unseen_only=True, mark_read=False, thread=False)
+2025-11-23 21:45:22,828 [INFO] Searching with IMAP terms: UNSEEN SUBJECT "760-672-7323"
+2025-11-23 21:45:27,650 [INFO] All matching messages already processed.
+2025-11-23 21:53:42,052 [INFO] Starting poller (max_per_run=25, unseen_only=True, mark_read=False, thread=False)
+2025-11-23 21:53:54,384 [INFO] Searching with IMAP terms: UNSEEN SUBJECT "760-672-7323"
+2025-11-23 21:53:57,332 [INFO] All matching messages already processed.
+2025-11-23 21:55:02,613 [INFO] Starting poller (max_per_run=25, unseen_only=True, mark_read=False, thread=False)
+2025-11-23 21:55:06,672 [INFO] Searching with IMAP terms: UNSEEN SUBJECT "760-672-7323"
+2025-11-23 21:59:36,774 [INFO] All matching messages already processed.
+2025-11-23 22:01:46,188 [INFO] Starting poller (max_per_run=25, unseen_only=True, mark_read=False, thread=False)
+2025-11-23 22:01:46,769 [INFO] Searching with IMAP terms: UNSEEN SUBJECT "760-672-7323"
+2025-11-23 22:01:50,313 [INFO] All matching messages already processed.
+2025-11-23 22:03:56,669 [INFO] Starting poller (max_per_run=25, unseen_only=True, mark_read=False, thread=False)
+2025-11-23 22:03:57,270 [INFO] Searching with IMAP terms: UNSEEN SUBJECT "760-672-7323"
+2025-11-23 22:03:59,610 [INFO] Processing 1 new message(s).
+2025-11-23 22:04:00,072 [INFO] Appended 1 row(s).
+2025-11-23 22:04:00,154 [ERROR] Fatal error: name 'append_processed' is not defined
+Traceback (most recent call last):
+  File "C:\ChatGPT\ai-bots\Security\scripts\poll_gmail_to_sheet_advanced.py", line 483, in <module>
+    main()
+    ~~~~^^
+  File "C:\ChatGPT\ai-bots\Security\scripts\poll_gmail_to_sheet_advanced.py", line 467, in main
+    append_processed(processed_ws, processed_to_add)
+    ^^^^^^^^^^^^^^^^
+NameError: name 'append_processed' is not defined
+2025-11-23 22:09:13,815 [INFO] Starting poller (max_per_run=25, unseen_only=True, mark_read=False, thread=False)
+2025-11-23 22:09:14,982 [INFO] Searching with IMAP terms: UNSEEN SUBJECT "760-672-7323"
+2025-11-23 22:09:18,025 [INFO] Processing 1 new message(s).
+2025-11-23 22:09:18,596 [INFO] Appended 1 row(s).
+2025-11-23 22:16:25,810 [INFO] Starting poller (max_per_run=25, unseen_only=True, mark_read=False, thread=False)
+2025-11-23 22:16:26,367 [INFO] Searching with IMAP terms: UNSEEN SUBJECT "760-672-7323"
+2025-11-23 22:16:28,643 [INFO] Processing 1 new message(s).
+2025-11-23 22:16:29,023 [INFO] Skipping UID 17719 because subject does not start with 'SC': New text message from Me (760) 672-7323
+2025-11-23 22:19:32,313 [INFO] Starting poller (max_per_run=25, unseen_only=True, mark_read=False, thread=False)
+2025-11-23 22:19:32,928 [INFO] Searching with IMAP terms: UNSEEN SUBJECT "760-672-7323"
+2025-11-23 22:19:35,257 [INFO] Processing 1 new message(s).
+2025-11-23 22:19:35,518 [INFO] Skipping UID 17719 because subject does not start with 'SC': New text message from Me (760) 672-7323
+2025-11-23 22:21:58,073 [INFO] Starting poller (max_per_run=25, unseen_only=True, mark_read=False, thread=False)
+2025-11-23 22:21:58,657 [INFO] Searching with IMAP terms: UNSEEN SUBJECT "760-672-7323"
+2025-11-23 22:22:00,944 [INFO] Processing 1 new message(s).
+2025-11-23 22:25:44,530 [INFO] Starting poller (max_per_run=25, unseen_only=True, mark_read=False, thread=False)
+2025-11-23 22:25:45,046 [INFO] Searching with IMAP terms: UNSEEN SUBJECT "760-672-7323"
+2025-11-23 22:25:47,311 [INFO] Processing 1 new message(s).
+2025-11-23 22:25:47,831 [INFO] Appended 1 row(s).
+2025-11-23 22:28:02,243 [INFO] Starting poller (max_per_run=25, unseen_only=True, mark_read=False, thread=False)
+2025-11-23 22:28:02,920 [INFO] Searching with IMAP terms: UNSEEN SUBJECT "760-672-7323"
+2025-11-23 22:28:05,661 [INFO] Processing 1 new message(s).
+2025-11-23 22:28:06,247 [INFO] Appended 1 row(s).
+2025-11-23 22:30:23,198 [INFO] Starting poller (max_per_run=25, unseen_only=True, mark_read=False, thread=False)
+2025-11-23 22:30:23,729 [INFO] Searching with IMAP terms: UNSEEN SUBJECT "760-672-7323"
+2025-11-23 22:30:23,848 [INFO] No matching messages found.
+2025-11-23 22:30:45,734 [INFO] Starting poller (max_per_run=25, unseen_only=True, mark_read=False, thread=False)
+2025-11-23 22:30:46,266 [INFO] Searching with IMAP terms: UNSEEN SUBJECT "760-672-7323"
+2025-11-23 22:30:48,570 [INFO] Processing 1 new message(s).
+2025-11-23 22:30:49,140 [INFO] Appended 1 row(s).
