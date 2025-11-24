@@ -84,3 +84,16 @@ NameError: name 'append_processed' is not defined
 2025-11-23 22:30:46,266 [INFO] Searching with IMAP terms: UNSEEN SUBJECT "760-672-7323"
 2025-11-23 22:30:48,570 [INFO] Processing 1 new message(s).
 2025-11-23 22:30:49,140 [INFO] Appended 1 row(s).
+2025-11-23 23:15:30,143 [INFO] Starting poller (max_per_run=25, unseen_only=True, mark_read=False, thread=False)
+2025-11-23 23:15:30,689 [INFO] Searching with IMAP terms: UNSEEN SUBJECT "760-672-7323"
+2025-11-23 23:15:33,181 [INFO] Processing 1 new message(s).
+2025-11-23 23:15:33,657 [INFO] Appended 1 row(s).
+2025-11-23 23:17:55,770 [INFO] Starting poller (max_per_run=25, unseen_only=True, mark_read=False, thread=False)
+2025-11-23 23:17:56,283 [INFO] Searching with IMAP terms: UNSEEN SUBJECT "760-672-7323"
+2025-11-23 23:17:58,508 [INFO] Processing 3 new message(s).
+2025-11-23 23:17:58,867 [INFO] Skipping UID 17721 because body does not contain '\r\nSC' marker.
+2025-11-23 23:17:59,221 [INFO] Appended 2 row(s).
+2025-11-23 23:19:32,162 [INFO] Starting poller (max_per_run=25, unseen_only=True, mark_read=False, thread=False)
+2025-11-23 23:19:32,720 [INFO] Searching with IMAP terms: UNSEEN SUBJECT "760-672-7323"
+2025-11-23 23:19:34,916 [INFO] Processing 1 new message(s).
+2025-11-23 23:19:35,190 [INFO] Skipping UID 17721 because body does not contain '\r\nSC' marker.
