@@ -1,0 +1,63 @@
+Folder PATH listing for volume Windows
+Volume serial number is 30EA-483B
+C:.
+³   migration_log.md
+³   migration_tree.txt
+³   
+ÃÄÄÄautomation-assistant
+³   ³   README.md
+³   ³   
+³   ÃÄÄÄbot-assets
+³   ³       SA_key.json
+³   ³       seam_config.example.json
+³   ³       Test.json
+³   ³       
+³   ÃÄÄÄscripts
+³   ³       midi_player_gui.py
+³   ³       prefs_demo.py
+³   ³       seam_thermostat_temp.py
+³   ³       send_irsfax.py
+³   ³       
+³   ÀÄÄÄsource
+³           OVERVIEW.md
+³           
+ÃÄÄÄconfig-editor
+³   ³   README.md
+³   ³   
+³   ÃÄÄÄbot-assets
+³   ³       ConfigEditor_Bot_Knowledge_Base.pdf
+³   ³       ConfigEditor_EI_Guide.pdf
+³   ³       
+³   ÃÄÄÄscripts
+³   ³       build_config_bot_knowledge_pdf.py
+³   ³       build_config_guide_pdf.py
+³   ³       ConfigGUI.py
+³   ³       config_editor.py
+³   ³       
+³   ÀÄÄÄsource
+³       ³   config.json
+³       ³   config_editor_history.json
+³       ³   config_editor_prefs.json
+³       ³   
+³       ÀÄÄÄDocs
+³               linkedin_post.txt
+³               README.md
+³               resume_bullets.txt
+³               
+ÀÄÄÄrelease-tracker
+    ³   README.md
+    ³   
+    ÃÄÄÄbot-assets
+    ³       Indeedlog.txt
+    ³       isit.log
+    ³       IsItScam.txt
+    ³       
+    ÃÄÄÄscripts
+    ³       Indeed.py
+    ³       IsItScam.bat
+    ³       IsitScam.py
+    ³       run_indeed.bat
+    ³       
+    ÀÄÄÄsource
+            OVERVIEW.md
+            

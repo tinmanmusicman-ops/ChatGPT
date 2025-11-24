@@ -1,0 +1,110 @@
+2025-11-23 16:43:24,107 [DEBUG] Entering fetch_unread_scam
+2025-11-23 16:43:24,108 [DEBUG] Entering load_config
+2025-11-23 16:44:21,428 [DEBUG] Entering fetch_unread_scam
+2025-11-23 16:44:21,428 [DEBUG] Entering load_config
+2025-11-23 16:46:45,555 [DEBUG] Entering fetch_unread_scam
+2025-11-23 16:46:45,556 [DEBUG] Entering load_config
+2025-11-23 16:46:45,575 [INFO] Configuration loaded successfully.
+2025-11-23 16:46:46,353 [INFO] No unread Primary emails with 'Scam' in the subject.
+2025-11-23 16:47:50,899 [DEBUG] Entering fetch_unread_scam
+2025-11-23 16:47:50,899 [DEBUG] Entering load_config
+2025-11-23 16:47:50,900 [INFO] Configuration loaded successfully.
+2025-11-23 16:47:52,032 [DEBUG] Entering decode_subject
+2025-11-23 16:47:52,032 [DEBUG] Entering strip_scam_prefix
+2025-11-23 16:47:52,032 [DEBUG] Entering extract_body
+2025-11-23 16:47:52,033 [DEBUG] Entering collect_from_blocks
+2025-11-23 16:47:52,033 [INFO] collect_from_blocks: extracted 1 sender blocks.
+2025-11-23 16:47:52,033 [DEBUG] Entering analyze_body
+2025-11-23 16:47:52,037 [DEBUG] Starting new HTTPS connection (1): api.openai.com:443
+2025-11-23 16:47:53,571 [DEBUG] https://api.openai.com:443 "POST /v1/chat/completions HTTP/1.1" 401 247
+2025-11-23 17:00:18,189 [DEBUG] Entering fetch_unread_scam
+2025-11-23 17:00:18,189 [DEBUG] Entering load_config
+2025-11-23 17:00:18,190 [INFO] Configuration loaded successfully.
+2025-11-23 17:00:19,480 [DEBUG] Entering decode_subject
+2025-11-23 17:00:19,480 [DEBUG] Entering strip_scam_prefix
+2025-11-23 17:00:19,480 [DEBUG] Entering extract_body
+2025-11-23 17:00:19,480 [DEBUG] Entering collect_from_blocks
+2025-11-23 17:00:19,481 [INFO] collect_from_blocks: extracted 1 sender blocks.
+2025-11-23 17:00:19,481 [DEBUG] Entering analyze_body
+2025-11-23 17:00:19,484 [DEBUG] Starting new HTTPS connection (1): api.openai.com:443
+2025-11-23 17:00:20,263 [DEBUG] https://api.openai.com:443 "POST /v1/chat/completions HTTP/1.1" 401 247
+2025-11-23 17:03:12,074 [DEBUG] Entering fetch_unread_scam
+2025-11-23 17:03:12,075 [DEBUG] Entering load_config
+2025-11-23 17:03:12,077 [INFO] Configuration loaded successfully.
+2025-11-23 17:03:13,549 [DEBUG] Entering decode_subject
+2025-11-23 17:03:13,550 [DEBUG] Entering strip_scam_prefix
+2025-11-23 17:03:13,550 [DEBUG] Entering extract_body
+2025-11-23 17:03:13,551 [DEBUG] Entering collect_from_blocks
+2025-11-23 17:03:13,552 [INFO] collect_from_blocks: extracted 1 sender blocks.
+2025-11-23 17:03:13,553 [DEBUG] Entering analyze_body
+2025-11-23 17:04:18,731 [DEBUG] Starting new HTTPS connection (1): api.openai.com:443
+2025-11-23 17:04:19,568 [DEBUG] https://api.openai.com:443 "POST /v1/chat/completions HTTP/1.1" 401 247
+2025-11-23 17:06:08,956 [DEBUG] Entering fetch_unread_scam
+2025-11-23 17:06:08,957 [DEBUG] Entering load_config
+2025-11-23 17:06:08,959 [INFO] Configuration loaded successfully.
+2025-11-23 17:06:09,638 [INFO] No unread Primary emails with 'Scam' in the subject.
+2025-11-23 17:06:37,500 [DEBUG] Entering fetch_unread_scam
+2025-11-23 17:06:37,500 [DEBUG] Entering load_config
+2025-11-23 17:06:37,501 [INFO] Configuration loaded successfully.
+2025-11-23 17:06:38,556 [DEBUG] Entering decode_subject
+2025-11-23 17:06:38,556 [DEBUG] Entering strip_scam_prefix
+2025-11-23 17:06:38,556 [DEBUG] Entering extract_body
+2025-11-23 17:06:38,557 [DEBUG] Entering collect_from_blocks
+2025-11-23 17:06:38,557 [INFO] collect_from_blocks: extracted 1 sender blocks.
+2025-11-23 17:06:38,557 [DEBUG] Entering analyze_body
+2025-11-23 17:06:38,561 [DEBUG] Starting new HTTPS connection (1): api.openai.com:443
+2025-11-23 17:06:39,321 [DEBUG] https://api.openai.com:443 "POST /v1/chat/completions HTTP/1.1" 401 247
+2025-11-23 17:09:40,220 [DEBUG] Entering fetch_unread_scam
+2025-11-23 17:09:40,222 [DEBUG] Entering load_config
+2025-11-23 17:09:40,223 [INFO] Configuration loaded successfully.
+2025-11-23 17:09:41,287 [DEBUG] Entering decode_subject
+2025-11-23 17:09:41,288 [DEBUG] Entering strip_scam_prefix
+2025-11-23 17:09:41,289 [DEBUG] Entering extract_body
+2025-11-23 17:09:41,290 [DEBUG] Entering collect_from_blocks
+2025-11-23 17:09:41,292 [INFO] collect_from_blocks: extracted 1 sender blocks.
+2025-11-23 17:09:41,292 [DEBUG] Entering analyze_body
+2025-11-23 17:11:48,121 [DEBUG] Entering fetch_unread_scam
+2025-11-23 17:11:48,123 [DEBUG] Entering load_config
+2025-11-23 17:14:36,938 [DEBUG] Entering fetch_unread_scam
+2025-11-23 17:14:36,939 [DEBUG] Entering load_config
+2025-11-23 17:16:44,820 [DEBUG] Entering fetch_unread_scam
+2025-11-23 17:16:44,822 [DEBUG] Entering load_config
+2025-11-23 17:16:44,824 [INFO] Configuration loaded successfully.
+2025-11-23 17:16:45,868 [DEBUG] Entering decode_subject
+2025-11-23 17:16:45,869 [DEBUG] Entering strip_scam_prefix
+2025-11-23 17:16:45,870 [DEBUG] Entering extract_body
+2025-11-23 17:16:45,870 [DEBUG] Entering collect_from_blocks
+2025-11-23 17:16:45,871 [INFO] collect_from_blocks: extracted 1 sender blocks.
+2025-11-23 17:16:45,872 [DEBUG] Entering analyze_body
+2025-11-23 17:17:00,331 [DEBUG] Starting new HTTPS connection (1): api.openai.com:443
+2025-11-23 17:17:01,233 [DEBUG] https://api.openai.com:443 "POST /v1/chat/completions HTTP/1.1" 401 247
+2025-11-23 17:18:46,412 [DEBUG] Entering fetch_unread_scam
+2025-11-23 17:18:46,413 [DEBUG] Entering load_config
+2025-11-23 17:20:51,326 [INFO] Configuration loaded successfully.
+2025-11-23 17:20:52,335 [DEBUG] Entering decode_subject
+2025-11-23 17:20:52,336 [DEBUG] Entering strip_scam_prefix
+2025-11-23 17:20:52,337 [DEBUG] Entering extract_body
+2025-11-23 17:20:52,338 [DEBUG] Entering collect_from_blocks
+2025-11-23 17:20:52,339 [INFO] collect_from_blocks: extracted 1 sender blocks.
+2025-11-23 17:20:52,339 [DEBUG] Entering analyze_body
+2025-11-23 17:21:00,177 [DEBUG] Starting new HTTPS connection (1): api.openai.com:443
+2025-11-23 17:21:01,084 [DEBUG] https://api.openai.com:443 "POST /v1/chat/completions HTTP/1.1" 401 247
+2025-11-23 17:23:20,527 [DEBUG] Entering fetch_unread_scam
+2025-11-23 17:23:20,528 [DEBUG] Entering load_config
+2025-11-23 17:24:20,156 [INFO] Configuration loaded successfully.
+2025-11-23 17:24:32,972 [DEBUG] Entering decode_subject
+2025-11-23 17:24:32,974 [DEBUG] Entering strip_scam_prefix
+2025-11-23 17:24:32,974 [DEBUG] Entering extract_body
+2025-11-23 17:24:32,975 [DEBUG] Entering collect_from_blocks
+2025-11-23 17:24:32,977 [INFO] collect_from_blocks: extracted 1 sender blocks.
+2025-11-23 17:24:32,978 [DEBUG] Entering analyze_body
+2025-11-23 17:24:38,007 [DEBUG] Starting new HTTPS connection (1): api.openai.com:443
+2025-11-23 17:24:41,943 [DEBUG] https://api.openai.com:443 "POST /v1/chat/completions HTTP/1.1" 200 None
+2025-11-23 17:24:41,948 [INFO] analyze_body: received response for sender noreply@findcareer.pmta.sailthru.com.
+2025-11-23 17:24:41,949 [INFO] Evaluation -> sender=noreply@findcareer.pmta.sailthru.com subject=PAYPAL: Timothy, Please Confirm Card is_scam=True confidence=0.9 summary=The email is likely a scam due to its unsolicited nature and suspicious links.
+2025-11-23 17:24:42,679 [DEBUG] Entering send_scam_notification
+2025-11-23 17:24:42,693 [DEBUG] Entering clean_header_value
+2025-11-23 17:24:42,695 [DEBUG] Entering clean_header_value
+2025-11-23 17:24:43,980 [INFO] send_scam_notification: sent analysis reply to tim.inman.2024@gmail.com.
+2025-11-23 17:24:43,981 [INFO] Notification sent to tim.inman.2024@gmail.com about sender=noreply@findcareer.pmta.sailthru.com subject=PAYPAL: Timothy, Please Confirm Card
+2025-11-23 17:24:43,981 [INFO] Sender: noreply@findcareer.pmta.sailthru.com | Subject: Scam Fwd: PAYPAL: Timothy, Please Confirm Card | Summary: The email is likely a scam due to its unsolicited nature and suspicious links. | Action: Moved to 'Scam' (copied + deleted original).

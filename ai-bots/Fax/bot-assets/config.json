@@ -1,0 +1,22 @@
+{
+  "fax_gateway_address": "tinmanmusicman@yahoo.com",
+  "fax_gateway_subject_template": "Fax to {phone}:{subject}",
+  "fax_gateway_body": "Please fax the attached documents",
+  "fax_from": "tinmanmusicman@gmail.com",
+  "fax_subject_keyword": "IRSFax",
+  "fax_subject_pattern": "\\b\\d{3}-\\d{3}-\\d{4}\\b",
+  "processed_folder": "Faxes",
+  "mark_read": true,
+  "move_processed": true,
+  "fax_sheet_name": "Faxes",
+  "smtp_host": "smtp.gmail.com",
+  "smtp_port": 587,
+  "smtp_starttls": true,
+  "smtp_timeout_seconds": 60,
+  "imap_host": "imap.gmail.com",
+  "imap_port": 993,
+  "mailbox": "INBOX",
+  "timezone": "America/Los_Angeles",
+  "TestFlag": false,
+  "service_account_json": "../../shared/Glocal.json"
+}

@@ -17,104 +17,6 @@ import tkinter as tk
 from tkinter import colorchooser, filedialog, messagebox, ttk
 import webbrowser
 
-
-def find_projects_root() -> Path:
-    node = base_dir
-    while True:
-        if node.name == "ai-bots":
-            return node
-        if node.parent == node:
-            break
-        node = node.parent
-    return base_dir.parent.parent
-
-projects_root = find_projects_root()
-
-
-def discover_project_configs() -> List[Tuple[str, Path]]:
-    configs: List[Tuple[str, Path]] = []
-    for project_dir in sorted(projects_root.iterdir()):
-        if project_dir.is_dir() and not project_dir.name.startswith("."):
-            bot_assets_config = project_dir / "bot-assets" / "config.json"
-            if bot_assets_config.exists():
-                configs.append((project_dir.name, bot_assets_config))
-    return configs
-
-
-def first_project_config() -> Optional[Path]:
-    configs = discover_project_configs()
-    if not configs:
-        return None
-    return configs[0][1]
-
-
-class ConfigProjectSelector(tk.Toplevel):
-    def __init__(self, master, options: List[Tuple[str, Path]]):
-        super().__init__(master)
-        self.title("Pick project config")
-        self.transient(master)
-        self.grab_set()
-        self.lift()
-        self.focus_force()
-        self.result: Optional[Path] = None
-        self.columnconfigure(0, weight=1)
-        self.rowconfigure(0, weight=1)
-        label = ttk.Label(self, text="Select the project config you want to edit:")
-        label.grid(row=0, column=0, sticky="w", padx=12, pady=(12, 0))
-        body = tk.Frame(self)
-        body.grid(row=1, column=0, sticky="nsew", padx=12, pady=6)
-        body.columnconfigure(0, weight=1)
-        self.listbox = tk.Listbox(body, height=min(10, len(options)), activestyle="dotbox")
-        self.listbox.grid(row=0, column=0, sticky="nsew")
-        scrollbar = ttk.Scrollbar(body, orient="vertical", command=self.listbox.yview)
-        scrollbar.grid(row=0, column=1, sticky="ns")
-        self.listbox.configure(yscrollcommand=scrollbar.set)
-        self.options = options
-        for label, path in options:
-            self.listbox.insert("end", f"{label} — {path.name}")
-        if options:
-            self.listbox.select_set(0)
-            self.listbox.focus_set()
-
-        buttons = ttk.Frame(self)
-        buttons.grid(row=2, column=0, sticky="e", padx=12, pady=(0, 12))
-        ttk.Button(buttons, text="Cancel", command=self.destroy).pack(side="right", padx=(8, 0))
-        ttk.Button(buttons, text="Open", command=self._on_open).pack(side="right")
-        self.bind("<Return>", self._on_open)
-        self.bind("<Double-Button-1>", self._on_open)
-        self.protocol("WM_DELETE_WINDOW", self.destroy)
-        self.after(0, self._center_window)
-
-    def _on_open(self, event=None):
-        selection = self.listbox.curselection()
-        if not selection:
-            return
-        idx = selection[0]
-        self.result = self.options[idx][1]
-        self.destroy()
-
-    def _center_window(self):
-        self.update_idletasks()
-        w = self.winfo_width()
-        h = self.winfo_height()
-        sw = self.winfo_screenwidth()
-        sh = self.winfo_screenheight()
-        x = max(0, (sw - w) // 2)
-        y = max(0, (sh - h) // 2)
-        self.geometry(f"{w}x{h}+{x}+{y}")
-
-
-def select_project_config(root: tk.Tk) -> Optional[Path]:
-    options = discover_project_configs()
-    if not options:
-        messagebox.showwarning("No configs", "No `bot-assets/config.json` files were found under ai-bots/")
-        return None
-    dialog = ConfigProjectSelector(root, options)
-    root.wait_window(dialog)
-    if dialog.result:
-        return dialog.result
-    return options[0][1]
-
 APP_TITLE = "Config JSON Editor"
 EI_GUIDE_URL = "https://cdn.botpress.cloud/webchat/v3.4/shareable.html?configUrl=https://files.bpcontent.cloud/2025/11/23/04/20251123044527-N8XXQ6V7.json"
 
@@ -602,7 +504,7 @@ def save_json(path: Path, data):
 
 
 class ConfigEditor:
-    def __init__(self, root: tk.Tk, initial_config: Optional[Path] = None):
+    def __init__(self, root: tk.Tk):
         self.root = root
         self.root.title(APP_TITLE)
         ttk.Style().theme_use("clam")
@@ -733,11 +635,8 @@ class ConfigEditor:
         self.user_theme_data = {}
         self.dirty = False
         self._build_ui()
-        default_config = initial_config or (self.base_dir / "config.json")
-        default_config.parent.mkdir(parents=True, exist_ok=True)
-        if not default_config.exists():
-            default_config.write_text("{}", encoding="utf-8")
-        self.path_var.set(str(default_config))
+        default_path = self.base_dir / "config.json"
+        self.path_var.set(str(default_path))
         self._load_history()
         self._load_prefs()
         self._hydrate_user_themes()
@@ -809,28 +708,21 @@ class ConfigEditor:
         path_row.grid(row=0, column=0, sticky="ew", pady=(0, 8))
         path_row.columnconfigure(1, weight=1)
         ttk.Label(path_row, text="Config path:").grid(row=0, column=0, sticky="w", padx=(0, 6))
-        entry = ttk.Entry(path_row, textvariable=self.path_var)
-        entry.grid(row=0, column=1, sticky="ew")
-
-        button_row = ttk.Frame(top)
-        button_row.grid(row=1, column=0, sticky="ew", pady=(4, 8))
-        ttk.Button(
-            button_row, text="Select Configuration", command=self.select_project_config_dialog
-        ).grid(row=0, column=0, padx=(0, 6))
-        ttk.Button(button_row, text="Browse", command=self.browse_action).grid(row=0, column=1, padx=6)
-        ttk.Button(button_row, text="Load", command=self.load_action).grid(row=0, column=2, padx=6)
-        ttk.Button(button_row, text="Save", command=self.save_action).grid(row=0, column=3, padx=6)
-        ttk.Button(button_row, text="Toggle Theme", command=self.toggle_theme).grid(row=0, column=4, padx=6)
-        ttk.Button(button_row, text="Theme Colors", command=self.open_theme_picker).grid(row=0, column=5, padx=6)
-        ttk.Label(button_row, text="Font Size:").grid(row=0, column=6, sticky="e", padx=(8, 4))
+        ttk.Entry(path_row, textvariable=self.path_var).grid(row=0, column=1, sticky="ew")
+        ttk.Button(path_row, text="Browse", command=self.browse_action).grid(row=0, column=2, padx=6)
+        ttk.Button(path_row, text="Load", command=self.load_action).grid(row=0, column=3, padx=3)
+        ttk.Button(path_row, text="Save", command=self.save_action).grid(row=0, column=4, padx=(3, 3))
+        ttk.Button(path_row, text="Toggle Theme", command=self.toggle_theme).grid(row=0, column=5, padx=(3, 0))
+        ttk.Button(path_row, text="Theme Colors", command=self.open_theme_picker).grid(row=0, column=6, padx=(3, 0))
+        ttk.Label(path_row, text="Font Size:").grid(row=0, column=7, sticky="e", padx=(8, 4))
         font_combo = ttk.Combobox(
-            button_row,
+            path_row,
             values=["Small", "Medium", "Large"],
             state="readonly",
             textvariable=self.font_size_var,
             width=8,
         )
-        font_combo.grid(row=0, column=7, sticky="w")
+        font_combo.grid(row=0, column=8, sticky="w")
         font_combo.bind("<<ComboboxSelected>>", lambda e: self.set_font_size(self.font_size_var.get().lower()))
 
         cols = ("key", "value")
@@ -841,14 +733,14 @@ class ConfigEditor:
         self.tree.column("value", width=360, anchor="w")
         yscroll = ttk.Scrollbar(top, orient="vertical", command=self.tree.yview)
         self.tree.configure(yscrollcommand=yscroll.set)
-        self.tree.grid(row=2, column=0, sticky="nsew")
-        yscroll.grid(row=2, column=1, sticky="ns")
+        self.tree.grid(row=1, column=0, sticky="nsew")
+        yscroll.grid(row=1, column=1, sticky="ns")
         self.tree.bind("<<TreeviewSelect>>", self.on_select)
         self.tree.bind("<Delete>", lambda e: self.delete_action())
-        top.rowconfigure(2, weight=1)
+        top.rowconfigure(1, weight=1)
 
         form = ttk.Frame(top)
-        form.grid(row=3, column=0, sticky="ew", pady=(8, 6))
+        form.grid(row=2, column=0, sticky="ew", pady=(8, 6))
         form.columnconfigure(1, weight=1)
         ttk.Label(form, text="Key:").grid(row=0, column=0, sticky="w")
         ttk.Entry(form, textvariable=self.key_var).grid(row=0, column=1, sticky="ew", padx=(4, 8))
@@ -871,7 +763,7 @@ class ConfigEditor:
         ttk.Button(form, text="Delete Selected", command=self.delete_action).grid(row=0, column=6)
 
         chatbot_row = ttk.Frame(top)
-        chatbot_row.grid(row=4, column=0, sticky="ew", pady=(4, 0))
+        chatbot_row.grid(row=3, column=0, sticky="ew", pady=(4, 0))
         chatbot_row.columnconfigure(0, weight=1)
         self.chatbot_button = tk.Button(
             chatbot_row,
@@ -936,9 +828,6 @@ class ConfigEditor:
             self.refresh_tree()
             self.set_status(f"Loaded {path}", kind="info")
             self.set_dirty(False)
-        except json.JSONDecodeError as exc:
-            messagebox.showerror("Config JSON error", f"Malformed JSON ({exc.msg}) at line {exc.lineno}, column {exc.colno}")
-            self.set_status("Load failed: malformed JSON", kind="error")
         except Exception as exc:
             messagebox.showerror("Load failed", str(exc))
             self.set_status("Load failed", kind="error")
@@ -965,12 +854,6 @@ class ConfigEditor:
         except Exception as exc:
             messagebox.showerror("Save failed", str(exc))
             self.set_status("Save failed", kind="error")
-
-    def select_project_config_dialog(self):
-        selected = select_project_config(self.root)
-        if selected:
-            self.path_var.set(str(selected))
-            self.load_action()
 
     def refresh_tree(self):
         self.tree.delete(*self.tree.get_children(""))
