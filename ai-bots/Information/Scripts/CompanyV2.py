@@ -1,22 +1,31 @@
 from __future__ import annotations
 
-import email
-import imaplib
 import json
+import io
+import logging
 import os
 import re
+import shutil
 import sys
 import webbrowser
 from datetime import datetime
-from email.header import decode_header
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Set, Tuple
 
 import html
 import tkinter as tk
-from tkinter import ttk
+from tkinter import messagebox, ttk
 import urllib.request
 from urllib.error import HTTPError, URLError
+from socket import timeout as SocketTimeout
+import time
+
+from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.errors import HttpError
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaIoBaseUpload
 
 from openai import OpenAI
 
@@ -59,11 +68,26 @@ def emphasize_key_labels(text: str) -> str:
 BASE_DIR = Path(__file__).resolve().parent
 os.chdir(BASE_DIR)
 base_dir = BASE_DIR
+C_USE_ROOT_FOLDER = os.getenv("USE_ROOT_DRIVE_FOLDER", "0") in ("1", "True", "true")
+COMPANY_RESEARCH_DIR = Path.home() / "Google Drive" / "Company Research"
+DRIVE_SCOPES = ["https://www.googleapis.com/auth/drive.file"]
+DRIVE_SERVICE: Optional[object] = None
+DRIVE_FOLDER_ID: Optional[str] = None
+COMPANY_RESEARCH_DIR = Path.home() / "Google Drive" / "Company Research"
+TOKEN_CLIENT_SECRETS = base_dir.parent.parent / "shared" / "tokens.json"
+TOKENS_PATH = base_dir.parent.parent / "shared" / "oauth_tokens.json"
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+)
+logger = logging.getLogger(__name__)
 
 
 def _locate_config_path() -> Path:
     """Prefer a nearby bot-assets/config.json; fallback to the script folder."""
     parent = BASE_DIR.parent
+
+    logger.info("Scanning for bot configuration files near %s", parent)
 
     # Try known folder names first
     preferred_names = [
@@ -76,6 +100,7 @@ def _locate_config_path() -> Path:
     for name in preferred_names:
         candidate = parent / name / "config.json"
         if candidate.exists():
+            logger.info("Found config in preferred folder %s", candidate)
             return candidate
 
     # Fall back to any bot* directory that contains config.json
@@ -84,47 +109,15 @@ def _locate_config_path() -> Path:
             continue
         candidate_name = candidate_dir.name.lower()
         if candidate_name.startswith("bot") and (candidate_dir / "config.json").exists():
+            logger.info("Found config in bot directory %s", candidate_dir / "config.json")
             return candidate_dir / "config.json"
 
-    return BASE_DIR / "config.json"
+    fallback = BASE_DIR / "config.json"
+    logger.info("Using fallback config path %s", fallback)
+    return fallback
 
 
 CONFIG_PATH = _locate_config_path()
-
-COMPANY_INFO_PROMPT = """
-You are an AI Business Analyst.
-
-Input:
-- Email body text of a job-alert email.
-- For each job-related URL contained in the email, extract the job details and determine the referenced company.
-- For each company referenced in the email, produce an in-depth SWOT assessment (Strengths, Weaknesses, Opportunities, Threats) using only information from the email body and clear context around the job URL (no outside research).
-
-
-Instructions:
-1. Identify every distinct job URL in the email. Treat each as a unique job entry.
-2. For each job entry:
-   - Determine company_name from the surrounding text or the page/URL hints in the email.
-   - Develop a company_info field containing a SWOT mini-brief. Each component must be labeled (e.g., "Strengths: ...; Weaknesses: ...") and highlight concrete details from the email: company overview, capabilities, differentiators, pain points, market positioning, hiring cues, or risks affecting customers/employees. When a component lacks evidence, explicitly note "Strengths: null" (etc.) rather than inventing information.
-   - Capture the job URL itself in url.
-
-3. Return a JSON object of the form:
-{
-  "jobs": [
-    {
-      "company_name": string|null,
-      "url": string,
-      "company_info": string|null
-    }
-  ]
-}
-
-Rules:
-- Only use information present in the email content for company_info; do not fabricate or infer from outside knowledge.
-- company_info must concisely cover Strengths, Weaknesses, Opportunities, and Threats (up to ~100 words) with each label spelled out. If every SWOT dimension is empty, set company_info to null.
-- Always include each field (company_name, url, company_info) for every job object, even if company_info is null.
-- Output only valid JSON (no markdown, code fences, or commentary).
-""".strip()
-
 
 MANUAL_ANALYSIS_PROMPT = """
 You are an experienced market researcher. Provide a deep analysis of {company} formatted as structured Markdown.
@@ -141,8 +134,6 @@ Include the following sections, each introduced with a Markdown heading (##):
 - Growth Opportunities & Strategic Insights
 - Evaluation Highlights (use bullet points for this final recap)
 
-If you know a trustworthy public logo URL for the company, add a line such as `Logo: https://example.com/logo.png` somewhere near the top of your response. Otherwise leave that detail out.
-
 Emphasize approximate figures when you are unsure, avoid unsupported claims, and keep each section concise but informative.
 """.strip()
 
@@ -155,6 +146,7 @@ def prompt_for_company_name() -> Optional[str]:
     root.title("Manual Company Analysis")
     root.resizable(False, False)
     width, height = 420, 140
+    root.withdraw()
     root.geometry(f"{width}x{height}")
     root.update_idletasks()
     screen_width = root.winfo_screenwidth()
@@ -162,7 +154,21 @@ def prompt_for_company_name() -> Optional[str]:
     x = int((screen_width - width) / 2)
     y = int((screen_height - height) / 2)
     root.geometry(f"{width}x{height}+{x}+{y}")
+    root.deiconify()
     root.attributes("-topmost", True)
+    root.configure(bg="#000000")
+
+    style = ttk.Style(root)
+    style.theme_use("clam")
+    style.configure("Dark.TFrame", background="#000000")
+    style.configure("Dark.TLabel", background="#000000", foreground="#ffffff")
+    style.configure("Dark.TEntry", fieldbackground="#1a1a1a", foreground="#ffffff", background="#000000")
+    style.configure("Dark.TButton", background="#1a1a1a", foreground="#ffffff")
+    style.map(
+        "Dark.TButton",
+        background=[("active", "#2f2f2f"), ("pressed", "#2f2f2f")],
+        foreground=[("disabled", "#bbbbbb")],
+    )
 
     def close(value: Optional[str] = None) -> None:
         result["value"] = value
@@ -172,23 +178,23 @@ def prompt_for_company_name() -> Optional[str]:
         name = entry.get().strip()
         close(name if name else None)
 
-    frame = ttk.Frame(root, padding="12")
+    frame = ttk.Frame(root, padding="12", style="Dark.TFrame")
     frame.pack(fill="both", expand=True)
 
-    label = ttk.Label(frame, text="Enter company name (leave blank to fetch email):")
+    label = ttk.Label(frame, text="Enter company name (leave blank to fetch email):", style="Dark.TLabel")
     label.pack(anchor="w")
 
-    entry = ttk.Entry(frame)
+    entry = ttk.Entry(frame, style="Dark.TEntry")
     entry.pack(fill="x", pady=(6, 12))
     entry.focus()
 
-    buttons = ttk.Frame(frame)
+    buttons = ttk.Frame(frame, style="Dark.TFrame")
     buttons.pack(fill="x")
 
-    analyze_btn = ttk.Button(buttons, text="Analyze", command=on_analyze)
+    analyze_btn = ttk.Button(buttons, text="Analyze", command=on_analyze, style="Dark.TButton")
     analyze_btn.pack(side="right", padx=(4, 0))
 
-    cancel_btn = ttk.Button(buttons, text="Cancel", command=lambda: close(None))
+    cancel_btn = ttk.Button(buttons, text="Cancel", command=lambda: close(None), style="Dark.TButton")
     cancel_btn.pack(side="right")
 
     root.protocol("WM_DELETE_WINDOW", lambda: close(None))
@@ -198,6 +204,7 @@ def prompt_for_company_name() -> Optional[str]:
 
 def load_config() -> Dict[str, object]:
     """Load email + API configuration."""
+    logger.info("Loading configuration from %s", CONFIG_PATH)
     try:
         raw = CONFIG_PATH.read_text(encoding="utf-8")
     except FileNotFoundError as exc:
@@ -229,33 +236,10 @@ def get_openai_client(cfg: Dict[str, object]) -> OpenAI:
     api_key = cfg.get("openai_api_key") or os.getenv("OPENAI_API_KEY")
     if not api_key:
         raise SystemExit("Missing OpenAI API key. Set openai_api_key in config.json or OPENAI_API_KEY env var.")
+    logger.info("Constructing OpenAI client")
     return OpenAI(api_key=api_key)
 
 
-def _extract_body(msg: email.message.Message) -> str:
-    """Return HTML body if present, otherwise plain text."""
-    html_body = ""
-    text_body = ""
-
-    if msg.is_multipart():
-        for part in msg.walk():
-            if part.get_content_disposition() == "attachment":
-                continue
-            payload = part.get_payload(decode=True)
-            if not payload:
-                continue
-            decoded = payload.decode(part.get_content_charset() or "utf-8", "replace")
-            content_type = part.get_content_type()
-            if content_type == "text/html" and not html_body:
-                html_body = decoded
-            elif content_type == "text/plain" and not text_body:
-                text_body = decoded
-    else:
-        payload = msg.get_payload(decode=True)
-        if payload:
-            text_body = payload.decode(msg.get_content_charset() or "utf-8", "replace")
-
-    return (html_body or text_body or "").strip()
 
 
 def _search_args(cfg: Dict[str, object], include_sender: bool = True) -> List[str]:
@@ -287,6 +271,7 @@ def extract_company_info(body: str, cfg: Dict[str, object]) -> Dict[str, object]
     if not body:
         return {"jobs": []}
 
+    logger.info("Extracting company info from email body (~%d chars)", len(body))
     client = get_openai_client(cfg)
     model = cfg.get("openai_model") or "gpt-4o-mini"
     temperature = cfg.get("openai_temperature")
@@ -295,6 +280,7 @@ def extract_company_info(body: str, cfg: Dict[str, object]) -> Dict[str, object]
     except (TypeError, ValueError):
         temperature = 0.1
 
+    logger.info("Sending company inference request to OpenAI using model %s", model)
     response = client.responses.create(
         model=model,
         instructions=COMPANY_INFO_PROMPT,
@@ -319,6 +305,7 @@ def extract_company_info(body: str, cfg: Dict[str, object]) -> Dict[str, object]
             return {"jobs": [], "error": "Unable to parse AI response"}
 
     raw = str(raw).strip()
+    logger.info("Received raw AI output (%d chars)", len(raw))
     start, end = raw.find("{"), raw.rfind("}")
     if start != -1 and end != -1:
         raw = raw[start : end + 1]
@@ -331,6 +318,7 @@ def extract_company_info(body: str, cfg: Dict[str, object]) -> Dict[str, object]
 
 def analyze_company_manually(company_name: str, cfg: Dict[str, object]) -> str:
     """Ask OpenAI for a deep summary when a company name is provided manually."""
+    logger.info("Requesting manual company analysis for %s", company_name)
     client = get_openai_client(cfg)
     model = cfg.get("openai_model") or "gpt-5.1"
     temperature = cfg.get("openai_temperature")
@@ -339,6 +327,7 @@ def analyze_company_manually(company_name: str, cfg: Dict[str, object]) -> str:
     except (TypeError, ValueError):
         temperature = 0.35
 
+    logger.info("Calling ChatCompletions API with model %s", model)
     response = client.chat.completions.create(
         model=model,
         messages=[
@@ -358,18 +347,6 @@ def analyze_company_manually(company_name: str, cfg: Dict[str, object]) -> str:
         raise ValueError("OpenAI returned an empty manual analysis.")
 
     return content.strip()
-
-
-def save_analysis_markdown(formatted_text: str, company_name: str) -> Path:
-    """Salvage the AI analysis into a polished Markdown report."""
-    safe_name = re.sub(r"[^A-Za-z0-9_-]", "_", company_name.strip())
-    timestamp_file = datetime.now().strftime("%Y%m%d_%H%M")
-    filename = f"information_analysis_{safe_name}_{timestamp_file}.md"
-    path = BASE_DIR / filename
-
-    normalized_content = formatted_text.strip()
-    path.write_text(f"{normalized_content}\n", encoding="utf-8")
-    return path
 
 
 def normalize_analysis_markdown(raw_text: str, company_name: str, helper_name: str = "Information") -> str:
@@ -426,7 +403,27 @@ def convert_markdown_bold(text: str) -> str:
     return re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", text)
 
 
-LOGO_REGEX = re.compile(r"logo:\s*\[.*?\]\((https?://[^\s)]+)\)", re.IGNORECASE)
+def extract_canonical_company_name(analysis_text: str, fallback: str) -> str:
+    """
+    Try to extract the 'real' company name from the EI analysis text.
+    We look for a heading or phrase that includes 'Company Intelligence Report'
+    and grab the name in front of it.
+
+    If nothing is found, we return the fallback (the original user input).
+    """
+    m = re.search(r"^#\s+(.+?)\s+Company Intelligence Report", analysis_text, re.MULTILINE)
+    if m:
+        return m.group(1).strip()
+
+    m = re.search(r"^(.+?)\s+Company Intelligence Report", analysis_text, re.MULTILINE)
+    if m:
+        return m.group(1).strip()
+
+    m = re.search(r"Company:\s*(.+)", analysis_text)
+    if m:
+        return m.group(1).strip()
+
+    return fallback.strip()
 
 
 def resolve_logo_url(raw_url: str, company_name: str) -> str:
@@ -455,20 +452,70 @@ def resolve_logo_url(raw_url: str, company_name: str) -> str:
     return raw_url
 
 
-def convert_markdown_to_html(markdown_text: str, company_name: str) -> Path:
-    """Convert the Markdown report to styled HTML for viewing."""
-    safe_name = re.sub(r"[^A-Za-z0-9_-]", "_", company_name.strip())
-    timestamp_file = datetime.now().strftime("%Y%m%d_%H%M")
-    filename = f"information_analysis_{safe_name}_{timestamp_file}.html"
-    path = BASE_DIR / filename
+def ensure_drive_credentials() -> Credentials:
+    creds = None
+    if TOKENS_PATH.exists():
+        creds = Credentials.from_authorized_user_file(TOKENS_PATH, DRIVE_SCOPES)
+    if not creds or not creds.valid:
+        if creds and creds.expired and creds.refresh_token:
+            logger.info("Refreshing expired OAuth token")
+            creds.refresh(Request())
+        else:
+            if not TOKEN_CLIENT_SECRETS.exists():
+                raise FileNotFoundError(f"Missing OAuth client secrets at {TOKEN_CLIENT_SECRETS}")
+            logger.info("Launching OAuth consent flow for Drive access")
+            flow = InstalledAppFlow.from_client_secrets_file(str(TOKEN_CLIENT_SECRETS), DRIVE_SCOPES)
+            creds = flow.run_local_server(port=0)
+        TOKENS_PATH.write_text(creds.to_json(), encoding="utf-8")
+        logger.info("Persisted OAuth credentials to %s", TOKENS_PATH)
+    return creds
 
-    markdown_text = convert_markdown_bold(markdown_text)
-    lines = markdown_text.splitlines()
+
+def get_drive_service():
+    global DRIVE_SERVICE
+    if DRIVE_SERVICE:
+        logger.info("Reusing cached Google Drive service")
+        return DRIVE_SERVICE
+    logger.info("Initializing Google Drive service via OAuth identity")
+    creds = ensure_drive_credentials()
+    DRIVE_SERVICE = build("drive", "v3", credentials=creds)
+    return DRIVE_SERVICE
+
+
+def ensure_drive_folder(service):
+    global DRIVE_FOLDER_ID
+    if C_USE_ROOT_FOLDER:
+        logger.info("Configured to use Drive root folder directly")
+        return "root"
+    if DRIVE_FOLDER_ID:
+        logger.info("Using cached Drive folder ID %s", DRIVE_FOLDER_ID)
+        return DRIVE_FOLDER_ID
+    query = f"name='{COMPANY_RESEARCH_DIR.name}' and mimeType='application/vnd.google-apps.folder' and trashed=false"
+    logger.info("Searching for Drive folder with query %s", query)
+    resp = service.files().list(q=query, fields="files(id)", pageSize=1).execute()
+    files = resp.get("files", [])
+    if files:
+        logger.info("Found existing Drive folder %s", files[0]["id"])
+        DRIVE_FOLDER_ID = files[0]["id"]
+        return DRIVE_FOLDER_ID
+    metadata = {"name": COMPANY_RESEARCH_DIR.name, "mimeType": "application/vnd.google-apps.folder"}
+    logger.info("Creating Drive folder %s", COMPANY_RESEARCH_DIR.name)
+    folder = service.files().create(body=metadata, fields="id").execute()
+    DRIVE_FOLDER_ID = folder["id"]
+    return DRIVE_FOLDER_ID
+
+
+def sanitize_company_name(text: str) -> str:
+    return re.sub(r"[^A-Za-z0-9_-]", "_", text.strip())
+
+
+def parse_normalized_analysis(normalized_text: str) -> Tuple[str, str, str, str, List[dict[str, List[str] | str]]]:
+    lines = normalized_text.splitlines()
     title_line = ""
     subtitle_line = ""
     metadata_line = ""
+    logo_url = ""
     idx = 0
-
     if idx < len(lines) and lines[idx].startswith("# "):
         title_line = lines[idx][2:].strip()
         idx += 1
@@ -478,76 +525,50 @@ def convert_markdown_to_html(markdown_text: str, company_name: str) -> Path:
     if idx < len(lines) and lines[idx].startswith("_") and lines[idx].endswith("_"):
         metadata_line = lines[idx].strip("_")
         idx += 1
-
-    logo_url = ""
     while idx < len(lines):
         stripped = lines[idx].strip()
-        if not stripped:
-            idx += 1
-            continue
-        logo_match = LOGO_REGEX.match(stripped)
-        if logo_match:
-            logo_url = logo_match.group(1)
-            idx += 1
-            continue
         if stripped.startswith("## "):
             break
         idx += 1
-
     sections: List[dict[str, List[str] | str]] = []
-    current_section: Optional[dict[str, List[str] | str]] = None
-
+    current_section = None
     while idx < len(lines):
         line = lines[idx].strip()
         if not line:
             idx += 1
             continue
-
         if line.startswith("## "):
             if current_section:
                 sections.append(current_section)
-            section_title = line[3:].strip()
-            current_section = {
-                "title": section_title,
-                "items": [],
-            }
-        elif line.startswith("- ") and current_section:
-            current_section["items"].append(line[2:].strip())
+            current_section = {"title": line[3:].strip(), "items": []}
         elif current_section:
             current_section["items"].append(line)
-
         idx += 1
-
     if current_section:
         sections.append(current_section)
+    return title_line, subtitle_line, metadata_line, logo_url, sections
 
-    def build_section_html(section: dict[str, List[str] | str]) -> str:
-        title = section["title"]
+
+def build_html_from_sections(title: str, subtitle: str, metadata: str, logo_html: str, sections: List[dict[str, List[str] | str]]) -> str:
+    body = []
+    for section in sections:
+        title_text = section["title"]
+        highlight = " highlight" if title_text == "Evaluation Highlights" else ""
         items = section["items"]
-        highlight_class = " highlight" if title == "Evaluation Highlights" else ""
         if items:
             list_html = "<ul>\n" + "\n".join(f"        <li>{item}</li>" for item in items) + "\n      </ul>\n"
         else:
             list_html = ""
-
-        return f"""      <div class="section{highlight_class}">
-        <h2>{html.escape(title)}</h2>
-{list_html}      </div>"""
-    body_sections = "\n".join(build_section_html(section) for section in sections)
-    body_sections = emphasize_key_labels(body_sections)
-
-    logo_html = ""
-    logo_url = resolve_logo_url(logo_url, company_name)
-    if logo_url:
-        escaped_logo = html.escape(logo_url, quote=True)
-        alt_text = html.escape(f"{company_name} logo")
-        logo_html = f'<div class="logo-block"><img src="{escaped_logo}" alt="{alt_text}" loading="lazy" /></div>'
-
+        body.append(f"""      <div class="section{highlight}">
+        <h2>{html.escape(title_text)}</h2>
+{list_html}      </div>""")
+    body_content = "\n".join(body)
+    body_content = emphasize_key_labels(body_content)
     html_template = f"""<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>Company Intelligence Report – {html.escape(company_name)}</title>
+    <title>Company Intelligence Report – {html.escape(subtitle or title)}</title>
     <style>
       :root {{
         --bg-main: #02040c;
@@ -561,7 +582,6 @@ def convert_markdown_to_html(markdown_text: str, company_name: str) -> Path:
         --radius-xl: 26px;
         --radius-md: 18px;
       }}
-
       body {{
         margin: 0;
         padding: 0;
@@ -571,7 +591,6 @@ def convert_markdown_to_html(markdown_text: str, company_name: str) -> Path:
         font-size: 21px;
         line-height: 1.85;
       }}
-
       .container {{
         max-width: 980px;
         margin: 40px auto;
@@ -581,77 +600,26 @@ def convert_markdown_to_html(markdown_text: str, company_name: str) -> Path:
         box-shadow: var(--shadow-deep);
         border: 1px solid var(--border-soft);
       }}
-
+      .header-row {{
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 24px;
+      }}
+      .header-text {{
+        flex: 1;
+      }}
       h1 {{
         font-size: 34px;
         color: var(--accent-primary);
         letter-spacing: 0.05em;
         margin: 0 0 4px 0;
       }}
-
       h2 {{
         font-size: 24px;
         color: var(--accent-secondary);
-        margin-top: 18px;
+        margin-top: 6px;
       }}
-
-      .section {{
-        margin-top: 26px;
-        padding: 22px 24px;
-        border-radius: var(--radius-md);
-        background: radial-gradient(circle at top left, rgba(102,255,153,0.12), transparent 55%);
-        border: 1px solid var(--border-soft);
-      }}
-
-      .section.highlight {{
-        background: linear-gradient(135deg, rgba(102,255,153,0.2), rgba(10,18,10,0.95));
-        border-left: 4px solid var(--accent-primary);
-      }}
-
-      ul {{
-        margin: 14px 0 0 22px;
-      }}
-
-      li {{
-        margin-bottom: 7px;
-      }}
-
-      li::marker {{
-        color: var(--accent-secondary);
-      }}
-
-      strong {{
-        color: #ffd27f;
-        font-weight: 700;
-      }}
-
-      .label-chip {{
-        display: inline-flex;
-        align-items: center;
-        padding: 5px 14px;
-        border-radius: 18px;
-        border: 1px solid rgba(122, 232, 255, 0.35);
-        background: linear-gradient(135deg, rgba(102, 255, 153, 0.18), rgba(122, 232, 255, 0.18));
-        font-size: 0.82em;
-        letter-spacing: 0.08em;
-        color: #e8fff5;
-        margin-bottom: 8px;
-        margin-right: 8px;
-        text-transform: uppercase;
-        box-shadow: 0 0 10px rgba(122, 232, 255, 0.25);
-      }}
-
-      .header-row {{
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 24px;
-      }}
-
-      .header-text {{
-        flex: 1;
-      }}
-
       .logo-block img {{
         width: 96px;
         height: 96px;
@@ -660,7 +628,44 @@ def convert_markdown_to_html(markdown_text: str, company_name: str) -> Path:
         border: 1px solid var(--border-soft);
         background: rgba(255, 255, 255, 0.08);
       }}
-
+      .section {{
+        margin-top: 26px;
+        padding: 22px 24px;
+        border-radius: var(--radius-md);
+        background: radial-gradient(circle at top left, rgba(102,255,153,0.12), transparent 55%);
+        border: 1px solid var(--border-soft);
+      }}
+      .section.highlight {{
+        background: linear-gradient(135deg, rgba(102,255,153,0.2), rgba(10,18,10,0.95));
+        border-left: 4px solid var(--accent-primary);
+      }}
+      ul {{
+        margin: 14px 0 0 22px;
+      }}
+      li {{
+        margin-bottom: 7px;
+      }}
+      li::marker {{
+        color: var(--accent-secondary);
+      }}
+      strong {{
+        color: #ffd27f;
+        font-weight: 700;
+      }}
+      .label-chip {{
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 12px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        background: rgba(102, 255, 153, 0.14);
+        font-size: 0.85em;
+        letter-spacing: 0.05em;
+        color: var(--accent-primary);
+        margin-bottom: 6px;
+        margin-right: 8px;
+        text-transform: uppercase;
+      }}
       footer {{
         margin-top: 38px;
         padding-top: 18px;
@@ -675,20 +680,109 @@ def convert_markdown_to_html(markdown_text: str, company_name: str) -> Path:
     <div class="container">
       <div class="header-row">
         <div class="header-text">
-          <h1>{html.escape(title_line or 'Company Intelligence Report')}</h1>
-          <h2>{html.escape(subtitle_line or company_name)}</h2>
-          <p>{html.escape(metadata_line)}</p>
+          <h1>{html.escape(title or 'Company Intelligence Report')}</h1>
+          <h2>{html.escape(subtitle)}</h2>
+          <p>{html.escape(metadata)}</p>
         </div>
         {logo_html}
       </div>
-{body_sections}
+{body_content}
       <footer>Generated via EI Markdown → HTML pipeline.</footer>
     </div>
   </body>
 </html>
 """
-    return save_html_report(html_template, company_name)
+    return html_template
 
+
+def wait_for_preview_confirmation():
+    root = tk.Tk()
+    root.withdraw()
+    messagebox.showinfo(
+        "Preview ready",
+        "The report preview opened in your browser.\n"
+        "Close the tab or window when you’re done, then click OK to continue.",
+    )
+    root.destroy()
+
+
+def upload_html_to_drive(html_content: str, file_name: str, company_tag: str) -> Tuple[str, str]:
+    """Upload the generated HTML into Company Research via Drive API."""
+    service = get_drive_service()
+    folder_id = ensure_drive_folder(service)
+    media = MediaIoBaseUpload(io.BytesIO(html_content.encode("utf-8")), mimetype="text/html")
+    metadata = {"name": file_name, "parents": [folder_id]}
+    max_attempts = 3
+    for attempt in range(1, max_attempts + 1):
+        logger.info("Uploading %s to Drive (attempt %d/%d)", file_name, attempt, max_attempts)
+        try:
+            created = (
+                service.files()
+                .create(body=metadata, media_body=media, fields="id")
+                .execute()
+            )
+            logger.info("Upload succeeded, file ID %s", created["id"])
+            return created["id"], folder_id
+        except (HttpError, SocketTimeout, TimeoutError) as exc:
+            if attempt == max_attempts:
+                logger.error("Upload failed after %d attempts: %s", attempt, exc)
+                raise
+            time.sleep(1.0 + attempt * 0.5)
+    return created["id"], folder_id
+
+
+def move_html_report_local(html_path: Path, company_tag: str) -> Path:
+    COMPANY_RESEARCH_DIR.mkdir(parents=True, exist_ok=True)
+    logger.info("Moving HTML report %s into local Company Research folder", html_path.name)
+    for old_html in COMPANY_RESEARCH_DIR.glob("information_analysis_*.html"):
+        if company_tag in old_html.name:
+            old_html.unlink()
+    target = COMPANY_RESEARCH_DIR / html_path.name
+    if target.exists():
+        target.unlink()
+    shutil.move(str(html_path), str(target))
+    return target
+
+
+def clean_scripts_reports(html_path: Path) -> None:
+    """Remove the per-run HTML report file from the Scripts folder."""
+    logger.info("Cleaning temporary HTML report %s", html_path)
+    attempts = 3
+    while attempts > 0:
+        try:
+            if html_path.exists():
+                html_path.unlink()
+            break
+        except PermissionError:
+            attempts -= 1
+            time.sleep(0.3)
+        except Exception:
+            break
+
+
+def render_html_report(normalized_text: str, company_name: str) -> Tuple[str, str]:
+    """Generate the HTML string for the structured analysis."""
+    safe_name = re.sub(r"[^A-Za-z0-9_-]", "_", company_name.strip())
+    timestamp_file = datetime.now().strftime("%Y%m%d_%H%M")
+    filename = f"information_analysis_{safe_name}_{timestamp_file}.html"
+    logger.info("Rendering HTML report %s for %s", filename, company_name)
+    strong_text = convert_markdown_bold(normalized_text)
+    title_line, subtitle_line, metadata_line, logo_url, sections = parse_normalized_analysis(strong_text)
+    logo_html = ""
+    logo_url = resolve_logo_url(logo_url, subtitle_line or company_name)
+    if logo_url:
+        escaped_logo = html.escape(logo_url, quote=True)
+        alt_text = html.escape(f"{subtitle_line or company_name} logo")
+        logo_html = f'<div class="logo-block"><img src="{escaped_logo}" alt="{alt_text}" loading="lazy" /></div>'
+    html_content = build_html_from_sections(title_line, subtitle_line or company_name, metadata_line, logo_html, sections)
+    return filename, html_content
+
+
+def persist_html_to_disk(html_content: str, file_name: str) -> Path:
+    """Persist the HTML to disk when a local fallback is needed."""
+    html_path = BASE_DIR / file_name
+    html_path.write_text(html_content, encoding="utf-8")
+    return html_path
 
 def save_html_report(html_content: str, company_name: str) -> Path:
     """Persist the generated HTML to disk."""
@@ -696,102 +790,59 @@ def save_html_report(html_content: str, company_name: str) -> Path:
     timestamp = datetime.now().strftime("%Y%m%d_%H%M")
     filename = f"information_analysis_{safe_name}_{timestamp}.html"
     out_path = base_dir / filename
+    logger.info("Saving generated HTML content to %s", out_path)
     out_path.write_text(html_content, encoding="utf-8")
+    logger.info("HTML content persisted to %s", out_path)
     return out_path
 
-
-def fetch_unseen_primary(cfg: Dict[str, object]) -> Optional[Dict[str, str]]:
-    """Grab the first unseen message in the Primary inbox."""
-    mail = imaplib.IMAP4_SSL("imap.gmail.com")
-    first_uid_bytes: Optional[bytes] = None
-    revert_unseen = False
-    try:
-        mail.login(cfg["gmail_user"], cfg["gmail_app_password"])
-        status, _ = mail.select("INBOX")
-        if status != "OK":
-            raise RuntimeError("Unable to select INBOX")
-
-        search_args = _search_args(cfg, include_sender=True)
-        status, data = mail.uid("SEARCH", None, *search_args)
-        if status != "OK" or not data or not data[0]:
-            print("[INFO] No unseen message matched sender filters; retrying without them.")
-            search_args = _search_args(cfg, include_sender=False)
-            status, data = mail.uid("SEARCH", None, *search_args)
-            if status != "OK" or not data or not data[0]:
-                return None
-
-        first_uid_bytes = data[0].split()[0]
-        status, msg_data = mail.uid("FETCH", first_uid_bytes, "(RFC822)")
-        if status != "OK" or not msg_data:
-            return None
-
-        msg = email.message_from_bytes(msg_data[0][1])
-        body_text = _extract_body(msg)
-
-        if cfg.get("mark_read", True):
-            mail.uid("STORE", first_uid_bytes, "+FLAGS", "(\\Seen)")
-            revert_unseen = True
-
-        return {
-            "uid": first_uid_bytes.decode(),
-            "subject": _decode_mime_header(msg.get("Subject")),
-            "from": _decode_mime_header(msg.get("From")),
-            "body": body_text,
-        }
-    finally:
-        if revert_unseen and first_uid_bytes is not None:
-            try:
-                mail.uid("STORE", first_uid_bytes, "-FLAGS", "(\\Seen)")
-            except Exception:
-                pass
-        try:
-            mail.logout()
-        except Exception:
-            pass
 
 
 if __name__ == "__main__":
     cfg = load_config()
+    logger.info("CompanyV2 entry point reached")
 
     manual_name = prompt_for_company_name()
     if manual_name:
+        logger.info("Manual company name provided: %s", manual_name)
         try:
             manual_output = analyze_company_manually(manual_name, cfg)
         except Exception as exc:  # pylint: disable=broad-except
+            logger.error("Manual analysis failed: %s", exc)
             print("Unable to run manual analysis.")
             print(f"Details: {exc}")
         else:
             print(f"\n--- Manual Company Analysis: {manual_name} ---")
-            normalized_output = normalize_analysis_markdown(manual_output, manual_name)
+            canonical_name = extract_canonical_company_name(manual_output, manual_name)
+            logger.info("Canonical company name resolved to %s", canonical_name)
+            safe_name = sanitize_company_name(canonical_name)
+            normalized_output = normalize_analysis_markdown(manual_output, canonical_name)
             print(normalized_output)
             try:
-                md_path = save_analysis_markdown(normalized_output, manual_name)
-                print(f"\nStructured Markdown report saved at {md_path}")
-            except Exception as exc:
-                print("Failed to save Markdown report.")
-                print(f"Details: {exc}")
-            else:
+                html_filename, html_content = render_html_report(normalized_output, canonical_name)
+                preview_path = persist_html_to_disk(html_content, html_filename)
+                preview_url = preview_path.as_uri()
+                webbrowser.open_new_tab(preview_url)
+                logger.info("Preview opened in browser at %s", preview_url)
+                print(f"HTML preview opened at {preview_url}")
+                wait_for_preview_confirmation()
+                drive_id = None
                 try:
-                    html_path = convert_markdown_to_html(normalized_output, manual_name)
-                    webbrowser.open_new_tab(html_path.as_uri())
-                    print(f"HTML preview opened at {html_path}")
-                except Exception as exc:
-                    print("Failed to render HTML preview.")
-                    print(f"Details: {exc}")
+                    drive_id, _ = upload_html_to_drive(html_content, html_filename, safe_name)
+                    drive_url = f"https://drive.google.com/file/d/{drive_id}/view"
+                    logger.info("Preview uploaded to Drive as %s", drive_url)
+                    print(f"HTML uploaded to Drive at {drive_url}")
+                except (HttpError, URLError, HTTPError, SocketTimeout, TimeoutError):
+                    logger.warning("Drive upload failed; falling back to local folder.")
+                    moved_html = move_html_report_local(preview_path, safe_name)
+                    display_url = moved_html.as_uri()
+                    logger.info("Preview moved locally to %s", display_url)
+                    webbrowser.open_new_tab(display_url)
+                    print(f"HTML moved locally to {display_url}")
+                finally:
+                    clean_scripts_reports(preview_path)
+            except Exception as exc:
+                print("Failed to render HTML preview.")
+                print(f"Details: {exc}")
         sys.exit(0)
-
-    email_payload = fetch_unseen_primary(cfg)
     body = ""
 
-    if email_payload is None:
-        print("No unseen email found in Primary.")
-    else:
-        body = email_payload["body"]
-        print(f"Subject: {email_payload['subject']}")
-        print(f"From: {email_payload['from']}")
-        print("\n--- Email Body (first 400 chars) ---")
-        print(body[:400])
-        print("\n--- End ---")
-        company_info = extract_company_info(body, cfg)
-        print("\n--- AI Company Info ---")
-        print(json.dumps(company_info, indent=2))

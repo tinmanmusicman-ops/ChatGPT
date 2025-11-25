@@ -97,3 +97,7 @@ NameError: name 'append_processed' is not defined
 2025-11-23 23:19:32,720 [INFO] Searching with IMAP terms: UNSEEN SUBJECT "760-672-7323"
 2025-11-23 23:19:34,916 [INFO] Processing 1 new message(s).
 2025-11-23 23:19:35,190 [INFO] Skipping UID 17721 because body does not contain '\r\nSC' marker.
+2025-11-24 20:15:32,854 [INFO] Starting poller (max_per_run=25, unseen_only=True, mark_read=False, thread=False)
+2025-11-24 20:15:33,572 [INFO] Searching with IMAP terms: UNSEEN SUBJECT "760-672-7323"
+2025-11-24 20:16:44,382 [INFO] Processing 1 new message(s).
+2025-11-24 20:16:45,101 [INFO] Appended 1 row(s).

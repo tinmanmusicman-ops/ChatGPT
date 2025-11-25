@@ -108,3 +108,26 @@
 2025-11-23 17:24:43,980 [INFO] send_scam_notification: sent analysis reply to tim.inman.2024@gmail.com.
 2025-11-23 17:24:43,981 [INFO] Notification sent to tim.inman.2024@gmail.com about sender=noreply@findcareer.pmta.sailthru.com subject=PAYPAL: Timothy, Please Confirm Card
 2025-11-23 17:24:43,981 [INFO] Sender: noreply@findcareer.pmta.sailthru.com | Subject: Scam Fwd: PAYPAL: Timothy, Please Confirm Card | Summary: The email is likely a scam due to its unsolicited nature and suspicious links. | Action: Moved to 'Scam' (copied + deleted original).
+2025-11-24 15:08:39,774 [DEBUG] Entering fetch_unread_scam
+2025-11-24 15:08:39,774 [DEBUG] Entering load_config
+2025-11-24 15:08:39,799 [INFO] Configuration loaded successfully.
+2025-11-24 15:08:40,583 [INFO] No unread Primary emails with 'Scam' in the subject.
+2025-11-24 15:10:08,128 [DEBUG] Entering fetch_unread_scam
+2025-11-24 15:10:08,128 [DEBUG] Entering load_config
+2025-11-24 15:10:08,129 [INFO] Configuration loaded successfully.
+2025-11-24 15:10:09,053 [DEBUG] Entering decode_subject
+2025-11-24 15:10:09,055 [DEBUG] Entering strip_scam_prefix
+2025-11-24 15:10:09,056 [DEBUG] Entering extract_body
+2025-11-24 15:10:09,056 [DEBUG] Entering collect_from_blocks
+2025-11-24 15:10:09,057 [INFO] collect_from_blocks: extracted 2 sender blocks.
+2025-11-24 15:10:09,057 [DEBUG] Entering analyze_body
+2025-11-24 15:10:09,061 [DEBUG] Starting new HTTPS connection (1): api.openai.com:443
+2025-11-24 15:10:13,134 [DEBUG] https://api.openai.com:443 "POST /v1/chat/completions HTTP/1.1" 200 None
+2025-11-24 15:10:13,139 [INFO] analyze_body: received response for sender noreply@findcareer.pmta.sailthru.com.
+2025-11-24 15:10:13,140 [INFO] Evaluation -> sender=noreply@findcareer.pmta.sailthru.com subject=GOOGLE PAY \U0001f4b3 Balance: $500 is_scam=True confidence=0.9 summary=The email is likely a scam attempting to phish for personal information.
+2025-11-24 15:10:13,759 [DEBUG] Entering send_scam_notification
+2025-11-24 15:10:13,772 [DEBUG] Entering clean_header_value
+2025-11-24 15:10:13,772 [DEBUG] Entering clean_header_value
+2025-11-24 15:10:15,630 [INFO] send_scam_notification: sent analysis reply to tim.inman.2024@gmail.com.
+2025-11-24 15:10:15,630 [INFO] Notification sent to tim.inman.2024@gmail.com about sender=noreply@findcareer.pmta.sailthru.com subject=GOOGLE PAY \U0001f4b3 Balance: $500
+2025-11-24 15:10:15,630 [INFO] Sender: noreply@findcareer.pmta.sailthru.com | Subject: Scam Fwd: GOOGLE PAY \U0001f4b3 Balance: $500 | Summary: The email is likely a scam attempting to phish for personal information. | Action: Moved to 'Scam' (copied + deleted original).
