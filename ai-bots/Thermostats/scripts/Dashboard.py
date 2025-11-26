@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import subprocess
 from pathlib import Path
 from typing import Iterable, List, Optional, Tuple
 import json
@@ -241,6 +242,19 @@ def push_dashboard_to_drive(html_path: Path) -> str:
         target_name,
     )
     return file_id
+
+
+def git_autopush(html_path: Path) -> None:
+    """Stage, commit, and push the generated dashboard copy."""
+    repo_root = Path(__file__).resolve().parents[2]
+    html_rel = html_path.relative_to(repo_root)
+    subprocess.run(["git", "add", str(html_rel)], cwd=repo_root, check=True)
+    subprocess.run(
+        ["git", "commit", "-m", f"Auto-update: {html_rel.name}", "--allow-empty"],
+        cwd=repo_root,
+        check=True,
+    )
+    subprocess.run(["git", "push", "origin", "develop"], cwd=repo_root, check=True)
 
 
 def fetch_sheet_data() -> Tuple[List[str], List[str], List[List[str]]]:
@@ -521,8 +535,9 @@ def main() -> None:
     try:
         public_copy.write_bytes(target_path.read_bytes())
         logger.info("Wrote public copy to %s", public_copy)
+        git_autopush(public_copy)
     except Exception as exc:
-        logger.warning("Failed to write public copy %s (%s)", public_copy, exc)
+        logger.warning("Failed to write or push public copy %s (%s)", public_copy, exc)
     print(f"Dashboard generated at: {target_path.resolve()}")
     logger.info("Dashboard generation complete at %s", target_path.resolve())
 
