@@ -1,4 +1,5 @@
 {
+  "type": "service_account",
   "openai_api_key": "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",
   "type": "service_account",
   "project_id": "gpt-sheets-477721",
