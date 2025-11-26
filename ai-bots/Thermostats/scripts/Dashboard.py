@@ -43,6 +43,17 @@ TOKEN_PATH = AI_BOTS_ROOT / "shared" / "Tokens.json"
 TEMP_DIR = AI_BOTS_ROOT / "Temp"
 DRIVE_FOLDER_NAME = "Thermostat Dashboards"
 
+
+def _load_shared_config() -> dict:
+    if not GLOBAL_CONFIG_PATH.exists():
+        raise FileNotFoundError(f"Missing shared config at {GLOBAL_CONFIG_PATH}")
+    payload = json.loads(GLOBAL_CONFIG_PATH.read_text(encoding="utf-8"))
+    return payload
+
+
+GLOBAL_SHARED_CONFIG = _load_shared_config()
+GIT_TEST_FLAG = bool(GLOBAL_SHARED_CONFIG.get("GitTestFlag", True))
+
 base_dir = Path(__file__).resolve().parent
 os.chdir(base_dir)
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -92,9 +103,7 @@ CHART_METRIC_INDEX = 1  # Fallback index; overridden to "Current Temperature" if
 
 
 def _load_credentials() -> Credentials:
-    if not GLOBAL_CONFIG_PATH.exists():
-        raise FileNotFoundError(f"Missing shared config at {GLOBAL_CONFIG_PATH}")
-    info = json.loads(GLOBAL_CONFIG_PATH.read_text(encoding="utf-8"))
+    info = GLOBAL_SHARED_CONFIG
     logger.info("Loaded service account credentials from %s", GLOBAL_CONFIG_PATH)
     creds = service_account.Credentials.from_service_account_info(info, scopes=SCOPES)
     return creds
@@ -246,6 +255,9 @@ def push_dashboard_to_drive(html_path: Path) -> str:
 
 def git_autopush(html_path: Path) -> None:
     """Stage, commit, and push the generated dashboard copy."""
+    if not GIT_TEST_FLAG:
+        logger.info("Skipping git autopush because GitTestFlag is false")
+        return
     repo_root = Path(__file__).resolve().parents[2]
     html_rel = html_path.relative_to(repo_root)
     subprocess.run(["git", "add", str(html_rel)], cwd=repo_root, check=True)
@@ -533,8 +545,10 @@ def main() -> None:
     public_dir.mkdir(parents=True, exist_ok=True)
     public_copy = public_dir / "dashboard_public.html"
     try:
+        # Keep a human-readable copy alongside the bot so it can be served or published separately.
         public_copy.write_bytes(target_path.read_bytes())
         logger.info("Wrote public copy to %s", public_copy)
+        # Automatically stage/commit/push the public HTML so repo and remote stay in sync with each generation.
         git_autopush(public_copy)
     except Exception as exc:
         logger.warning("Failed to write or push public copy %s (%s)", public_copy, exc)
