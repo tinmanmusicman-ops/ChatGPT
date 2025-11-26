@@ -514,6 +514,15 @@ def main() -> None:
     TEMP_DIR.mkdir(parents=True, exist_ok=True)
     target_path = TEMP_DIR / "dashboard.html"
     build_dashboard_html(headers, latest_row, history_rows, target_path)
+    # Also save a copy in the project folder for external publishing.
+    public_dir = base_dir.parent / "Web"
+    public_dir.mkdir(parents=True, exist_ok=True)
+    public_copy = public_dir / "dashboard_public.html"
+    try:
+        public_copy.write_bytes(target_path.read_bytes())
+        logger.info("Wrote public copy to %s", public_copy)
+    except Exception as exc:
+        logger.warning("Failed to write public copy %s (%s)", public_copy, exc)
     print(f"Dashboard generated at: {target_path.resolve()}")
     logger.info("Dashboard generation complete at %s", target_path.resolve())
 
