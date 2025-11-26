@@ -15,6 +15,7 @@ import imaplib  # IMAP client using Gmail UID commands
 import json
 import re
 import sys
+import logging
 from contextlib import suppress
 from datetime import datetime, timedelta
 from email.header import decode_header, make_header  # Properly decode MIME-encoded subjects
@@ -24,9 +25,19 @@ from typing import Any, Dict, Optional, Tuple
 import gspread  # For Google Sheets logging
 import pytz  # For timezone-aware timestamps
 import requests  # For Seam API calls
+from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaInMemoryUpload
 
 SA_KEY_PATH = Path(__file__).resolve().parents[2] / "shared" / "Global.json"
 SHARED_FIELDS = {"gmail_user", "gmail_app_password", "spreadsheet_id"}
+TOKEN_PATH = Path(__file__).resolve().parents[2] / "shared" / "Tokens.json"
+DRIVE_SCOPES = ["https://www.googleapis.com/auth/drive.file"]
+DRIVE_FOLDER_NAME = "Termostat Dashboards"
+SNAPSHOT_FILENAME = "thermostat_snapshot.html"
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
 
 def _load_shared_values() -> Dict[str, Any]:
@@ -566,6 +577,171 @@ def extract_temp_payload(response: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
+def _load_drive_credentials() -> Credentials:
+    """Load Drive OAuth credentials from shared Tokens.json (overwrites the same file name each run)."""
+    if not TOKEN_PATH.exists():
+        raise FileNotFoundError(f"Missing OAuth token file at {TOKEN_PATH}")
+    token_info = json.loads(TOKEN_PATH.read_text(encoding="utf-8"))
+    creds = Credentials.from_authorized_user_info(token_info, scopes=DRIVE_SCOPES)
+    if not creds.valid:
+        if creds.expired and creds.refresh_token:
+            logger.info("Refreshing Drive access token")
+            creds.refresh(Request())
+            TOKEN_PATH.write_text(creds.to_json(), encoding="utf-8")
+        else:
+            raise FileNotFoundError(
+                f"Token at {TOKEN_PATH} is invalid/expired and has no refresh token"
+            )
+    return creds
+
+
+def _drive_service():
+    creds = _load_drive_credentials()
+    return build("drive", "v3", credentials=creds)
+
+
+def _get_or_create_drive_folder(service, folder_name: str) -> str:
+    escaped = folder_name.replace("'", "\\'")
+    query = (
+        f"name = '{escaped}' and "
+        "mimeType = 'application/vnd.google-apps.folder' and trashed = false"
+    )
+    resp = (
+        service.files()
+        .list(q=query, spaces="drive", fields="files(id,name)", pageSize=5)
+        .execute()
+    )
+    files = resp.get("files", [])
+    if files:
+        return files[0]["id"]
+    metadata = {"name": folder_name, "mimeType": "application/vnd.google-apps.folder"}
+    created = service.files().create(body=metadata, fields="id").execute()
+    return created["id"]
+
+
+def upload_snapshot_html(html: str, filename: str = SNAPSHOT_FILENAME) -> Optional[str]:
+    """Upload/replace the snapshot HTML into the Drive folder (always overwrite same name)."""
+    service = _drive_service()
+    folder_id = _get_or_create_drive_folder(service, DRIVE_FOLDER_NAME)
+    escaped = filename.replace("'", "\\'")
+    query = f"'{folder_id}' in parents and name = '{escaped}' and trashed = false"
+    existing = (
+        service.files()
+        .list(q=query, spaces="drive", fields="files(id,name)", pageSize=1)
+        .execute()
+        .get("files", [])
+    )
+    media = MediaInMemoryUpload(html.encode("utf-8"), mimetype="text/html", resumable=False)
+    body = {"name": filename, "parents": [folder_id]}
+    if existing:
+        file_id = existing[0]["id"]
+        updated = (
+            service.files()
+            .update(fileId=file_id, media_body=media, fields="id,name,webViewLink")
+            .execute()
+        )
+        logger.info("Replaced snapshot on Drive (%s)", updated.get("id"))
+        return updated.get("webViewLink") or updated.get("id")
+    created = (
+        service.files()
+        .create(body=body, media_body=media, fields="id,name,webViewLink")
+        .execute()
+    )
+    logger.info("Uploaded new snapshot to Drive (%s)", created.get("id"))
+    return created.get("webViewLink") or created.get("id")
+
+
+def build_snapshot_html(
+    reading: Dict[str, Any],
+    payload: Dict[str, Any],
+    entry_type: str,
+    studio: Optional[int],
+    expiration_local: str,
+    tz_name: str,
+) -> str:
+    props = payload.get("properties") or payload.get("device", {}).get("properties") or payload.get("device", {})
+    climate_props = props.get("current_climate_setting") or {}
+    climate = (
+        climate_props.get("hvac_mode_setting")
+        or props.get("hvac_mode_setting")
+        or props.get("mode")
+        or props.get("hvac_mode")
+        or reading.get("mode")
+        or ""
+    )
+    fan = (
+        climate_props.get("fan_mode_setting")
+        or props.get("fan_mode_setting")
+        or props.get("fan_mode")
+        or ""
+    )
+    equipment = props.get("equipment_status") or ""
+    ts_local = now_local_iso(tz_name)
+    unit = reading.get("unit") or ""
+    current = reading.get("current_temperature", "")
+    target = reading.get("target_temperature", "")
+    rows = [
+        ("Timestamp", ts_local),
+        ("Type", entry_type),
+        ("Current Temperature", f"{current} {unit}".strip()),
+        ("Target Temperature", f"{target} {unit}".strip() if target else ""),
+        ("Climate Setting", climate),
+        ("Fan Setting", fan),
+        ("Equipment Status", equipment),
+        ("Studio", studio or ""),
+        ("Request Expires", expiration_local),
+    ]
+    items_html = "".join(
+        f'<div class="row"><span class="label">{lbl}</span><span class="value">{val}</span></div>'
+        for lbl, val in rows
+    )
+    return f"""<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Thermostat Snapshot</title>
+  <style>
+    body {{
+      background: #0b0c10;
+      color: #e8f1ff;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 24px;
+    }}
+    .card {{
+      max-width: 520px;
+      margin: 0 auto;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 18px;
+      background: rgba(255,255,255,0.03);
+    }}
+    h1 {{
+      margin-top: 0;
+      font-size: 24px;
+    }}
+    .row {{
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }}
+    .row:last-child {{ border-bottom: none; }}
+    .label {{ opacity: 0.75; }}
+    .value {{ font-weight: 600; }}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Thermostat Snapshot</h1>
+    {items_html}
+    <div style="margin-top:10px; font-size:12px; opacity:0.6;">Latest reading uploaded automatically.</div>
+  </div>
+</body>
+</html>
+"""
+
+
 def main() -> None:
     args = parse_args()
     # Step 1: read config (API keys, Gmail creds, Google Sheet info, time zones).
@@ -781,6 +957,22 @@ def main() -> None:
         )
     except Exception as exc:
         print(f"[sheet] Failed to log telemetry: {exc}", file=sys.stderr)
+
+    # Push a fresh snapshot to Drive (overwrite same file each run).
+    try:
+        snapshot_html = build_snapshot_html(
+            reading=reading,
+            payload=payload,
+            entry_type=entry_type,
+            studio=request_studio,
+            expiration_local=expiration_local,
+            tz_name=cfg.get("timezone", "America/Los_Angeles"),
+        )
+        link = upload_snapshot_html(snapshot_html, filename=SNAPSHOT_FILENAME)
+        if link:
+            print(f"[drive] Snapshot uploaded to {link}")
+    except Exception as exc:
+        print(f"[drive] Failed to upload snapshot: {exc}", file=sys.stderr)
 
 
 if __name__ == "__main__":

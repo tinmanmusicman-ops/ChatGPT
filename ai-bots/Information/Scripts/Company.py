@@ -28,9 +28,6 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
 
 from openai import OpenAI
-import sys
-sys.path.append(str(Path(__file__).resolve().parents[1]))
-from Tools.scripts.PushFilesFromHope import push_content_to_drive
 
 SECTION_TITLES = [
     "Company Overview",
@@ -71,12 +68,14 @@ def emphasize_key_labels(text: str) -> str:
 BASE_DIR = Path(__file__).resolve().parent
 os.chdir(BASE_DIR)
 base_dir = BASE_DIR
+sys.path.append(str(base_dir.parent.parent))
+from shared.ui_settings import load_ui_settings, get_theme_palette
+
 C_USE_ROOT_FOLDER = os.getenv("USE_ROOT_DRIVE_FOLDER", "0") in ("1", "True", "true")
 COMPANY_RESEARCH_DIR = Path.home() / "Google Drive" / "Company Research"
 DRIVE_SCOPES = ["https://www.googleapis.com/auth/drive.file"]
 DRIVE_SERVICE: Optional[object] = None
 DRIVE_FOLDER_ID: Optional[str] = None
-COMPANY_RESEARCH_DIR = Path.home() / "Google Drive" / "Company Research"
 TOKEN_CLIENT_SECRETS = base_dir.parent.parent / "shared" / "tokens.json"
 TOKENS_PATH = base_dir.parent.parent / "shared" / "oauth_tokens.json"
 logging.basicConfig(
@@ -145,33 +144,52 @@ def prompt_for_company_name() -> Optional[str]:
     """Ask for a manual company name before checking email."""
     result: dict[str, Optional[str]] = {"value": None}
 
+    settings = load_ui_settings()
+    theme = get_theme_palette(settings)
+    font_size = int(settings.default_font_size * settings.font_scale)
+    control_pad = 18 if settings.force_large_controls else 10
+
     root = tk.Tk()
     root.title("Manual Company Analysis")
-    root.resizable(False, False)
-    width, height = 420, 140
-    root.withdraw()
+    root.overrideredirect(True)
+    width, height = 380, 220
     root.geometry(f"{width}x{height}")
     root.update_idletasks()
     screen_width = root.winfo_screenwidth()
     screen_height = root.winfo_screenheight()
-    x = int((screen_width - width) / 2)
-    y = int((screen_height - height) / 2)
+    x = (screen_width - width) // 2
+    y = (screen_height - height) // 2
     root.geometry(f"{width}x{height}+{x}+{y}")
-    root.deiconify()
     root.attributes("-topmost", True)
-    root.configure(bg="#000000")
+    root.configure(bg=theme["bg"])
 
     style = ttk.Style(root)
-    style.theme_use("clam")
-    style.configure("Dark.TFrame", background="#000000")
-    style.configure("Dark.TLabel", background="#000000", foreground="#ffffff")
-    style.configure("Dark.TEntry", fieldbackground="#1a1a1a", foreground="#ffffff", background="#000000")
-    style.configure("Dark.TButton", background="#1a1a1a", foreground="#ffffff")
-    style.map(
-        "Dark.TButton",
-        background=[("active", "#2f2f2f"), ("pressed", "#2f2f2f")],
-        foreground=[("disabled", "#bbbbbb")],
+    style.configure("Custom.TFrame", background=theme["bg"])
+    style.configure("Border.TFrame", background=theme["bg"], relief="ridge", borderwidth=2)
+    style.configure("Custom.TLabel", background=theme["bg"], foreground=theme["fg"], font=("Segoe UI", font_size + 2, "bold"))
+    style.configure(
+        "Custom.TEntry",
+        fieldbackground=theme["entry_bg"],
+        background=theme["entry_bg"],
+        foreground=theme["fg"],
+        font=("Segoe UI", font_size),
     )
+    style.configure("Custom.TButton", background=theme["button_bg"], foreground=theme["fg"], font=("Segoe UI", font_size))
+
+    header = ttk.Frame(root, style="Custom.TFrame")
+    header.pack(fill="x", padx=0, pady=(0, 4))
+    title = ttk.Label(header, text="Manual Company Analysis", style="Custom.TLabel", font=("Segoe UI", 11, "bold"))
+    title.pack(side="left", padx=12, pady=6)
+
+    def start_drag(event):
+        root._drag_x = event.x
+        root._drag_y = event.y
+
+    def do_drag(event):
+        root.geometry(f"+{root.winfo_x() + event.x - root._drag_x}+{root.winfo_y() + event.y - root._drag_y}")
+
+    header.bind("<ButtonPress-1>", start_drag)
+    header.bind("<B1-Motion>", do_drag)
 
     def close(value: Optional[str] = None) -> None:
         result["value"] = value
@@ -181,25 +199,40 @@ def prompt_for_company_name() -> Optional[str]:
         name = entry.get().strip()
         close(name if name else None)
 
-    frame = ttk.Frame(root, padding="12", style="Dark.TFrame")
+    frame = ttk.Frame(root, padding=control_pad, style="Border.TFrame")
     frame.pack(fill="both", expand=True)
 
-    label = ttk.Label(frame, text="Enter company name (leave blank to fetch email):", style="Dark.TLabel")
+    label = ttk.Label(frame, text="Enter company name", style="Custom.TLabel")
     label.pack(anchor="w")
 
-    entry = ttk.Entry(frame, style="Dark.TEntry")
-    entry.pack(fill="x", pady=(6, 12))
+    entry = ttk.Entry(
+        frame,
+        style="Custom.TEntry",
+    )
+    entry.pack(fill="x", pady=(control_pad, control_pad))
     entry.focus()
+    entry.bind("<Return>", lambda event: on_analyze())
 
-    buttons = ttk.Frame(frame, style="Dark.TFrame")
-    buttons.pack(fill="x")
+    buttons = ttk.Frame(frame, style="Custom.TFrame")
+    buttons.pack(fill="x", pady=(control_pad, 0))
 
-    analyze_btn = ttk.Button(buttons, text="Analyze", command=on_analyze, style="Dark.TButton")
-    analyze_btn.pack(side="right", padx=(4, 0))
+    cancel_btn = ttk.Button(
+        buttons,
+        text="Cancel",
+        command=lambda: close(None),
+        style="Custom.TButton",
+    )
+    cancel_btn.pack(anchor="e", padx=control_pad, pady=(0, control_pad))
 
-    cancel_btn = ttk.Button(buttons, text="Cancel", command=lambda: close(None), style="Dark.TButton")
-    cancel_btn.pack(side="right")
+    def center_window() -> None:
+        root.update_idletasks()
+        w = root.winfo_width()
+        h = root.winfo_height()
+        sw = root.winfo_screenwidth()
+        sh = root.winfo_screenheight()
+        root.geometry(f"+{(sw - w)//2}+{(sh - h)//2}")
 
+    center_window()
     root.protocol("WM_DELETE_WINDOW", lambda: close(None))
     root.mainloop()
     return result["value"]
@@ -782,26 +815,10 @@ def render_html_report(normalized_text: str, company_name: str) -> Tuple[str, st
 
 
 def persist_html_to_disk(html_content: str, file_name: str) -> Path:
-    """Persist the HTML to disk when necessary for preview or fallback."""
+    """Persist the HTML to disk when a local fallback is needed."""
     html_path = BASE_DIR / file_name
     html_path.write_text(html_content, encoding="utf-8")
     return html_path
-
-
-def upload_html_file(html_path: Path) -> str:
-    """Upload an existing HTML file into the ChatGPT Drive folder and return the file URL."""
-    if not html_path.exists():
-        raise FileNotFoundError(f"HTML report missing at {html_path}")
-    html_bytes = html_path.read_bytes()
-    file_id = push_content_to_drive(
-        folder_name="ChatGPT",
-        filename=html_path.name,
-        content=html_bytes,
-        mime_type="text/html",
-    )
-    drive_url = f"https://drive.google.com/file/d/{file_id}/view"
-    logger.info("Uploaded %s to Drive as %s", html_path.name, drive_url)
-    return drive_url
 
 def save_html_report(html_content: str, company_name: str) -> Path:
     """Persist the generated HTML to disk."""
@@ -844,11 +861,14 @@ if __name__ == "__main__":
                 logger.info("Preview opened in browser at %s", preview_url)
                 print(f"HTML preview opened at {preview_url}")
                 wait_for_preview_confirmation()
+                drive_id = None
                 try:
-                    drive_url = upload_html_file(preview_path)
-                    print(f"Report uploaded to Drive at {drive_url}")
-                except (HttpError, URLError, HTTPError, SocketTimeout, TimeoutError) as exc:
-                    logger.warning("Drive upload failed (%s); falling back to local folder.", exc)
+                    drive_id, _ = upload_html_to_drive(html_content, html_filename, safe_name)
+                    drive_url = f"https://drive.google.com/file/d/{drive_id}/view"
+                    logger.info("Preview uploaded to Drive as %s", drive_url)
+                    print(f"HTML uploaded to Drive at {drive_url}")
+                except (HttpError, URLError, HTTPError, SocketTimeout, TimeoutError):
+                    logger.warning("Drive upload failed; falling back to local folder.")
                     moved_html = move_html_report_local(preview_path, safe_name)
                     display_url = moved_html.as_uri()
                     logger.info("Preview moved locally to %s", display_url)

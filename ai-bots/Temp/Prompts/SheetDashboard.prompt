@@ -1,0 +1,66 @@
+You are updating my existing ai-bots project to add a simple, visually clear HTML dashboard powered by data from a Google Sheet. This is to demo live-ish metrics on Friday.
+
+Goal:
+Build a small Python + HTML pair where:
+- Python reads the latest data from a Google Sheet.
+- Generates/updates a local HTML file called dashboard.html.
+- The HTML shows:
+  - A “current snapshot” section with the latest row values.
+  - A button that, when clicked, reveals a simple history chart (e.g., last N rows).
+
+Important project conventions:
+- Use this standard header at the top of the Python file:
+
+  from pathlib import Path
+  from typing import Iterable, List, Set, Tuple
+  import os
+
+  base_dir = Path(__file__).resolve().parent
+  os.chdir(base_dir)
+
+- Assume this new script will live inside my existing ai-bots structure alongside other tools (like the Drive helpers).
+- Do NOT hard-code absolute paths like C:\… in the code. Use base_dir and relatives.
+- Keep the code simple and focused on “blocks fit and it works.” No over-engineering.
+
+Your tasks:
+
+1) Create a new Python script:
+   - Name: sheet_dashboard.py
+   - Location: same folder as my other tools/scripts (where you’ve been working with Drive).
+   - Responsibilities:
+     - Read configuration for:
+       - GOOGLE_SHEET_ID (string)
+       - DATA_RANGE (e.g., "Sheet1!A1:E")
+     - For this pass, you can declare these as module-level constants at the top with a clear TODO to later move into global.json / InstallDor.
+     - Use the Google Sheets API to:
+       - Authenticate using the same credentials / token pattern we’re already using for Drive in PushFilesFromHope.py (shared credentials.json + tokens.json).
+       - Fetch rows from the configured range.
+       - Identify the “latest row” (e.g., last non-empty row).
+       - Build a small in-memory structure:
+         - latest_row: list[str]
+         - headers: list[str] (from first row)
+         - history_rows: last N rows (e.g., last 20) with headers.
+
+2) Generate dashboard.html:
+   - Add build_dashboard_html(headers, latest_row, history_rows, output_path: Path) -> None
+   - Write HTML to base_dir / "dashboard.html"
+   - Dark mode, high contrast, large fonts.
+   - Show snapshot cards + button to reveal Chart.js history graph.
+   - Embed data as JSON in a <script> block.
+
+3) Main flow:
+   if __name__ == "__main__":
+       main()
+
+   main() should:
+     - fetch data
+     - build dashboard
+     - print final file path
+
+Constraints:
+- No over-engineering.
+- POC focus.
+- Works end-to-end.
+
+Deliverable:
+- Working sheet_dashboard.py + dashboard.html generator.

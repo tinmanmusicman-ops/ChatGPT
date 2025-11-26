@@ -1,8 +1,8 @@
 {
-  "subject": "AC5 40",
-  "studio": 5,
-  "zone": "zone2",
+  "subject": "AC11 50",
+  "studio": 11,
+  "zone": "zone3",
   "thermostat_id": "6c89f5f4-568b-44ff-b585-10132bd7e9e9",
-  "expires_at": "2025-11-24T08:00:47.411782Z",
-  "timeout_minutes": 40.0
+  "expires_at": "2025-11-26T07:00:05.768244Z",
+  "timeout_minutes": 50.0
 }

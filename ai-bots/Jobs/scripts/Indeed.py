@@ -1,6 +1,6 @@
 from pathlib import Path
 from typing import Iterable, List, Set, Tuple
-import os, json, imaplib, email, inspect, re, time, logging
+import os, json, imaplib, email, inspect, re, time, logging, sys
 from email.header import decode_header
 from email.utils import parseaddr
 from datetime import datetime
@@ -9,6 +9,13 @@ import time
 imaplib.Debug = 1
 base_dir = Path(__file__).resolve().parent
 os.chdir(base_dir)
+HOPE_OUTBOX_DIR = base_dir / "ChatGPT_outbox"
+sys.path.append(str(base_dir.parent.parent))
+from Tools.scripts.PushFilesFromHope import (
+    get_drive_service,
+    get_or_create_drive_folder,
+    upload_or_replace_file,
+)
 
 SHARED_CONFIG_PATH = base_dir.parent.parent / "shared" / "Global.json"
 PROJECT_CONFIG_PATH = base_dir.parent / "bot-assets" / "config.json"
@@ -670,7 +677,39 @@ def _create_ttt_comment(ws, cfg, row_number, col_idx, note_text):
         body=body,
         fields="id",
     ).execute()
-    print(f"[DEBUG] Created Drive comment {result.get('id')} for row {row_number} col {col_idx+1}")
+        print(f"[DEBUG] Created Drive comment {result.get('id')} for row {row_number} col {col_idx+1}")
+
+
+def _guess_mime_type(path: Path) -> str:
+    ext = path.suffix.lower()
+    return {
+        ".html": "text/html",
+        ".json": "application/json",
+        ".txt": "text/plain",
+        ".md": "text/markdown",
+    }.get(ext, "application/octet-stream")
+
+
+def push_files_from_hope_outbox() -> None:
+    """Move files from ChatGPT_outbox into the ChatGPT Drive folder with versioning."""
+    HOPE_OUTBOX_DIR.mkdir(parents=True, exist_ok=True)
+    service = get_drive_service()
+    folder_id = get_or_create_drive_folder(service, "ChatGPT")
+    files = sorted(f for f in HOPE_OUTBOX_DIR.iterdir() if f.is_file())
+    if not files:
+        print("[INFO] No files found in ChatGPT_outbox.")
+        return
+    for path in files:
+        mime_type = _guess_mime_type(path)
+        file_id = upload_or_replace_file(
+            service,
+            folder_id,
+            path.name,
+            path.read_bytes(),
+            mime_type,
+        )
+        drive_url = f"https://drive.google.com/file/d/{file_id}/view"
+        print(f"[INFO] Pushed {path.name} -> {drive_url}")
 
 
 def _get_existing_sheet_urls(ws):
@@ -965,4 +1004,5 @@ def main():
     print(f"\n[INFO] Run finished. Processed {processed_count} email(s).")
 
 if __name__=="__main__":
+    push_files_from_hope_outbox()
     main()

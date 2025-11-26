@@ -13,5 +13,14 @@
   "universe_domain": "googleapis.com",
   "gmail_user": "tinmanmusicman@gmail.com",
   "gmail_app_password": "jwhk piox dqnt jxqc",
-  "spreadsheet_id": "1IYrpGlyCSIilIEyRA70Uq2iUofl-sPA94ygH9ZL-2ag"
+  "spreadsheet_id": "1IYrpGlyCSIilIEyRA70Uq2iUofl-sPA94ygH9ZL-2ag",
+  "ui": {
+    "visual_profile": "low_vision",
+    "font_scale": 1.4,
+    "default_font_size": 14,
+    "high_contrast": true,
+    "theme": "crt_green",
+    "force_large_controls": true
+  },
+  "InstallDir": "C:\\ChatGPT"
 }
