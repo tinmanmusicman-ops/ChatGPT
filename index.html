@@ -63,11 +63,9 @@
       }
       #history-chart {
         display: none;
-        width: 100% !important;
-        height: 100% !important;
-      }
-      .chart-wrap {
-        height: 420px;
+        margin-top: 24px;
+        width: 100%;
+        height: 320px;
       }
       .note {
         margin-top: 12px;
@@ -129,9 +127,7 @@
       </div>
       <div class="history-panel">
         <button id="toggle-history">Show History Chart</button>
-        <div class="chart-wrap">
-          <canvas id="history-chart"></canvas>
-        </div>
+        <canvas id="history-chart"></canvas>
         <div class="note">Data source: Google Sheet (last updated when this page was generated).</div>
       </div>
     </div>
@@ -159,13 +155,12 @@
               },
               options: {
                 responsive: true,
-                maintainAspectRatio: true,
-                animation: false,
+                maintainAspectRatio: false,
                 scales: {
                   y: {
                     beginAtZero: false,
-                    min: 55,
-                    max: 90,
+                    min: 50,
+                    max: 100,
                     ticks: {
                       color: "#f4f6ff",
                     },
@@ -174,15 +169,10 @@
                     },
                   },
                   x: {
-
                     ticks: {
                       color: "#f4f6ff",
-                      maxRotation: 0,
-                      minRotation: 90,
-                      color: "#f4f6ff"
                     },
                     grid: {
-                      
                       color: "rgba(255,255,255,0.08)",
                     },
                   },
