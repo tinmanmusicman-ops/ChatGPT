@@ -2,186 +2,85 @@
 <html>
 <head>
   <meta charset="UTF-8" />
-  <title>Live Temperature Dashboard</title>
+  <title>The Little Engine That Did</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
       margin: 0;
-      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      padding: 0;
+      background: linear-gradient(135deg, #1a1f2b, #2a3142);
       color: #f4f6ff;
       font-family: "Segoe UI", Arial, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      text-align: center;
     }
 
-    header {
-      padding: 30px 40px;
-      background: rgba(0, 0, 0, 0.3);
-      backdrop-filter: blur(6px);
-      border-bottom: 1px solid rgba(255,255,255,0.08);
+    .container {
+      background: rgba(0,0,0,0.55);
+      padding: 50px 40px;
+      border-radius: 18px;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+      border: 1px solid rgba(255,255,255,0.08);
+      max-width: 600px;
     }
 
     h1 {
       margin: 0;
-      font-size: 28px;
-      font-weight: 600;
-      letter-spacing: 0.5px;
+      font-size: 32px;
+      letter-spacing: 1px;
     }
 
     .subtitle {
-      margin-top: 6px;
-      color: #9fb3c8;
+      margin-top: 10px;
       font-size: 14px;
+      color: #9fb3c8;
     }
 
-    main {
-      padding: 40px;
-      display: flex;
-      flex-direction: column;
-      gap: 30px;
+    .link-box {
+      margin-top: 40px;
     }
 
-    .card {
-      background: rgba(0,0,0,0.45);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 14px;
-      padding: 24px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 20px;
-      margin-top: 15px;
-    }
-
-    .metric {
-      background: rgba(25,25,35,0.7);
-      padding: 16px;
-      border-radius: 10px;
-      border: 1px solid rgba(255,255,255,0.05);
-    }
-
-    .metric-label {
-      font-size: 13px;
-      color: #a9b7c6;
-      margin-bottom: 6px;
-    }
-
-    .metric-value {
-      font-size: 22px;
-      font-weight: 600;
-      color: #4fd1c5;
-    }
-
-    .chart-wrap {
-      height: 420px;
-      margin-top: 20px;
-      display: none;
-    }
-
-    button {
+    a {
+      display: inline-block;
       background: #4fd1c5;
       color: #062925;
-      border: none;
-      padding: 12px 18px;
+      text-decoration: none;
+      padding: 14px 22px;
       border-radius: 30px;
-      font-size: 14px;
-      cursor: pointer;
+      font-weight: 600;
       transition: 0.2s ease;
     }
 
-    button:hover {
+    a:hover {
       background: #7fe3d7;
     }
 
     footer {
-      padding: 20px 40px;
+      margin-top: 30px;
       font-size: 12px;
       color: #93a4b6;
-      text-align: center;
     }
   </style>
 </head>
 <body>
 
-<header>
-  <h1>Live Temperature Dashboard</h1>
-  <div class="subtitle">Real-time snapshot & historical trend view</div>
-</header>
-
-<main>
-
-  <div class="card">
-    <h2>Current Snapshot</h2>
-    <div class="grid">
-      <div class="metric">
-        <div class="metric-label">Temperature</div>
-        <div class="metric-value">72°F</div>
-      </div>
-      <div class="metric">
-        <div class="metric-label">Humidity</div>
-        <div class="metric-value">41%</div>
-      </div>
-      <div class="metric">
-        <div class="metric-label">System Status</div>
-        <div class="metric-value">Normal</div>
-      </div>
-    </div>
+<div class="container">
+  <h1>The Little Engine That Did</h1>
+  <div class="subtitle">
+    A humble beginning for something powerful and evolving.
   </div>
 
-  <div class="card">
-    <h2>History</h2>
-    <button onclick="toggleChart()">Show History Chart</button>
-
-    <div class="chart-wrap" id="chartArea">
-      <canvas id="historyChart"></canvas>
-    </div>
+  <div class="link-box">
+    <a href="dashboard_public.html">View Live Dashboard</a>
   </div>
 
-</main>
-
-<footer>
-  Secure local processing • Static presentation only • No sensitive data exposed
-</footer>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-let chartVisible = false;
-
-function toggleChart() {
-  chartVisible = !chartVisible;
-  const area = document.getElementById("chartArea");
-  area.style.display = chartVisible ? "block" : "none";
-
-  if (chartVisible && !window.tempChart) {
-    const ctx = document.getElementById('historyChart').getContext('2d');
-    window.tempChart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: ["10:00","11:00","12:00","13:00","14:00","15:00"],
-        datasets: [{
-          label: "Temperature °F",
-          data: [70,71,72,72,73,72],
-          borderColor: "#4fd1c5",
-          backgroundColor: "rgba(79,209,197,0.2)",
-          tension: 0.3,
-          fill: true
-        }]
-      },
-      options: {
-        maintainAspectRatio: false,
-        animation: false,
-        scales: {
-          y: {
-            min: 60,
-            max: 90
-          }
-        }
-      }
-    });
-  }
-}
-</script>
+  <footer>
+    Quiet progress • Purposeful design • Built to grow
+  </footer>
+</div>
 
 </body>
 </html>
