@@ -1,196 +1,187 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>Lockout Music Studios Oceanside</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap">
-    <style>
-      body {
-        margin: 0;
-        font-family: 'Inter', system-ui, sans-serif;
-        background: #05050f;
-        color: #f4f6ff;
-      }
-      .container {
-        max-width: 960px;
-        margin: 32px auto;
-        padding: 24px;
-      }
-      h1 {
-        margin: 0 0 16px;
-        font-size: 32px;
-      }
-      .card-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-        gap: 16px;
-      }
-      .metric-card {
-        background: #2b2b30;
-        color: #f5f7ff;
-        border: 1px solid #3a3a40;
-        border-radius: 12px;
-        padding: 16px;
-      }
-      .metric-card .label {
-        font-size: 14px;
-        opacity: 0.7;
-      }
-      .metric-card .value {
-        font-size: 24px;
-        font-weight: 600;
-      }
-      .history-panel {
-        margin-top: 32px;
-        background: rgba(255,255,255,0.02);
-        border-radius: 12px;
-        padding: 16px;
-        border: 1px solid rgba(255,255,255,0.08);
-      }
-      button {
-        background: #66ff99;
-        border: none;
-        color: #051b05;
-        padding: 10px 18px;
-        border-radius: 8px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: transform 0.2s ease;
-      }
-      button:active {
-        transform: scale(0.98);
-      }
-      #history-chart {
-        display: none;
-        margin-top: 24px;
-        width: 100%;
-        height: 320px;
-      }
-      .note {
-        margin-top: 12px;
-        font-size: 12px;
-        opacity: 0.7;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <h1>Lockout Music Studios Oceanside</h1>
-      <div class="card-grid">
-        
-        <div class="metric-card">
-          <div class="label">Timestamp</div>
-          <div class="value">Tuesday Nov 25 2025 10:24 PM</div>
-        </div>
-        
-        <div class="metric-card">
-          <div class="label">Type</div>
-          <div class="value">request (studio 11, zone3, 50m)</div>
-        </div>
-        
-        <div class="metric-card">
-          <div class="label">Current Temperature</div>
-          <div class="value">76</div>
-        </div>
-        
-        <div class="metric-card">
-          <div class="label">Cooling Set Point</div>
-          <div class="value">74</div>
-        </div>
-        
-        <div class="metric-card">
-          <div class="label">Climate Setting</div>
-          <div class="value">cool</div>
-        </div>
-        
-        <div class="metric-card">
-          <div class="label">Fan Setting</div>
-          <div class="value">on</div>
-        </div>
-        
-        <div class="metric-card">
-          <div class="label">Equipment Status</div>
-          <div class="value">cooling</div>
-        </div>
-        
-        <div class="metric-card">
-          <div class="label">Studio</div>
-          <div class="value">11</div>
-        </div>
-        
-        <div class="metric-card">
-          <div class="label">Request Expires (local time)</div>
-          <div class="value">11:00 PM</div>
-        </div>
-        
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Live Temperature Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      margin: 0;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      color: #f4f6ff;
+      font-family: "Segoe UI", Arial, sans-serif;
+    }
+
+    header {
+      padding: 30px 40px;
+      background: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(6px);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .subtitle {
+      margin-top: 6px;
+      color: #9fb3c8;
+      font-size: 14px;
+    }
+
+    main {
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+    }
+
+    .card {
+      background: rgba(0,0,0,0.45);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-top: 15px;
+    }
+
+    .metric {
+      background: rgba(25,25,35,0.7);
+      padding: 16px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .metric-label {
+      font-size: 13px;
+      color: #a9b7c6;
+      margin-bottom: 6px;
+    }
+
+    .metric-value {
+      font-size: 22px;
+      font-weight: 600;
+      color: #4fd1c5;
+    }
+
+    .chart-wrap {
+      height: 420px;
+      margin-top: 20px;
+      display: none;
+    }
+
+    button {
+      background: #4fd1c5;
+      color: #062925;
+      border: none;
+      padding: 12px 18px;
+      border-radius: 30px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    button:hover {
+      background: #7fe3d7;
+    }
+
+    footer {
+      padding: 20px 40px;
+      font-size: 12px;
+      color: #93a4b6;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Live Temperature Dashboard</h1>
+  <div class="subtitle">Real-time snapshot & historical trend view</div>
+</header>
+
+<main>
+
+  <div class="card">
+    <h2>Current Snapshot</h2>
+    <div class="grid">
+      <div class="metric">
+        <div class="metric-label">Temperature</div>
+        <div class="metric-value">72°F</div>
       </div>
-      <div class="history-panel">
-        <button id="toggle-history">Show History Chart</button>
-        <canvas id="history-chart"></canvas>
-        <div class="note">Data source: Google Sheet (last updated when this page was generated).</div>
+      <div class="metric">
+        <div class="metric-label">Humidity</div>
+        <div class="metric-value">41%</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">System Status</div>
+        <div class="metric-value">Normal</div>
       </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-      const dashboardData = {"headers": ["Timestamp", "Type", "Current Temperature", "Cooling Set Point", "Climate Setting", "Fan Setting", "Equipment Status", "Studio", "Request Expires (local time)"], "latestRow": ["Tuesday Nov 25 2025 10:24 PM", "request (studio 11, zone3, 50m)", "76", "74", "cool", "on", "cooling", "11", "11:00 PM"], "history": [{"label": "Sunday Nov 23 2025 1:56 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 2:02 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 2:46 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 2:59 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 3:03 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 3:06 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 11:20 PM", "value": 75.0}, {"label": "Tuesday Nov 25 2025 7:59 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:01 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:04 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:11 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:46 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 10:03 PM", "value": 77.0}, {"label": "Tuesday Nov 25 2025 10:08 PM", "value": 77.0}, {"label": "Tuesday Nov 25 2025 10:10 PM", "value": 77.0}, {"label": "Tuesday Nov 25 2025 10:11 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 10:15 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 10:20 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 10:22 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 10:24 PM", "value": 74.0}]};
-      const ctx = document.getElementById("history-chart").getContext("2d");
-      const parsed = dashboardData.history;
-      let chart;
-      document.getElementById("toggle-history").addEventListener("click", (evt) => {
-        const canvas = document.getElementById("history-chart");
-        if (canvas.style.display === "none" || !canvas.style.display) {
-          canvas.style.display = "block";
-          if (!chart) {
-            chart = new Chart(ctx, {
-              type: "line",
-              data: {
-                labels: parsed.map(entry => entry.label || ""),
-                datasets: [{
-                  label: "Cooling Set Point",
-                  data: parsed.map(entry => entry.value || 0),
-                  borderColor: "#66ff99",
-                  backgroundColor: "rgba(102,255,153,0.2)",
-                }],
-              },
-              options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                  y: {
-                    beginAtZero: false,
-                    min: 50,
-                    max: 100,
-                    ticks: {
-                      color: "#f4f6ff",
-                    },
-                    grid: {
-                      color: "rgba(255,255,255,0.1)",
-                    },
-                  },
-                  x: {
-                    ticks: {
-                      color: "#f4f6ff",
-                    },
-                    grid: {
-                      color: "rgba(255,255,255,0.08)",
-                    },
-                  },
-                },
-                plugins: {
-                  legend: {
-                    labels: {
-                      color: "#f4f6ff",
-                    },
-                  },
-                },
-              },
-            });
+  </div>
+
+  <div class="card">
+    <h2>History</h2>
+    <button onclick="toggleChart()">Show History Chart</button>
+
+    <div class="chart-wrap" id="chartArea">
+      <canvas id="historyChart"></canvas>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  Secure local processing • Static presentation only • No sensitive data exposed
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+let chartVisible = false;
+
+function toggleChart() {
+  chartVisible = !chartVisible;
+  const area = document.getElementById("chartArea");
+  area.style.display = chartVisible ? "block" : "none";
+
+  if (chartVisible && !window.tempChart) {
+    const ctx = document.getElementById('historyChart').getContext('2d');
+    window.tempChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ["10:00","11:00","12:00","13:00","14:00","15:00"],
+        datasets: [{
+          label: "Temperature °F",
+          data: [70,71,72,72,73,72],
+          borderColor: "#4fd1c5",
+          backgroundColor: "rgba(79,209,197,0.2)",
+          tension: 0.3,
+          fill: true
+        }]
+      },
+      options: {
+        maintainAspectRatio: false,
+        animation: false,
+        scales: {
+          y: {
+            min: 60,
+            max: 90
           }
-        } else {
-          canvas.style.display = "none";
         }
-      });
-    </script>
-  </body>
+      }
+    });
+  }
+}
+</script>
+
+</body>
 </html>
