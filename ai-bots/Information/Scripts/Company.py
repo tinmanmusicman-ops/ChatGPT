@@ -42,7 +42,7 @@ SECTION_TITLES = [
     "Evaluation Highlights",
 ]
 
-
+# 
 def emphasize_key_labels(text: str) -> str:
     """Replace markdown label phrases with styled chips."""
     replacements = {
