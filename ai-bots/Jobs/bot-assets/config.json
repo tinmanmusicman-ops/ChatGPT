@@ -19,7 +19,6 @@
   "max_emails_per_run": 10,
   "max_jobs_per_email": 6,
   "move_processed": true,
-  "openai_api_key": "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",
   "openai_model": "gpt-4o-mini",
   "openai_temperature": 0.5,
   "spreadsheet_id": "1IYrpGlyCSIilIEyRA70Uq2iUofl-sPA94ygH9ZL-2ag",

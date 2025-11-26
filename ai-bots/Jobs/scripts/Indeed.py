@@ -1,6 +1,6 @@
 from pathlib import Path
 from typing import Iterable, List, Set, Tuple
-import os, json, imaplib, email, inspect, re, time, logging, sys
+import os, json, imaplib, email, inspect, re, time, logging
 from email.header import decode_header
 from email.utils import parseaddr
 from datetime import datetime
@@ -9,57 +9,8 @@ import time
 imaplib.Debug = 1
 base_dir = Path(__file__).resolve().parent
 os.chdir(base_dir)
-HOPE_OUTBOX_DIR = base_dir / "ChatGPT_outbox"
-sys.path.append(str(base_dir.parent.parent))
-from Tools.scripts.PushFilesFromHope import (
-    get_drive_service,
-    get_or_create_drive_folder,
-    upload_or_replace_file,
-)
-
+BOT_ASSETS_CONFIG = base_dir.parent / "bot-assets" / "config.json"
 SHARED_CONFIG_PATH = base_dir.parent.parent / "shared" / "Global.json"
-PROJECT_CONFIG_PATH = base_dir.parent / "bot-assets" / "config.json"
-CURRENT_CONFIG_PATH: Optional[Path] = None
-
-def load_shared_defaults() -> dict:
-    data: dict = {}
-    if SHARED_CONFIG_PATH.exists():
-        try:
-            with SHARED_CONFIG_PATH.open("r", encoding="utf-8") as fh:
-                data = json.load(fh)
-        except Exception:
-            pass
-    env_key = os.getenv("OPENAI_API_KEY")
-    if env_key:
-        data.setdefault("openai_api_key", env_key)
-    return data
-
-def resolve_service_account_path(cfg: dict, cfg_path: Path) -> Path:
-    sa_value = cfg.get("service_account_json", "Global.json")
-    sa_path = Path(sa_value)
-    candidates = []
-    if not sa_path.is_absolute():
-        candidates.extend(
-            [
-                cfg_path.parent / sa_path,
-                base_dir.parent / "bot-assets" / sa_path,
-                SHARED_CONFIG_PATH,
-            ]
-        )
-    else:
-        candidates.append(sa_path)
-    for candidate in candidates:
-        candidate = candidate.resolve()
-        if candidate.exists():
-            return candidate
-    raise FileNotFoundError(f"Service account file not found: {sa_value}")
-
-SHARED_CONFIG_PATH = base_dir.parent.parent / "shared" / "Global.json"
-PROJECT_CONFIG_PATH = base_dir.parent / "bot-assets" / "config.json"
-
-
-def default_config_path() -> Path:
-    return (base_dir.parent / "bot-assets" / "config.json").resolve()
 
 try:
     import gspread
@@ -285,8 +236,17 @@ def _extract_city_state_from_subject(subject: str) -> str:
     return match.group(1).strip() if match else ""
 
 
-def load_config(explicit: Optional[Path] = None):
-    cfg_path = explicit or PROJECT_CONFIG_PATH
+def _load_shared_defaults() -> dict:
+    if not SHARED_CONFIG_PATH.exists():
+        return {}
+    try:
+        return json.loads(SHARED_CONFIG_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def load_config():
+    cfg_path = BOT_ASSETS_CONFIG
     try:
         raw = cfg_path.read_text(encoding="utf-8")
     except FileNotFoundError as exc:
@@ -297,10 +257,20 @@ def load_config(explicit: Optional[Path] = None):
     except json.JSONDecodeError as exc:
         raise SystemExit(f"Malformed JSON in config file: {cfg_path}") from exc
 
-    shared = load_shared_defaults()
-    for key, value in shared.items():
-        cfg.setdefault(key, value)
-    return cfg, cfg_path
+    shared_defaults = _load_shared_defaults()
+    for key in (
+        "openai_api_key",
+        "gmail_user",
+        "gmail_app_password",
+        "spreadsheet_id",
+        "worksheet_name",
+        "service_account_json",
+    ):
+        if key in shared_defaults:
+            cfg.setdefault(key, shared_defaults[key])
+    if "service_account_json" not in cfg:
+        cfg["service_account_json"] = str(SHARED_CONFIG_PATH)
+    return cfg
 
 def get_openai_client(cfg):
     print(f"\n[INFO] Calling get_openai_client(cfg)")
@@ -548,14 +518,25 @@ _DRIVE_SERVICE = None
 _CLEARED_THIS_RUN = False
 
 
+def _resolve_service_account_path(cfg) -> Path:
+    raw = cfg.get("service_account_json") or "Global.json"
+    candidate = Path(raw)
+    if not candidate.is_absolute():
+        candidate = (BOT_ASSETS_CONFIG.parent / candidate).resolve()
+    if candidate.exists():
+        return candidate
+    if SHARED_CONFIG_PATH.exists():
+        return SHARED_CONFIG_PATH
+    raise SystemExit(f"Missing Google service account file: {candidate}")
+
+
 def get_gsheet_worksheet(cfg):
     print("[INFO] Obtaining Google Sheet worksheet.")
     global _GSHEET_WORKSHEET
     if _GSHEET_WORKSHEET is not None:
         return _GSHEET_WORKSHEET
 
-    cfg_path = CURRENT_CONFIG_PATH or PROJECT_CONFIG_PATH
-    sa = resolve_service_account_path(cfg, cfg_path)
+    sa = _resolve_service_account_path(cfg)
 
     scopes = [
         "https://www.googleapis.com/auth/spreadsheets",
@@ -640,8 +621,9 @@ def _get_drive_service(cfg):
     if _DRIVE_SERVICE is not None:
         return _DRIVE_SERVICE
 
-    cfg_path = CURRENT_CONFIG_PATH or PROJECT_CONFIG_PATH
-    sa = resolve_service_account_path(cfg, cfg_path)
+    sa = base_dir / cfg.get("service_account_json", "sa_key.json")
+    if not sa.exists():
+        raise SystemExit(f"Missing Google service account file: {sa}")
 
     scopes = [
         "https://www.googleapis.com/auth/spreadsheets",
@@ -677,39 +659,7 @@ def _create_ttt_comment(ws, cfg, row_number, col_idx, note_text):
         body=body,
         fields="id",
     ).execute()
-        print(f"[DEBUG] Created Drive comment {result.get('id')} for row {row_number} col {col_idx+1}")
-
-
-def _guess_mime_type(path: Path) -> str:
-    ext = path.suffix.lower()
-    return {
-        ".html": "text/html",
-        ".json": "application/json",
-        ".txt": "text/plain",
-        ".md": "text/markdown",
-    }.get(ext, "application/octet-stream")
-
-
-def push_files_from_hope_outbox() -> None:
-    """Move files from ChatGPT_outbox into the ChatGPT Drive folder with versioning."""
-    HOPE_OUTBOX_DIR.mkdir(parents=True, exist_ok=True)
-    service = get_drive_service()
-    folder_id = get_or_create_drive_folder(service, "ChatGPT")
-    files = sorted(f for f in HOPE_OUTBOX_DIR.iterdir() if f.is_file())
-    if not files:
-        print("[INFO] No files found in ChatGPT_outbox.")
-        return
-    for path in files:
-        mime_type = _guess_mime_type(path)
-        file_id = upload_or_replace_file(
-            service,
-            folder_id,
-            path.name,
-            path.read_bytes(),
-            mime_type,
-        )
-        drive_url = f"https://drive.google.com/file/d/{file_id}/view"
-        print(f"[INFO] Pushed {path.name} -> {drive_url}")
+    print(f"[DEBUG] Created Drive comment {result.get('id')} for row {row_number} col {col_idx+1}")
 
 
 def _get_existing_sheet_urls(ws):
@@ -933,10 +883,9 @@ def process_email_payload(body, uid, from_email, cfg, subject="", context=""):
 
 
 def main():
-    global CURRENT_CONFIG_PATH
     print("[INFO] Starting email processing run.")
 
-    cfg, CURRENT_CONFIG_PATH = load_config()
+    cfg = load_config()
     if cfg.get("enable_google_debug_logging"):
         logging.getLogger("googleapiclient.discovery").setLevel(logging.DEBUG)
         logging.getLogger("googleapiclient.http").setLevel(logging.DEBUG)
@@ -1004,5 +953,4 @@ def main():
     print(f"\n[INFO] Run finished. Processed {processed_count} email(s).")
 
 if __name__=="__main__":
-    push_files_from_hope_outbox()
     main()
