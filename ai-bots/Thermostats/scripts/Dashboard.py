@@ -299,7 +299,7 @@ def build_dashboard_html(
             logger.debug("Non-numeric chart value %r; defaulting to 0", val)
             return 0.0
 
-    title = "Lockout Music Studios Oceanside"
+    title = "Lockout Music Studios Oside"
     metric_idx = next(
         (
             i
