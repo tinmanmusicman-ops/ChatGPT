@@ -21,6 +21,29 @@
         margin: 0 0 16px;
         font-size: 32px;
       }
+      .header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+      }
+      .header-label {
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.2em;
+        opacity: 0.8;
+      }
+      .logo-placeholder {
+        width: 80px;
+        height: 48px;
+        border: 1px dashed #66ff99;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        color: #66ff99;
+      }
       .card-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -78,7 +101,10 @@
   </head>
   <body>
     <div class="container">
-      <h1>Lockout Music Studios Oside</h1>
+      <div class="header-row">
+        <div class="header-label">Dashboard Metrics</div>
+        <div class="logo-placeholder">Logo</div>
+      </div>
       <div class="card-grid">
         
         <div class="metric-card">
