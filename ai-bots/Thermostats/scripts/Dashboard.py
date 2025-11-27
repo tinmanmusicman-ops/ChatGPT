@@ -378,17 +378,47 @@ def build_dashboard_html(
       body {{
         margin: 0;
         font-family: 'Inter', system-ui, sans-serif;
-        background: #05050f;
+        background: #4a4a4a;
         color: #f4f6ff;
       }}
       .container {{
         max-width: 960px;
         margin: 32px auto;
         padding: 24px;
+        background: #4a4a4a;
+        border-radius: 16px;
       }}
       h1 {{
         margin: 0 0 16px;
         font-size: 32px;
+      }}
+      .header-row {{
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+      }}
+      .header-label {{
+        font-size: 36px;
+        text-transform: uppercase;
+        letter-spacing: 0.25em;
+        opacity: 0.95;
+      }}
+      .logo-placeholder {{
+        width: 190px;
+        height: 126px;
+       /* border: 1px dashed #66ff99; */
+        border-radius: 0px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        color: #66ff99;
+      }}
+      .logo-placeholder img {{
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
       }}
       .card-grid {{
         display: grid;
@@ -447,7 +477,12 @@ def build_dashboard_html(
   </head>
   <body>
     <div class="container">
-      <h1>{title}</h1>
+      <div class="header-row">
+        <div class="header-label">Lockout Music Studios  Oceanside</div>
+        <div class="logo-placeholder">
+          <img src="../../../Images/LO_Logo.png" alt="Logo" />
+        </div>
+      </div>
       <div class="card-grid">
         {cards}
       </div>
