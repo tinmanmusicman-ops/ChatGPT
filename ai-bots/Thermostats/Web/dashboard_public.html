@@ -123,7 +123,7 @@
         height: 420px;
       }
       .fan-legend {
-        color: #ffa500;
+
         position: absolute;
         top: 16px;
         right: 16px;
@@ -132,14 +132,14 @@
         align-items: flex-end;
         gap: 4px;
         font-size: 12px;
-/*        color: #cbd2e0; */
+        color: #cbd2e0; 
       }
       .fan-legend-item {
-        color: #ffa500;
         cursor: default;
         padding: 2px 6px;
         border-radius: 999px;
         transition: color 0.2s ease, background 0.2s ease;
+        color: #ffa500;
       }
       .fan-legend-item.active {
         font-weight: 600;
@@ -222,7 +222,7 @@
           <canvas id="history-chart"></canvas>
         </div>
         <div class="fan-legend">
-          <span class="fan-legend-item" data-mode="auto">?Auto</span>
+          <span class="fan-legend-item" data-mode="auto">Auto</span>
           <span class="fan-legend-item" data-mode="circulate">Circulate</span>
           <span class="fan-legend-item" data-mode="on">On</span>
         </div>
