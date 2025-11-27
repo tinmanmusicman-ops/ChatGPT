@@ -326,38 +326,74 @@ def build_dashboard_html(
             return 0.0
 
     title = "Lockout Music Studios Oside"
-    metric_idx = next(
-        (
-            i
-            for i, h in enumerate(headers)
-            if h.strip().lower() in ("cooling set point", "d")
-        ),
-        None,
+    def _find_index(keywords: Tuple[str, ...]) -> Optional[int]:
+        for idx, header in enumerate(headers):
+            if not header:
+                continue
+            value = header.strip().lower()
+            for keyword in keywords:
+                if keyword in value:
+                    return idx
+        return None
+
+    setpoint_idx = _find_index(("cooling set point", "cooling setpoint", "set point", "d"))
+    actual_idx = _find_index(("current temperature", "actual temperature", "temperature"))
+    if actual_idx is not None and actual_idx == setpoint_idx:
+        actual_idx = None
+    setpoint_label = (
+        headers[setpoint_idx] if setpoint_idx is not None and len(headers) > setpoint_idx else "Cooling Set Point"
     )
-    if metric_idx is None:
-        metric_idx = next(
-            (i for i, h in enumerate(headers) if h.strip().lower() == "current temperature"),
-            CHART_METRIC_INDEX,
-        )
-    metric_header = headers[metric_idx] if len(headers) > metric_idx else "Cooling Set Point"
-    chart_data = [
-        {
-            "label": row[0] if row else "",
-            "value": _safe_float(row[metric_idx]) if len(row) > metric_idx else 0,
-        }
-        for row in history_rows
-    ]
-    # Filter out non-numeric entries and clamp to a reasonable temperature band for stability.
-    filtered_chart = []
-    for entry in chart_data:
-        val = entry.get("value")
-        if not isinstance(val, (int, float)):
-            continue
-        if 50 <= val <= 100:  # clamp to the desired display band
-            filtered_chart.append(entry)
-    chart_data = filtered_chart
+    actual_label = (
+        headers[actual_idx] if actual_idx is not None and len(headers) > actual_idx else "Actual Temperature"
+    )
+
+    fan_idx = _find_index(("fan", "fan setting", "fan mode"))
+    FAN_LABELS = ["Auto", "Circulate", "On"]
+
+    def _fan_value(row: List[str]) -> Optional[int]:
+        if fan_idx is None or fan_idx >= len(row):
+            return None
+        val = str(row[fan_idx]).strip().lower()
+        if not val:
+            return None
+        if "auto" in val:
+            return 0
+        if "circulate" in val or "cir" in val:
+            return 1
+        if val in ("on", "fan", "low", "high") or "run" in val:
+            return 2
+        return None
+
+    def _extract_clamped(idx: Optional[int], row: List[str]) -> Optional[float]:
+        if idx is None or idx >= len(row):
+            return None
+        val = _safe_float(row[idx])
+        if 50 <= val <= 100:
+            return val
+        return None
+
+    chart_labels = [row[0] if row else "" for row in history_rows]
+    setpoint_series = [_extract_clamped(setpoint_idx, row) for row in history_rows]
+    actual_series = [_extract_clamped(actual_idx, row) for row in history_rows]
+    fan_series = [_fan_value(row) for row in history_rows]
+    chart_data = []
+    for label, sp_val, actual_val in zip(chart_labels, setpoint_series, actual_series):
+        selected = sp_val if sp_val is not None else actual_val
+        if selected is not None:
+            chart_data.append({"label": label, "value": selected})
     data_json = json.dumps(
-        {"headers": headers, "latestRow": latest_row, "history": chart_data}
+        {
+            "headers": headers,
+            "latestRow": latest_row,
+            "history": chart_data,
+            "chartLabels": chart_labels,
+            "setpoint": setpoint_series,
+            "actual": actual_series,
+            "setpointLabel": setpoint_label,
+            "actualLabel": actual_label,
+            "fan": fan_series,
+            "fanLegend": FAN_LABELS,
+        }
     )
     cards = ""
     for label, value in zip(headers, latest_row + [""] * (len(headers) - len(latest_row))):
@@ -446,6 +482,7 @@ def build_dashboard_html(
         border-radius: 12px;
         padding: 16px;
         border: 1px solid rgba(255,255,255,0.08);
+        position: relative;
       }}
       button {{
         background: #66ff99;
@@ -460,6 +497,28 @@ def build_dashboard_html(
       button:active {{
         transform: scale(0.98);
       }}
+      .chart-controls {{
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 12px;
+        font-size: 14px;
+        color: #f4f6ff;
+      }}
+      .chart-control {{
+        border: 1px solid #3a3a40;
+        background: #1f1f26;
+        color: #f4f6ff;
+        padding: 6px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background 0.2s ease, color 0.2s ease;
+      }}
+      .chart-control.active {{
+        background: #ffa500;
+        color: #051b05;
+        border-color: #ffa500;
+      }}
       #history-chart {{
         display: none;
         width: 100% !important;
@@ -467,6 +526,30 @@ def build_dashboard_html(
       }}
       .chart-wrap {{
         height: 420px;
+      }}
+      .fan-legend {{
+
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 4px;
+        font-size: 12px;
+        color: #cbd2e0; 
+      }}
+      .fan-legend-item {{
+        cursor: default;
+        padding: 2px 6px;
+        border-radius: 999px;
+        transition: color 0.2s ease, background 0.2s ease;
+        color: #ffa500;
+      }}
+      .fan-legend-item.active {{
+        font-weight: 600;
+        color: #ffa500;
+        background: rgba(255,165,0,0.1);
       }}
       .note {{
         margin-top: 12px;
@@ -488,8 +571,20 @@ def build_dashboard_html(
       </div>
       <div class="history-panel">
         <button id="toggle-history">Show History Chart</button>
+        <div class="chart-controls">
+          <label>Chart view:</label>
+          <button class="chart-control" data-mode="setpoint">Target</button>
+          <button class="chart-control" data-mode="actual">Actual</button>
+          <button class="chart-control" data-mode="fan">Fan</button>
+          <button class="chart-control active" data-mode="both">Combined</button>
+        </div>
         <div class="chart-wrap">
           <canvas id="history-chart"></canvas>
+        </div>
+        <div class="fan-legend">
+          <span class="fan-legend-item" data-mode="auto">Auto</span>
+          <span class="fan-legend-item" data-mode="circulate">Circulate</span>
+          <span class="fan-legend-item" data-mode="on">On</span>
         </div>
         <div class="note">Data source: Google Sheet (last updated when this page was generated).</div>
       </div>
@@ -498,8 +593,61 @@ def build_dashboard_html(
     <script>
       const dashboardData = {data_json};
       const ctx = document.getElementById("history-chart").getContext("2d");
-      const parsed = dashboardData.history;
+      const chartControlButtons = document.querySelectorAll(".chart-control");
+      const chartLabels = dashboardData.chartLabels || [];
+      const setpointSeries = dashboardData.setpoint || [];
+      const actualSeries = dashboardData.actual || [];
+      const fanSeries = dashboardData.fan || [];
+      const fanLegend = dashboardData.fanLegend || ["Auto", "Circulate", "On"];
+      const setpointLabel = dashboardData.setpointLabel || "Target Temperature";
+      const actualLabel = dashboardData.actualLabel || "Actual Temperature";
+      const fanLegendItems = document.querySelectorAll(".fan-legend-item");
+      const FAN_STATE_NAMES = ["auto", "circulate", "off"];
       let chart;
+
+      const updateChartVisibility = (mode) => {{
+        if (!chart) {{
+          return;
+        }}
+        chart.data.datasets[0].hidden = !(mode === "setpoint" || mode === "both");
+        chart.data.datasets[1].hidden = !(mode === "actual" || mode === "both");
+        chart.data.datasets[2].hidden = !(mode === "fan" || mode === "both");
+        chart.update();
+      }};
+      const getLatestFanState = () => {{
+        if (!fanSeries.length) {{
+          return null;
+        }}
+        const idx = fanSeries[fanSeries.length - 1];
+        if (typeof idx !== "number" || Number.isNaN(idx)) {{
+          return null;
+        }}
+        return FAN_STATE_NAMES[idx] || null;
+      }};
+      const highlightFanLegend = (mode) => {{
+        fanLegendItems.forEach((item) => {{
+          const isActiveLegend = item.dataset.mode === mode;
+          const baseColor = item.dataset.color || "#cbd2e0";
+          const activeColor = item.dataset.activeColor || "#ffa500";
+          item.classList.toggle("active", isActiveLegend);
+          item.style.color = isActiveLegend ? activeColor : baseColor;
+        }});
+      }};
+      const getActiveMode = () => {{
+        const activeBtn = document.querySelector(".chart-control.active");
+        return (activeBtn && activeBtn.dataset && activeBtn.dataset.mode) || "both";
+      }};
+      const setActiveMode = (mode) => {{
+        chartControlButtons.forEach((btn) => {{
+          btn.classList.toggle("active", btn.dataset.mode === mode);
+        }});
+        updateChartVisibility(mode);
+        highlightFanLegend(getLatestFanState());
+      }};
+      chartControlButtons.forEach((button) => {{
+        button.addEventListener("click", () => setActiveMode(button.dataset.mode));
+      }});
+      highlightFanLegend(getLatestFanState());
       document.getElementById("toggle-history").addEventListener("click", (evt) => {{
         const canvas = document.getElementById("history-chart");
         if (canvas.style.display === "none" || !canvas.style.display) {{
@@ -508,13 +656,33 @@ def build_dashboard_html(
             chart = new Chart(ctx, {{
               type: "line",
               data: {{
-                labels: parsed.map(entry => entry.label || ""),
-                datasets: [{{
-                  label: "{metric_header}",
-                  data: parsed.map(entry => entry.value || 0),
-                  borderColor: "#66ff99",
-                  backgroundColor: "rgba(102,255,153,0.2)",
-                }}],
+                labels: chartLabels,
+                datasets: [
+                  {{
+                    label: setpointLabel,
+                    data: setpointSeries,
+                    borderColor: "#66ff99",
+                    backgroundColor: "rgba(102,255,153,0.2)",
+                    spanGaps: true,
+                  }},
+                  {{
+                    label: actualLabel,
+                    data: actualSeries,
+                    borderColor: "#7da4ff",
+                    backgroundColor: "rgba(125,164,255,0.2)",
+                    spanGaps: true,
+                  }},
+                  {{
+                    label: "Fan Mode",
+                    data: fanSeries,
+                    borderColor: "#ffa500",
+                    backgroundColor: "rgba(255,165,0,0.3)",
+                    yAxisID: "fan",
+                    spanGaps: true,
+                    borderDash: [4, 4],
+                    pointRadius: 4,
+                  }},
+                ],
               }},
               options: {{
                 responsive: true,
@@ -532,16 +700,28 @@ def build_dashboard_html(
                       color: "rgba(255,255,255,0.1)",
                     }},
                   }},
+                  fan: {{
+                    type: "linear",
+                    position: "right",
+                    min: -0.5,
+                    max: 2.5,
+                    ticks: {{
+                      stepSize: 1,
+                      callback: (value) => fanLegend[Math.round(value)] || "",
+                      color: "#f4f6ff",
+                    }},
+                    grid: {{
+                      drawOnChartArea: false,
+                      color: "rgba(255,255,255,0.08)",
+                    }},
+                  }},
                   x: {{
-
                     ticks: {{
                       color: "#f4f6ff",
                       maxRotation: 0,
                       minRotation: 90,
-                      color: "#f4f6ff"
                     }},
                     grid: {{
-                      
                       color: "rgba(255,255,255,0.08)",
                     }},
                   }},
@@ -552,10 +732,24 @@ def build_dashboard_html(
                       color: "#f4f6ff",
                     }},
                   }},
+                  tooltip: {{
+                    callbacks: {{
+                      label: (context) => {{
+                        if (context.dataset.yAxisID === "fan") {{
+                          const value = context.parsed.y;
+                          return `\${{context.dataset.label}}: \${{
+                            fanLegend[Math.round(value)] || "Unknown"
+                          }}`;
+                        }}
+                        return `\${{context.dataset.label}}: \${{context.parsed.y ?? context.parsed}}`;
+                      }},
+                    }},
+                  }},
                 }},
               }},
             }});
           }}
+          setActiveMode(getActiveMode());
         }} else {{
           canvas.style.display = "none";
         }}
