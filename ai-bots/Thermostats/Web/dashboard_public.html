@@ -44,6 +44,11 @@
         font-size: 13px;
         color: #66ff99;
       }
+      .logo-placeholder img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+      }
       .card-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -103,7 +108,9 @@
     <div class="container">
       <div class="header-row">
         <div class="header-label">Lockout Music Studios, Oceanside</div>
-        <div class="logo-placeholder">../../../Images/LO_Logo.png</div>
+        <div class="logo-placeholder">
+          <img src="../../Images/LO_Logo.png" alt="Logo" />
+        </div>
       </div>
       <div class="card-grid">
         
