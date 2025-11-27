@@ -336,7 +336,7 @@ def build_dashboard_html(
             logger.debug("Non-numeric chart value %r; defaulting to 0", val)
             return 0.0
 
-    title = "Lockout Music Studios Oside"
+    title = "Lockout Music Studios Oceanside CA"
     def _find_index(keywords: Tuple[str, ...]) -> Optional[int]:
         for idx, header in enumerate(headers):
             if not header:
@@ -428,7 +428,11 @@ def build_dashboard_html(
         }
     )
     cards = ""
+    seen_labels = set()
     for label, value in zip(headers, latest_row + [""] * (len(headers) - len(latest_row))):
+        if label in seen_labels:
+            continue
+        seen_labels.add(label)
         cards += f"""
         <div class="metric-card">
           <div class="label">{label}</div>
@@ -446,14 +450,12 @@ def build_dashboard_html(
       const setpointLabel = dashboardData.setpointLabel || "Target Temperature";
       const actualLabel = dashboardData.actualLabel || "Actual Temperature";
       const coolingLabel = dashboardData.coolingLabel || "Cooling Status";
-      const fanLegend = dashboardData.fanLegend || ["Auto", "Circulate", "On"];
+      const fanLegend = dashboardData.fanLegend || ["On", "Circulate", "Auto"];
       const coolingLegend = dashboardData.coolingLegend || ["Idle", "Cooling"];
-      const fanLegendItems = document.querySelectorAll(".fan-legend-item");
       const chartControlButtons = document.querySelectorAll(".chart-control");
       const canvas = document.getElementById("history-chart");
       const ctx = canvas.getContext("2d");
       const toggleHistoryBtn = document.getElementById("toggle-history");
-      const FAN_STATE_NAMES = ["auto", "circulate", "on"];
       let chart;
 
       const createChart = () => {{
@@ -504,7 +506,14 @@ def build_dashboard_html(
           }},
           options: {{
             responsive: true,
-            maintainAspectRatio: true,
+            maintainAspectRatio: false,
+            layout: {{
+                padding: {{
+                    right: 120
+                }}
+            }},
+                
+            
             animation: false,
             scales: {{
               y: {{
@@ -521,12 +530,12 @@ def build_dashboard_html(
               fan: {{
                 type: "linear",
                 position: "right",
-                min: -0.5,
-                max: 2.5,
+                min: -1,
+                max: 2,
                 ticks: {{
                   stepSize: 1,
                   callback: (value) => fanLegend[Math.round(value)] || "",
-                  color: "#f4f6ff",
+                  color: "#ffa500",
                 }},
                 grid: {{
                   drawOnChartArea: false,
@@ -536,13 +545,13 @@ def build_dashboard_html(
               cooling: {{
                 type: "linear",
                 position: "right",
-                offset: true,
-                min: -0.2,
-                max: 1.2,
+                offset: false,
+                min: -1,
+                max: 2,
                 ticks: {{
                   stepSize: 1,
                   callback: (value) => coolingLegend[Math.round(value)] || "",
-                  color: "#f4f6ff",
+                  color: "#ff6b6b",
                 }},
                 grid: {{
                   drawOnChartArea: false,
@@ -551,6 +560,7 @@ def build_dashboard_html(
               }},
               x: {{
                 ticks: {{
+                  
                   color: "#f4f6ff",
                   maxRotation: 0,
                   minRotation: 90,
@@ -561,9 +571,14 @@ def build_dashboard_html(
               }},
             }},
             plugins: {{
-              legend: {{
+            legend: {{
+            position: "right",
+            align: "start",
                 labels: {{
                   color: "#f4f6ff",
+                  usePontStyle: true,
+                  boxWidth: 12,
+              //    filter: ((legendItem) => legendItem.text !== coolingLabel),  
                 }},
               }},
               tooltip: {{
@@ -598,24 +613,6 @@ def build_dashboard_html(
         chart.update();
       }};
 
-      const getLatestFanState = () => {{
-        if (!fanSeries.length) {{
-          return null;
-        }}
-        const idx = fanSeries[fanSeries.length - 1];
-        if (typeof idx !== "number" || Number.isNaN(idx)) {{
-          return null;
-        }}
-        return FAN_STATE_NAMES[idx] || null;
-      }};
-
-      const highlightFanLegend = (mode) => {{
-        fanLegendItems.forEach((item) => {{
-          const isActiveLegend = item.dataset.mode === mode;
-          item.classList.toggle("active", isActiveLegend);
-        }});
-      }};
-
       const getActiveMode = () => {{
         const activeBtn = document.querySelector(".chart-control.active");
         return (activeBtn && activeBtn.dataset && activeBtn.dataset.mode) || "both";
@@ -627,7 +624,6 @@ def build_dashboard_html(
           btn.classList.toggle("active", btn.dataset.mode === mode);
         }});
         updateChartVisibility(mode);
-        highlightFanLegend(getLatestFanState());
       }};
 
       const showChart = () => {{
@@ -687,6 +683,10 @@ def build_dashboard_html(
         justify-content: space-between;
         align-items: center;
         margin-bottom: 16px;
+      }}
+      .chartjs-legend {{
+      margin-top: -40px;
+      }}
       }}
       .header-label {{
         font-size: 36px;
@@ -754,6 +754,7 @@ def build_dashboard_html(
       .chart-controls {{
         display: flex;
         align-items: center;
+        justify-content: ;
         gap: 8px;
         margin-top: 12px;
         font-size: 14px;
@@ -777,33 +778,27 @@ def build_dashboard_html(
         display: none;
         width: 100% !important;
         height: 100% !important;
+        background: #000;
       }}
       .chart-wrap {{
         height: 420px;
+        margin-top: 40px;
+        background: #000;
       }}
-      .fan-legend {{
-
+      .legend-stack {{
         position: absolute;
-        top: 16px;
+        Top: 12px;
         right: 16px;
         display: flex;
         flex-direction: column;
         align-items: flex-end;
-        gap: 4px;
-        font-size: 12px;
-        color: #cbd2e0; 
+        gap: 8px;
+        margin: 10px;
       }}
-      .fan-legend-item {{
-        cursor: default;
-        padding: 2px 6px;
-        border-radius: 999px;
-        transition: color 0.2s ease, background 0.2s ease;
-        color: #ffa500;
-      }}
-      .fan-legend-item.active {{
-        font-weight: 600;
-        color: #ffa500;
-        background: rgba(255,165,0,0.1);
+      .fan-legend-image {{
+        max-width: 120px;
+        height: auto;
+        display: block;
       }}
       .note {{
         margin-top: 12px;
@@ -825,20 +820,23 @@ def build_dashboard_html(
       </div>
       <div class="history-panel">
         <button id="toggle-history">Show History Chart</button>
+        <div class="legend-stack">
+          <img
+            class="fan-legend-image"
+            src="../../../Images/BG.png"
+            alt="Fan mode legend"
+          />
+        </div>
         <div class="chart-controls">
           <label>Chart view:</label>
           <button class="chart-control" data-mode="setpoint">Target</button>
           <button class="chart-control" data-mode="actual">Actual</button>
+          <button class="chart-control" data-mode="cooling">Equipment Status</button>
           <button class="chart-control" data-mode="fan">Fan</button>
           <button class="chart-control active" data-mode="both">Combined</button>
         </div>
         <div class="chart-wrap">
           <canvas id="history-chart"></canvas>
-        </div>
-        <div class="fan-legend">
-          <span class="fan-legend-item" data-mode="auto">Auto</span>
-          <span class="fan-legend-item" data-mode="circulate">Circulate</span>
-          <span class="fan-legend-item" data-mode="on">On</span>
         </div>
         <div class="note">Data source: Google Sheet (last updated when this page was generated).</div>
       </div>
