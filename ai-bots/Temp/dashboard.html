@@ -95,6 +95,7 @@
       .chart-controls {
         display: flex;
         align-items: center;
+        justify-content: flex-end
         gap: 8px;
         margin-top: 12px;
         font-size: 14px;
@@ -118,9 +119,11 @@
         display: none;
         width: 100% !important;
         height: 100% !important;
+        background: #000;
       }
       .chart-wrap {
         height: 420px;
+        background: #000;
       }
       .fan-legend {
 
@@ -131,20 +134,11 @@
         flex-direction: column;
         align-items: flex-end;
         gap: 4px;
-        font-size: 12px;
-        color: #cbd2e0; 
       }
-      .fan-legend-item {
-        cursor: default;
-        padding: 2px 6px;
-        border-radius: 999px;
-        transition: color 0.2s ease, background 0.2s ease;
-        color: #ffa500;
-      }
-      .fan-legend-item.active {
-        font-weight: 600;
-        color: #ffa500;
-        background: rgba(255,165,0,0.1);
+      .fan-legend-image {
+        max-width: 120px;
+        height: auto;
+        display: block;
       }
       .note {
         margin-top: 12px;
@@ -190,7 +184,7 @@
         
         <div class="metric-card">
           <div class="label">Fan Setting</div>
-          <div class="value">on</div>
+          <div class="value">Auto</div>
         </div>
         
         <div class="metric-card">
@@ -223,16 +217,18 @@
           <canvas id="history-chart"></canvas>
         </div>
         <div class="fan-legend">
-          <span class="fan-legend-item" data-mode="auto">Auto</span>
-          <span class="fan-legend-item" data-mode="circulate">Circulate</span>
-          <span class="fan-legend-item" data-mode="on">On</span>
+          <img
+            class="fan-legend-image"
+            src="../../../Images/BG.png"
+            alt="Fan mode legend"
+          />
         </div>
         <div class="note">Data source: Google Sheet (last updated when this page was generated).</div>
       </div>
     </div>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-      const dashboardData = {"headers": ["Timestamp", "Type", "Current Temperature", "Cooling Set Point", "Climate Setting", "Fan Setting", "Equipment Status", "Studio", "Request Expires (local time)"], "latestRow": ["Tuesday Nov 25 2025 8:46 PM", "request (60m)", "76", "74", "cool", "on", "Idle", "", "9:46 PM"], "history": [{"label": "Sunday Nov 23 2025 3:06 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 11:20 PM", "value": 75.0}, {"label": "Tuesday Nov 25 2025 7:59 PM", "value": 72.0}, {"label": "Tuesday Nov 25 2025 8:01 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:04 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:11 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:46 PM", "value": 74.0}, {"label": "Friday Nov 21 2025 6:51 PM", "value": 74.0}, {"label": "Sunday Nov 23 2025 1:56 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 2:02 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 2:46 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 2:59 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 3:03 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 3:06 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 11:20 PM", "value": 75.0}, {"label": "Tuesday Nov 25 2025 7:59 PM", "value": 72.0}, {"label": "Tuesday Nov 25 2025 8:01 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:04 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:11 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:46 PM", "value": 74.0}], "chartLabels": ["Sunday Nov 23 2025 3:06 PM", "Sunday Nov 23 2025 11:20 PM", "Tuesday Nov 25 2025 7:59 PM", "Tuesday Nov 25 2025 8:01 PM", "Tuesday Nov 25 2025 8:04 PM", "Tuesday Nov 25 2025 8:11 PM", "Tuesday Nov 25 2025 8:46 PM", "Friday Nov 21 2025 6:51 PM", "Sunday Nov 23 2025 1:56 PM", "Sunday Nov 23 2025 2:02 PM", "Sunday Nov 23 2025 2:46 PM", "Sunday Nov 23 2025 2:59 PM", "Sunday Nov 23 2025 3:03 PM", "Sunday Nov 23 2025 3:06 PM", "Sunday Nov 23 2025 11:20 PM", "Tuesday Nov 25 2025 7:59 PM", "Tuesday Nov 25 2025 8:01 PM", "Tuesday Nov 25 2025 8:04 PM", "Tuesday Nov 25 2025 8:11 PM", "Tuesday Nov 25 2025 8:46 PM"], "setpoint": [75.0, 75.0, 72.0, 74.0, 74.0, 74.0, 74.0, 74.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 72.0, 74.0, 74.0, 74.0, 74.0], "actual": [76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 72.0, 65.0, 65.0, 76.0, 90.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0], "setpointLabel": "Cooling Set Point", "actualLabel": "Current Temperature", "fan": [2, 2, 1, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2], "fanLegend": ["Auto", "Circulate", "On"], "cooling": [1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0], "coolingLegend": ["Idle", "Cooling"], "coolingLabel": "Equipment Status"};
+      const dashboardData = {"headers": ["Timestamp", "Type", "Current Temperature", "Cooling Set Point", "Climate Setting", "Fan Setting", "Equipment Status", "Studio", "Request Expires (local time)"], "latestRow": ["Tuesday Nov 25 2025 8:46 PM", "request (60m)", "76", "74", "cool", "Auto", "Idle", "", "9:46 PM"], "history": [{"label": "Sunday Nov 23 2025 3:06 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 11:20 PM", "value": 75.0}, {"label": "Tuesday Nov 25 2025 7:59 PM", "value": 72.0}, {"label": "Tuesday Nov 25 2025 8:01 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:04 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:11 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:46 PM", "value": 74.0}, {"label": "Friday Nov 21 2025 6:51 PM", "value": 74.0}, {"label": "Sunday Nov 23 2025 1:56 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 2:02 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 2:46 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 2:59 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 3:03 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 3:06 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 11:20 PM", "value": 75.0}, {"label": "Tuesday Nov 25 2025 7:59 PM", "value": 72.0}, {"label": "Tuesday Nov 25 2025 8:01 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:04 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:11 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:46 PM", "value": 74.0}], "chartLabels": ["Sunday Nov 23 2025 3:06 PM", "Sunday Nov 23 2025 11:20 PM", "Tuesday Nov 25 2025 7:59 PM", "Tuesday Nov 25 2025 8:01 PM", "Tuesday Nov 25 2025 8:04 PM", "Tuesday Nov 25 2025 8:11 PM", "Tuesday Nov 25 2025 8:46 PM", "Friday Nov 21 2025 6:51 PM", "Sunday Nov 23 2025 1:56 PM", "Sunday Nov 23 2025 2:02 PM", "Sunday Nov 23 2025 2:46 PM", "Sunday Nov 23 2025 2:59 PM", "Sunday Nov 23 2025 3:03 PM", "Sunday Nov 23 2025 3:06 PM", "Sunday Nov 23 2025 11:20 PM", "Tuesday Nov 25 2025 7:59 PM", "Tuesday Nov 25 2025 8:01 PM", "Tuesday Nov 25 2025 8:04 PM", "Tuesday Nov 25 2025 8:11 PM", "Tuesday Nov 25 2025 8:46 PM"], "setpoint": [75.0, 75.0, 72.0, 74.0, 74.0, 74.0, 74.0, 74.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 72.0, 74.0, 74.0, 74.0, 74.0], "actual": [76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 72.0, 65.0, 65.0, 76.0, 90.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0], "setpointLabel": "Cooling Set Point", "actualLabel": "Current Temperature", "fan": [2, 2, 1, 0, 2, 2, 2, 1, 2, 2, 2, 2, 0, 2, 2, 1, 2, 2, 2, 0], "fanLegend": ["Auto", "Circulate", "On"], "cooling": [1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0], "coolingLegend": ["Idle", "Cooling"], "coolingLabel": "Equipment Status"};
       const chartLabels = dashboardData.chartLabels || [];
       const setpointSeries = dashboardData.setpoint || [];
       const actualSeries = dashboardData.actual || [];
@@ -241,14 +237,14 @@
       const setpointLabel = dashboardData.setpointLabel || "Target Temperature";
       const actualLabel = dashboardData.actualLabel || "Actual Temperature";
       const coolingLabel = dashboardData.coolingLabel || "Cooling Status";
-      const fanLegend = dashboardData.fanLegend || ["Auto", "Circulate", "On"];
+      const fanLegend = dashboardData.fanLegend || ["On", "Circulate", "Auto"];
       const coolingLegend = dashboardData.coolingLegend || ["Idle", "Cooling"];
       const fanLegendItems = document.querySelectorAll(".fan-legend-item");
       const chartControlButtons = document.querySelectorAll(".chart-control");
       const canvas = document.getElementById("history-chart");
       const ctx = canvas.getContext("2d");
       const toggleHistoryBtn = document.getElementById("toggle-history");
-      const FAN_STATE_NAMES = ["auto", "circulate", "on"];
+      const FAN_STATE_NAMES = ["On", "circulate", "Auto"];
       let chart;
 
       const createChart = () => {
@@ -316,12 +312,12 @@
               fan: {
                 type: "linear",
                 position: "right",
-                min: -0.5,
-                max: 2.5,
+                min: -1,
+                max: 2,
                 ticks: {
                   stepSize: 1,
                   callback: (value) => fanLegend[Math.round(value)] || "",
-                  color: "#f4f6ff",
+                  color: "#ffa500",
                 },
                 grid: {
                   drawOnChartArea: false,
@@ -331,13 +327,13 @@
               cooling: {
                 type: "linear",
                 position: "right",
-                offset: true,
-                min: -0.2,
-                max: 1.2,
+                offset: false,
+                min: -1,
+                max: 2,
                 ticks: {
                   stepSize: 1,
                   callback: (value) => coolingLegend[Math.round(value)] || "",
-                  color: "#f4f6ff",
+                  color: "#ff6b6b",
                 },
                 grid: {
                   drawOnChartArea: false,
@@ -346,6 +342,7 @@
               },
               x: {
                 ticks: {
+                  
                   color: "#f4f6ff",
                   maxRotation: 0,
                   minRotation: 90,
