@@ -78,6 +78,42 @@
         padding: 16px;
         border: 1px solid rgba(255,255,255,0.08);
       }
+      .fan-controls {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        margin: 16px 0;
+        gap: 16px;
+      }
+      .fan-label {
+        font-size: 14px;
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        color: #f4f6ff;
+      }
+      .fan-options {
+        display: flex;
+        gap: 8px;
+      }
+      .fan-option {
+        border: 1px solid #3a3a40;
+        background: transparent;
+        color: #f4f6ff;
+        padding: 6px 14px;
+        border-radius: 999px;
+        cursor: pointer;
+        transition: background 0.2s ease, border 0.2s ease;
+      }
+      .fan-option.active {
+        background: #66ff99;
+        color: #051b05;
+        border-color: #66ff99;
+      }
+      .fan-status {
+        margin-top: 6px;
+        font-size: 12px;
+        opacity: 0.8;
+      }
       button {
         background: #66ff99;
         border: none;
@@ -128,6 +164,15 @@
         <div class="logo-placeholder">
           <img src="../../../Images/LO_Logo.png" alt="Logo" />
         </div>
+      </div>
+      <div class="fan-controls">
+        <div class="fan-label">Fan Mode</div>
+        <div class="fan-options">
+          <button class="fan-option active" data-mode="auto">Auto</button>
+          <button class="fan-option" data-mode="circulate">Circulate</button>
+          <button class="fan-option" data-mode="off">Off</button>
+        </div>
+        <div class="fan-status">Mode: <span id="fan-mode-label">Auto</span></div>
       </div>
       <div class="card-grid">
         
@@ -282,6 +327,20 @@
         } else {
           canvas.style.display = "none";
         }
+      });
+      const fanOptions = document.querySelectorAll(".fan-option");
+      const fanModeLabel = document.getElementById("fan-mode-label");
+      const updateFanMode = (mode) => {
+        if (fanModeLabel) {
+          fanModeLabel.textContent = mode.charAt(0).toUpperCase() + mode.slice(1);
+        }
+      };
+      fanOptions.forEach((button) => {
+        button.addEventListener("click", () => {
+          fanOptions.forEach((b) => b.classList.remove("active"));
+          button.classList.add("active");
+          updateFanMode(button.dataset.mode);
+        });
       });
     </script>
   </body>
