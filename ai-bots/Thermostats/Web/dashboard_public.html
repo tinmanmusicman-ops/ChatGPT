@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>Lockout M Studios Oside</title>
+    <title>Lockout Music Studios Oside</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap">
     <style>
@@ -83,12 +83,12 @@
         
         <div class="metric-card">
           <div class="label">Timestamp</div>
-          <div class="value">Wednesday Nov 26 2025 4:34 AM</div>
+          <div class="value">Wednesday Nov 26 2025 3:36 PM</div>
         </div>
         
         <div class="metric-card">
           <div class="label">Type</div>
-          <div class="value">system</div>
+          <div class="value">request (studio 7, zone2, 60m)</div>
         </div>
         
         <div class="metric-card">
@@ -118,12 +118,12 @@
         
         <div class="metric-card">
           <div class="label">Studio</div>
-          <div class="value"></div>
+          <div class="value">7</div>
         </div>
         
         <div class="metric-card">
           <div class="label">Request Expires (local time)</div>
-          <div class="value"></div>
+          <div class="value">4:36 PM</div>
         </div>
         
       </div>
@@ -137,7 +137,7 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-      const dashboardData = {"headers": ["Timestamp", "Type", "Current Temperature", "Cooling Set Point", "Climate Setting", "Fan Setting", "Equipment Status", "Studio", "Request Expires (local time)"], "latestRow": ["Wednesday Nov 26 2025 4:34 AM", "system", "76", "77", "cool", "on", "cooling"], "history": [{"label": "Sunday Nov 23 2025 2:02 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 2:46 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 2:59 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 3:03 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 3:06 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 11:20 PM", "value": 75.0}, {"label": "Tuesday Nov 25 2025 7:59 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:01 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:04 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:11 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:46 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 10:03 PM", "value": 77.0}, {"label": "Tuesday Nov 25 2025 10:08 PM", "value": 77.0}, {"label": "Tuesday Nov 25 2025 10:10 PM", "value": 77.0}, {"label": "Tuesday Nov 25 2025 10:11 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 10:15 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 10:20 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 10:22 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 10:24 PM", "value": 74.0}, {"label": "Wednesday Nov 26 2025 4:34 AM", "value": 77.0}]};
+      const dashboardData = {"headers": ["Timestamp", "Type", "Current Temperature", "Cooling Set Point", "Climate Setting", "Fan Setting", "Equipment Status", "Studio", "Request Expires (local time)"], "latestRow": ["Wednesday Nov 26 2025 3:36 PM", "request (studio 7, zone2, 60m)", "76", "77", "cool", "on", "cooling", "7", "4:36 PM"], "history": [{"label": "Sunday Nov 23 2025 2:59 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 3:03 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 3:06 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 11:20 PM", "value": 75.0}, {"label": "Tuesday Nov 25 2025 7:59 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:01 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:04 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:11 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:46 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 10:03 PM", "value": 77.0}, {"label": "Tuesday Nov 25 2025 10:08 PM", "value": 77.0}, {"label": "Tuesday Nov 25 2025 10:10 PM", "value": 77.0}, {"label": "Tuesday Nov 25 2025 10:11 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 10:15 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 10:20 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 10:22 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 10:24 PM", "value": 74.0}, {"label": "Wednesday Nov 26 2025 4:34 AM", "value": 77.0}, {"label": "Wednesday Nov 26 2025 3:31 PM", "value": 77.0}, {"label": "Wednesday Nov 26 2025 3:36 PM", "value": 77.0}]};
       const ctx = document.getElementById("history-chart").getContext("2d");
       const parsed = dashboardData.history;
       let chart;
