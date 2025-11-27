@@ -91,6 +91,21 @@
       button:active {
         transform: scale(0.98);
       }
+      .chart-controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 12px;
+        font-size: 14px;
+        color: #f4f6ff;
+      }
+      .chart-controls select {
+        background: #1f1f26;
+        border: 1px solid #3a3a40;
+        color: #f4f6ff;
+        padding: 4px 8px;
+        border-radius: 6px;
+      }
       #history-chart {
         display: none;
         width: 100% !important;
@@ -164,6 +179,14 @@
       </div>
       <div class="history-panel">
         <button id="toggle-history">Show History Chart</button>
+        <div class="chart-controls">
+          <label for="chart-mode">Chart view:</label>
+          <select id="chart-mode">
+            <option value="setpoint">Target Temperature</option>
+            <option value="actual">Actual Temperature</option>
+            <option value="both" selected>Combined</option>
+          </select>
+        </div>
         <div class="chart-wrap">
           <canvas id="history-chart"></canvas>
         </div>
@@ -172,10 +195,26 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-      const dashboardData = {"headers": ["Timestamp", "Type", "Current Temperature", "Cooling Set Point", "Climate Setting", "Fan Setting", "Equipment Status", "Studio", "Request Expires (local time)"], "latestRow": ["Wednesday Nov 26 2025 3:36 PM", "request (studio 7, zone2, 60m)", "76", "77", "cool", "on", "cooling", "7", "4:36 PM"], "history": [{"label": "Sunday Nov 23 2025 2:59 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 3:03 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 3:06 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 11:20 PM", "value": 75.0}, {"label": "Tuesday Nov 25 2025 7:59 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:01 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:04 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:11 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:46 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 10:03 PM", "value": 77.0}, {"label": "Tuesday Nov 25 2025 10:08 PM", "value": 77.0}, {"label": "Tuesday Nov 25 2025 10:10 PM", "value": 77.0}, {"label": "Tuesday Nov 25 2025 10:11 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 10:15 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 10:20 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 10:22 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 10:24 PM", "value": 74.0}, {"label": "Wednesday Nov 26 2025 4:34 AM", "value": 77.0}, {"label": "Wednesday Nov 26 2025 3:31 PM", "value": 77.0}, {"label": "Wednesday Nov 26 2025 3:36 PM", "value": 77.0}]};
+      const dashboardData = {"headers": ["Timestamp", "Type", "Current Temperature", "Cooling Set Point", "Climate Setting", "Fan Setting", "Equipment Status", "Studio", "Request Expires (local time)"], "latestRow": ["Wednesday Nov 26 2025 3:36 PM", "request (studio 7, zone2, 60m)", "76", "77", "cool", "on", "cooling", "7", "4:36 PM"], "history": [{"label": "Sunday Nov 23 2025 2:59 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 3:03 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 3:06 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 11:20 PM", "value": 75.0}, {"label": "Tuesday Nov 25 2025 7:59 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:01 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:04 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:11 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:46 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 10:03 PM", "value": 77.0}, {"label": "Tuesday Nov 25 2025 10:08 PM", "value": 77.0}, {"label": "Tuesday Nov 25 2025 10:10 PM", "value": 77.0}, {"label": "Tuesday Nov 25 2025 10:11 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 10:15 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 10:20 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 10:22 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 10:24 PM", "value": 74.0}, {"label": "Wednesday Nov 26 2025 4:34 AM", "value": 77.0}, {"label": "Wednesday Nov 26 2025 3:31 PM", "value": 77.0}, {"label": "Wednesday Nov 26 2025 3:36 PM", "value": 77.0}], "chartLabels": ["Sunday Nov 23 2025 2:59 PM", "Sunday Nov 23 2025 3:03 PM", "Sunday Nov 23 2025 3:06 PM", "Sunday Nov 23 2025 11:20 PM", "Tuesday Nov 25 2025 7:59 PM", "Tuesday Nov 25 2025 8:01 PM", "Tuesday Nov 25 2025 8:04 PM", "Tuesday Nov 25 2025 8:11 PM", "Tuesday Nov 25 2025 8:46 PM", "Tuesday Nov 25 2025 10:03 PM", "Tuesday Nov 25 2025 10:08 PM", "Tuesday Nov 25 2025 10:10 PM", "Tuesday Nov 25 2025 10:11 PM", "Tuesday Nov 25 2025 10:15 PM", "Tuesday Nov 25 2025 10:20 PM", "Tuesday Nov 25 2025 10:22 PM", "Tuesday Nov 25 2025 10:24 PM", "Wednesday Nov 26 2025 4:34 AM", "Wednesday Nov 26 2025 3:31 PM", "Wednesday Nov 26 2025 3:36 PM"], "setpoint": [75.0, 75.0, 75.0, 75.0, 74.0, 74.0, 74.0, 74.0, 74.0, 77.0, 77.0, 77.0, 74.0, 74.0, 74.0, 74.0, 74.0, 77.0, 77.0, 77.0], "actual": [76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0], "setpointLabel": "Cooling Set Point", "actualLabel": "Current Temperature"};
       const ctx = document.getElementById("history-chart").getContext("2d");
-      const parsed = dashboardData.history;
+      const chartModeSelect = document.getElementById("chart-mode");
+      const chartLabels = dashboardData.chartLabels || [];
+      const setpointSeries = dashboardData.setpoint || [];
+      const actualSeries = dashboardData.actual || [];
+      const setpointLabel = dashboardData.setpointLabel || "Target Temperature";
+      const actualLabel = dashboardData.actualLabel || "Actual Temperature";
       let chart;
+
+      const updateChartVisibility = (mode) => {
+        if (!chart) {
+          return;
+        }
+        chart.data.datasets[0].hidden = mode === "actual";
+        chart.data.datasets[1].hidden = mode === "setpoint";
+        chart.update();
+      };
+      chartModeSelect.addEventListener("change", () => updateChartVisibility(chartModeSelect.value));
+
       document.getElementById("toggle-history").addEventListener("click", (evt) => {
         const canvas = document.getElementById("history-chart");
         if (canvas.style.display === "none" || !canvas.style.display) {
@@ -184,13 +223,23 @@
             chart = new Chart(ctx, {
               type: "line",
               data: {
-                labels: parsed.map(entry => entry.label || ""),
-                datasets: [{
-                  label: "Cooling Set Point",
-                  data: parsed.map(entry => entry.value || 0),
-                  borderColor: "#66ff99",
-                  backgroundColor: "rgba(102,255,153,0.2)",
-                }],
+                labels: chartLabels,
+                datasets: [
+                  {
+                    label: setpointLabel,
+                    data: setpointSeries,
+                    borderColor: "#66ff99",
+                    backgroundColor: "rgba(102,255,153,0.2)",
+                    spanGaps: true,
+                  },
+                  {
+                    label: actualLabel,
+                    data: actualSeries,
+                    borderColor: "#7da4ff",
+                    backgroundColor: "rgba(125,164,255,0.2)",
+                    spanGaps: true,
+                  },
+                ],
               },
               options: {
                 responsive: true,
@@ -209,15 +258,12 @@
                     },
                   },
                   x: {
-
                     ticks: {
                       color: "#f4f6ff",
                       maxRotation: 0,
                       minRotation: 90,
-                      color: "#f4f6ff"
                     },
                     grid: {
-                      
                       color: "rgba(255,255,255,0.08)",
                     },
                   },
@@ -232,6 +278,7 @@
               },
             });
           }
+          updateChartVisibility(chartModeSelect.value);
         } else {
           canvas.style.display = "none";
         }
