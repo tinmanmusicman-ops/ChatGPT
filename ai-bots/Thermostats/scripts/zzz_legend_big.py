@@ -687,12 +687,14 @@ def build_dashboard_html(
         createChart();
         canvas.style.display = "block";
         toggleHistoryBtn.textContent = "Hide History Chart";
+        toggleHistoryBtn.classList.add("history-visible");
         setActiveMode(getActiveMode());
       }};
 
       const hideChart = () => {{
         canvas.style.display = "none";
         toggleHistoryBtn.textContent = "Show History Chart";
+        toggleHistoryBtn.classList.remove("history-visible");
       }};
 
       chartControlButtons.forEach((button) => {{
@@ -725,7 +727,6 @@ def build_dashboard_html(
         color: #f4f6ff;
       }}
       .container {{
-        border: 2px solid;
         max-width: 900px;
         margin: 1px auto;
         padding: 1px;
@@ -737,19 +738,18 @@ def build_dashboard_html(
         font-size: 32px;
       }}
       .header-row {{
-        border: 2px solid;
+
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 16px;
       }}
       .chartjs-legend {{
-      border: 2px solid;
       margin-top: -40px;
       }}
       }}
       .header-label {{
-        border: 2px solid;
+
         font-size: 80px;
         text-transform: uppercase;
         letter-spacing: 0.1em;
@@ -757,18 +757,18 @@ def build_dashboard_html(
         white-space: nowrap;
       }}
       #Company {{
-        border: 3px solid #fff;
+
         width: 80%;
         font-size: 60px;
         text-align: center;
         padding: 4px 0;
       }}
       .logo-placeholder {{
-        border: 2px solid;
+
         width: 190px;
         height: 126px;
-       /* border: 1px dashed #66ff99; */
-        border-radius: 0px;
+
+                border-radius: 0px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -776,14 +776,14 @@ def build_dashboard_html(
         color: #66ff99;
       }}
       .logo-placeholder img {{
-      border: 2px solid;
-          max-width: 100%;
+
+                max-width: 100%;
         max-height: 100%;
         object-fit: contain;
       }}
       .card-grid {{
-       border: 2px solid;
-         display: grid;
+
+        display: grid;
         grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
         gap: 16px;
       }}
@@ -824,13 +824,22 @@ def build_dashboard_html(
         cursor: pointer;
         transition: transform 0.2s ease;
       }}
+      #toggle-history {{
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+      }}
+      #toggle-history.history-visible {{
+        background-image: url("../../../Images/BG.png");
+        color: #fff;
+      }}
       button:active {{
         transform: scale(0.98);
       }}
       #chartcontrols {{
         width: 900px;
-        border: 2px solid;
-        display: flex;
+
+                display: flex;
         align-items: center;
         justify-content: left;
         gap: 8px;
@@ -847,12 +856,35 @@ def build_dashboard_html(
         padding: 6px 12px;
         border-radius: 8px;
         cursor: pointer;
-        transition: background 0.2s ease, color 0.2s ease;
+        transition: background 0.2s ease, color 0.2s ease, filter 0.2s ease;
       }}
-      .chart-control.active {{
+      .chart-control[data-mode="setpoint"] {{
+        background: #66ff99;
+        color: #051b05;
+        border-color: #66ff99;
+      }}
+      .chart-control[data-mode="actual"] {{
+        background: #7da4ff;
+        color: #051b05;
+        border-color: #7da4ff;
+      }}
+      .chart-control[data-mode="cooling"] {{
+        background: #ff6b6b;
+        color: #051b05;
+        border-color: #ff6b6b;
+      }}
+      .chart-control[data-mode="fan"] {{
         background: #ffa500;
         color: #051b05;
         border-color: #ffa500;
+      }}
+      .chart-control[data-mode="both"] {{
+        background: #000;
+        color: #fff;
+        border-color: #000;
+      }}
+      .chart-control.active {{
+        filter: brightness(1.15);
       }}
       #history-chart {{
         gap: 20;
@@ -862,8 +894,8 @@ def build_dashboard_html(
         background: #000;
       }}
       .chart-wrap {{
-        border: 2px solid;
-        height: 420px;
+
+              height: 420px;
         margin: 1x auto 0 auto;
         background: #000;
         position: relative;
@@ -894,7 +926,8 @@ def build_dashboard_html(
         opacity: 0.7;
       }}
       #js-log {{
-        margin-top: 12px;
+       display: none;
+         margin-top: 12px;
         padding: 8px;
         height: 120px;
         border: 1px solid #66ff99;
@@ -919,24 +952,24 @@ def build_dashboard_html(
         {cards}
       </div>
       <div id="history" class="history-panel">
+        <img width=75" height="75" src="../../../Images/BG.png"/>
         <button id="toggle-history">Show History Chart</button>
-        <div id="chartcontrols" class="chart-controls">
-          <label>Chart view:</label>
-          <button class="chart-control" data-mode="setpoint">Target</button>
-          <button class="chart-control" data-mode="actual">Actual</button>
-          <button class="chart-control" data-mode="cooling">Equipment Status</button>
-          <button class="chart-control" data-mode="fan">Fan</button>
-          <button class="chart-control active" data-mode="both">Combined</button>
-          <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-          <ul id="NewLegend"width="300px">
-          <li>AC Set Point</li>
-          <li>Current Temp</li>
-          <li>EQ Status</li>
-          <li>Fan Mode</li>
-          </ul>
-          <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
 
-          <img width=100" height="100" src="../../../Images/BG.png"/>
+      <div id="chartcontrols" class="chart-controls">
+          <label>Chart view:</label>
+          <button class="chart-control" data-mode="setpoint">Set Point</button>
+          <button class="chart-control" data-mode="actual">Current Temp</button>
+          <button class="chart-control" data-mode="cooling">AC Status</button>
+          <button class="chart-control" data-mode="fan">Fan Mode</button>
+          <button class="chart-control active" data-mode="both">Combined</button>
+          <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+          <ul id="NewLegend" style="width: 200px; margin: 0; padding: 0; list-style: none; display: flex; gap: 12px;">
+            <li id="SetPoint" style="color: #66ff99;">Set Point</li>
+            <li id="CurrentTemp"style="color: #7da4ff;">Current Temp</li>
+            <li id="ACStatus" style="color: #ff6b6b;">AC Status</li>
+            <li id="Fan Mode" style="color: #ffa500;">Fan Mode</li>
+          </ul>
+          <span>&nbsp;</span>
         </div>
         <div class="chart-wrap">
           <canvas id="history-chart"></canvas>
