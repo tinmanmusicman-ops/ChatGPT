@@ -408,6 +408,14 @@ def build_dashboard_html(
         selected = sp_val if sp_val is not None else actual_val
         if selected is not None:
             chart_data.append({"label": label, "value": selected})
+    latest_actual_value = (
+        _safe_float(latest_row[actual_idx]) if actual_idx is not None and actual_idx < len(latest_row) else None
+    )
+    latest_setpoint_value = (
+        _safe_float(latest_row[setpoint_idx]) if setpoint_idx is not None and setpoint_idx < len(latest_row) else None
+    )
+    latest_fan_value = _fan_value(latest_row)
+    latest_cooling_value = _cooling_value(latest_row)
     data_json = json.dumps(
         {
             "headers": headers,
@@ -423,17 +431,34 @@ def build_dashboard_html(
             "cooling": cooling_series,
             "coolingLegend": COOLING_LABELS,
             "coolingLabel": cooling_label,
+            "latestActual": latest_actual_value,
+            "latestSetpoint": latest_setpoint_value,
+            "latestFan": latest_fan_value,
+            "latestCooling": latest_cooling_value,
         }
     )
     cards = ""
     seen_labels = set()
-    for label, value in zip(headers, latest_row + [""] * (len(headers) - len(latest_row))):
-        if label in seen_labels:
+    for idx, label in enumerate(headers):
+        display_label = label or ""
+        if display_label in seen_labels:
             continue
-        seen_labels.add(label)
+        seen_labels.add(display_label)
+        value = latest_row[idx] if idx < len(latest_row) else ""
+        if value is None:
+            value = ""
+        metric_attr = ""
+        if idx == actual_idx:
+            metric_attr = ' data-metric="actual"'
+        elif idx == setpoint_idx:
+            metric_attr = ' data-metric="setpoint"'
+        elif idx == fan_idx:
+            metric_attr = ' data-metric="fan"'
+        elif idx == cooling_idx:
+            metric_attr = ' data-metric="cooling"'
         cards += f"""
-        <div class="metric-card">
-          <div class="label">{label}</div>
+        <div class="metric-card"{metric_attr}>
+          <div class="label">{display_label}</div>
           <div class="value">{value}</div>
         </div>
         """
@@ -460,14 +485,149 @@ def build_dashboard_html(
           return "#999";
         }}
         const ratio = Math.max(0, Math.min((value - 50) / 40, 1));
-        const start = [77, 167, 255];
-        const end = [255, 77, 77];
+        const start = [50, 130, 255];
+        const end = [255, 40, 40];
         const rgb = start.map((component, idx) =>
           Math.round(component + (end[idx] - component) * ratio)
         );
         return `rgb(${{rgb[0]}}, ${{rgb[1]}}, ${{rgb[2]}})`;
       }};
       const colorForPoint = (value) => gradientColorFor(value ?? 50);
+      const findLastNumber = (arr) => {{
+        if (!arr) {{
+          return undefined;
+        }}
+        for (let i = arr.length - 1; i >= 0; i -= 1) {{
+          const value = arr[i];
+          if (typeof value === "number" && !Number.isNaN(value)) {{
+            return value;
+          }}
+        }}
+        return undefined;
+      }};
+      const getContrastColor = (color) => {{
+        const match = color && color.match(/rgb\\((\\d+),\\s*(\\d+),\\s*(\\d+)\\)/);
+        if (!match) {{
+          return "#f5f7ff";
+        }}
+        const [, r, g, b] = match;
+        const brightness = (Number(r) * 299 + Number(g) * 587 + Number(b) * 114) / 1000;
+        return brightness > 186 ? "#000" : "#fff";
+      }};
+      const applyCardColor = (card, color) => {{
+        if (!card || !color) {{
+          return;
+        }}
+        card.style.background = color;
+        card.style.borderColor = color;
+        const textColor = getContrastColor(color);
+        card.style.color = textColor;
+        const labelEl = card.querySelector(".label");
+        if (labelEl) {{
+          labelEl.style.color = textColor;
+        }}
+        const valueEl = card.querySelector(".value");
+        if (valueEl) {{
+          valueEl.style.color = textColor;
+        }}
+      }};
+      const latestActualValue = dashboardData.latestActual ?? findLastNumber(actualSeries) ?? 50;
+      const latestSetpointValue = dashboardData.latestSetpoint ?? findLastNumber(setpointSeries) ?? 50;
+      applyCardColor(
+        document.querySelector('.metric-card[data-metric="actual"]'),
+        colorForPoint(latestActualValue)
+      );
+      applyCardColor(
+        document.querySelector('.metric-card[data-metric="setpoint"]'),
+        colorForPoint(latestSetpointValue)
+      );
+      const fanStyleMap = {{
+        auto: {{
+          background: "#b4b4b4",
+          border: "#8c8c8c",
+          text: "#1a1a1a",
+        }},
+        circulate: {{
+          background: "radial-gradient(circle at 50% 40%, #ffd54f 0%, #f0a500 40%, #c47f00 100%)",
+          border: "#c47f00",
+          text: "#2d1e00",
+        }},
+        on: {{
+          background: "#059c15",
+          border: "#03660d",
+          text: "#ffffff",
+        }},
+      }};
+      const fanStateMap = {{
+        0: "auto",
+        1: "circulate",
+        2: "on",
+      }};
+      const applyFanCardStyle = (card, fanValue) => {{
+        if (!card) {{
+          return;
+        }}
+        const state = fanStateMap[fanValue] || "auto";
+        const style = fanStyleMap[state];
+        if (!style) {{
+          return;
+        }}
+        card.style.background = style.background;
+        card.style.borderColor = style.border;
+        card.style.color = style.text;
+        const labelEl = card.querySelector(".label");
+        if (labelEl) {{
+          labelEl.style.color = style.text;
+        }}
+        const valueEl = card.querySelector(".value");
+        if (valueEl) {{
+          valueEl.style.color = style.text;
+        }}
+      }};
+      const latestFanValue = dashboardData.latestFan ?? findLastNumber(fanSeries);
+      applyFanCardStyle(document.querySelector('.metric-card[data-metric="fan"]'), latestFanValue);
+      const coolingStyleMap = {{
+        idle: {{
+          background: "#e0e2e5",
+          border: "#b0b4ba",
+          text: "#1a1a1a",
+        }},
+        cooling: {{
+          background: "#eff6ff",
+          border: "#9ec6ff",
+          text: "#0b2f66",
+        }},
+      }};
+      const coolingStateMap = {{
+        0: "idle",
+        1: "cooling",
+      }};
+      const applyCoolingCardStyle = (card, coolingValue) => {{
+        if (!card) {{
+          return;
+        }}
+        const state = coolingStateMap[coolingValue] || "idle";
+        const style = coolingStyleMap[state];
+        if (!style) {{
+          return;
+        }}
+        card.style.background = style.background;
+        card.style.borderColor = style.border;
+        card.style.color = style.text;
+        const labelEl = card.querySelector(".label");
+        if (labelEl) {{
+          labelEl.style.color = style.text;
+        }}
+        const valueEl = card.querySelector(".value");
+        if (valueEl) {{
+          valueEl.style.color = style.text;
+        }}
+      }};
+      const latestCoolingValue = dashboardData.latestCooling ?? findLastNumber(coolingSeries) ?? 0;
+      applyCoolingCardStyle(
+        document.querySelector('.metric-card[data-metric="cooling"]'),
+        latestCoolingValue
+      );
       const gradientColorForCooling = (value) => {{
         const ratio = Math.max(0, Math.min(value ?? 0, 1));
         const start = [200, 200, 200];
