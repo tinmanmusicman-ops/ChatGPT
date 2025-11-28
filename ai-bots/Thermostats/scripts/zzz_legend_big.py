@@ -455,6 +455,19 @@ def build_dashboard_html(
       const ctx = canvas.getContext("2d");
       const toggleHistoryBtn = document.getElementById("toggle-history");
       let chart;
+      const gradientColorFor = (value) => {{
+        if (typeof value !== "number" || Number.isNaN(value)) {{
+          return "#999";
+        }}
+        const ratio = Math.max(0, Math.min((value - 50) / 40, 1));
+        const start = [77, 167, 255];
+        const end = [255, 77, 77];
+        const rgb = start.map((component, idx) =>
+          Math.round(component + (end[idx] - component) * ratio)
+        );
+        return `rgb(${{rgb[0]}}, ${{rgb[1]}}, ${{rgb[2]}})`;
+      }};
+      const colorForPoint = (value) => gradientColorFor(value ?? 50);
       
       function updateLegendImage() {{
         const log = (msg) => {{
@@ -523,14 +536,14 @@ def build_dashboard_html(
               {{
                 label: setpointLabel,
                 data: setpointSeries,
-                borderColor: "#66ff99",
+                borderColor: setpointSeries.map(colorForPoint),
                 backgroundColor: "rgba(102,255,153,0.2)",
                 spanGaps: true,
               }},
               {{
                 label: actualLabel,
                 data: actualSeries,
-                borderColor: "#7da4ff",
+                borderColor: actualSeries.map(colorForPoint),
                 backgroundColor: "rgba(125,164,255,0.2)",
                 spanGaps: true,
               }},
@@ -574,7 +587,7 @@ def build_dashboard_html(
                 min: 55,
                 max: 90,
                 ticks: {{
-                  color: "#f4f6ff",
+                  color: (ctx) => colorForPoint(ctx.tick.value),
                 }},
                 grid: {{
                   color: "rgba(255,255,255,0.1)",
@@ -670,6 +683,31 @@ def build_dashboard_html(
         chart.update();
       }};
 
+      const legendEntry = document.getElementById("logo2");
+      const legendMap = {{
+        setpoint: ["Set Point"],
+        actual: ["Current Temp"],
+        cooling: ["Status"],
+        fan: ["Fan Mode"],
+        both: ["Set Point", "Current Temp", "Status", "Fan Mode"],
+      }};
+      const updateLegendEntries = (mode) => {{
+        if (!legendEntry) {{
+          return;
+        }}
+        legendEntry.innerHTML = legendMap[mode]?
+          legendMap[mode].map((value) => `<li>${{value}}</li>`).join("") :
+          legendMap.both.map((value) => `<li>${{value}}</li>`).join("");
+      }};
+      const updateAxesVisibility = (mode) => {{
+        const showFan = mode === "fan" || mode === "both";
+        const showCooling = mode === "cooling" || mode === "both";
+        chart.options.scales.fan.display = showFan;
+        chart.options.scales.cooling.display = showCooling;
+        chart.options.scales.fan.ticks.display = showFan;
+        chart.options.scales.cooling.ticks.display = showCooling;
+      }};
+
       const getActiveMode = () => {{
         const activeBtn = document.querySelector(".chart-control.active");
         return (activeBtn && activeBtn.dataset && activeBtn.dataset.mode) || "both";
@@ -681,6 +719,8 @@ def build_dashboard_html(
           btn.classList.toggle("active", btn.dataset.mode === mode);
         }});
         updateChartVisibility(mode);
+        updateAxesVisibility(mode);
+        updateLegendEntries(mode);
       }};
 
       const showChart = () => {{
@@ -830,7 +870,7 @@ def build_dashboard_html(
         background-repeat: no-repeat;
       }}
       #toggle-history.history-visible {{
-        background-image: url("../../../Images/BG.png");
+        background-image: url("../../../Images/Hands.png");
         color: #fff;
       }}
       button:active {{
@@ -901,8 +941,12 @@ def build_dashboard_html(
         position: relative;
         max-width: 900px;
         width: 100%;
-        padding-top: 60px;
+        padding: 60px 32px 0;
         box-sizing: border-box;
+        background-image: url("../../../Images/Hands.png");
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
       }}
       .fan-legend-image {{
       }}
@@ -952,7 +996,7 @@ def build_dashboard_html(
         {cards}
       </div>
       <div id="history" class="history-panel">
-        <img width=75" height="75" src="../../../Images/BG.png"/>
+        <img width=75" height="75" src="../../../Images/Hands.png"/>
         <button id="toggle-history">Show History Chart</button>
 
       <div id="chartcontrols" class="chart-controls">
