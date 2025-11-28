@@ -351,11 +351,9 @@ def build_dashboard_html(
     actual_idx = _find_index(("current temperature", "actual temperature", "temperature"))
     if actual_idx is not None and actual_idx == setpoint_idx:
         actual_idx = None
-    setpoint_label = (
-        headers[setpoint_idx] if setpoint_idx is not None and len(headers) > setpoint_idx else "Cooling Set Point"
-    )
+    setpoint_label = "Set Point"
     actual_label = (
-        headers[actual_idx] if actual_idx is not None and len(headers) > actual_idx else "Actual Temperature"
+        headers[actual_idx] if actual_idx is not None and len(headers) > actual_idx else "Current Temp"
     )
 
     fan_idx = _find_index(("fan", "fan setting", "fan mode"))
@@ -363,7 +361,7 @@ def build_dashboard_html(
         ("equipment status", "equipment status", "status", "equipment", "cooling status")
     )
     FAN_LABELS = ["Auto", "Circulate", "On"]
-    COOLING_LABELS = ["Idle", "Cooling"]
+    COOLING_LABELS = ["Idle", "Status"]
 
     def _fan_value(row: List[str]) -> Optional[int]:
         if fan_idx is None or fan_idx >= len(row):
@@ -403,7 +401,7 @@ def build_dashboard_html(
     cooling_label = (
         headers[cooling_idx]
         if cooling_idx is not None and len(headers) > cooling_idx
-        else "Equipment Status"
+        else "Status"
     )
     chart_data = []
     for label, sp_val, actual_val in zip(chart_labels, setpoint_series, actual_series):
@@ -840,7 +838,7 @@ def build_dashboard_html(
         margin-top: 12px;
         font-size: 14px;
         color: #f4f6ff;
-        height: auto;
+        height: 100px;
       }}
       .chart-control {{
         border: 1px solid #3a3a40;
@@ -929,12 +927,16 @@ def build_dashboard_html(
           <button class="chart-control" data-mode="cooling">Equipment Status</button>
           <button class="chart-control" data-mode="fan">Fan</button>
           <button class="chart-control active" data-mode="both">Combined</button>
-          <img
-            id="legend-image"
-            class="fan-legend-image"
-            src="../../../Images/BG.png"
-            alt="Chart legend image"
-          />
+          <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+          <ul id="NewLegend"width="300px">
+          <li>AC Set Point</li>
+          <li>Current Temp</li>
+          <li>EQ Status</li>
+          <li>Fan Mode</li>
+          </ul>
+          <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+
+          <img width=100" height="100" src="../../../Images/BG.png"/>
         </div>
         <div class="chart-wrap">
           <canvas id="history-chart"></canvas>
