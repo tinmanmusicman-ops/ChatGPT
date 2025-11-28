@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>Lockout Music Studios Oside</title>
+    <title>Lockout Music Studios Oceanside CA</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap">
     <style>
@@ -13,9 +13,9 @@
         color: #f4f6ff;
       }
       .container {
-        max-width: 960px;
-        margin: 32px auto;
-        padding: 24px;
+        max-width: 900px;
+        margin: 1px auto;
+        padding: 1px;
         background: #4a4a4a;
         border-radius: 16px;
       }
@@ -24,22 +24,37 @@
         font-size: 32px;
       }
       .header-row {
+
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 16px;
       }
+      .chartjs-legend {
+      margin-top: -40px;
+      }
+      }
       .header-label {
-        font-size: 36px;
+
+        font-size: 80px;
         text-transform: uppercase;
-        letter-spacing: 0.25em;
+        letter-spacing: 0.1em;
         opacity: 0.95;
+        white-space: nowrap;
+      }
+      #Company {
+
+        width: 80%;
+        font-size: 60px;
+        text-align: center;
+        padding: 4px 0;
       }
       .logo-placeholder {
+
         width: 190px;
         height: 126px;
-       /* border: 1px dashed #66ff99; */
-        border-radius: 0px;
+
+                border-radius: 0px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -47,11 +62,13 @@
         color: #66ff99;
       }
       .logo-placeholder img {
-        max-width: 100%;
+
+                max-width: 100%;
         max-height: 100%;
         object-fit: contain;
       }
       .card-grid {
+
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
         gap: 16px;
@@ -72,12 +89,16 @@
         font-weight: 600;
       }
       .history-panel {
+        
         margin-top: 32px;
         background: rgba(255,255,255,0.02);
         border-radius: 12px;
         padding: 16px;
         border: 1px solid rgba(255,255,255,0.08);
         position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
       }
       button {
         background: #66ff99;
@@ -89,16 +110,30 @@
         cursor: pointer;
         transition: transform 0.2s ease;
       }
+      #toggle-history {
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+      }
+      #toggle-history.history-visible {
+        background-image: url("../../../Images/Hands.png");
+        color: #fff;
+      }
       button:active {
         transform: scale(0.98);
       }
-      .chart-controls {
-        display: flex;
+      #chartcontrols {
+        width: 900px;
+
+                display: flex;
         align-items: center;
+        justify-content: left;
         gap: 8px;
+        padding: 4px 8px;
         margin-top: 12px;
         font-size: 14px;
         color: #f4f6ff;
+        height: 100px;
       }
       .chart-control {
         border: 1px solid #3a3a40;
@@ -107,70 +142,112 @@
         padding: 6px 12px;
         border-radius: 8px;
         cursor: pointer;
-        transition: background 0.2s ease, color 0.2s ease;
+        transition: background 0.2s ease, color 0.2s ease, filter 0.2s ease;
       }
-      .chart-control.active {
+      .chart-control[data-mode="setpoint"] {
+        background: #66ff99;
+        color: #051b05;
+        border-color: #66ff99;
+      }
+      .chart-control[data-mode="actual"] {
+        background: #7da4ff;
+        color: #051b05;
+        border-color: #7da4ff;
+      }
+      .chart-control[data-mode="cooling"] {
+        background: #ff6b6b;
+        color: #051b05;
+        border-color: #ff6b6b;
+      }
+      .chart-control[data-mode="fan"] {
         background: #ffa500;
         color: #051b05;
         border-color: #ffa500;
       }
+      .chart-control[data-mode="both"] {
+        background: #000;
+        color: #fff;
+        border-color: #000;
+      }
+      .chart-control.active {
+        filter: brightness(1.15);
+      }
       #history-chart {
+        gap: 20;
         display: none;
         width: 100% !important;
         height: 100% !important;
+        background: #000;
       }
       .chart-wrap {
-        height: 420px;
-      }
-      .fan-legend {
 
-        position: absolute;
-        top: 16px;
-        right: 16px;
+              height: 420px;
+        margin: 1x auto 0 auto;
+        background: #000;
+        position: relative;
+        max-width: 900px;
+        width: 100%;
+        padding: 60px 32px 0;
+        box-sizing: border-box;
+        background-image: url("../../../Images/Hands.png");
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+      }
+      .fan-legend-image {
+      }
+      #logo2 {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        width: 50px;
         display: flex;
         flex-direction: column;
-        align-items: flex-end;
         gap: 4px;
-        font-size: 12px;
-        color: #cbd2e0; 
       }
-      .fan-legend-item {
-        cursor: default;
-        padding: 2px 6px;
-        border-radius: 999px;
-        transition: color 0.2s ease, background 0.2s ease;
-        color: #ffa500;
-      }
-      .fan-legend-item.active {
-        font-weight: 600;
-        color: #ffa500;
-        background: rgba(255,165,0,0.1);
+      #logo2 li {
+        font-size: 10px;
+        color: #f4f6ff;
       }
       .note {
+        border: 2px solid;
         margin-top: 12px;
         font-size: 12px;
         opacity: 0.7;
+      }
+      #js-log {
+       display: none;
+         margin-top: 12px;
+        padding: 8px;
+        height: 120px;
+        border: 1px solid #66ff99;
+        background: #111;
+        color: #66ff99;
+        font-size: 11px;
+        overflow-y: auto;
+        white-space: pre-wrap;
+        width: 100%;
       }
     </style>
   </head>
   <body>
     <div class="container">
       <div class="header-row">
-        <div class="header-label">Lockout Music Studios  Oceanside</div>
-        <div class="logo-placeholder">
+        <div id="Company">Lockout Music Studios  Oceanside</div>
+        <div id="Logo"class="logo-placeholder">
           <img src="../../../Images/LO_Logo.png" alt="Logo" />
         </div>
       </div>
-      <div class="card-grid">
+      <div id="Cards" class="card-grid">
         
         <div class="metric-card">
           <div class="label">Timestamp</div>
-          <div class="value">Wednesday Nov 26 2025 3:36 PM</div>
+          <div class="value">Tuesday Nov 25 2025 8:46 PM</div>
         </div>
         
         <div class="metric-card">
           <div class="label">Type</div>
-          <div class="value">request (studio 7, zone2, 60m)</div>
+          <div class="value">request (60m)</div>
         </div>
         
         <div class="metric-card">
@@ -180,7 +257,7 @@
         
         <div class="metric-card">
           <div class="label">Cooling Set Point</div>
-          <div class="value">77</div>
+          <div class="value">74</div>
         </div>
         
         <div class="metric-card">
@@ -190,60 +267,273 @@
         
         <div class="metric-card">
           <div class="label">Fan Setting</div>
-          <div class="value">on</div>
+          <div class="value">Auto</div>
         </div>
         
         <div class="metric-card">
           <div class="label">Equipment Status</div>
-          <div class="value">cooling</div>
+          <div class="value">Idle</div>
         </div>
         
         <div class="metric-card">
           <div class="label">Studio</div>
-          <div class="value">7</div>
+          <div class="value"></div>
         </div>
         
         <div class="metric-card">
           <div class="label">Request Expires (local time)</div>
-          <div class="value">4:36 PM</div>
+          <div class="value">9:46 PM</div>
         </div>
         
       </div>
-      <div class="history-panel">
+      <div id="history" class="history-panel">
+        <img width=75" height="75" src="../../../Images/Hands.png"/>
         <button id="toggle-history">Show History Chart</button>
-        <div class="chart-controls">
+
+      <div id="chartcontrols" class="chart-controls">
           <label>Chart view:</label>
-          <button class="chart-control" data-mode="setpoint">Target</button>
-          <button class="chart-control" data-mode="actual">Actual</button>
-          <button class="chart-control" data-mode="fan">Fan</button>
+          <button class="chart-control" data-mode="setpoint">Set Point</button>
+          <button class="chart-control" data-mode="actual">Current Temp</button>
+          <button class="chart-control" data-mode="cooling">AC Status</button>
+          <button class="chart-control" data-mode="fan">Fan Mode</button>
           <button class="chart-control active" data-mode="both">Combined</button>
+          <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+          <ul id="NewLegend" style="width: 200px; margin: 0; padding: 0; list-style: none; display: flex; gap: 12px;">
+            <li id="SetPoint" style="color: #66ff99;">Set Point</li>
+            <li id="CurrentTemp"style="color: #7da4ff;">Current Temp</li>
+            <li id="ACStatus" style="color: #ff6b6b;">AC Status</li>
+            <li id="Fan Mode" style="color: #ffa500;">Fan Mode</li>
+          </ul>
+          <span>&nbsp;</span>
         </div>
         <div class="chart-wrap">
           <canvas id="history-chart"></canvas>
         </div>
-        <div class="fan-legend">
-          <span class="fan-legend-item" data-mode="auto">Auto</span>
-          <span class="fan-legend-item" data-mode="circulate">Circulate</span>
-          <span class="fan-legend-item" data-mode="on">On</span>
-        </div>
         <div class="note">Data source: Google Sheet (last updated when this page was generated).</div>
+        <pre id="js-log"></pre>
       </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-      const dashboardData = {"headers": ["Timestamp", "Type", "Current Temperature", "Cooling Set Point", "Climate Setting", "Fan Setting", "Equipment Status", "Studio", "Request Expires (local time)"], "latestRow": ["Wednesday Nov 26 2025 3:36 PM", "request (studio 7, zone2, 60m)", "76", "77", "cool", "on", "cooling", "7", "4:36 PM"], "history": [{"label": "Sunday Nov 23 2025 2:59 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 3:03 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 3:06 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 11:20 PM", "value": 75.0}, {"label": "Tuesday Nov 25 2025 7:59 PM", "value": 72.0}, {"label": "Tuesday Nov 25 2025 8:01 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:04 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:11 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:46 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 10:03 PM", "value": 77.0}, {"label": "Tuesday Nov 25 2025 10:08 PM", "value": 77.0}, {"label": "Tuesday Nov 25 2025 10:10 PM", "value": 77.0}, {"label": "Tuesday Nov 25 2025 10:11 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 10:15 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 10:20 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 10:22 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 10:24 PM", "value": 74.0}, {"label": "Wednesday Nov 26 2025 4:34 AM", "value": 77.0}, {"label": "Wednesday Nov 26 2025 3:31 PM", "value": 77.0}, {"label": "Wednesday Nov 26 2025 3:36 PM", "value": 77.0}], "chartLabels": ["Sunday Nov 23 2025 2:59 PM", "Sunday Nov 23 2025 3:03 PM", "Sunday Nov 23 2025 3:06 PM", "Sunday Nov 23 2025 11:20 PM", "Tuesday Nov 25 2025 7:59 PM", "Tuesday Nov 25 2025 8:01 PM", "Tuesday Nov 25 2025 8:04 PM", "Tuesday Nov 25 2025 8:11 PM", "Tuesday Nov 25 2025 8:46 PM", "Tuesday Nov 25 2025 10:03 PM", "Tuesday Nov 25 2025 10:08 PM", "Tuesday Nov 25 2025 10:10 PM", "Tuesday Nov 25 2025 10:11 PM", "Tuesday Nov 25 2025 10:15 PM", "Tuesday Nov 25 2025 10:20 PM", "Tuesday Nov 25 2025 10:22 PM", "Tuesday Nov 25 2025 10:24 PM", "Wednesday Nov 26 2025 4:34 AM", "Wednesday Nov 26 2025 3:31 PM", "Wednesday Nov 26 2025 3:36 PM"], "setpoint": [75.0, 75.0, 75.0, 75.0, 72.0, 74.0, 74.0, 74.0, 74.0, 77.0, 77.0, 77.0, 74.0, 74.0, 74.0, 74.0, 74.0, 77.0, 77.0, 77.0], "actual": [90.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0], "setpointLabel": "Cooling Set Point", "actualLabel": "Current Temperature", "fan": [2, 2, 2, 2, 1, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], "fanLegend": ["Auto", "Circulate", "On"]};
-      const ctx = document.getElementById("history-chart").getContext("2d");
-      const chartControlButtons = document.querySelectorAll(".chart-control");
+      const dashboardData = {"headers": ["Timestamp", "Type", "Current Temperature", "Cooling Set Point", "Climate Setting", "Fan Setting", "Equipment Status", "Studio", "Request Expires (local time)"], "latestRow": ["Tuesday Nov 25 2025 8:46 PM", "request (60m)", "76", "74", "cool", "Auto", "Idle", "", "9:46 PM"], "history": [{"label": "Sunday Nov 23 2025 3:06 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 11:20 PM", "value": 75.0}, {"label": "Tuesday Nov 25 2025 7:59 PM", "value": 72.0}, {"label": "Tuesday Nov 25 2025 8:01 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:04 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:11 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:46 PM", "value": 74.0}, {"label": "Friday Nov 21 2025 6:51 PM", "value": 74.0}, {"label": "Sunday Nov 23 2025 1:56 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 2:02 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 2:46 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 2:59 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 3:03 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 3:06 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 11:20 PM", "value": 75.0}, {"label": "Tuesday Nov 25 2025 7:59 PM", "value": 72.0}, {"label": "Tuesday Nov 25 2025 8:01 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:04 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:11 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:46 PM", "value": 74.0}], "chartLabels": ["Sunday Nov 23 2025 3:06 PM", "Sunday Nov 23 2025 11:20 PM", "Tuesday Nov 25 2025 7:59 PM", "Tuesday Nov 25 2025 8:01 PM", "Tuesday Nov 25 2025 8:04 PM", "Tuesday Nov 25 2025 8:11 PM", "Tuesday Nov 25 2025 8:46 PM", "Friday Nov 21 2025 6:51 PM", "Sunday Nov 23 2025 1:56 PM", "Sunday Nov 23 2025 2:02 PM", "Sunday Nov 23 2025 2:46 PM", "Sunday Nov 23 2025 2:59 PM", "Sunday Nov 23 2025 3:03 PM", "Sunday Nov 23 2025 3:06 PM", "Sunday Nov 23 2025 11:20 PM", "Tuesday Nov 25 2025 7:59 PM", "Tuesday Nov 25 2025 8:01 PM", "Tuesday Nov 25 2025 8:04 PM", "Tuesday Nov 25 2025 8:11 PM", "Tuesday Nov 25 2025 8:46 PM"], "setpoint": [75.0, 75.0, 72.0, 74.0, 74.0, 74.0, 74.0, 74.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 72.0, 74.0, 74.0, 74.0, 74.0], "actual": [76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 72.0, 65.0, 65.0, 76.0, 90.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0], "setpointLabel": "Set Point", "actualLabel": "Current Temperature", "fan": [2, 2, 1, 0, 2, 2, 2, 1, 2, 2, 2, 2, 0, 2, 2, 1, 2, 2, 2, 0], "fanLegend": ["Auto", "Circulate", "On"], "cooling": [1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0], "coolingLegend": ["Idle", "Status"], "coolingLabel": "Equipment Status"};
       const chartLabels = dashboardData.chartLabels || [];
       const setpointSeries = dashboardData.setpoint || [];
       const actualSeries = dashboardData.actual || [];
       const fanSeries = dashboardData.fan || [];
-      const fanLegend = dashboardData.fanLegend || ["Auto", "Circulate", "On"];
+      const coolingSeries = dashboardData.cooling || [];
       const setpointLabel = dashboardData.setpointLabel || "Target Temperature";
       const actualLabel = dashboardData.actualLabel || "Actual Temperature";
-      const fanLegendItems = document.querySelectorAll(".fan-legend-item");
-      const FAN_STATE_NAMES = ["auto", "circulate", "off"];
+      const coolingLabel = dashboardData.coolingLabel || "Cooling Status";
+      const fanLegend = dashboardData.fanLegend || ["On", "Circulate", "Auto"];
+      const coolingLegend = dashboardData.coolingLegend || ["Idle", "Cooling"];
+      const chartControlButtons = document.querySelectorAll(".chart-control");
+      const canvas = document.getElementById("history-chart");
+      const ctx = canvas.getContext("2d");
+      const toggleHistoryBtn = document.getElementById("toggle-history");
       let chart;
+      
+      function updateLegendImage() {
+        const log = (msg) => {
+          const logEl = document.getElementById("js-log");
+          if (logEl) {
+            logEl.textContent += msg + "\n";
+            logEl.scrollTop = logEl.scrollHeight;
+          } else {
+            console.log(msg);
+          }
+        };
+        if (!chart || !chart.legend) {
+          return;
+        }
+        const srcCanvas = chart.canvas;
+        const legendBox = chart.legend;
+        
+        let { left, top, width, height } = legendBox;
+        log(`legendBox raw: left=${left}, top=${top}, width=${width}, height=${height}`);
+        try {
+          height -= 275;
+          width -= 20;
+        } catch (error) {
+          log(`height adjustment error: ${error}`);
+        }
+        log(`legendBox adjusted: left=${left}, top=${top}, width=${width}, height=${height}`);
+        if (!width || !height) {
+          return;
+        }
+        const legendCanvas = document.createElement("canvas");
+        log("creating legend canvas");
+        legendCanvas.width = width;
+        legendCanvas.height = height;
+        const legendCtx = legendCanvas.getContext("2d");
+        legendCtx.drawImage(
+          srcCanvas,
+          left,
+          top,
+          width,
+          height,
+          0,
+          0,
+          width,
+          height
+        );
+        const dataUrl = legendCanvas.toDataURL("image/png");
+        const legendImg = document.getElementById("legend-image");
+        if (legendImg && dataUrl) {
+          legendImg.src = dataUrl;
+
+        }
+        return dataUrl;
+      }
+
+
+      const createChart = () => {
+        if (chart) {
+          return;
+        }
+        canvas.style.display = "block";
+        chart = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: chartLabels,
+            datasets: [
+              {
+                label: setpointLabel,
+                data: setpointSeries,
+                borderColor: "#66ff99",
+                backgroundColor: "rgba(102,255,153,0.2)",
+                spanGaps: true,
+              },
+              {
+                label: actualLabel,
+                data: actualSeries,
+                borderColor: "#7da4ff",
+                backgroundColor: "rgba(125,164,255,0.2)",
+                spanGaps: true,
+              },
+              {
+                label: coolingLabel,
+                data: coolingSeries,
+                borderColor: "#ff6b6b",
+                backgroundColor: "rgba(255,107,107,0.2)",
+                yAxisID: "cooling",
+                spanGaps: true,
+                borderDash: [6, 4],
+                pointRadius: 0,
+              },
+              {
+                label: "Fan Mode",
+                data: fanSeries,
+                borderColor: "#ffa500",
+                backgroundColor: "rgba(255,165,0,0.3)",
+                yAxisID: "fan",
+                spanGaps: true,
+                borderDash: [4, 4],
+                pointRadius: 4,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: {
+                padding: {
+                    right: 0
+                }
+            },
+                
+            
+            animation: false,
+            scales: {
+
+                y: {
+                beginAtZero: false,
+                min: 55,
+                max: 90,
+                ticks: {
+                  color: "#f4f6ff",
+                },
+                grid: {
+                  color: "rgba(255,255,255,0.1)",
+                },
+              },
+              fan: {
+                type: "linear",
+                position: "right",
+                min: -1,
+                max: 2,
+                ticks: {
+                  stepSize: 1,
+                  callback: (value) => fanLegend[Math.round(value)] || "",
+                  color: "#ffa500",
+                },
+                grid: {
+                  drawOnChartArea: false,
+                  color: "rgba(255,255,255,0.08)",
+                },
+              },
+              cooling: {
+                type: "linear",
+                position: "right",
+                offset: false,
+                min: -1,
+                max: 2,
+                ticks: {
+                  stepSize: 1,
+                  callback: (value) => coolingLegend[Math.round(value)] || "",
+                  color: "#ff6b6b",
+                },
+                grid: {
+                  drawOnChartArea: true,
+                  color: "rgba(255,255,255,0.08)",
+                },
+              },
+              x: {
+                ticks: {
+                  
+                  color: "#f4f6ff",
+                  maxRotation: 0,
+                  minRotation: 90,
+                },
+                grid: {
+                  color: "rgba(255,255,255,0.08)",
+                },
+              },
+            },
+            plugins: {
+            legend: {
+
+                        position: "left",
+            align: "start",
+                labels: {
+                  color: "#f4f6ff",
+                  usePontStyle: false,
+                  boxWidth: 10,
+              //    filter: ((legendItem) => legendItem.text !== coolingLabel),  
+                },
+              },
+              tooltip: {
+                callbacks: {
+                  label: (context) => {
+                    const label = context.dataset.label || "";
+                    if (context.dataset.yAxisID === "fan") {
+                      const value = context.parsed.y;
+                      return `\${label}: \${fanLegend[Math.round(value)] || "Unknown"}`;
+                    }
+                    if (context.dataset.yAxisID === "cooling") {
+                      const value = context.parsed.y;
+                      return `\${label}: \${coolingLegend[Math.round(value)] || "Unknown"}`;
+                    }
+                    return `\${label}: \${context.parsed.y ?? context.parsed}`;
+                  },
+                },
+              },
+            },
+          },
+        });
+        updateLegendImage();
+        chart.options.plugins.legend.display = false;
+        chart.update();
+      };
 
       const updateChartVisibility = (mode) => {
         if (!chart) {
@@ -251,149 +541,53 @@
         }
         chart.data.datasets[0].hidden = !(mode === "setpoint" || mode === "both");
         chart.data.datasets[1].hidden = !(mode === "actual" || mode === "both");
-        chart.data.datasets[2].hidden = !(mode === "fan" || mode === "both");
+        chart.data.datasets[2].hidden = mode !== "cooling" && mode !== "both";
+        chart.data.datasets[3].hidden = mode !== "fan" && mode !== "both";
         chart.update();
       };
-      const getLatestFanState = () => {
-        if (!fanSeries.length) {
-          return null;
-        }
-        const idx = fanSeries[fanSeries.length - 1];
-        if (typeof idx !== "number" || Number.isNaN(idx)) {
-          return null;
-        }
-        return FAN_STATE_NAMES[idx] || null;
-      };
-      const highlightFanLegend = (mode) => {
-        fanLegendItems.forEach((item) => {
-          const isActiveLegend = item.dataset.mode === mode;
-          const baseColor = item.dataset.color || "#cbd2e0";
-          const activeColor = item.dataset.activeColor || "#ffa500";
-          item.classList.toggle("active", isActiveLegend);
-          item.style.color = isActiveLegend ? activeColor : baseColor;
-        });
-      };
+
       const getActiveMode = () => {
         const activeBtn = document.querySelector(".chart-control.active");
         return (activeBtn && activeBtn.dataset && activeBtn.dataset.mode) || "both";
       };
+
       const setActiveMode = (mode) => {
+        createChart();
         chartControlButtons.forEach((btn) => {
           btn.classList.toggle("active", btn.dataset.mode === mode);
         });
         updateChartVisibility(mode);
-        highlightFanLegend(getLatestFanState());
       };
+
+      const showChart = () => {
+        createChart();
+        canvas.style.display = "block";
+        toggleHistoryBtn.textContent = "Hide History Chart";
+        toggleHistoryBtn.classList.add("history-visible");
+        setActiveMode(getActiveMode());
+      };
+
+      const hideChart = () => {
+        canvas.style.display = "none";
+        toggleHistoryBtn.textContent = "Show History Chart";
+        toggleHistoryBtn.classList.remove("history-visible");
+      };
+
       chartControlButtons.forEach((button) => {
         button.addEventListener("click", () => setActiveMode(button.dataset.mode));
       });
-      highlightFanLegend(getLatestFanState());
-      document.getElementById("toggle-history").addEventListener("click", (evt) => {
-        const canvas = document.getElementById("history-chart");
+
+      toggleHistoryBtn.addEventListener("click", () => {
         if (canvas.style.display === "none" || !canvas.style.display) {
-          canvas.style.display = "block";
-          if (!chart) {
-            chart = new Chart(ctx, {
-              type: "line",
-              data: {
-                labels: chartLabels,
-                datasets: [
-                  {
-                    label: setpointLabel,
-                    data: setpointSeries,
-                    borderColor: "#66ff99",
-                    backgroundColor: "rgba(102,255,153,0.2)",
-                    spanGaps: true,
-                  },
-                  {
-                    label: actualLabel,
-                    data: actualSeries,
-                    borderColor: "#7da4ff",
-                    backgroundColor: "rgba(125,164,255,0.2)",
-                    spanGaps: true,
-                  },
-                  {
-                    label: "Fan Mode",
-                    data: fanSeries,
-                    borderColor: "#ffa500",
-                    backgroundColor: "rgba(255,165,0,0.3)",
-                    yAxisID: "fan",
-                    spanGaps: true,
-                    borderDash: [4, 4],
-                    pointRadius: 4,
-                  },
-                ],
-              },
-              options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                animation: false,
-                scales: {
-                  y: {
-                    beginAtZero: false,
-                    min: 55,
-                    max: 90,
-                    ticks: {
-                      color: "#f4f6ff",
-                    },
-                    grid: {
-                      color: "rgba(255,255,255,0.1)",
-                    },
-                  },
-                  fan: {
-                    type: "linear",
-                    position: "right",
-                    min: -0.5,
-                    max: 2.5,
-                    ticks: {
-                      stepSize: 1,
-                      callback: (value) => fanLegend[Math.round(value)] || "",
-                      color: "#f4f6ff",
-                    },
-                    grid: {
-                      drawOnChartArea: false,
-                      color: "rgba(255,255,255,0.08)",
-                    },
-                  },
-                  x: {
-                    ticks: {
-                      color: "#f4f6ff",
-                      maxRotation: 0,
-                      minRotation: 90,
-                    },
-                    grid: {
-                      color: "rgba(255,255,255,0.08)",
-                    },
-                  },
-                },
-                plugins: {
-                  legend: {
-                    labels: {
-                      color: "#f4f6ff",
-                    },
-                  },
-                  tooltip: {
-                    callbacks: {
-                      label: (context) => {
-                        if (context.dataset.yAxisID === "fan") {
-                          const value = context.parsed.y;
-                          return `\${context.dataset.label}: \${
-                            fanLegend[Math.round(value)] || "Unknown"
-                          }`;
-                        }
-                        return `\${context.dataset.label}: \${context.parsed.y ?? context.parsed}`;
-                      },
-                    },
-                  },
-                },
-              },
-            });
-          }
-          setActiveMode(getActiveMode());
+          showChart();
         } else {
-          canvas.style.display = "none";
+          hideChart();
         }
       });
+
+      showChart();
     </script>
+    
+
   </body>
 </html>
