@@ -361,7 +361,7 @@ def build_dashboard_html(
         ("equipment status", "equipment status", "status", "equipment", "cooling status")
     )
     FAN_LABELS = ["Auto", "Circulate", "On"]
-    COOLING_LABELS = ["Idle", "Status"]
+    COOLING_LABELS = ["Idle", "Cooling"]
 
     def _fan_value(row: List[str]) -> Optional[int]:
         if fan_idx is None or fan_idx >= len(row):
@@ -468,6 +468,57 @@ def build_dashboard_html(
         return `rgb(${{rgb[0]}}, ${{rgb[1]}}, ${{rgb[2]}})`;
       }};
       const colorForPoint = (value) => gradientColorFor(value ?? 50);
+      const gradientColorForCooling = (value) => {{
+        const ratio = Math.max(0, Math.min(value ?? 0, 1));
+        const start = [200, 200, 200];
+        const end = [61, 159, 255];
+        const rgb = start.map((component, idx) =>
+          Math.round(component + (end[idx] - component) * ratio)
+        );
+        return `rgb(${{rgb[0]}}, ${{rgb[1]}}, ${{rgb[2]}})`;
+      }};
+      const buildSegmentGradient = (ctx, startValue, endValue) => {{
+        const start = startValue ?? endValue ?? 50;
+        const end = endValue ?? startValue ?? 50;
+        if (!ctx || !ctx.chart || !ctx.chart.ctx || !ctx.p0 || !ctx.p1) {{
+          return colorForPoint(end);
+        }}
+        const gradient = ctx.chart.ctx.createLinearGradient(
+          ctx.p0.x,
+          ctx.p0.y,
+          ctx.p1.x,
+          ctx.p1.y
+        );
+        gradient.addColorStop(0, colorForPoint(start));
+        gradient.addColorStop(1, colorForPoint(end));
+        return gradient;
+      }};
+      const segmentColor = (ctx) => {{
+        const startValue = ctx.p0?.parsed.y ?? ctx.parsed.y ?? 50;
+        const endValue = ctx.p1?.parsed.y ?? ctx.parsed.y ?? startValue;
+        return buildSegmentGradient(ctx, startValue, endValue);
+      }};
+      const buildCoolingGradient = (ctx, startValue, endValue) => {{
+        const start = startValue ?? endValue ?? 0;
+        const end = endValue ?? startValue ?? start;
+        if (!ctx || !ctx.chart || !ctx.chart.ctx || !ctx.p0 || !ctx.p1) {{
+          return gradientColorForCooling(end);
+        }}
+        const gradient = ctx.chart.ctx.createLinearGradient(
+          ctx.p0.x,
+          ctx.p0.y,
+          ctx.p1.x,
+          ctx.p1.y
+        );
+        gradient.addColorStop(0, gradientColorForCooling(start));
+        gradient.addColorStop(1, gradientColorForCooling(end));
+        return gradient;
+      }};
+      const coolingSegmentColor = (ctx) => {{
+        const startValue = ctx.p0?.parsed.y ?? ctx.parsed.y ?? 0;
+        const endValue = ctx.p1?.parsed.y ?? ctx.parsed.y ?? startValue;
+        return buildCoolingGradient(ctx, startValue, endValue);
+      }};
       
       function updateLegendImage() {{
         const log = (msg) => {{
@@ -536,21 +587,27 @@ def build_dashboard_html(
               {{
                 label: setpointLabel,
                 data: setpointSeries,
-                borderColor: setpointSeries.map(colorForPoint),
+                segment: {{
+                  borderColor: segmentColor,
+                }},
                 backgroundColor: "rgba(102,255,153,0.2)",
                 spanGaps: true,
               }},
               {{
                 label: actualLabel,
                 data: actualSeries,
-                borderColor: actualSeries.map(colorForPoint),
+                segment: {{
+                  borderColor: segmentColor,
+                }},
                 backgroundColor: "rgba(125,164,255,0.2)",
                 spanGaps: true,
               }},
               {{
                 label: coolingLabel,
                 data: coolingSeries,
-                borderColor: "#ff6b6b",
+                segment: {{
+                  borderColor: coolingSegmentColor,
+                }},
                 backgroundColor: "rgba(255,107,107,0.2)",
                 yAxisID: "cooling",
                 spanGaps: true,
@@ -684,10 +741,17 @@ def build_dashboard_html(
       }};
 
       const legendEntry = document.getElementById("logo2");
+      const legendColorMap = {{
+        "Set Point": "#66ff99",
+        "Current Temp": "#7da4ff",
+        Status: "#3d9fff",
+        Idle: "#b4b4b4",
+        "Fan Mode": "#ffa500",
+      }};
       const legendMap = {{
         setpoint: ["Set Point"],
         actual: ["Current Temp"],
-        cooling: ["Status"],
+        cooling: ["Status", "Idle"],
         fan: ["Fan Mode"],
         both: ["Set Point", "Current Temp", "Status", "Fan Mode"],
       }};
@@ -695,13 +759,20 @@ def build_dashboard_html(
         if (!legendEntry) {{
           return;
         }}
-        legendEntry.innerHTML = legendMap[mode]?
-          legendMap[mode].map((value) => `<li>${{value}}</li>`).join("") :
-          legendMap.both.map((value) => `<li>${{value}}</li>`).join("");
+        const entries = legendMap[mode] || legendMap.both;
+        legendEntry.innerHTML = entries
+          .map((value) => {{
+            const color = legendColorMap[value] || "#f4f6ff";
+            return `<li style="color:${{color}}">${{value}}</li>`;
+          }})
+          .join("");
       }};
       const updateAxesVisibility = (mode) => {{
+        const showTemp = mode === "setpoint" || mode === "actual" || mode === "both";
         const showFan = mode === "fan" || mode === "both";
         const showCooling = mode === "cooling" || mode === "both";
+        chart.options.scales.y.display = showTemp;
+        chart.options.scales.y.ticks.display = showTemp;
         chart.options.scales.fan.display = showFan;
         chart.options.scales.cooling.display = showCooling;
         chart.options.scales.fan.ticks.display = showFan;
@@ -721,6 +792,9 @@ def build_dashboard_html(
         updateChartVisibility(mode);
         updateAxesVisibility(mode);
         updateLegendEntries(mode);
+        if (chart) {{
+          chart.update();
+        }}
       }};
 
       const showChart = () => {{
@@ -909,9 +983,9 @@ def build_dashboard_html(
         border-color: #7da4ff;
       }}
       .chart-control[data-mode="cooling"] {{
-        background: #ff6b6b;
+        background: #3d9fff;
         color: #051b05;
-        border-color: #ff6b6b;
+        border-color: #3d9fff;
       }}
       .chart-control[data-mode="fan"] {{
         background: #ffa500;
@@ -1001,11 +1075,11 @@ def build_dashboard_html(
 
       <div id="chartcontrols" class="chart-controls">
           <label>Chart view:</label>
-          <button class="chart-control" data-mode="setpoint">Set Point</button>
-          <button class="chart-control" data-mode="actual">Current Temp</button>
-          <button class="chart-control" data-mode="cooling">AC Status</button>
-          <button class="chart-control" data-mode="fan">Fan Mode</button>
-          <button class="chart-control active" data-mode="both">Combined</button>
+          <button type="button" class="chart-control" data-mode="setpoint">Set Point</button>
+          <button type="button" class="chart-control" data-mode="actual">Current Temp</button>
+          <button type="button" class="chart-control" data-mode="cooling">AC Status</button>
+          <button type="button" class="chart-control" data-mode="fan">Fan Mode</button>
+          <button type="button" class="chart-control active" data-mode="both">Combined</button>
           <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
           <ul id="NewLegend" style="width: 200px; margin: 0; padding: 0; list-style: none; display: flex; gap: 12px;">
             <li id="SetPoint" style="color: #66ff99;">Set Point</li>
