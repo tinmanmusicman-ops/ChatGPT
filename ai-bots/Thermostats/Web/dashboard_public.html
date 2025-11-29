@@ -73,7 +73,20 @@
         grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
         gap: 16px;
       }
+      .hands-logo-slot {
+        width: 91%;
+        display: flex;
+        justify-content: flex-end;
+        align-items: flex-start;
+        padding-left: 12px;
+        position: relative;
+        min-height: 60px;
+        margin-top: -62px;
+      }
       .metric-card {
+        border: 3px;
+        border=color: white;
+        border-style: solid;
         background: #2b2b30;
         color: #f5f7ff;
         border: 1px solid #3a3a40;
@@ -146,6 +159,22 @@
         flex-direction: column;
         align-items: center;
       }
+      .hands-logo-top {
+        width: 195px;
+        height: 120px;
+        background-image: url("../../../Images/Hands.png");
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+        position: absolute;
+        right: 40px;
+        top: -32px;
+        transition: opacity 0.3s ease;
+      }
+      .hands-logo-top.hidden {
+        opacity: 0;
+        visibility: hidden;
+      }
       button {
         background: #66ff99;
         border: none;
@@ -157,13 +186,22 @@
         transition: transform 0.2s ease;
       }
       #toggle-history {
+        background: #111117;
+        color: #c7cbcf;
+        border: 1px solid #1f1f26;
+        padding: 10px 18px;
+        border-radius: 8px;
+        font-weight: 600;
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
+        transition: background 0.3s ease, color 0.3s ease;
       }
       #toggle-history.history-visible {
-  
-        color: #fff;
+        background: #063016;
+        color: #dceadf;
+        border-color: #063016;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
       }
       button:active {
         transform: scale(0.98);
@@ -182,52 +220,22 @@
         height: 100px;
       }
       .chart-control {
-        border: 1px solid #1c1c24;
-        background: #0f0f16;
-        color: #8c8caa;
+        border: 1px solid #1a1a20;
+        background: #0d0d12;
+        color: #6f7176;
         padding: 6px 12px;
         border-radius: 8px;
         cursor: pointer;
-        transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        transition: background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
       }
       .chart-control.active {
-        background: #4da366;
-        color: #051b05;
-        border-color: #66ff99;
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-      }
-      .chart-controls {
-        width: 900px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        padding: 4px 8px;
-        margin-top: 12px;
-        font-size: 14px;
-        color: #f4f6ff;
-        height: 120px;
-        position: relative;
-      }
-      .chart-controls .hands-logo {
-        position: absolute;
-        top: -36px;
-        right: 40px;
-        width: 80px;
-        height: 58px;
-        background-image: url("../../../Images/Hands.png");
-        background-size: contain;
-        background-repeat: no-repeat;
-        opacity: 0;
-        transform: translateY(16px);
-        transition: opacity 0.4s ease, transform 0.4s ease;
-        pointer-events: none;
-      }
-      .chart-controls.hands-visible .hands-logo {
-        opacity: 1;
-        transform: translateY(0);
+        background: #063016;
+        color: #d5eadd;
+        border-color: #063016;
+        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.45);
       }
       #history-chart {
+        
         gap: 20;
         display: none;
         width: 100% !important;
@@ -235,56 +243,18 @@
         background: #000;
       }
       .chart-wrap {
-        height: 420px;
-        margin: 24px auto 0;
+        height: 360px;
+        margin: 8px auto 0;
         background: #000;
         position: relative;
         max-width: 900px;
         width: 100%;
-        padding: 24px 0 0;
+        padding: 12px 0 0;
         box-sizing: border-box;
-        transition: transform 0.4s ease;
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        border-radius: 16px;
-        box-shadow:
-          inset 0 1px 0 rgba(255, 255, 255, 0.08),
-          inset 0 -1px 0 rgba(0, 0, 0, 0.5),
-          0 24px 70px rgba(0, 0, 0, 0.45);
-      }
-      .chart-wrap::after {
-        content: "";
-        position: absolute;
-        inset: 0;
         background-image: url("../../../Images/Hands.png");
         background-size: 100% 100%;
         background-repeat: no-repeat;
-        background-position: center bottom;
-        opacity: 1;
-        pointer-events: none;
-        z-index: -1;
-      }
-      .chart-wrap {
-        transform: translateY(0);
-      }
-      .chart-logo {
-        position: absolute;
-        top: 16px;
-        right: 16px;
-        width: 100px;
-        height: 80px;
-        <!-- background-image: url("../../../Images/Hands.png");
-        
-        background-size: contain;
-        background-repeat: no-repeat;
-        -->
-        opacity: 0;
-        transform: translateY(20px);
-        transition: opacity 0.4s ease, transform 0.4s ease;
-        pointer-events: none;
-      }
-      .chart-wrap.logo-top-right .chart-logo {
-        opacity: 1;
-        transform: translateY(0);
+        background-position: center top;
       }
       .fan-legend-image {
       }
@@ -344,7 +314,7 @@
         
         <div class="metric-card" data-metric="actual">
           <div class="label">Current Temperature</div>
-          <div class="value">90</div>
+          <div class="value">75</div>
         </div>
         
         <div class="metric-card" data-metric="setpoint">
@@ -383,6 +353,10 @@
         </div>
         
       </div>
+      <div class="hands-logo-slot" aria-hidden="true">
+        <div class="hands-logo-top"></div>
+      </div>
+        
       <div id="history" class="history-panel">
 
       <button id="toggle-history">Show History Chart</button>
@@ -407,7 +381,7 @@
     </div>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-      const dashboardData = {"headers": ["Timestamp", "Type", "Current Temperature", "Cooling Set Point", "Climate Setting", "Fan Setting", "Equipment Status", "Studio", "Request Expires (local time)", "Outside Temp"], "latestRow": ["Tuesday Nov 25 2025 8:11 PM", "request (studio 11, zone3, 50m)", "90", "74", "cool", "on", "cooling", "11", "8:54 PM", "PN60"], "history": [{"label": "Sunday Nov 23 2025 3:03 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 3:06 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 11:20 PM", "value": 75.0}, {"label": "Tuesday Nov 25 2025 7:59 PM", "value": 72.0}, {"label": "Tuesday Nov 25 2025 8:01 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:04 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:11 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:46 PM", "value": 74.0}, {"label": "Friday Nov 21 2025 6:51 PM", "value": 74.0}, {"label": "Sunday Nov 23 2025 1:56 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 2:02 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 2:46 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 2:59 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 3:03 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 3:06 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 11:20 PM", "value": 75.0}, {"label": "Tuesday Nov 25 2025 7:59 PM", "value": 72.0}, {"label": "Tuesday Nov 25 2025 8:01 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:04 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:11 PM", "value": 74.0}], "chartLabels": ["Sunday Nov 23 2025 3:03 PM", "Sunday Nov 23 2025 3:06 PM", "Sunday Nov 23 2025 11:20 PM", "Tuesday Nov 25 2025 7:59 PM", "Tuesday Nov 25 2025 8:01 PM", "Tuesday Nov 25 2025 8:04 PM", "Tuesday Nov 25 2025 8:11 PM", "Tuesday Nov 25 2025 8:46 PM", "Friday Nov 21 2025 6:51 PM", "Sunday Nov 23 2025 1:56 PM", "Sunday Nov 23 2025 2:02 PM", "Sunday Nov 23 2025 2:46 PM", "Sunday Nov 23 2025 2:59 PM", "Sunday Nov 23 2025 3:03 PM", "Sunday Nov 23 2025 3:06 PM", "Sunday Nov 23 2025 11:20 PM", "Tuesday Nov 25 2025 7:59 PM", "Tuesday Nov 25 2025 8:01 PM", "Tuesday Nov 25 2025 8:04 PM", "Tuesday Nov 25 2025 8:11 PM"], "setpoint": [75.0, 75.0, 75.0, 72.0, 74.0, 74.0, 74.0, 74.0, 74.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 72.0, 74.0, 74.0, 74.0], "actual": [76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 72.0, 65.0, 50.0, 90.0, 90.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 90.0], "setpointLabel": "Set Point", "actualLabel": "Current Temperature", "fan": [2, 2, 2, 1, 0, 2, 2, 2, 1, 2, 2, 2, 2, 0, 2, 2, 1, 2, 2, 2], "fanLegend": ["Auto", "Circulate", "On"], "outside": [71.0, 72.0, 80.0, 73.0, 80.0, 76.0, 80.0, 76.0, 76.0, 80.0, 76.0, 80.0, 80.0, 60.0, 77.0, 70.0, 80.0, 79.0, 70.0, 60.0], "outsideLabel": "Outside Temp", "outsideFlags": ["S", "S", "S", "P", "S", "P", "S", "P", "P", "S", "R", "S", "R", "N", "O", "O", "S", "P", "O", "P"], "outsideFlagDayChars": ["7", "7", "8", "7", "8", "7", "8", "7", "7", "8", "N", "8", "8", "6", "N", "7", "8", "7", "7", "N"], "cooling": [1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], "coolingLegend": ["Idle", "Cooling"], "coolingLabel": "Equipment Status", "latestActual": 90.0, "latestSetpoint": 74.0, "latestOutside": 60.0, "latestOutsideRaw": "PN60", "latestOutsideDaylight": false, "latestOutsideFlagDayChar": "N", "latestFan": 2, "latestCooling": 1};
+      const dashboardData = {"headers": ["Timestamp", "Type", "Current Temperature", "Cooling Set Point", "Climate Setting", "Fan Setting", "Equipment Status", "Studio", "Request Expires (local time)", "Outside Temp"], "latestRow": ["Tuesday Nov 25 2025 8:11 PM", "request (studio 11, zone3, 50m)", "75", "74", "cool", "on", "cooling", "11", "8:54 PM", "PN60"], "history": [{"label": "Sunday Nov 23 2025 3:03 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 3:06 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 11:20 PM", "value": 75.0}, {"label": "Tuesday Nov 25 2025 7:59 PM", "value": 72.0}, {"label": "Tuesday Nov 25 2025 8:01 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:04 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:11 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:46 PM", "value": 74.0}, {"label": "Friday Nov 21 2025 6:51 PM", "value": 74.0}, {"label": "Sunday Nov 23 2025 1:56 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 2:02 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 2:46 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 2:59 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 3:03 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 3:06 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 11:20 PM", "value": 75.0}, {"label": "Tuesday Nov 25 2025 7:59 PM", "value": 72.0}, {"label": "Tuesday Nov 25 2025 8:01 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:04 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:11 PM", "value": 74.0}], "chartLabels": ["Sunday Nov 23 2025 3:03 PM", "Sunday Nov 23 2025 3:06 PM", "Sunday Nov 23 2025 11:20 PM", "Tuesday Nov 25 2025 7:59 PM", "Tuesday Nov 25 2025 8:01 PM", "Tuesday Nov 25 2025 8:04 PM", "Tuesday Nov 25 2025 8:11 PM", "Tuesday Nov 25 2025 8:46 PM", "Friday Nov 21 2025 6:51 PM", "Sunday Nov 23 2025 1:56 PM", "Sunday Nov 23 2025 2:02 PM", "Sunday Nov 23 2025 2:46 PM", "Sunday Nov 23 2025 2:59 PM", "Sunday Nov 23 2025 3:03 PM", "Sunday Nov 23 2025 3:06 PM", "Sunday Nov 23 2025 11:20 PM", "Tuesday Nov 25 2025 7:59 PM", "Tuesday Nov 25 2025 8:01 PM", "Tuesday Nov 25 2025 8:04 PM", "Tuesday Nov 25 2025 8:11 PM"], "setpoint": [75.0, 75.0, 75.0, 72.0, 74.0, 74.0, 74.0, 74.0, 74.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 72.0, 74.0, 74.0, 74.0], "actual": [76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 72.0, 65.0, 50.0, 90.0, 90.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 75.0], "setpointLabel": "Set Point", "actualLabel": "Current Temperature", "fan": [2, 2, 2, 1, 0, 2, 2, 2, 1, 2, 2, 2, 2, 0, 2, 2, 1, 2, 2, 2], "fanLegend": ["Auto", "Circulate", "On"], "outside": [71.0, 72.0, 80.0, 73.0, 80.0, 76.0, 80.0, 76.0, 76.0, 80.0, 76.0, 80.0, 80.0, 60.0, 77.0, 70.0, 80.0, 79.0, 70.0, 60.0], "outsideLabel": "Outside Temp", "outsideFlags": ["S", "S", "S", "P", "S", "P", "S", "P", "P", "S", "R", "S", "R", "N", "O", "O", "S", "P", "O", "P"], "outsideFlagDayChars": ["7", "7", "8", "7", "8", "7", "8", "7", "7", "8", "N", "8", "8", "6", "N", "7", "8", "7", "7", "N"], "cooling": [1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], "coolingLegend": ["Idle", "Cooling"], "coolingLabel": "Equipment Status", "latestActual": 75.0, "latestSetpoint": 74.0, "latestOutside": 60.0, "latestOutsideRaw": "PN60", "latestOutsideDaylight": false, "latestOutsideFlagDayChar": "N", "latestFan": 2, "latestCooling": 1};
       const chartLabels = dashboardData.chartLabels || [];
       const setpointSeries = dashboardData.setpoint || [];
       const actualSeries = dashboardData.actual || [];
@@ -426,15 +400,8 @@
       const canvas = document.getElementById("history-chart");
       const ctx = canvas.getContext("2d");
       const toggleHistoryBtn = document.getElementById("toggle-history");
+      const handsLogoTop = document.querySelector(".hands-logo-top");
       let chart;
-      const chartWrap = document.querySelector(".chart-wrap");
-      const chartControls = document.getElementById("chartcontrols");
-      const handsLogo = document.createElement("div");
-      handsLogo.className = "hands-logo";
-      chartControls?.appendChild(handsLogo);
-      const chartLogo = document.createElement("div");
-      chartLogo.className = "chart-logo";
-      chartWrap?.appendChild(chartLogo);
       const gradientColorFor = (value) => {
         if (typeof value !== "number" || Number.isNaN(value)) {
           return "#999";
@@ -793,7 +760,7 @@
           if (!meta || meta.hidden) {
             return;
           }
-          if (!activeModes.has("outside")) {
+          if (!enabledModes.has("outside")) {
             return;
           }
           const ctxChart = chartInstance.ctx;
@@ -993,23 +960,6 @@
         chart.update();
       };
 
-      const legendEntry = document.getElementById("logo2");
-      const legendColorMap = {
-        "Set Point": "#66ff99",
-        "Current Temp": "#7da4ff",
-        Status: "#3d9fff",
-        Idle: "#b4b4b4",
-        "Fan Mode": "#ffa500",
-        "Outside Temp": "#ffd000",
-      };
-      const legendMap = {
-        setpoint: ["Set Point"],
-        actual: ["Current Temp"],
-        outside: ["Outside Temp"],
-        cooling: ["Status", "Idle"],
-        fan: ["Fan Mode"],
-      };
-      const modeOrder = ["setpoint", "actual", "outside", "cooling", "fan"];
       const datasetIndexByMode = {
         setpoint: 0,
         actual: 1,
@@ -1017,32 +967,14 @@
         cooling: 3,
         fan: 4,
       };
-      const activeModes = new Set(modeOrder);
-      const updateLegendEntries = () => {
-        if (!legendEntry) {
-          return;
-        }
-        const entries = [];
-        activeModes.forEach((mode) => {
-          const values = legendMap[mode];
-          if (values && values.length) {
-            entries.push(...values);
-          }
-        });
-        legendEntry.innerHTML = entries
-          .map((value) => {
-            const color = legendColorMap[value] || "#f4f6ff";
-            return `<li style="color:${color}">${value}</li>`;
-          })
-          .join("");
-      };
+      const enabledModes = new Set(Object.keys(datasetIndexByMode));
       const updateAxesVisibility = () => {
         const showTemp =
-          activeModes.has("setpoint") ||
-          activeModes.has("actual") ||
-          activeModes.has("outside");
-        const showFan = activeModes.has("fan");
-        const showCooling = activeModes.has("cooling");
+          enabledModes.has("setpoint") ||
+          enabledModes.has("actual") ||
+          enabledModes.has("outside");
+        const showFan = enabledModes.has("fan");
+        const showCooling = enabledModes.has("cooling");
         chart.options.scales.y.display = showTemp;
         chart.options.scales.y.ticks.display = showTemp;
         chart.options.scales.fan.display = showFan;
@@ -1050,28 +982,38 @@
         chart.options.scales.fan.ticks.display = showFan;
         chart.options.scales.cooling.ticks.display = showCooling;
       };
-      const updateChartVisibility = () => {
-        modeOrder.forEach((mode) => {
-          const datasetIndex = datasetIndexByMode[mode];
-          if (chart && typeof datasetIndex === "number") {
-            chart.data.datasets[datasetIndex].hidden = !activeModes.has(mode);
+      const updateButtonStates = () => {
+        const allModesEnabled = Object.keys(datasetIndexByMode).every((m) => enabledModes.has(m));
+        chartControlButtons.forEach((btn) => {
+          const mode = btn.dataset.mode;
+          if (mode === "both") {
+            btn.classList.toggle("active", allModesEnabled);
+          } else {
+            btn.classList.toggle("active", enabledModes.has(mode));
           }
         });
       };
-      const updateButtonStates = () => {
-        chartControlButtons.forEach((btn) => {
-          const mode = btn.dataset.mode;
-          btn.classList.toggle("active", activeModes.has(mode));
+      const updateChartVisibility = () => {
+        if (!chart) {
+          return;
+        }
+        Object.entries(datasetIndexByMode).forEach(([mode, idx]) => {
+          chart.data.datasets[idx].hidden = !enabledModes.has(mode);
         });
       };
       const toggleMode = (mode) => {
         if (mode === "both") {
-          modeOrder.forEach((m) => activeModes.add(m));
-        } else if (mode) {
-          if (activeModes.has(mode)) {
-            activeModes.delete(mode);
+          const allEnabled = Object.keys(datasetIndexByMode).every((m) => enabledModes.has(m));
+          if (allEnabled) {
+            enabledModes.clear();
           } else {
-            activeModes.add(mode);
+            Object.keys(datasetIndexByMode).forEach((m) => enabledModes.add(m));
+          }
+        } else if (mode) {
+          if (enabledModes.has(mode)) {
+            enabledModes.delete(mode);
+          } else {
+            enabledModes.add(mode);
           }
         }
         if (!chart) {
@@ -1082,33 +1024,33 @@
         }
         updateChartVisibility();
         updateAxesVisibility();
-        updateLegendEntries();
         updateButtonStates();
         if (chart) {
           chart.update();
         }
       };
 
-const showChart = () => {
-        createChart();
+      const showChart = () => {
+        if (!chart) {
+          createChart();
+        }
         updateChartVisibility();
         updateAxesVisibility();
-        updateLegendEntries();
         updateButtonStates();
         canvas.style.display = "block";
-        if (chartControls) {
-          chartControls.classList.add("hands-visible");
-        }
         toggleHistoryBtn.textContent = "Hide History Chart";
         toggleHistoryBtn.classList.add("history-visible");
+        if (handsLogoTop) {
+          handsLogoTop.classList.remove("hidden");
+        }
       };
 
-const hideChart = () => {
+      const hideChart = () => {
         canvas.style.display = "none";
         toggleHistoryBtn.textContent = "Show History Chart";
         toggleHistoryBtn.classList.remove("history-visible");
-        if (chartControls) {
-          chartControls.classList.remove("hands-visible");
+        if (handsLogoTop) {
+          handsLogoTop.classList.add("hidden");
         }
       };
 
@@ -1124,6 +1066,7 @@ const hideChart = () => {
         }
       });
 
+      showChart();
     </script>
     
 
