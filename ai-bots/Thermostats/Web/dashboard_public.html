@@ -94,6 +94,15 @@
         background: transparent !important;
         border-color: transparent !important;
       }
+      .metric-card[data-metric="outside"].sunny-image::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        pointer-events: none;
+        background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0) 70%);
+        mix-blend-mode: screen;
+      }
       .metric-card[data-metric="outside"] {
         position: relative;
         padding-right: 160px;
@@ -221,20 +230,19 @@
         height: 100% !important;
         background: #000;
       }
-      .chart-wrap {
-
-              height: 420px;
-        margin: 1x auto 0 auto;
+.chart-wrap {
+        height: 420px;
+        margin: 24px auto 0;
         background: #000;
         position: relative;
         max-width: 900px;
         width: 100%;
-        padding: 60px 32px 0;
+        padding: 24px 0 0;
         box-sizing: border-box;
         background-image: url("../../../Images/Hands.png");
-        background-size: contain;
+        background-size: 100% 100%;
         background-repeat: no-repeat;
-        background-position: center;
+        background-position: center top;
       }
       .fan-legend-image {
       }
@@ -357,13 +365,15 @@
     </div>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-      const dashboardData = {"headers": ["Timestamp", "Type", "Current Temperature", "Cooling Set Point", "Climate Setting", "Fan Setting", "Equipment Status", "Studio", "Request Expires (local time)", "Outside Temp"], "latestRow": ["Tuesday Nov 25 2025 8:11 PM", "request (studio 11, zone3, 50m)", "90", "74", "cool", "on", "cooling", "11", "8:54 PM", "PN60"], "history": [{"label": "Sunday Nov 23 2025 3:03 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 3:06 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 11:20 PM", "value": 75.0}, {"label": "Tuesday Nov 25 2025 7:59 PM", "value": 72.0}, {"label": "Tuesday Nov 25 2025 8:01 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:04 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:11 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:46 PM", "value": 74.0}, {"label": "Friday Nov 21 2025 6:51 PM", "value": 74.0}, {"label": "Sunday Nov 23 2025 1:56 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 2:02 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 2:46 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 2:59 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 3:03 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 3:06 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 11:20 PM", "value": 75.0}, {"label": "Tuesday Nov 25 2025 7:59 PM", "value": 72.0}, {"label": "Tuesday Nov 25 2025 8:01 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:04 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:11 PM", "value": 74.0}], "chartLabels": ["Sunday Nov 23 2025 3:03 PM", "Sunday Nov 23 2025 3:06 PM", "Sunday Nov 23 2025 11:20 PM", "Tuesday Nov 25 2025 7:59 PM", "Tuesday Nov 25 2025 8:01 PM", "Tuesday Nov 25 2025 8:04 PM", "Tuesday Nov 25 2025 8:11 PM", "Tuesday Nov 25 2025 8:46 PM", "Friday Nov 21 2025 6:51 PM", "Sunday Nov 23 2025 1:56 PM", "Sunday Nov 23 2025 2:02 PM", "Sunday Nov 23 2025 2:46 PM", "Sunday Nov 23 2025 2:59 PM", "Sunday Nov 23 2025 3:03 PM", "Sunday Nov 23 2025 3:06 PM", "Sunday Nov 23 2025 11:20 PM", "Tuesday Nov 25 2025 7:59 PM", "Tuesday Nov 25 2025 8:01 PM", "Tuesday Nov 25 2025 8:04 PM", "Tuesday Nov 25 2025 8:11 PM"], "setpoint": [75.0, 75.0, 75.0, 72.0, 74.0, 74.0, 74.0, 74.0, 74.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 72.0, 74.0, 74.0, 74.0], "actual": [76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 72.0, 65.0, 50.0, 90.0, 90.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 90.0], "setpointLabel": "Set Point", "actualLabel": "Current Temperature", "fan": [2, 2, 2, 1, 0, 2, 2, 2, 1, 2, 2, 2, 2, 0, 2, 2, 1, 2, 2, 2], "fanLegend": ["Auto", "Circulate", "On"], "outside": [80.0, 80.0, 80.0, 80.0, 80.0, 80.0, 80.0, 80.0, 80.0, 80.0, 80.0, 80.0, 80.0, 60.0, 80.0, 70.0, 80.0, 80.0, 70.0, 60.0], "outsideLabel": "Outside Temp", "outsideFlags": ["S", "S", "S", "S", "S", "S", "S", "S", "S", "S", "S", "S", "S", "N", "S", "O", "S", "S", "O", "P"], "cooling": [1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], "coolingLegend": ["Idle", "Cooling"], "coolingLabel": "Equipment Status", "latestActual": 90.0, "latestSetpoint": 74.0, "latestOutside": 60.0, "latestOutsideRaw": "PN60", "latestOutsideDaylight": false, "latestOutsideFlagDayChar": "N", "latestFan": 2, "latestCooling": 1};
+      const dashboardData = {"headers": ["Timestamp", "Type", "Current Temperature", "Cooling Set Point", "Climate Setting", "Fan Setting", "Equipment Status", "Studio", "Request Expires (local time)", "Outside Temp"], "latestRow": ["Tuesday Nov 25 2025 8:11 PM", "request (studio 11, zone3, 50m)", "90", "74", "cool", "on", "cooling", "11", "8:54 PM", "PN60"], "history": [{"label": "Sunday Nov 23 2025 3:03 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 3:06 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 11:20 PM", "value": 75.0}, {"label": "Tuesday Nov 25 2025 7:59 PM", "value": 72.0}, {"label": "Tuesday Nov 25 2025 8:01 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:04 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:11 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:46 PM", "value": 74.0}, {"label": "Friday Nov 21 2025 6:51 PM", "value": 74.0}, {"label": "Sunday Nov 23 2025 1:56 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 2:02 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 2:46 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 2:59 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 3:03 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 3:06 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 11:20 PM", "value": 75.0}, {"label": "Tuesday Nov 25 2025 7:59 PM", "value": 72.0}, {"label": "Tuesday Nov 25 2025 8:01 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:04 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:11 PM", "value": 74.0}], "chartLabels": ["Sunday Nov 23 2025 3:03 PM", "Sunday Nov 23 2025 3:06 PM", "Sunday Nov 23 2025 11:20 PM", "Tuesday Nov 25 2025 7:59 PM", "Tuesday Nov 25 2025 8:01 PM", "Tuesday Nov 25 2025 8:04 PM", "Tuesday Nov 25 2025 8:11 PM", "Tuesday Nov 25 2025 8:46 PM", "Friday Nov 21 2025 6:51 PM", "Sunday Nov 23 2025 1:56 PM", "Sunday Nov 23 2025 2:02 PM", "Sunday Nov 23 2025 2:46 PM", "Sunday Nov 23 2025 2:59 PM", "Sunday Nov 23 2025 3:03 PM", "Sunday Nov 23 2025 3:06 PM", "Sunday Nov 23 2025 11:20 PM", "Tuesday Nov 25 2025 7:59 PM", "Tuesday Nov 25 2025 8:01 PM", "Tuesday Nov 25 2025 8:04 PM", "Tuesday Nov 25 2025 8:11 PM"], "setpoint": [75.0, 75.0, 75.0, 72.0, 74.0, 74.0, 74.0, 74.0, 74.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 72.0, 74.0, 74.0, 74.0], "actual": [76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 72.0, 65.0, 50.0, 90.0, 90.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 90.0], "setpointLabel": "Set Point", "actualLabel": "Current Temperature", "fan": [2, 2, 2, 1, 0, 2, 2, 2, 1, 2, 2, 2, 2, 0, 2, 2, 1, 2, 2, 2], "fanLegend": ["Auto", "Circulate", "On"], "outside": [71.0, 72.0, 80.0, 73.0, 80.0, 76.0, 80.0, 76.0, 76.0, 80.0, 76.0, 80.0, 80.0, 60.0, 77.0, 70.0, 80.0, 79.0, 70.0, 60.0], "outsideLabel": "Outside Temp", "outsideFlags": ["S", "S", "S", "P", "S", "P", "S", "P", "P", "S", "R", "S", "R", "N", "O", "O", "S", "P", "O", "P"], "outsideFlagDayChars": ["7", "7", "8", "7", "8", "7", "8", "7", "7", "8", "N", "8", "8", "6", "N", "7", "8", "7", "7", "N"], "cooling": [1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], "coolingLegend": ["Idle", "Cooling"], "coolingLabel": "Equipment Status", "latestActual": 90.0, "latestSetpoint": 74.0, "latestOutside": 60.0, "latestOutsideRaw": "PN60", "latestOutsideDaylight": false, "latestOutsideFlagDayChar": "N", "latestFan": 2, "latestCooling": 1};
       const chartLabels = dashboardData.chartLabels || [];
       const setpointSeries = dashboardData.setpoint || [];
       const actualSeries = dashboardData.actual || [];
       const outsideSeries = dashboardData.outside || [];
       const fanSeries = dashboardData.fan || [];
       const coolingSeries = dashboardData.cooling || [];
+      const outsideFlags = dashboardData.outsideFlags || [];
+      const outsideFlagDayChars = dashboardData.outsideFlagDayChars || [];
       const setpointLabel = dashboardData.setpointLabel || "Target Temperature";
       const actualLabel = dashboardData.actualLabel || "Actual Temperature";
       const outsideLabel = dashboardData.outsideLabel || "Outside Temp";
@@ -462,14 +472,39 @@
       const weatherGraphicPaths = {
         "S": "../../../Images/sunny.png",
         "P-day": "../../../Images/PartlySunny.png",
-        "P-night": "../../../Images/CloudyNight.png",
+        "P-night": "../../../Images/Night.png",
         "O-day": "../../../Images/cloudy.png",
         "O-night": "../../../Images/cloudynight.png",
         "R-day": "../../../Images/RainyDay.png",
-        "R-night": "../../../Images/rainynight.png",
+        "R-night": "../../../Images/RainyNight.png",
         "N": "../../../Images/clearnight.png",
       };
       const outsideFlagColor = outsideFlagColors[outsideFlag] || null;
+      const weatherGraphicImages = {};
+      Object.entries(weatherGraphicPaths).forEach(([key, src]) => {
+        const img = new Image();
+        img.src = src;
+        weatherGraphicImages[key] = img;
+      });
+      const getWeatherGraphicKey = (flag, dayChar) => {
+        const normalizedFlag = (flag || "").toUpperCase();
+        const normalizedDayChar = (dayChar || "D").toUpperCase();
+        const isNight = normalizedDayChar === "N" || normalizedDayChar === "M";
+        const isDay = !isNight;
+        if (normalizedFlag === "P") {
+          return isDay ? "P-day" : "P-night";
+        }
+        if (normalizedFlag === "O") {
+          return isDay ? "O-day" : "O-night";
+        }
+        if (normalizedFlag === "R") {
+          return isDay ? "R-day" : "R-night";
+        }
+        if (normalizedFlag === "N") {
+          return "N";
+        }
+        return "S";
+      };
       const actualCard = document.querySelector('.metric-card[data-metric="actual"]');
       applyCardColor(actualCard, colorForPoint(latestActualValue));
       applyCardColor(
@@ -700,7 +735,46 @@
         }
         return dataUrl;
       }
-
+      const outsideWeatherIconPlugin = {
+        id: "outsideWeatherIcon",
+        afterDatasetsDraw: (chartInstance) => {
+          const datasetIndex = 2;
+          const meta = chartInstance.getDatasetMeta(datasetIndex);
+          if (!meta || meta.hidden) {
+            return;
+          }
+          const ctxChart = chartInstance.ctx;
+          meta.data.forEach((point, index) => {
+            const flag = outsideFlags[index];
+            if (!flag) {
+              return;
+            }
+            const dayChar = outsideFlagDayChars[index];
+            const key = getWeatherGraphicKey(flag, dayChar);
+            const img = weatherGraphicImages[key];
+            if (!img || !img.complete) {
+              return;
+            }
+            const size = Math.min(32, Math.max(24, Math.round((chartInstance.height / 420) * 30)));
+            const x = point.x - size / 2;
+            const y = point.y - size / 2;
+            ctxChart.save();
+            ctxChart.globalAlpha = 0.9;
+            ctxChart.translate(point.x, point.y);
+            ctxChart.beginPath();
+            ctxChart.arc(0, 0, size / 2, 0, Math.PI * 2);
+            ctxChart.clip();
+            const gradient = ctxChart.createRadialGradient(0, 0, size * 0.05, 0, 0, size / 2);
+            gradient.addColorStop(0, "rgba(255,255,255,0.9)");
+            gradient.addColorStop(1, "rgba(255,255,255,0.0)");
+            ctxChart.fillStyle = gradient;
+            ctxChart.fillRect(-size / 2, -size / 2, size, size);
+            ctxChart.globalAlpha = 1;
+            ctxChart.drawImage(img, -size / 2, -size / 2, size, size);
+            ctxChart.restore();
+          });
+        },
+      };
 
       const createChart = () => {
         if (chart) {
@@ -733,13 +807,9 @@
               {
                 label: outsideLabel,
                 data: outsideSeries,
-                segment: {
-                  borderColor: (ctx) => {
-                    const value = ctx.parsed?.y ?? ctx.p0?.parsed?.y ?? ctx.p1?.parsed?.y ?? 50;
-                    return gradientColorForOutside(value);
-                  },
-                },
-                backgroundColor: "rgba(255,214,0,0.15)",
+                showLine: false,
+                borderColor: "rgba(0,0,0,0)",
+                pointRadius: 0,
                 spanGaps: true,
               },
               {
@@ -766,6 +836,7 @@
               },
             ],
           },
+          plugins: [outsideWeatherIconPlugin],
           options: {
             responsive: true,
             maintainAspectRatio: false,
