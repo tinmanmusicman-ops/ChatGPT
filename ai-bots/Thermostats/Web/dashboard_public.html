@@ -1077,6 +1077,9 @@
         if (!chart) {
           createChart();
         }
+        if (canvas.style.display === "none" || !canvas.style.display) {
+          showChart();
+        }
         updateChartVisibility();
         updateAxesVisibility();
         updateLegendEntries();
@@ -1086,7 +1089,7 @@
         }
       };
 
-      const showChart = () => {
+const showChart = () => {
         createChart();
         updateChartVisibility();
         updateAxesVisibility();
@@ -1100,7 +1103,7 @@
         toggleHistoryBtn.classList.add("history-visible");
       };
 
-      const hideChart = () => {
+const hideChart = () => {
         canvas.style.display = "none";
         toggleHistoryBtn.textContent = "Show History Chart";
         toggleHistoryBtn.classList.remove("history-visible");
@@ -1121,7 +1124,6 @@
         }
       });
 
-      showChart();
     </script>
     
 
