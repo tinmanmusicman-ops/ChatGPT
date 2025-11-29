@@ -1,0 +1,1535 @@
+from  __future__ import annotations
+
+import subprocess
+from pathlib import Path
+from typing import Iterable, List, Optional, Tuple
+import json
+import os
+import logging
+import mimetypes
+import re
+
+from google.auth.transport.requests import Request
+from google.auth.exceptions import RefreshError
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
+from google.oauth2 import service_account
+from googleapiclient.http import MediaInMemoryUpload
+
+SCOPES = [
+    "https://www.googleapis.com/auth/spreadsheets.readonly",
+    "https://www.googleapis.com/auth/drive.metadata.readonly",
+]
+DRIVE_SCOPES = ["https://www.googleapis.com/auth/drive.file"]
+SCRIPT_DIR = Path(__file__).resolve().parent
+NUMERIC_RE = re.compile(r"-?\d+(?:\.\d+)?")
+
+
+def _col_to_index(col: str) -> int:
+    idx = 0
+    for char in col.upper():
+        if "A" <= char <= "Z":
+            idx = idx * 26 + (ord(char) - ord("A") + 1)
+    return idx
+
+
+def _extract_letters(cell: str) -> str:
+    return "".join(ch for ch in cell if ch.isalpha())
+
+
+def _ensure_range_includes(range_value: str, column: str) -> str:
+    if not range_value:
+        return range_value
+    if "!" in range_value:
+        sheet, part = range_value.split("!", 1)
+        prefix = f"{sheet}!"
+    else:
+        part = range_value
+        prefix = ""
+    if ":" in part:
+        start_cell, end_cell = part.split(":", 1)
+    else:
+        start_cell = part
+        end_cell = part
+    end_letters = _extract_letters(end_cell) or _extract_letters(start_cell) or "A"
+    target_idx = _col_to_index(column)
+    if _col_to_index(end_letters) < target_idx:
+        digit_part = "".join(ch for ch in end_cell if ch.isdigit())
+        end_cell = f"{column}{digit_part}"
+    new_part = f"{start_cell}:{end_cell}" if ":" in part else end_cell
+    return f"{prefix}{new_part}"
+NUMERIC_RE = re.compile(r"-?\d+(?:\.\d+)?")
+NUMERIC_RE = re.compile(r"-?\d+(?:\.\d+)?")
+
+
+def _load_global_root() -> Path:
+    shared_config = SCRIPT_DIR.parents[1] / "shared" / "Global.json"
+    if not shared_config.exists():
+        return SCRIPT_DIR.parents[3]
+    payload = json.loads(shared_config.read_text(encoding="utf-8"))
+    install_dir = payload.get("InstallDir")
+    if install_dir:
+        return Path(install_dir)
+    return SCRIPT_DIR.parents[3]
+
+
+WORKSPACE_ROOT = _load_global_root()
+AI_BOTS_ROOT = WORKSPACE_ROOT / "ai-bots"
+GLOBAL_CONFIG_PATH = AI_BOTS_ROOT / "shared" / "Global.json"
+TOKEN_PATH = AI_BOTS_ROOT / "shared" / "Tokens.json"
+TEMP_DIR = AI_BOTS_ROOT / "Temp"
+DRIVE_FOLDER_NAME = "Thermostat Dashboards"
+
+
+def _load_shared_config() -> dict:
+    if not GLOBAL_CONFIG_PATH.exists():
+        raise FileNotFoundError(f"Missing shared config at {GLOBAL_CONFIG_PATH}")
+    payload = json.loads(GLOBAL_CONFIG_PATH.read_text(encoding="utf-8"))
+    return payload
+
+
+def _normalize_flag(value, default=True) -> bool:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        lowered = value.strip().lower()
+        return lowered in ("1", "true", "t", "yes", "y", "on")
+    if value is None:
+        return bool(default)
+    return bool(value)
+
+
+GLOBAL_SHARED_CONFIG = _load_shared_config()
+GIT_TEST_FLAG = _normalize_flag(GLOBAL_SHARED_CONFIG.get("GitTestFlag"), True)
+
+base_dir = Path(__file__).resolve().parent
+os.chdir(base_dir)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+logger = logging.getLogger(__name__)
+
+CONFIG_PATH = base_dir / "config.json"
+BOT_ASSETS_CONFIG = base_dir.parent / "bot-assets" / "config.json"
+_DEFAULTS = {
+    "spreadsheet_id": "",
+    "spreadsheet_name": "",
+    "sheet_tab": "Sheet1",
+    "data_range": "A:J",  # columns range within the sheet tab
+    "delete_temp_files": False,
+}
+
+def _load_dash_config() -> dict:
+    """Load sheet config from Thermostats config.json, then bot-assets/config.json, then defaults."""
+    cfg_candidates = [
+        ("local", CONFIG_PATH),
+        ("bot-assets", BOT_ASSETS_CONFIG),
+    ]
+    for label, path in cfg_candidates:
+        if path.exists():
+            try:
+                payload = json.loads(path.read_text(encoding="utf-8"))
+                logger.info("Loaded dashboard config from [%s] %s", label, path)
+                return payload
+            except Exception as exc:
+                logger.warning("Unable to read %s (%s); trying next option", path, exc)
+    logger.warning("No config found; using defaults")
+    return {}
+
+cfg_payload = _load_dash_config()
+
+GOOGLE_SHEET_ID = cfg_payload.get("spreadsheet_id", _DEFAULTS["spreadsheet_id"])
+GOOGLE_SHEET_NAME = (
+    cfg_payload.get("spreadsheet_name")
+    or cfg_payload.get("google_sheet_name")
+    or _DEFAULTS["spreadsheet_name"]
+)
+SHEET_TAB = cfg_payload.get("sheet_tab", _DEFAULTS["sheet_tab"])
+DATA_RANGE = cfg_payload.get("data_range", _DEFAULTS["data_range"])
+DATA_RANGE = _ensure_range_includes(DATA_RANGE, "J")
+DELETE_TEMP_FILES = bool(cfg_payload.get("delete_temp_files", _DEFAULTS["delete_temp_files"]))
+
+HISTORY_WINDOW = 20
+CHART_METRIC_INDEX = 1  # Fallback index; overridden to "Current Temperature" if present
+
+
+def _load_credentials() -> Credentials:
+    info = GLOBAL_SHARED_CONFIG
+    logger.info("Loaded service account credentials from %s", GLOBAL_CONFIG_PATH)
+    creds = service_account.Credentials.from_service_account_info(info, scopes=SCOPES)
+    return creds
+
+
+def get_sheets_service():
+    creds = _load_credentials()
+    logger.info("Building Sheets service client")
+    return build("sheets", "v4", credentials=creds)
+
+
+def get_drive_service():
+    creds = _load_credentials()
+    logger.info("Building Drive service client")
+    return build("drive", "v3", credentials=creds)
+
+
+def resolve_sheet_id() -> str:
+    """Prefer explicit ID; otherwise resolve by file name."""
+    if GOOGLE_SHEET_ID:
+        logger.info("Using sheet ID from config: %s", GOOGLE_SHEET_ID)
+        return GOOGLE_SHEET_ID
+    if not GOOGLE_SHEET_NAME:
+        raise SystemExit("Set either google_sheet_id or google_sheet_name in config.json")
+    drive = get_drive_service()
+    escaped = GOOGLE_SHEET_NAME.replace("'", "\\'")
+    query = f"name = '{escaped}' and mimeType = 'application/vnd.google-apps.spreadsheet' and trashed = false"
+    resp = (
+        drive.files()
+        .list(q=query, spaces="drive", fields="files(id,name)", pageSize=1)
+        .execute()
+    )
+    files = resp.get("files", [])
+    if not files:
+        raise SystemExit(f"No spreadsheet found with name '{GOOGLE_SHEET_NAME}'")
+    logger.info("Resolved sheet name '%s' to ID %s", GOOGLE_SHEET_NAME, files[0]["id"])
+    return files[0]["id"]
+
+
+def _load_drive_credentials() -> Credentials:
+    """Load user OAuth credentials from shared Tokens.json for Drive uploads."""
+    if not TOKEN_PATH.exists():
+        raise FileNotFoundError(f"Missing OAuth token file at {TOKEN_PATH}")
+    token_info = json.loads(TOKEN_PATH.read_text(encoding="utf-8"))
+    creds = Credentials.from_authorized_user_info(token_info, scopes=DRIVE_SCOPES)
+    if not creds.valid:
+        if creds.expired and creds.refresh_token:
+            logger.info("Refreshing Drive access token")
+            creds.refresh(Request())
+            TOKEN_PATH.write_text(creds.to_json(), encoding="utf-8")
+        else:
+            raise FileNotFoundError(
+                f"Token at {TOKEN_PATH} is invalid/expired and has no refresh token"
+            )
+    return creds
+
+
+def get_drive_upload_service():
+    creds = _load_drive_credentials()
+    logger.info("Building Drive upload service client")
+    return build("drive", "v3", credentials=creds)
+
+
+def get_or_create_drive_folder(service, folder_name: str) -> str:
+    escaped = folder_name.replace("'", "\\'")
+    query = (
+        f"name = '{escaped}' and "
+        "mimeType = 'application/vnd.google-apps.folder' and trashed = false"
+    )
+    resp = (
+        service.files()
+        .list(q=query, spaces="drive", fields="files(id,name)", pageSize=5)
+        .execute()
+    )
+    files = resp.get("files", [])
+    if files:
+        folder_id = files[0]["id"]
+        logger.info("Found existing folder %s (%s)", folder_name, folder_id)
+        return folder_id
+
+    metadata = {"name": folder_name, "mimeType": "application/vnd.google-apps.folder"}
+    created = service.files().create(body=metadata, fields="id,name").execute()
+    folder_id = created["id"]
+    logger.info("Created folder %s (%s)", folder_name, folder_id)
+    return folder_id
+
+
+def _next_version_name(desired: str, existing_names: List[str]) -> str:
+    if desired not in existing_names:
+        return desired
+    stem = Path(desired).stem
+    suffix = Path(desired).suffix
+    counter = 2
+    candidate = f"{stem}_v{counter}{suffix}"
+    while candidate in existing_names:
+        counter += 1
+        candidate = f"{stem}_v{counter}{suffix}"
+    return candidate
+
+
+def upload_or_version_file(
+    service,
+    folder_id: str,
+    filename: str,
+    content: bytes,
+    mime_type: str,
+) -> Tuple[str, str]:
+    escaped = filename.replace("'", "\\'")
+    query = f"'{folder_id}' in parents and name = '{escaped}' and trashed = false"
+    resp = (
+        service.files()
+        .list(q=query, spaces="drive", fields="files(id,name)", pageSize=1)
+        .execute()
+    )
+    existing = resp.get("files", [])
+    media = MediaInMemoryUpload(content, mimetype=mime_type, resumable=False)
+    body = {"name": filename, "parents": [folder_id]}
+    if existing:
+        file_id = existing[0]["id"]
+        updated = (
+            service.files()
+            .update(fileId=file_id, media_body=media, fields="id,name")
+            .execute()
+        )
+        logger.info("Replaced %s (file id %s)", filename, updated.get("id"))
+        return updated.get("id"), filename
+    created = service.files().create(body=body, media_body=media, fields="id,name").execute()
+    file_id = created["id"]
+    logger.info("Uploaded %s (file id %s)", filename, file_id)
+    return file_id, filename
+
+
+def push_dashboard_to_drive(html_path: Path) -> str:
+    service = get_drive_upload_service()
+    folder_id = get_or_create_drive_folder(service, DRIVE_FOLDER_NAME)
+    mime_type, _enc = mimetypes.guess_type(html_path.name)
+    mime_type = mime_type or "text/html"
+    content = html_path.read_bytes()
+    file_id, target_name = upload_or_version_file(
+        service, folder_id, html_path.name, content, mime_type
+    )
+    logger.info(
+        "Drive link: https://drive.google.com/file/d/%s/view (stored as %s)",
+        file_id,
+        target_name,
+    )
+    return file_id
+
+
+def git_autopush(html_path: Path) -> None:
+    """Stage, commit, and push the generated dashboard copy."""
+    if not GIT_TEST_FLAG:
+        logger.info("Skipping git autopush because GitTestFlag is false")
+        return
+    repo_root = Path(__file__).resolve().parents[2]
+    html_rel = html_path.relative_to(repo_root)
+    subprocess.run(["git", "add", str(html_rel)], cwd=repo_root, check=True)
+    subprocess.run(
+        ["git", "commit", "-m", f"Auto-update: {html_rel.name}", "--allow-empty"],
+        cwd=repo_root,
+        check=True,
+    )
+    subprocess.run(["git", "push", "origin", "develop"], cwd=repo_root, check=True)
+
+
+def fetch_sheet_data() -> Tuple[List[str], List[str], List[List[str]]]:
+    """Return headers, latest row, and history rows."""
+    sheet_id = resolve_sheet_id()
+    service = get_sheets_service()
+    range_ref = f"{SHEET_TAB}!{DATA_RANGE}"
+    logger.info("Fetching range %s from sheet %s", range_ref, sheet_id)
+    try:
+        data = (
+            service.spreadsheets()
+            .values()
+            .get(spreadsheetId=sheet_id, range=range_ref)
+            .execute()
+        )
+    except HttpError as exc:
+        # Help the user diagnose bad tab/range issues by showing available sheet tabs.
+        try:
+            meta = (
+                service.spreadsheets()
+                .get(spreadsheetId=sheet_id, fields="sheets.properties.title")
+                .execute()
+            )
+            titles = [s["properties"]["title"] for s in meta.get("sheets", [])]
+            logger.error(
+                "Sheets API error for range %s: %s. Available tabs: %s",
+                range_ref,
+                exc,
+                ", ".join(titles),
+            )
+        except Exception:
+            logger.error("Sheets API error for range %s: %s", range_ref, exc)
+        raise
+    values = data.get("values", [])
+    if not values:
+        logger.warning("Sheet returned no values")
+        return [], [], []
+    headers = values[0]
+    rows = values[1:]
+    latest_row = rows[-1] if rows else []
+    history_rows = rows[-HISTORY_WINDOW:] if rows else []
+    logger.info("Retrieved %d headers, %d total rows", len(headers), len(rows))
+    return headers, latest_row, history_rows
+
+
+def build_dashboard_html(
+    headers: List[str],
+    latest_row: List[str],
+    history_rows: List[List[str]],
+    output_path: Path,
+) -> None:
+    def _safe_float(val: str) -> float:
+        try:
+            return float(val)
+        except (TypeError, ValueError):
+            text = str(val).strip() if val is not None else ""
+            if text:
+                match = NUMERIC_RE.search(text)
+                if match:
+                    try:
+                        return float(match.group(0))
+                    except ValueError:
+                        pass
+            logger.debug("Non-numeric chart value %r; defaulting to 0", val)
+            return 0.0
+
+    title = "Lockout Music Studios Oceanside CA"
+    def _find_index(keywords: Tuple[str, ...]) -> Optional[int]:
+        for idx, header in enumerate(headers):
+            if not header:
+                continue
+            value = header.strip().lower()
+            for keyword in keywords:
+                if keyword in value:
+                    return idx
+        return None
+
+    setpoint_idx = _find_index(("cooling set point", "cooling setpoint", "set point", "d"))
+    actual_idx = _find_index(("current temperature", "actual temperature", "temperature"))
+    if actual_idx is not None and actual_idx == setpoint_idx:
+        actual_idx = None
+    setpoint_label = "Set Point"
+    actual_label = (
+        headers[actual_idx] if actual_idx is not None and len(headers) > actual_idx else "Current Temp"
+    )
+    outside_idx = _find_index(("outside temperature", "outside temp", "exterior temperature", "outdoor temp"))
+    outside_label = (
+        headers[outside_idx] if outside_idx is not None and len(headers) > outside_idx else "Outside Temp"
+    )
+
+    fan_idx = _find_index(("fan", "fan setting", "fan mode"))
+    cooling_idx = _find_index(
+        ("equipment status", "equipment status", "status", "equipment", "cooling status")
+    )
+    FAN_LABELS = ["Auto", "Circulate", "On"]
+    COOLING_LABELS = ["Idle", "Cooling"]
+
+    def _fan_value(row: List[str]) -> Optional[int]:
+        if fan_idx is None or fan_idx >= len(row):
+            return None
+        val = str(row[fan_idx]).strip().lower()
+        if not val:
+            return None
+        if "auto" in val:
+            return 0
+        if "circulate" in val or "cir" in val:
+            return 1
+        if val in ("on", "fan", "low", "high") or "run" in val:
+            return 2
+        return None
+
+    def _cooling_value(row: List[str]) -> Optional[int]:
+        if cooling_idx is None or cooling_idx >= len(row):
+            return None
+        val = str(row[cooling_idx]).strip().lower()
+        if not val:
+            return None
+        return 1 if "cool" in val else 0
+
+    def _extract_clamped(idx: Optional[int], row: List[str]) -> Optional[float]:
+        if idx is None or idx >= len(row):
+            return None
+        val = _safe_float(row[idx])
+        if 50 <= val <= 100:
+            return val
+        return None
+
+    chart_labels = [row[0] if row else "" for row in history_rows]
+    setpoint_series = [_extract_clamped(setpoint_idx, row) for row in history_rows]
+    actual_series = [_extract_clamped(actual_idx, row) for row in history_rows]
+    fan_series = [_fan_value(row) for row in history_rows]
+    outside_series = []
+    outside_flags = []
+    for row in history_rows:
+        raw_value = (
+            str(row[outside_idx]).strip()
+            if outside_idx is not None and outside_idx < len(row)
+            else ""
+        )
+        flag = raw_value[:1].upper() if raw_value else ""
+        outside_flags.append(flag)
+        outside_series.append(_extract_clamped(outside_idx, row))
+    cooling_series = [_cooling_value(row) for row in history_rows]
+    cooling_label = (
+        headers[cooling_idx]
+        if cooling_idx is not None and len(headers) > cooling_idx
+        else "Status"
+    )
+    chart_data = []
+    for label, sp_val, actual_val in zip(chart_labels, setpoint_series, actual_series):
+        selected = sp_val if sp_val is not None else actual_val
+        if selected is not None:
+            chart_data.append({"label": label, "value": selected})
+    latest_actual_value = (
+        _safe_float(latest_row[actual_idx]) if actual_idx is not None and actual_idx < len(latest_row) else None
+    )
+    latest_setpoint_value = (
+        _safe_float(latest_row[setpoint_idx]) if setpoint_idx is not None and setpoint_idx < len(latest_row) else None
+    )
+    latest_outside_value = (
+        _safe_float(latest_row[outside_idx]) if outside_idx is not None and outside_idx < len(latest_row) else None
+    )
+    latest_fan_value = _fan_value(latest_row)
+    latest_cooling_value = _cooling_value(latest_row)
+    latest_outside_raw = (
+        str(latest_row[outside_idx]).strip() if outside_idx is not None and outside_idx < len(latest_row) else ""
+    )
+    latest_outside_flag_day_char = (
+        latest_outside_raw[1].upper() if len(latest_outside_raw) > 1 else "D"
+    )
+    latest_outside_daylight = latest_outside_flag_day_char != "N"
+    outside_display_value = ""
+    if latest_outside_value is not None:
+        outside_display_value = (
+            str(int(latest_outside_value))
+            if float(latest_outside_value).is_integer()
+            else f"{latest_outside_value:.1f}"
+        )
+    data_json = json.dumps(
+        {
+            "headers": headers,
+            "latestRow": latest_row,
+            "history": chart_data,
+            "chartLabels": chart_labels,
+            "setpoint": setpoint_series,
+            "actual": actual_series,
+            "setpointLabel": setpoint_label,
+            "actualLabel": actual_label,
+            "fan": fan_series,
+            "fanLegend": FAN_LABELS,
+            "outside": outside_series,
+            "outsideLabel": outside_label,
+            "outsideFlags": outside_flags,
+            "cooling": cooling_series,
+            "coolingLegend": COOLING_LABELS,
+            "coolingLabel": cooling_label,
+            "latestActual": latest_actual_value,
+            "latestSetpoint": latest_setpoint_value,
+            "latestOutside": latest_outside_value,
+            "latestOutsideRaw": latest_outside_raw,
+            "latestOutsideDaylight": latest_outside_daylight,
+            "latestOutsideFlagDayChar": latest_outside_flag_day_char,
+            "latestFan": latest_fan_value,
+            "latestCooling": latest_cooling_value,
+        }
+    )
+    latest_outside_raw = (
+        str(latest_row[outside_idx]).strip() if outside_idx is not None and outside_idx < len(latest_row) else ""
+    )
+    cards = ""
+    seen_labels = set()
+    for idx, label in enumerate(headers):
+        display_label = label or ""
+        if display_label in seen_labels:
+            continue
+        seen_labels.add(display_label)
+        if idx == outside_idx:
+            value = outside_display_value
+        else:
+            value = latest_row[idx] if idx < len(latest_row) else ""
+        if value is None:
+            value = ""
+        metric_attr = ""
+        if idx == actual_idx:
+            metric_attr = ' data-metric="actual"'
+        elif idx == setpoint_idx:
+            metric_attr = ' data-metric="setpoint"'
+        elif idx == fan_idx:
+            metric_attr = ' data-metric="fan"'
+        elif idx == cooling_idx:
+            metric_attr = ' data-metric="cooling"'
+        elif idx == outside_idx:
+            metric_attr = ' data-metric="outside"'
+        cards += f"""
+        <div class="metric-card"{metric_attr}>
+          <div class="label">{display_label}</div>
+          <div class="value">{value}</div>
+        </div>
+        """
+    script_block = f"""    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      const dashboardData = {data_json};
+      const chartLabels = dashboardData.chartLabels || [];
+      const setpointSeries = dashboardData.setpoint || [];
+      const actualSeries = dashboardData.actual || [];
+      const outsideSeries = dashboardData.outside || [];
+      const fanSeries = dashboardData.fan || [];
+      const coolingSeries = dashboardData.cooling || [];
+      const setpointLabel = dashboardData.setpointLabel || "Target Temperature";
+      const actualLabel = dashboardData.actualLabel || "Actual Temperature";
+      const outsideLabel = dashboardData.outsideLabel || "Outside Temp";
+      const coolingLabel = dashboardData.coolingLabel || "Cooling Status";
+      const fanLegend = dashboardData.fanLegend || ["On", "Circulate", "Auto"];
+      const coolingLegend = dashboardData.coolingLegend || ["Idle", "Cooling"];
+      const chartControlButtons = document.querySelectorAll(".chart-control");
+      const canvas = document.getElementById("history-chart");
+      const ctx = canvas.getContext("2d");
+      const toggleHistoryBtn = document.getElementById("toggle-history");
+      let chart;
+      const gradientColorFor = (value) => {{
+        if (typeof value !== "number" || Number.isNaN(value)) {{
+          return "#999";
+        }}
+        const ratio = Math.max(0, Math.min((value - 50) / 40, 1));
+        const start = [50, 130, 255];
+        const end = [255, 40, 40];
+        const rgb = start.map((component, idx) =>
+          Math.round(component + (end[idx] - component) * ratio)
+        );
+        return `rgb(${{rgb[0]}}, ${{rgb[1]}}, ${{rgb[2]}})`;
+      }};
+      const colorForPoint = (value) => gradientColorFor(value ?? 50);
+      const gradientColorForOutside = (value) => {{
+        const numeric = typeof value === "number" ? value : parseFloat(value);
+        const clamped = Number.isNaN(numeric) ? 50 : Math.max(50, Math.min(numeric, 90));
+        const ratio = Math.max(0, Math.min((clamped - 50) / 40, 1));
+        const start = [0, 0, 0];
+        const end = [255, 214, 0];
+        const rgb = start.map((component, idx) =>
+          Math.round(component + (end[idx] - component) * ratio)
+        );
+        return `rgb(${{rgb[0]}}, ${{rgb[1]}}, ${{rgb[2]}})`;
+      }};
+      const findLastNumber = (arr) => {{
+        if (!arr) {{
+          return undefined;
+        }}
+        for (let i = arr.length - 1; i >= 0; i -= 1) {{
+          const value = arr[i];
+          if (typeof value === "number" && !Number.isNaN(value)) {{
+            return value;
+          }}
+        }}
+        return undefined;
+      }};
+      const getContrastColor = (color) => {{
+        const match = color && color.match(/rgb\\((\\d+),\\s*(\\d+),\\s*(\\d+)\\)/);
+        if (!match) {{
+          return "#f5f7ff";
+        }}
+        const [, r, g, b] = match;
+        const brightness = (Number(r) * 299 + Number(g) * 587 + Number(b) * 114) / 1000;
+        return brightness > 186 ? "#000" : "#fff";
+      }};
+      const applyCardColor = (card, color, forcedTextColor = null, setBackground = true) => {{
+        if (!card || !color) {{
+          return;
+        }}
+        if (setBackground) {{
+          card.style.background = color;
+          card.style.borderColor = color;
+        }} else {{
+          card.style.background = "transparent";
+          card.style.borderColor = "transparent";
+        }}
+        const textColor = forcedTextColor || getContrastColor(color);
+        card.style.color = textColor;
+        const labelEl = card.querySelector(".label");
+        if (labelEl) {{
+          labelEl.style.color = textColor;
+        }}
+        const valueEl = card.querySelector(".value");
+        if (valueEl) {{
+          valueEl.style.color = textColor;
+        }}
+      }};
+      const latestActualValue = dashboardData.latestActual ?? findLastNumber(actualSeries) ?? 50;
+      const latestSetpointValue = dashboardData.latestSetpoint ?? findLastNumber(setpointSeries) ?? 50;
+      const latestOutsideValue = dashboardData.latestOutside ?? findLastNumber(outsideSeries) ?? 50;
+      const outsideFlagRaw = (dashboardData.latestOutsideRaw || "").trim().toUpperCase();
+      const outsideFlag = outsideFlagRaw ? outsideFlagRaw[0] : "";
+      const outsideFlagDayChar = outsideFlagRaw && outsideFlagRaw.length > 1 ? outsideFlagRaw[1] : "D";
+      const outsideDaylight =
+        typeof dashboardData.latestOutsideDaylight === "boolean"
+          ? dashboardData.latestOutsideDaylight
+          : outsideFlagDayChar !== "N";
+      const outsideFlagColors = {{
+        "S": "#ffd000",
+        "P": "#ffb347",
+        "O": "#b4b4b4",
+        "R": "#5da9f7",
+        "N": "#0b1b3a",
+      }};
+      const weatherGraphicPaths = {{
+        "S": "../../../Images/sunny.png",
+        "P": "../../../Images/PartlySunny.png",
+        "O-day": "../../../Images/cloudy.png",
+        "O-night": "../../../Images/cloudynight.png",
+        "R-day": "../../../Images/RainyDay.png",
+        "R-night": "../../../Images/rainynight.png",
+        "N": "../../../Images/clearnight.png",
+      }};
+      const outsideFlagColor = outsideFlagColors[outsideFlag] || null;
+      const actualCard = document.querySelector('.metric-card[data-metric="actual"]');
+      applyCardColor(actualCard, colorForPoint(latestActualValue));
+      applyCardColor(
+        document.querySelector('.metric-card[data-metric="setpoint"]'),
+        colorForPoint(latestSetpointValue)
+      );
+      const outsideCard = document.querySelector('.metric-card[data-metric="outside"]');
+      applyCardColor(
+        outsideCard,
+        outsideFlagColor || gradientColorForOutside(latestOutsideValue),
+        outsideFlag === "N" ? "#fff" : null,
+        outsideFlag === "S"
+      );
+      if (outsideCard) {{
+        let graphic = outsideCard.querySelector(".sunny-graphic");
+        if (!graphic) {{
+          graphic = document.createElement("div");
+          graphic.className = "sunny-graphic";
+          outsideCard.appendChild(graphic);
+        }}
+        let pathKey = outsideFlag;
+        if (outsideFlag === "O") {{
+          pathKey = outsideDaylight ? "O-day" : "O-night";
+        }} else if (outsideFlag === "R") {{
+          pathKey = outsideDaylight ? "R-day" : "R-night";
+        }} else if (outsideFlag === "N") {{
+          pathKey = "N";
+        }}
+        const path = weatherGraphicPaths[pathKey];
+        if (path) {{
+          graphic.style.backgroundImage = `url("${{path}}")`;
+          outsideCard.classList.add("sunny-image");
+        }} else {{
+          graphic.style.backgroundImage = "";
+          outsideCard.classList.remove("sunny-image");
+        }}
+      }}
+      const fanStyleMap = {{
+        auto: {{
+          background: "#b4b4b4",
+          border: "#8c8c8c",
+          text: "#1a1a1a",
+        }},
+        circulate: {{
+          background: "radial-gradient(circle at 50% 40%, #ffd54f 0%, #f0a500 40%, #c47f00 100%)",
+          border: "#c47f00",
+          text: "#2d1e00",
+        }},
+        on: {{
+          background: "#059c15",
+          border: "#03660d",
+          text: "#ffffff",
+        }},
+      }};
+      const fanStateMap = {{
+        0: "auto",
+        1: "circulate",
+        2: "on",
+      }};
+      const applyFanCardStyle = (card, fanValue) => {{
+        if (!card) {{
+          return;
+        }}
+        const state = fanStateMap[fanValue] || "auto";
+        const style = fanStyleMap[state];
+        if (!style) {{
+          return;
+        }}
+        card.style.background = style.background;
+        card.style.borderColor = style.border;
+        card.style.color = style.text;
+        const labelEl = card.querySelector(".label");
+        if (labelEl) {{
+          labelEl.style.color = style.text;
+        }}
+        const valueEl = card.querySelector(".value");
+        if (valueEl) {{
+          valueEl.style.color = style.text;
+        }}
+      }};
+      const latestFanValue = dashboardData.latestFan ?? findLastNumber(fanSeries);
+      applyFanCardStyle(document.querySelector('.metric-card[data-metric="fan"]'), latestFanValue);
+      const coolingStyleMap = {{
+        idle: {{
+          background: "#e0e2e5",
+          border: "#b0b4ba",
+          text: "#1a1a1a",
+        }},
+        cooling: {{
+          background: "#059c15",
+          border: "#03660d",
+          text: "#ffffff",
+        }},
+      }};
+      const coolingStateMap = {{
+        0: "idle",
+        1: "cooling",
+      }};
+      const applyCoolingCardStyle = (card, coolingValue) => {{
+        if (!card) {{
+          return;
+        }}
+        const state = coolingStateMap[coolingValue] || "idle";
+        const style = coolingStyleMap[state];
+        if (!style) {{
+          return;
+        }}
+        card.style.background = style.background;
+        card.style.borderColor = style.border;
+        card.style.color = style.text;
+        const labelEl = card.querySelector(".label");
+        if (labelEl) {{
+          labelEl.style.color = style.text;
+        }}
+        const valueEl = card.querySelector(".value");
+        if (valueEl) {{
+          valueEl.style.color = style.text;
+        }}
+      }};
+      const latestCoolingValue = dashboardData.latestCooling ?? findLastNumber(coolingSeries) ?? 0;
+      applyCoolingCardStyle(
+        document.querySelector('.metric-card[data-metric="cooling"]'),
+        latestCoolingValue
+      );
+      const gradientColorForCooling = (value) => {{
+        const ratio = Math.max(0, Math.min(value ?? 0, 1));
+        const start = [200, 200, 200];
+        const end = [61, 159, 255];
+        const rgb = start.map((component, idx) =>
+          Math.round(component + (end[idx] - component) * ratio)
+        );
+        return `rgb(${{rgb[0]}}, ${{rgb[1]}}, ${{rgb[2]}})`;
+      }};
+      const buildSegmentGradient = (ctx, startValue, endValue) => {{
+        const start = startValue ?? endValue ?? 50;
+        const end = endValue ?? startValue ?? 50;
+        if (!ctx || !ctx.chart || !ctx.chart.ctx || !ctx.p0 || !ctx.p1) {{
+          return colorForPoint(end);
+        }}
+        const gradient = ctx.chart.ctx.createLinearGradient(
+          ctx.p0.x,
+          ctx.p0.y,
+          ctx.p1.x,
+          ctx.p1.y
+        );
+        gradient.addColorStop(0, colorForPoint(start));
+        gradient.addColorStop(1, colorForPoint(end));
+        return gradient;
+      }};
+      const segmentColor = (ctx) => {{
+        const startValue = ctx.p0?.parsed.y ?? ctx.parsed.y ?? 50;
+        const endValue = ctx.p1?.parsed.y ?? ctx.parsed.y ?? startValue;
+        return buildSegmentGradient(ctx, startValue, endValue);
+      }};
+      const buildCoolingGradient = (ctx, startValue, endValue) => {{
+        const start = startValue ?? endValue ?? 0;
+        const end = endValue ?? startValue ?? start;
+        if (!ctx || !ctx.chart || !ctx.chart.ctx || !ctx.p0 || !ctx.p1) {{
+          return gradientColorForCooling(end);
+        }}
+        const gradient = ctx.chart.ctx.createLinearGradient(
+          ctx.p0.x,
+          ctx.p0.y,
+          ctx.p1.x,
+          ctx.p1.y
+        );
+        gradient.addColorStop(0, gradientColorForCooling(start));
+        gradient.addColorStop(1, gradientColorForCooling(end));
+        return gradient;
+      }};
+      const coolingSegmentColor = (ctx) => {{
+        const startValue = ctx.p0?.parsed.y ?? ctx.parsed.y ?? 0;
+        const endValue = ctx.p1?.parsed.y ?? ctx.parsed.y ?? startValue;
+        return buildCoolingGradient(ctx, startValue, endValue);
+      }};
+      
+      function updateLegendImage() {{
+        const log = (msg) => {{
+          const logEl = document.getElementById("js-log");
+          if (logEl) {{
+            logEl.textContent += msg + "\\n";
+            logEl.scrollTop = logEl.scrollHeight;
+          }} else {{
+            console.log(msg);
+          }}
+        }};
+        if (!chart || !chart.legend) {{
+          return;
+        }}
+        const srcCanvas = chart.canvas;
+        const legendBox = chart.legend;
+        
+        let {{ left, top, width, height }} = legendBox;
+        log(`legendBox raw: left=${{left}}, top=${{top}}, width=${{width}}, height=${{height}}`);
+        try {{
+          height -= 275;
+          width -= 20;
+        }} catch (error) {{
+          log(`height adjustment error: ${{error}}`);
+        }}
+        log(`legendBox adjusted: left=${{left}}, top=${{top}}, width=${{width}}, height=${{height}}`);
+        if (!width || !height) {{
+          return;
+        }}
+        const legendCanvas = document.createElement("canvas");
+        log("creating legend canvas");
+        legendCanvas.width = width;
+        legendCanvas.height = height;
+        const legendCtx = legendCanvas.getContext("2d");
+        legendCtx.drawImage(
+          srcCanvas,
+          left,
+          top,
+          width,
+          height,
+          0,
+          0,
+          width,
+          height
+        );
+        const dataUrl = legendCanvas.toDataURL("image/png");
+        const legendImg = document.getElementById("legend-image");
+        if (legendImg && dataUrl) {{
+          legendImg.src = dataUrl;
+
+        }}
+        return dataUrl;
+      }}
+
+
+      const createChart = () => {{
+        if (chart) {{
+          return;
+        }}
+        canvas.style.display = "block";
+        chart = new Chart(ctx, {{
+          type: "line",
+          data: {{
+            labels: chartLabels,
+            datasets: [
+              {{
+                label: setpointLabel,
+                data: setpointSeries,
+                segment: {{
+                  borderColor: segmentColor,
+                }},
+                backgroundColor: "rgba(102,255,153,0.2)",
+                spanGaps: true,
+              }},
+              {{
+                label: actualLabel,
+                data: actualSeries,
+                segment: {{
+                  borderColor: segmentColor,
+                }},
+                backgroundColor: "rgba(125,164,255,0.2)",
+                spanGaps: true,
+              }},
+              {{
+                label: outsideLabel,
+                data: outsideSeries,
+                segment: {{
+                  borderColor: (ctx) => {{
+                    const value = ctx.parsed?.y ?? ctx.p0?.parsed?.y ?? ctx.p1?.parsed?.y ?? 50;
+                    return gradientColorForOutside(value);
+                  }},
+                }},
+                backgroundColor: "rgba(255,214,0,0.15)",
+                spanGaps: true,
+              }},
+              {{
+                label: coolingLabel,
+                data: coolingSeries,
+                segment: {{
+                  borderColor: coolingSegmentColor,
+                }},
+                backgroundColor: "rgba(255,107,107,0.2)",
+                yAxisID: "cooling",
+                spanGaps: true,
+                borderDash: [6, 4],
+                pointRadius: 0,
+              }},
+              {{
+                label: "Fan Mode",
+                data: fanSeries,
+                borderColor: "#ffa500",
+                backgroundColor: "rgba(255,165,0,0.3)",
+                yAxisID: "fan",
+                spanGaps: true,
+                borderDash: [4, 4],
+                pointRadius: 4,
+              }},
+            ],
+          }},
+          options: {{
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: {{
+                padding: {{
+                    right: 0
+                }}
+            }},
+                
+            
+            animation: false,
+            scales: {{
+
+                y: {{
+                beginAtZero: false,
+                min: 55,
+                max: 90,
+                ticks: {{
+                  color: (ctx) => colorForPoint(ctx.tick.value),
+                }},
+                grid: {{
+                  color: "rgba(255,255,255,0.1)",
+                }},
+              }},
+              fan: {{
+                type: "linear",
+                position: "right",
+                min: -1,
+                max: 2,
+                ticks: {{
+                  stepSize: 1,
+                  callback: (value) => fanLegend[Math.round(value)] || "",
+                  color: "#ffa500",
+                }},
+                grid: {{
+                  drawOnChartArea: false,
+                  color: "rgba(255,255,255,0.08)",
+                }},
+              }},
+              cooling: {{
+                type: "linear",
+                position: "right",
+                offset: false,
+                min: -1,
+                max: 2,
+                ticks: {{
+                  stepSize: 1,
+                  callback: (value) => coolingLegend[Math.round(value)] || "",
+                  color: "#ff6b6b",
+                }},
+                grid: {{
+                  drawOnChartArea: true,
+                  color: "rgba(255,255,255,0.08)",
+                }},
+              }},
+              x: {{
+                ticks: {{
+                  
+                  color: "#f4f6ff",
+                  maxRotation: 0,
+                  minRotation: 90,
+                }},
+                grid: {{
+                  color: "rgba(255,255,255,0.08)",
+                }},
+              }},
+            }},
+            plugins: {{
+            legend: {{
+
+                        position: "left",
+            align: "start",
+                labels: {{
+                  color: "#f4f6ff",
+                  usePontStyle: false,
+                  boxWidth: 10,
+              //    filter: ((legendItem) => legendItem.text !== coolingLabel),  
+                }},
+              }},
+              tooltip: {{
+                callbacks: {{
+                  label: (context) => {{
+                    const label = context.dataset.label || "";
+                    if (context.dataset.yAxisID === "fan") {{
+                      const value = context.parsed.y;
+                      return `\${{label}}: \${{fanLegend[Math.round(value)] || "Unknown"}}`;
+                    }}
+                    if (context.dataset.yAxisID === "cooling") {{
+                      const value = context.parsed.y;
+                      return `\${{label}}: \${{coolingLegend[Math.round(value)] || "Unknown"}}`;
+                    }}
+                    return `\${{label}}: \${{context.parsed.y ?? context.parsed}}`;
+                  }},
+                }},
+              }},
+            }},
+          }},
+        }});
+        updateLegendImage();
+        chart.options.plugins.legend.display = false;
+        chart.update();
+      }};
+
+      const updateChartVisibility = (mode) => {{
+        if (!chart) {{
+          return;
+        }}
+        chart.data.datasets[0].hidden = !(mode === "setpoint" || mode === "both");
+        chart.data.datasets[1].hidden = !(mode === "actual" || mode === "both");
+        chart.data.datasets[2].hidden = !(mode === "outside" || mode === "both");
+        chart.data.datasets[3].hidden = mode !== "cooling" && mode !== "both";
+        chart.data.datasets[4].hidden = mode !== "fan" && mode !== "both";
+        chart.update();
+      }};
+
+      const legendEntry = document.getElementById("logo2");
+      const legendColorMap = {{
+        "Set Point": "#66ff99",
+        "Current Temp": "#7da4ff",
+        Status: "#3d9fff",
+        Idle: "#b4b4b4",
+        "Fan Mode": "#ffa500",
+        "Outside Temp": "#ffd000",
+      }};
+      const legendMap = {{
+        setpoint: ["Set Point"],
+        actual: ["Current Temp"],
+        outside: ["Outside Temp"],
+        cooling: ["Status", "Idle"],
+        fan: ["Fan Mode"],
+        both: ["Set Point", "Current Temp", "Outside Temp", "Status", "Fan Mode"],
+      }};
+      const updateLegendEntries = (mode) => {{
+        if (!legendEntry) {{
+          return;
+        }}
+        const entries = legendMap[mode] || legendMap.both;
+        legendEntry.innerHTML = entries
+          .map((value) => {{
+            const color = legendColorMap[value] || "#f4f6ff";
+            return `<li style="color:${{color}}">${{value}}</li>`;
+          }})
+          .join("");
+      }};
+      const updateAxesVisibility = (mode) => {{
+        const showTemp =
+          mode === "setpoint" ||
+          mode === "actual" ||
+          mode === "outside" ||
+          mode === "both";
+        const showFan = mode === "fan" || mode === "both";
+        const showCooling = mode === "cooling" || mode === "both";
+        chart.options.scales.y.display = showTemp;
+        chart.options.scales.y.ticks.display = showTemp;
+        chart.options.scales.fan.display = showFan;
+        chart.options.scales.cooling.display = showCooling;
+        chart.options.scales.fan.ticks.display = showFan;
+        chart.options.scales.cooling.ticks.display = showCooling;
+      }};
+
+      const getActiveMode = () => {{
+        const activeBtn = document.querySelector(".chart-control.active");
+        return (activeBtn && activeBtn.dataset && activeBtn.dataset.mode) || "both";
+      }};
+
+      const setActiveMode = (mode) => {{
+        createChart();
+        chartControlButtons.forEach((btn) => {{
+          btn.classList.toggle("active", btn.dataset.mode === mode);
+        }});
+        updateChartVisibility(mode);
+        updateAxesVisibility(mode);
+        updateLegendEntries(mode);
+        if (chart) {{
+          chart.update();
+        }}
+      }};
+
+      const showChart = () => {{
+        createChart();
+        canvas.style.display = "block";
+        toggleHistoryBtn.textContent = "Hide History Chart";
+        toggleHistoryBtn.classList.add("history-visible");
+        setActiveMode(getActiveMode());
+      }};
+
+      const hideChart = () => {{
+        canvas.style.display = "none";
+        toggleHistoryBtn.textContent = "Show History Chart";
+        toggleHistoryBtn.classList.remove("history-visible");
+      }};
+
+      chartControlButtons.forEach((button) => {{
+        button.addEventListener("click", () => setActiveMode(button.dataset.mode));
+      }});
+
+      toggleHistoryBtn.addEventListener("click", () => {{
+        if (canvas.style.display === "none" || !canvas.style.display) {{
+          showChart();
+        }} else {{
+          hideChart();
+        }}
+      }});
+
+      showChart();
+    </script>
+    """
+    html = f"""<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>{title}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap">
+    <style>
+      body {{
+        margin: 0;
+        font-family: 'Inter', system-ui, sans-serif;
+        background: #4a4a4a;
+        color: #f4f6ff;
+      }}
+      .container {{
+        max-width: 900px;
+        margin: 1px auto;
+        padding: 1px;
+        background: #4a4a4a;
+        border-radius: 16px;
+      }}
+      h1 {{
+        margin: 0 0 16px;
+        font-size: 32px;
+      }}
+      .header-row {{
+
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+      }}
+      .chartjs-legend {{
+      margin-top: -40px;
+      }}
+      }}
+      .header-label {{
+
+        font-size: 80px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        opacity: 0.95;
+        white-space: nowrap;
+      }}
+      #Company {{
+
+        width: 80%;
+        font-size: 60px;
+        text-align: center;
+        padding: 4px 0;
+      }}
+      .logo-placeholder {{
+
+        width: 190px;
+        height: 126px;
+
+                border-radius: 0px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        color: #66ff99;
+      }}
+      .logo-placeholder img {{
+
+                max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+      }}
+      .card-grid {{
+
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+      }}
+      .metric-card {{
+        background: #2b2b30;
+        color: #f5f7ff;
+        border: 1px solid #3a3a40;
+        border-radius: 12px;
+        padding: 16px;
+      }}
+      .metric-card .label {{
+        font-size: 14px;
+        opacity: 0.7;
+      }}
+      .metric-card .value {{
+        font-size: 24px;
+        font-weight: 600;
+      }}
+      .metric-card.sunny-image,
+      .metric-card.sunny-image .label,
+      .metric-card.sunny-image .value {{
+        background: transparent !important;
+        border-color: transparent !important;
+      }}
+      .metric-card[data-metric="outside"] {{
+        position: relative;
+        padding-right: 160px;
+      }}
+      .metric-card .sunny-graphic {{
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 150px;
+        pointer-events: none;
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: cover;
+      }}
+      .metric-card[data-metric="outside"] {{
+        position: relative;
+        padding-right: 140px;
+      }}
+      .metric-card .sunny-graphic {{
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        width: 120px;
+        height: 90px;
+        transform: translateY(-50%);
+        pointer-events: none;
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: contain;
+      }}
+      .history-panel {{
+        
+        margin-top: 32px;
+        background: rgba(255,255,255,0.02);
+        border-radius: 12px;
+        padding: 16px;
+        border: 1px solid rgba(255,255,255,0.08);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }}
+      button {{
+        background: #66ff99;
+        border: none;
+        color: #051b05;
+        padding: 10px 18px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s ease;
+      }}
+      #toggle-history {{
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+      }}
+      #toggle-history.history-visible {{
+        background-image: url("../../../Images/Hands.png");
+        color: #fff;
+      }}
+      button:active {{
+        transform: scale(0.98);
+      }}
+      #chartcontrols {{
+        width: 900px;
+
+                display: flex;
+        align-items: center;
+        justify-content: left;
+        gap: 8px;
+        padding: 4px 8px;
+        margin-top: 12px;
+        font-size: 14px;
+        color: #f4f6ff;
+        height: 100px;
+      }}
+      .chart-control {{
+        border: 1px solid #3a3a40;
+        background: #1f1f26;
+        color: #f4f6ff;
+        padding: 6px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background 0.2s ease, color 0.2s ease, filter 0.2s ease;
+      }}
+      .chart-control[data-mode="setpoint"] {{
+        background: #66ff99;
+        color: #051b05;
+        border-color: #66ff99;
+      }}
+      .chart-control[data-mode="actual"] {{
+        background: #7da4ff;
+        color: #051b05;
+        border-color: #7da4ff;
+      }}
+      .chart-control[data-mode="outside"] {{
+        background: #ffd000;
+        color: #051b05;
+        border-color: #ffd000;
+      }}
+      .chart-control[data-mode="cooling"] {{
+        background: #3d9fff;
+        color: #051b05;
+        border-color: #3d9fff;
+      }}
+      .chart-control[data-mode="fan"] {{
+        background: #ffa500;
+        color: #051b05;
+        border-color: #ffa500;
+      }}
+      .chart-control[data-mode="both"] {{
+        background: #000;
+        color: #fff;
+        border-color: #000;
+      }}
+      .chart-control.active {{
+        filter: brightness(1.15);
+      }}
+      #history-chart {{
+        gap: 20;
+        display: none;
+        width: 100% !important;
+        height: 100% !important;
+        background: #000;
+      }}
+      .chart-wrap {{
+
+              height: 420px;
+        margin: 1x auto 0 auto;
+        background: #000;
+        position: relative;
+        max-width: 900px;
+        width: 100%;
+        padding: 60px 32px 0;
+        box-sizing: border-box;
+        background-image: url("../../../Images/Hands.png");
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+      }}
+      .fan-legend-image {{
+      }}
+      #logo2 {{
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        width: 50px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }}
+      #logo2 li {{
+        font-size: 10px;
+        color: #f4f6ff;
+      }}
+      .note {{
+        border: 2px solid;
+        margin-top: 12px;
+        font-size: 12px;
+        opacity: 0.7;
+      }}
+      #js-log {{
+       display: none;
+         margin-top: 12px;
+        padding: 8px;
+        height: 120px;
+        border: 1px solid #66ff99;
+        background: #111;
+        color: #66ff99;
+        font-size: 11px;
+        overflow-y: auto;
+        white-space: pre-wrap;
+        width: 100%;
+      }}
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header-row">
+        <div id="Company">Lockout Music Studios  Oceanside</div>
+        <div id="Logo"class="logo-placeholder">
+          <img src="../../../Images/LO_Logo.png" alt="Logo" />
+        </div>
+      </div>
+      <div id="Cards" class="card-grid">
+        {cards}
+      </div>
+      <div id="history" class="history-panel">
+        <img width=75" height="75" src="../../../Images/Hands.png"/>
+        <button id="toggle-history">Show History Chart</button>
+
+      <div id="chartcontrols" class="chart-controls">
+          <button type="button" class="chart-control" data-mode="setpoint">Set Point</button>
+          <button type="button" class="chart-control" data-mode="actual">Current Temp</button>
+          <button type="button" class="chart-control" data-mode="outside">Outside Temp</button>
+          <button type="button" class="chart-control" data-mode="cooling">AC Status</button>
+          <button type="button" class="chart-control" data-mode="fan">Fan Mode</button>
+          <button type="button" class="chart-control active" data-mode="both">Combined</button>
+          <ul id="NewLegend" style="width: 200px; margin: 0; padding: 0; list-style: none; display: flex; gap: 12px;">
+            <li id="SetPoint" style="color: #66ff99;">Set Point</li>
+            <li id="CurrentTemp"style="color: #7da4ff;">Current Temp</li>
+            <li id="ACStatus" style="color: #ff6b6b;">AC Status</li>
+            <li id="Fan Mode" style="color: #ffa500;">Fan Mode</li>
+            <li id="OutsideTemp" style="color: #ffd000;">Outside Temp</li>
+
+                      </ul>
+          <span>&nbsp;</span>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="history-chart"></canvas>
+        </div>
+        <div class="note">Data source: Google Sheet (last updated when this page was generated).</div>
+        <pre id="js-log"></pre>
+      </div>
+    </div>
+    {script_block}
+
+  </body>
+</html>
+"""
+    output_path.write_text(html, encoding="utf-8")
+    logger.info("Wrote dashboard HTML to %s", output_path)
+
+
+def main() -> None:
+    headers, latest_row, history_rows = fetch_sheet_data()
+    if not headers:
+        raise SystemExit("Sheet returned no data; set GOOGLE_SHEET_ID and DATA_RANGE.")
+    TEMP_DIR.mkdir(parents=True, exist_ok=True)
+    target_path = TEMP_DIR / "dashboard.html"
+    build_dashboard_html(headers, latest_row, history_rows, target_path)
+    # Also save a copy in the project folder for external publishing.
+    public_dir = base_dir.parent / "Web"
+    public_dir.mkdir(parents=True, exist_ok=True)
+    public_copy = public_dir / "dashboard_public.html"
+    try:
+        # Keep a human-readable copy alongside the bot so it can be served or published separately.
+        public_copy.write_bytes(target_path.read_bytes())
+        logger.info("Wrote public copy to %s", public_copy)
+        # Automatically stage/commit/push the public HTML so repo and remote stay in sync with each generation.
+        git_autopush(public_copy)
+    except Exception as exc:
+        logger.warning("Failed to write or push public copy %s (%s)", public_copy, exc)
+    print(f"Dashboard generated at: {target_path.resolve()}")
+    logger.info("Dashboard generation complete at %s", target_path.resolve())
+
+    # Push to Drive and clean up local temp copy.
+    try:
+        file_id = push_dashboard_to_drive(target_path)
+        if DELETE_TEMP_FILES:
+            logger.info("Dashboard uploaded to Drive (file id %s); removing local copy", file_id)
+            try:
+                target_path.unlink()
+            except Exception as exc:
+                logger.warning("Unable to delete temp file %s (%s)", target_path, exc)
+        else:
+            logger.info("Dashboard uploaded to Drive (file id %s); kept local copy at %s", file_id, target_path)
+    except Exception as exc:
+        logger.error("Failed to upload dashboard to Drive: %s", exc)
+
+
+if __name__ == "__main__":
+    main()
