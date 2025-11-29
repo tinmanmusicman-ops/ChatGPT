@@ -451,6 +451,7 @@ def build_dashboard_html(
     fan_series = [_fan_value(row) for row in history_rows]
     outside_series = []
     outside_flags = []
+    outside_flag_day_chars = []
     for row in history_rows:
         raw_value = (
             str(row[outside_idx]).strip()
@@ -458,7 +459,9 @@ def build_dashboard_html(
             else ""
         )
         flag = raw_value[:1].upper() if raw_value else ""
+        day_char = raw_value[1].upper() if len(raw_value) > 1 else "D"
         outside_flags.append(flag)
+        outside_flag_day_chars.append(day_char)
         outside_series.append(_extract_clamped(outside_idx, row))
     cooling_series = [_cooling_value(row) for row in history_rows]
     cooling_label = (
@@ -511,6 +514,7 @@ def build_dashboard_html(
             "outside": outside_series,
             "outsideLabel": outside_label,
             "outsideFlags": outside_flags,
+            "outsideFlagDayChars": outside_flag_day_chars,
             "cooling": cooling_series,
             "coolingLegend": COOLING_LABELS,
             "coolingLabel": cooling_label,
@@ -566,6 +570,8 @@ def build_dashboard_html(
       const outsideSeries = dashboardData.outside || [];
       const fanSeries = dashboardData.fan || [];
       const coolingSeries = dashboardData.cooling || [];
+      const outsideFlags = dashboardData.outsideFlags || [];
+      const outsideFlagDayChars = dashboardData.outsideFlagDayChars || [];
       const setpointLabel = dashboardData.setpointLabel || "Target Temperature";
       const actualLabel = dashboardData.actualLabel || "Actual Temperature";
       const outsideLabel = dashboardData.outsideLabel || "Outside Temp";
@@ -663,14 +669,40 @@ def build_dashboard_html(
       }};
       const weatherGraphicPaths = {{
         "S": "../../../Images/sunny.png",
-        "P": "../../../Images/PartlySunny.png",
+        "P-day": "../../../Images/PartlySunny.png",
+        "P-night": "../../../Images/Night.png",
         "O-day": "../../../Images/cloudy.png",
         "O-night": "../../../Images/cloudynight.png",
         "R-day": "../../../Images/RainyDay.png",
-        "R-night": "../../../Images/rainynight.png",
+        "R-night": "../../../Images/RainyNight.png",
         "N": "../../../Images/clearnight.png",
       }};
       const outsideFlagColor = outsideFlagColors[outsideFlag] || null;
+      const weatherGraphicImages = {{}};
+      Object.entries(weatherGraphicPaths).forEach(([key, src]) => {{
+        const img = new Image();
+        img.src = src;
+        weatherGraphicImages[key] = img;
+      }});
+      const getWeatherGraphicKey = (flag, dayChar) => {{
+        const normalizedFlag = (flag || "").toUpperCase();
+        const normalizedDayChar = (dayChar || "D").toUpperCase();
+        const isNight = normalizedDayChar === "N" || normalizedDayChar === "M";
+        const isDay = !isNight;
+        if (normalizedFlag === "P") {{
+          return isDay ? "P-day" : "P-night";
+        }}
+        if (normalizedFlag === "O") {{
+          return isDay ? "O-day" : "O-night";
+        }}
+        if (normalizedFlag === "R") {{
+          return isDay ? "R-day" : "R-night";
+        }}
+        if (normalizedFlag === "N") {{
+          return "N";
+        }}
+        return "S";
+      }};
       const actualCard = document.querySelector('.metric-card[data-metric="actual"]');
       applyCardColor(actualCard, colorForPoint(latestActualValue));
       applyCardColor(
@@ -692,7 +724,9 @@ def build_dashboard_html(
           outsideCard.appendChild(graphic);
         }}
         let pathKey = outsideFlag;
-        if (outsideFlag === "O") {{
+        if (outsideFlag === "P") {{
+          pathKey = outsideDaylight ? "P-day" : "P-night";
+        }} else if (outsideFlag === "O") {{
           pathKey = outsideDaylight ? "O-day" : "O-night";
         }} else if (outsideFlag === "R") {{
           pathKey = outsideDaylight ? "R-day" : "R-night";
@@ -899,7 +933,33 @@ def build_dashboard_html(
         }}
         return dataUrl;
       }}
-
+      const outsideWeatherIconPlugin = {{
+        id: "outsideWeatherIcon",
+        afterDatasetsDraw: (chartInstance) => {{
+          const datasetIndex = 2;
+          const meta = chartInstance.getDatasetMeta(datasetIndex);
+          if (!meta || meta.hidden) {{
+            return;
+          }}
+          const ctxChart = chartInstance.ctx;
+          meta.data.forEach((point, index) => {{
+            const flag = outsideFlags[index];
+            if (!flag) {{
+              return;
+            }}
+            const dayChar = outsideFlagDayChars[index];
+            const key = getWeatherGraphicKey(flag, dayChar);
+            const img = weatherGraphicImages[key];
+            if (!img || !img.complete) {{
+              return;
+            }}
+            const size = Math.max(32, Math.round((chartInstance.height / 420) * 40));
+            const x = point.x - size / 2;
+            const y = point.y - size / 2;
+            ctxChart.drawImage(img, x, y, size, size);
+          }});
+        }},
+      }};
 
       const createChart = () => {{
         if (chart) {{
@@ -932,13 +992,9 @@ def build_dashboard_html(
               {{
                 label: outsideLabel,
                 data: outsideSeries,
-                segment: {{
-                  borderColor: (ctx) => {{
-                    const value = ctx.parsed?.y ?? ctx.p0?.parsed?.y ?? ctx.p1?.parsed?.y ?? 50;
-                    return gradientColorForOutside(value);
-                  }},
-                }},
-                backgroundColor: "rgba(255,214,0,0.15)",
+                showLine: false,
+                borderColor: "rgba(0,0,0,0)",
+                pointRadius: 0,
                 spanGaps: true,
               }},
               {{
@@ -965,6 +1021,7 @@ def build_dashboard_html(
               }},
             ],
           }},
+          plugins: [outsideWeatherIconPlugin],
           options: {{
             responsive: true,
             maintainAspectRatio: false,
@@ -1327,7 +1384,7 @@ def build_dashboard_html(
         background-repeat: no-repeat;
       }}
       #toggle-history.history-visible {{
-        background-image: url("../../../Images/Hands.png");
+  
         color: #fff;
       }}
       button:active {{
@@ -1336,9 +1393,9 @@ def build_dashboard_html(
       #chartcontrols {{
         width: 900px;
 
-                display: flex;
+        display: flex;
         align-items: center;
-        justify-content: left;
+        justify-content: center;
         gap: 8px;
         padding: 4px 8px;
         margin-top: 12px;
@@ -1396,17 +1453,16 @@ def build_dashboard_html(
         background: #000;
       }}
       .chart-wrap {{
-
-              height: 420px;
-        margin: 1x auto 0 auto;
+        height: 420px;
+        margin: 0 auto 0;
         background: #000;
         position: relative;
         max-width: 900px;
         width: 100%;
-        padding: 60px 32px 0;
+        padding: 0;
         box-sizing: border-box;
         background-image: url("../../../Images/Hands.png");
-        background-size: contain;
+        background-size: 100% 100%;
         background-repeat: no-repeat;
         background-position: center;
       }}
@@ -1458,8 +1514,8 @@ def build_dashboard_html(
         {cards}
       </div>
       <div id="history" class="history-panel">
-        <img width=75" height="75" src="../../../Images/Hands.png"/>
-        <button id="toggle-history">Show History Chart</button>
+
+      <button id="toggle-history">Show History Chart</button>
 
       <div id="chartcontrols" class="chart-controls">
           <button type="button" class="chart-control" data-mode="setpoint">Set Point</button>
@@ -1468,17 +1524,11 @@ def build_dashboard_html(
           <button type="button" class="chart-control" data-mode="cooling">AC Status</button>
           <button type="button" class="chart-control" data-mode="fan">Fan Mode</button>
           <button type="button" class="chart-control active" data-mode="both">Combined</button>
-          <ul id="NewLegend" style="width: 200px; margin: 0; padding: 0; list-style: none; display: flex; gap: 12px;">
-            <li id="SetPoint" style="color: #66ff99;">Set Point</li>
-            <li id="CurrentTemp"style="color: #7da4ff;">Current Temp</li>
-            <li id="ACStatus" style="color: #ff6b6b;">AC Status</li>
-            <li id="Fan Mode" style="color: #ffa500;">Fan Mode</li>
-            <li id="OutsideTemp" style="color: #ffd000;">Outside Temp</li>
-
-                      </ul>
           <span>&nbsp;</span>
         </div>
         <div class="chart-wrap">
+          <div>
+          </div>
           <canvas id="history-chart"></canvas>
         </div>
         <div class="note">Data source: Google Sheet (last updated when this page was generated).</div>
