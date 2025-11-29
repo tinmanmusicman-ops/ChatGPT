@@ -191,10 +191,41 @@
         transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
       }
       .chart-control.active {
-        background: #66ff99;
+        background: #4da366;
         color: #051b05;
         border-color: #66ff99;
         box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+      }
+      .chart-controls {
+        width: 900px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 4px 8px;
+        margin-top: 12px;
+        font-size: 14px;
+        color: #f4f6ff;
+        height: 120px;
+        position: relative;
+      }
+      .chart-controls .hands-logo {
+        position: absolute;
+        top: -36px;
+        right: 40px;
+        width: 80px;
+        height: 58px;
+        background-image: url("../../../Images/Hands.png");
+        background-size: contain;
+        background-repeat: no-repeat;
+        opacity: 0;
+        transform: translateY(16px);
+        transition: opacity 0.4s ease, transform 0.4s ease;
+        pointer-events: none;
+      }
+      .chart-controls.hands-visible .hands-logo {
+        opacity: 1;
+        transform: translateY(0);
       }
       #history-chart {
         gap: 20;
@@ -212,15 +243,48 @@
         width: 100%;
         padding: 24px 0 0;
         box-sizing: border-box;
+        transition: transform 0.4s ease;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 16px;
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.08),
+          inset 0 -1px 0 rgba(0, 0, 0, 0.5),
+          0 24px 70px rgba(0, 0, 0, 0.45);
+      }
+      .chart-wrap::after {
+        content: "";
+        position: absolute;
+        inset: 0;
         background-image: url("../../../Images/Hands.png");
         background-size: 100% 100%;
         background-repeat: no-repeat;
-        background-position: center top;
-        transition: background-position 0.4s ease, transform 0.4s ease;
+        background-position: center bottom;
+        opacity: 1;
+        pointer-events: none;
+        z-index: -1;
       }
-      .chart-wrap.logo-top-right {
-        background-position: right top;
-        transform: translateY(-12px);
+      .chart-wrap {
+        transform: translateY(0);
+      }
+      .chart-logo {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        width: 100px;
+        height: 80px;
+        <!-- background-image: url("../../../Images/Hands.png");
+        
+        background-size: contain;
+        background-repeat: no-repeat;
+        -->
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.4s ease, transform 0.4s ease;
+        pointer-events: none;
+      }
+      .chart-wrap.logo-top-right .chart-logo {
+        opacity: 1;
+        transform: translateY(0);
       }
       .fan-legend-image {
       }
@@ -364,6 +428,13 @@
       const toggleHistoryBtn = document.getElementById("toggle-history");
       let chart;
       const chartWrap = document.querySelector(".chart-wrap");
+      const chartControls = document.getElementById("chartcontrols");
+      const handsLogo = document.createElement("div");
+      handsLogo.className = "hands-logo";
+      chartControls?.appendChild(handsLogo);
+      const chartLogo = document.createElement("div");
+      chartLogo.className = "chart-logo";
+      chartWrap?.appendChild(chartLogo);
       const gradientColorFor = (value) => {
         if (typeof value !== "number" || Number.isNaN(value)) {
           return "#999";
@@ -1022,8 +1093,8 @@
         updateLegendEntries();
         updateButtonStates();
         canvas.style.display = "block";
-        if (chartWrap) {
-          chartWrap.classList.add("logo-top-right");
+        if (chartControls) {
+          chartControls.classList.add("hands-visible");
         }
         toggleHistoryBtn.textContent = "Hide History Chart";
         toggleHistoryBtn.classList.add("history-visible");
@@ -1033,8 +1104,8 @@
         canvas.style.display = "none";
         toggleHistoryBtn.textContent = "Show History Chart";
         toggleHistoryBtn.classList.remove("history-visible");
-        if (chartWrap) {
-          chartWrap.classList.remove("logo-top-right");
+        if (chartControls) {
+          chartControls.classList.remove("hands-visible");
         }
       };
 

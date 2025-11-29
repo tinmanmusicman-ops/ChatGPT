@@ -583,6 +583,14 @@ def build_dashboard_html(
       const ctx = canvas.getContext("2d");
       const toggleHistoryBtn = document.getElementById("toggle-history");
       let chart;
+      const chartWrap = document.querySelector(".chart-wrap");
+      const chartControls = document.getElementById("chartcontrols");
+      const handsLogo = document.createElement("div");
+      handsLogo.className = "hands-logo";
+      chartControls?.appendChild(handsLogo);
+      const chartLogo = document.createElement("div");
+      chartLogo.className = "chart-logo";
+      chartWrap?.appendChild(chartLogo);
       const gradientColorFor = (value) => {{
         if (typeof value !== "number" || Number.isNaN(value)) {{
           return "#999";
@@ -941,6 +949,9 @@ def build_dashboard_html(
           if (!meta || meta.hidden) {{
             return;
           }}
+          if (!activeModes.has("outside")) {{
+            return;
+          }}
           const ctxChart = chartInstance.ctx;
           meta.data.forEach((point, index) => {{
             const flag = outsideFlags[index];
@@ -953,10 +964,23 @@ def build_dashboard_html(
             if (!img || !img.complete) {{
               return;
             }}
-            const size = Math.max(32, Math.round((chartInstance.height / 420) * 40));
+            const size = Math.min(32, Math.max(24, Math.round((chartInstance.height / 420) * 30)));
             const x = point.x - size / 2;
             const y = point.y - size / 2;
-            ctxChart.drawImage(img, x, y, size, size);
+            ctxChart.save();
+            ctxChart.globalAlpha = 0.9;
+            ctxChart.translate(point.x, point.y);
+            ctxChart.beginPath();
+            ctxChart.arc(0, 0, size / 2, 0, Math.PI * 2);
+            ctxChart.clip();
+            const gradient = ctxChart.createRadialGradient(0, 0, size * 0.05, 0, 0, size / 2);
+            gradient.addColorStop(0, "rgba(255,255,255,0.9)");
+            gradient.addColorStop(1, "rgba(255,255,255,0.0)");
+            ctxChart.fillStyle = gradient;
+            ctxChart.fillRect(-size / 2, -size / 2, size, size);
+            ctxChart.globalAlpha = 1;
+            ctxChart.drawImage(img, -size / 2, -size / 2, size, size);
+            ctxChart.restore();
           }});
         }},
       }};
@@ -1125,18 +1149,6 @@ def build_dashboard_html(
         chart.update();
       }};
 
-      const updateChartVisibility = (mode) => {{
-        if (!chart) {{
-          return;
-        }}
-        chart.data.datasets[0].hidden = !(mode === "setpoint" || mode === "both");
-        chart.data.datasets[1].hidden = !(mode === "actual" || mode === "both");
-        chart.data.datasets[2].hidden = !(mode === "outside" || mode === "both");
-        chart.data.datasets[3].hidden = mode !== "cooling" && mode !== "both";
-        chart.data.datasets[4].hidden = mode !== "fan" && mode !== "both";
-        chart.update();
-      }};
-
       const legendEntry = document.getElementById("logo2");
       const legendColorMap = {{
         "Set Point": "#66ff99",
@@ -1152,13 +1164,27 @@ def build_dashboard_html(
         outside: ["Outside Temp"],
         cooling: ["Status", "Idle"],
         fan: ["Fan Mode"],
-        both: ["Set Point", "Current Temp", "Outside Temp", "Status", "Fan Mode"],
       }};
-      const updateLegendEntries = (mode) => {{
+      const modeOrder = ["setpoint", "actual", "outside", "cooling", "fan"];
+      const datasetIndexByMode = {{
+        setpoint: 0,
+        actual: 1,
+        outside: 2,
+        cooling: 3,
+        fan: 4,
+      }};
+      const activeModes = new Set(modeOrder);
+      const updateLegendEntries = () => {{
         if (!legendEntry) {{
           return;
         }}
-        const entries = legendMap[mode] || legendMap.both;
+        const entries = [];
+        activeModes.forEach((mode) => {{
+          const values = legendMap[mode];
+          if (values && values.length) {{
+            entries.push(...values);
+          }}
+        }});
         legendEntry.innerHTML = entries
           .map((value) => {{
             const color = legendColorMap[value] || "#f4f6ff";
@@ -1166,14 +1192,13 @@ def build_dashboard_html(
           }})
           .join("");
       }};
-      const updateAxesVisibility = (mode) => {{
+      const updateAxesVisibility = () => {{
         const showTemp =
-          mode === "setpoint" ||
-          mode === "actual" ||
-          mode === "outside" ||
-          mode === "both";
-        const showFan = mode === "fan" || mode === "both";
-        const showCooling = mode === "cooling" || mode === "both";
+          activeModes.has("setpoint") ||
+          activeModes.has("actual") ||
+          activeModes.has("outside");
+        const showFan = activeModes.has("fan");
+        const showCooling = activeModes.has("cooling");
         chart.options.scales.y.display = showTemp;
         chart.options.scales.y.ticks.display = showTemp;
         chart.options.scales.fan.display = showFan;
@@ -1181,20 +1206,37 @@ def build_dashboard_html(
         chart.options.scales.fan.ticks.display = showFan;
         chart.options.scales.cooling.ticks.display = showCooling;
       }};
-
-      const getActiveMode = () => {{
-        const activeBtn = document.querySelector(".chart-control.active");
-        return (activeBtn && activeBtn.dataset && activeBtn.dataset.mode) || "both";
-      }};
-
-      const setActiveMode = (mode) => {{
-        createChart();
-        chartControlButtons.forEach((btn) => {{
-          btn.classList.toggle("active", btn.dataset.mode === mode);
+      const updateChartVisibility = () => {{
+        modeOrder.forEach((mode) => {{
+          const datasetIndex = datasetIndexByMode[mode];
+          if (chart && typeof datasetIndex === "number") {{
+            chart.data.datasets[datasetIndex].hidden = !activeModes.has(mode);
+          }}
         }});
-        updateChartVisibility(mode);
-        updateAxesVisibility(mode);
-        updateLegendEntries(mode);
+      }};
+      const updateButtonStates = () => {{
+        chartControlButtons.forEach((btn) => {{
+          const mode = btn.dataset.mode;
+          btn.classList.toggle("active", activeModes.has(mode));
+        }});
+      }};
+      const toggleMode = (mode) => {{
+        if (mode === "both") {{
+          modeOrder.forEach((m) => activeModes.add(m));
+        }} else if (mode) {{
+          if (activeModes.has(mode)) {{
+            activeModes.delete(mode);
+          }} else {{
+            activeModes.add(mode);
+          }}
+        }}
+        if (!chart) {{
+          createChart();
+        }}
+        updateChartVisibility();
+        updateAxesVisibility();
+        updateLegendEntries();
+        updateButtonStates();
         if (chart) {{
           chart.update();
         }}
@@ -1202,20 +1244,29 @@ def build_dashboard_html(
 
       const showChart = () => {{
         createChart();
+        updateChartVisibility();
+        updateAxesVisibility();
+        updateLegendEntries();
+        updateButtonStates();
         canvas.style.display = "block";
+        if (chartControls) {{
+          chartControls.classList.add("hands-visible");
+        }}
         toggleHistoryBtn.textContent = "Hide History Chart";
         toggleHistoryBtn.classList.add("history-visible");
-        setActiveMode(getActiveMode());
       }};
 
       const hideChart = () => {{
         canvas.style.display = "none";
         toggleHistoryBtn.textContent = "Show History Chart";
         toggleHistoryBtn.classList.remove("history-visible");
+        if (chartControls) {{
+          chartControls.classList.remove("hands-visible");
+        }}
       }};
 
       chartControlButtons.forEach((button) => {{
-        button.addEventListener("click", () => setActiveMode(button.dataset.mode));
+        button.addEventListener("click", () => toggleMode(button.dataset.mode));
       }});
 
       toggleHistoryBtn.addEventListener("click", () => {{
@@ -1325,6 +1376,15 @@ def build_dashboard_html(
         background: transparent !important;
         border-color: transparent !important;
       }}
+      .metric-card[data-metric="outside"].sunny-image::after {{
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        pointer-events: none;
+        background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0) 70%);
+        mix-blend-mode: screen;
+      }}
       .metric-card[data-metric="outside"] {{
         position: relative;
         padding-right: 160px;
@@ -1404,46 +1464,50 @@ def build_dashboard_html(
         height: 100px;
       }}
       .chart-control {{
-        border: 1px solid #3a3a40;
-        background: #1f1f26;
-        color: #f4f6ff;
+        border: 1px solid #1c1c24;
+        background: #0f0f16;
+        color: #8c8caa;
         padding: 6px 12px;
         border-radius: 8px;
         cursor: pointer;
-        transition: background 0.2s ease, color 0.2s ease, filter 0.2s ease;
-      }}
-      .chart-control[data-mode="setpoint"] {{
-        background: #66ff99;
-        color: #051b05;
-        border-color: #66ff99;
-      }}
-      .chart-control[data-mode="actual"] {{
-        background: #7da4ff;
-        color: #051b05;
-        border-color: #7da4ff;
-      }}
-      .chart-control[data-mode="outside"] {{
-        background: #ffd000;
-        color: #051b05;
-        border-color: #ffd000;
-      }}
-      .chart-control[data-mode="cooling"] {{
-        background: #3d9fff;
-        color: #051b05;
-        border-color: #3d9fff;
-      }}
-      .chart-control[data-mode="fan"] {{
-        background: #ffa500;
-        color: #051b05;
-        border-color: #ffa500;
-      }}
-      .chart-control[data-mode="both"] {{
-        background: #000;
-        color: #fff;
-        border-color: #000;
+        transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
       }}
       .chart-control.active {{
-        filter: brightness(1.15);
+        background: #4da366;
+        color: #051b05;
+        border-color: #66ff99;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+      }}
+      .chart-controls {{
+        width: 900px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 4px 8px;
+        margin-top: 12px;
+        font-size: 14px;
+        color: #f4f6ff;
+        height: 120px;
+        position: relative;
+      }}
+      .chart-controls .hands-logo {{
+        position: absolute;
+        top: -36px;
+        right: 40px;
+        width: 80px;
+        height: 58px;
+        background-image: url("../../../Images/Hands.png");
+        background-size: contain;
+        background-repeat: no-repeat;
+        opacity: 0;
+        transform: translateY(16px);
+        transition: opacity 0.4s ease, transform 0.4s ease;
+        pointer-events: none;
+      }}
+      .chart-controls.hands-visible .hands-logo {{
+        opacity: 1;
+        transform: translateY(0);
       }}
       #history-chart {{
         gap: 20;
@@ -1454,17 +1518,55 @@ def build_dashboard_html(
       }}
       .chart-wrap {{
         height: 420px;
-        margin: 0 auto 0;
+        margin: 24px auto 0;
         background: #000;
         position: relative;
         max-width: 900px;
         width: 100%;
-        padding: 0;
+        padding: 24px 0 0;
         box-sizing: border-box;
+        transition: transform 0.4s ease;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 16px;
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.08),
+          inset 0 -1px 0 rgba(0, 0, 0, 0.5),
+          0 24px 70px rgba(0, 0, 0, 0.45);
+      }}
+      .chart-wrap::after {{
+        content: "";
+        position: absolute;
+        inset: 0;
         background-image: url("../../../Images/Hands.png");
         background-size: 100% 100%;
         background-repeat: no-repeat;
-        background-position: center;
+        background-position: center bottom;
+        opacity: 1;
+        pointer-events: none;
+        z-index: -1;
+      }}
+      .chart-wrap {{
+        transform: translateY(0);
+      }}
+      .chart-logo {{
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        width: 100px;
+        height: 80px;
+        <!-- background-image: url("../../../Images/Hands.png");
+        
+        background-size: contain;
+        background-repeat: no-repeat;
+        -->
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.4s ease, transform 0.4s ease;
+        pointer-events: none;
+      }}
+      .chart-wrap.logo-top-right .chart-logo {{
+        opacity: 1;
+        transform: translateY(0);
       }}
       .fan-legend-image {{
       }}
