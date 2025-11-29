@@ -17,7 +17,7 @@ import re
 import sys
 import logging
 from contextlib import suppress
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from email.header import decode_header, make_header  # Properly decode MIME-encoded subjects
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
@@ -31,13 +31,23 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaInMemoryUpload
 
 SA_KEY_PATH = Path(__file__).resolve().parents[2] / "shared" / "Global.json"
-SHARED_FIELDS = {"gmail_user", "gmail_app_password", "spreadsheet_id"}
+SHARED_FIELDS = {
+    "gmail_user",
+    "gmail_app_password",
+    "spreadsheet_id",
+    "weather_lat",
+    "weather_lon",
+}
 TOKEN_PATH = Path(__file__).resolve().parents[2] / "shared" / "Tokens.json"
 DRIVE_SCOPES = ["https://www.googleapis.com/auth/drive.file"]
 DRIVE_FOLDER_NAME = "Termostat Dashboards"
 SNAPSHOT_FILENAME = "thermostat_snapshot.html"
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+WEATHER_CACHE_PATH = Path(__file__).resolve().parent / "weather_cache.json"
+WEATHER_CACHE_TTL = timedelta(minutes=10)
+SUN_CACHE_PATH = Path(__file__).resolve().parent / "sun_cache.json"
+SUN_API_URL = "https://api.sunrise-sunset.org/json"
 
 
 def _load_shared_values() -> Dict[str, Any]:
@@ -47,6 +57,58 @@ def _load_shared_values() -> Dict[str, Any]:
     except Exception:
         return {}
     return {field: data[field] for field in SHARED_FIELDS if field in data}
+
+
+def _load_weather_cache() -> Optional[Dict[str, Any]]:
+    if not WEATHER_CACHE_PATH.exists():
+        return None
+    try:
+        raw = WEATHER_CACHE_PATH.read_text(encoding="utf-8")
+        data = json.loads(raw)
+    except Exception:
+        return None
+    timestamp = data.get("timestamp")
+    if not timestamp:
+        return None
+    try:
+        fetched = datetime.fromisoformat(timestamp)
+    except Exception:
+        return None
+    if datetime.utcnow() - fetched > WEATHER_CACHE_TTL:
+        return None
+    return data
+
+
+def _save_weather_cache(temp: Optional[float], flag: str, daylight: bool) -> None:
+    payload = {
+        "temp": temp,
+        "flag": flag,
+        "daylight": daylight,
+        "timestamp": datetime.utcnow().isoformat(),
+    }
+    try:
+        WEATHER_CACHE_PATH.write_text(json.dumps(payload), encoding="utf-8")
+    except Exception:
+        pass
+
+
+def _load_sun_cache() -> Optional[Dict[str, Any]]:
+    if not SUN_CACHE_PATH.exists():
+        return None
+    try:
+        raw = SUN_CACHE_PATH.read_text(encoding="utf-8")
+        data = json.loads(raw)
+    except Exception:
+        return None
+    return data
+
+
+def _save_sun_cache(date_str: str, sunrise: str, sunset: str) -> None:
+    payload = {"date": date_str, "sunrise": sunrise, "sunset": sunset}
+    try:
+        SUN_CACHE_PATH.write_text(json.dumps(payload), encoding="utf-8")
+    except Exception:
+        pass
 
 
 def parse_args() -> argparse.Namespace:
@@ -69,6 +131,7 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Emit debug details about API calls.",
     )
+    parser.set_defaults(verbose=True)
     parser.add_argument(
         "--show-capabilities",
         action="store_true",
@@ -114,7 +177,168 @@ def load_config(path: Path) -> Dict[str, Any]:
     cfg.setdefault("request_state_file", "request_state.json")
     cfg.setdefault("timezone", "America/Los_Angeles")
     cfg.setdefault("test_mode", False)
+    cfg.setdefault("weather_base_url", "https://api.weather.gov")
+    cfg.setdefault("weather_timeout_seconds", cfg["timeout_seconds"])
     return cfg
+
+
+def _parse_iso(ts: Optional[str]) -> Optional[datetime]:
+    if not ts:
+        return None
+    try:
+        if ts.endswith("Z"):
+            ts = ts[:-1]
+        return datetime.fromisoformat(ts)
+    except Exception:
+        return None
+
+
+def _is_night_from_times(sunrise: Optional[datetime], sunset: Optional[datetime]) -> bool:
+    if sunrise is None or sunset is None:
+        return False
+    now = datetime.now(timezone.utc)
+    if sunrise.tzinfo is None:
+        sunrise = sunrise.replace(tzinfo=timezone.utc)
+    if sunset.tzinfo is None:
+        sunset = sunset.replace(tzinfo=timezone.utc)
+    return now < sunrise or now > sunset
+
+
+def _determine_weather_flag(main: str, description: str, is_night: bool) -> str:
+    main_low = (main or "").lower()
+    desc_low = (description or "").lower()
+    if any(keyword in main_low or keyword in desc_low for keyword in ("rain", "drizzle", "storm", "shower")):
+        return "R"
+    if is_night:
+        return "N"
+    if "partly" in desc_low or "partly" in main_low:
+        return "P"
+    if "sunny" in main_low or "clear" in main_low:
+        return "S"
+    if "cloud" in main_low or "overcast" in desc_low or "overcast" in main_low:
+        return "O"
+    return "S"
+
+
+def _fetch_sunrise_sunset(lat: float, lon: float, verbose: bool = False) -> Tuple[Optional[datetime], Optional[datetime]]:
+    params = {"lat": lat, "lng": lon, "formatted": 0}
+    if verbose:
+        print(f"[weather] Querying sunrise-sunset API {SUN_API_URL} with {params}")
+    today = datetime.utcnow().date().isoformat()
+    cache = _load_sun_cache()
+    if cache and cache.get("date") == today:
+        if verbose:
+            print("[weather] Using cached sunrise/sunset for today.")
+        return _parse_iso(cache.get("sunrise")), _parse_iso(cache.get("sunset"))
+    resp = requests.get(SUN_API_URL, params=params, timeout=10)
+    resp.raise_for_status()
+    data = resp.json()
+    results = data.get("results", {})
+    sunrise = _parse_iso(results.get("sunrise"))
+    sunset = _parse_iso(results.get("sunset"))
+    if sunrise and sunset:
+        _save_sun_cache(today, results.get("sunrise", ""), results.get("sunset", ""))
+    return sunrise, sunset
+
+
+def _fetch_forecast_summary(url: str, cfg: Dict[str, Any], verbose: bool = False) -> Tuple[Optional[float], str]:
+    if not url:
+        return None, ""
+    if verbose:
+        print(f"[weather] Fetching forecast from {url}")
+    resp = requests.get(url, timeout=cfg.get("weather_timeout_seconds", cfg["timeout_seconds"]))
+    resp.raise_for_status()
+    data = resp.json()
+    periods = data.get("properties", {}).get("periods") or []
+    if not periods:
+        return None, ""
+    period = periods[0]
+    temp = period.get("temperature")
+    desc = period.get("shortForecast") or period.get("detailedForecast") or ""
+    return temp, desc
+
+
+def fetch_weather_conditions(cfg: Dict[str, Any], verbose: bool = False) -> Optional[Dict[str, Any]]:
+    lat = cfg.get("weather_lat")
+    lon = cfg.get("weather_lon")
+    base_url = cfg.get("weather_base_url")
+    if not (base_url and lat and lon):
+        if verbose:
+            print("[weather] Missing lat/lon/base_url; skipping outside temperature fetch.")
+        return None
+    cached = _load_weather_cache()
+    if cached:
+        if verbose:
+            print("[weather] Using cached forecast (within 10 min).")
+        return {
+            "temp": cached.get("temp"),
+            "flag": cached.get("flag"),
+            "daylight": cached.get("daylight", True),
+        }
+    points_url = f"{base_url}/points/{lat},{lon}"
+    if verbose:
+        print(f"[weather] Querying points endpoint {points_url}")
+    resp = requests.get(points_url, timeout=cfg.get("weather_timeout_seconds", cfg["timeout_seconds"]))
+    resp.raise_for_status()
+    points = resp.json()
+    properties = points.get("properties", {})
+    stations_url = properties.get("observationStations")
+    if not stations_url:
+        if verbose:
+            print("[weather] No observationStations URL returned.")
+        return None
+    if verbose:
+        print(f"[weather] Fetching observation stations list from {stations_url}")
+    stations_resp = requests.get(stations_url, timeout=cfg.get("weather_timeout_seconds", cfg["timeout_seconds"]))
+    stations_resp.raise_for_status()
+    stations_data = stations_resp.json()
+    features = stations_data.get("features") or []
+    if not features:
+        if verbose:
+            print("[weather] No stations returned for location.")
+        return None
+    station_url = features[0].get("id")
+    if not station_url:
+        if verbose:
+            print("[weather] Station entry missing id.")
+        return None
+    obs_url = f"{station_url}/observations/latest"
+    if verbose:
+        print(f"[weather] Fetching latest observation from {obs_url}")
+    obs_resp = requests.get(obs_url, timeout=cfg.get("weather_timeout_seconds", cfg["timeout_seconds"]))
+    obs_resp.raise_for_status()
+    obs = obs_resp.json()
+    obs_props = obs.get("properties", {})
+    temp_c = obs_props.get("temperature", {}).get("value")
+    temp_f = None
+    if temp_c is not None:
+        temp_f = (temp_c * 9.0 / 5.0) + 32
+    forecast_url = properties.get("forecast")
+    forecast_temp, forecast_desc = _fetch_forecast_summary(forecast_url, cfg, verbose=verbose)
+    main_weather = forecast_desc or obs_props.get("textDescription", "")
+    detailed = obs_props.get("detailedForecast", "")
+    sunrise = sunset = None
+    try:
+        sunrise, sunset = _fetch_sunrise_sunset(float(lat), float(lon), verbose=verbose)
+    except Exception as sun_exc:
+        if verbose:
+            print(f"[weather] Failed to fetch sunrise/sunset info: {sun_exc}")
+    is_night = _is_night_from_times(sunrise, sunset)
+    flag = _determine_weather_flag(main_weather, detailed, is_night)
+    final_temp = temp_f if temp_f is not None else forecast_temp
+    _save_weather_cache(final_temp, flag, not is_night)
+    return {"temp": final_temp, "flag": flag, "daylight": not is_night}
+
+
+def format_weather_entry(temp_value: Optional[float], flag: str, daylight: bool) -> str:
+    if temp_value is None:
+        return f"{flag}{'D' if daylight else 'N'}"
+    temp_num = float(temp_value)
+    if temp_num.is_integer():
+        formatted = f"{int(temp_num)}"
+    else:
+        formatted = f"{temp_num:.1f}"
+    return f"{flag}{'D' if daylight else 'N'}{formatted}"
 
 
 def request_token(cfg: Dict[str, Any], verbose: bool = False) -> str:
@@ -262,7 +486,7 @@ def _extract_user_text(body: str) -> str:
     return lines[0] if lines else ""
 
 
-def fetch_primary_ac_emails(cfg: Dict[str, Any]) -> list[Dict[str, Any]]:
+def fetch_primary_ac_emails(cfg: Dict[str, Any], verbose: bool = False) -> list[Dict[str, Any]]:
     """Fetch unread Primary emails; return list of dicts with subject/body/user-text for messages starting with AC."""
     user = cfg.get("gmail_user") or cfg.get("user")
     password = cfg.get("gmail_app_password") or cfg.get("app_password")
@@ -276,6 +500,9 @@ def fetch_primary_ac_emails(cfg: Dict[str, Any]) -> list[Dict[str, Any]]:
     # Unseen messages in Primary (via X-GM-RAW); subjects filtered locally for AC*.
     search_terms = ["UNSEEN", "X-GM-RAW", '"category:primary"']
 
+    if verbose:
+        imaplib.Debug = 4
+        print("[email] IMAP debug level set to 4 (commands/responses will be printed).")
     imap = imaplib.IMAP4_SSL("imap.gmail.com")
     try:
         imap.login(user, password)
@@ -453,7 +680,7 @@ def ensure_thermostat_sheet(spreadsheet: gspread.Spreadsheet) -> gspread.Workshe
     try:
         ws = spreadsheet.worksheet("Thermostats")
     except gspread.WorksheetNotFound:
-        ws = spreadsheet.add_worksheet(title="Thermostats", rows=1000, cols=10)
+        ws = spreadsheet.add_worksheet(title="Thermostats", rows=1000, cols=11)
     headers = [
         "Timestamp",
         "Type",
@@ -464,14 +691,23 @@ def ensure_thermostat_sheet(spreadsheet: gspread.Spreadsheet) -> gspread.Workshe
         "Equipment Status",
         "Studio",
         "Request Expires (local time)",
+        "Outside Temp",
     ]
     existing = ws.row_values(1)
     if existing != headers:
-        ws.update("A1:I1", [headers], value_input_option="USER_ENTERED")
+        ws.update("A1:J1", [headers], value_input_option="USER_ENTERED")
     return ws
 
 
-def append_thermostat_row(cfg: Dict[str, Any], reading: Dict[str, Any], payload: Dict[str, Any], entry_type: str = "system", studio: Optional[int] = None, expiration_local: str = "") -> None:
+def append_thermostat_row(
+    cfg: Dict[str, Any],
+    reading: Dict[str, Any],
+    payload: Dict[str, Any],
+    entry_type: str = "system",
+    studio: Optional[int] = None,
+    expiration_local: str = "",
+    outside_value: str = "",
+) -> None:
     """Append one row of thermostat data into the Google Sheet."""
     try:
         sa_path = resolve_service_account_path(cfg)
@@ -529,6 +765,7 @@ def append_thermostat_row(cfg: Dict[str, Any], reading: Dict[str, Any], payload:
             equipment,
             studio or "",
             expiration_local,
+            outside_value,
         ]
         ws.append_row(row, value_input_option="USER_ENTERED")
     except Exception as exc:
@@ -743,6 +980,7 @@ def build_snapshot_html(
 
 
 def main() -> None:
+    berbose = True;
     args = parse_args()
     # Step 1: read config (API keys, Gmail creds, Google Sheet info, time zones).
     try:
@@ -763,7 +1001,7 @@ def main() -> None:
         saved_state = None
 
     # Step 3: read Gmail for AC requests (from body or subject).
-    emails = fetch_primary_ac_emails(cfg)
+    emails = fetch_primary_ac_emails(cfg, verbose=args.verbose)
     body = emails[0].get("text") or emails[0].get("body", "") if emails else ""
     # Set a breakpoint here if you need to inspect the raw body before filtering.
     # breakpoint()
@@ -946,6 +1184,17 @@ def main() -> None:
         print(f"Mode   : {mode}")
 
     # Append telemetry to sheet at the very end.
+    weather_entry = ""
+    try:
+        weather_data = fetch_weather_conditions(cfg, verbose=args.verbose)
+        if weather_data:
+        weather_entry = format_weather_entry(
+            weather_data.get("temp"),
+            weather_data.get("flag", ""),
+            weather_data.get("daylight", True),
+        )
+    except Exception as weather_exc:
+        print(f"[weather] Failed to fetch outside conditions: {weather_exc}", file=sys.stderr)
     try:
         append_thermostat_row(
             cfg,
@@ -954,6 +1203,7 @@ def main() -> None:
             entry_type=entry_type,
             studio=request_studio,
             expiration_local=expiration_local,
+            outside_value=weather_entry,
         )
     except Exception as exc:
         print(f"[sheet] Failed to log telemetry: {exc}", file=sys.stderr)
