@@ -743,6 +743,9 @@
           if (!meta || meta.hidden) {
             return;
           }
+          if (!activeModes.has("outside")) {
+            return;
+          }
           const ctxChart = chartInstance.ctx;
           meta.data.forEach((point, index) => {
             const flag = outsideFlags[index];
@@ -940,18 +943,6 @@
         chart.update();
       };
 
-      const updateChartVisibility = (mode) => {
-        if (!chart) {
-          return;
-        }
-        chart.data.datasets[0].hidden = !(mode === "setpoint" || mode === "both");
-        chart.data.datasets[1].hidden = !(mode === "actual" || mode === "both");
-        chart.data.datasets[2].hidden = !(mode === "outside" || mode === "both");
-        chart.data.datasets[3].hidden = mode !== "cooling" && mode !== "both";
-        chart.data.datasets[4].hidden = mode !== "fan" && mode !== "both";
-        chart.update();
-      };
-
       const legendEntry = document.getElementById("logo2");
       const legendColorMap = {
         "Set Point": "#66ff99",
@@ -967,13 +958,27 @@
         outside: ["Outside Temp"],
         cooling: ["Status", "Idle"],
         fan: ["Fan Mode"],
-        both: ["Set Point", "Current Temp", "Outside Temp", "Status", "Fan Mode"],
       };
-      const updateLegendEntries = (mode) => {
+      const modeOrder = ["setpoint", "actual", "outside", "cooling", "fan"];
+      const datasetIndexByMode = {
+        setpoint: 0,
+        actual: 1,
+        outside: 2,
+        cooling: 3,
+        fan: 4,
+      };
+      const activeModes = new Set(modeOrder);
+      const updateLegendEntries = () => {
         if (!legendEntry) {
           return;
         }
-        const entries = legendMap[mode] || legendMap.both;
+        const entries = [];
+        activeModes.forEach((mode) => {
+          const values = legendMap[mode];
+          if (values && values.length) {
+            entries.push(...values);
+          }
+        });
         legendEntry.innerHTML = entries
           .map((value) => {
             const color = legendColorMap[value] || "#f4f6ff";
@@ -981,14 +986,13 @@
           })
           .join("");
       };
-      const updateAxesVisibility = (mode) => {
+      const updateAxesVisibility = () => {
         const showTemp =
-          mode === "setpoint" ||
-          mode === "actual" ||
-          mode === "outside" ||
-          mode === "both";
-        const showFan = mode === "fan" || mode === "both";
-        const showCooling = mode === "cooling" || mode === "both";
+          activeModes.has("setpoint") ||
+          activeModes.has("actual") ||
+          activeModes.has("outside");
+        const showFan = activeModes.has("fan");
+        const showCooling = activeModes.has("cooling");
         chart.options.scales.y.display = showTemp;
         chart.options.scales.y.ticks.display = showTemp;
         chart.options.scales.fan.display = showFan;
@@ -996,20 +1000,37 @@
         chart.options.scales.fan.ticks.display = showFan;
         chart.options.scales.cooling.ticks.display = showCooling;
       };
-
-      const getActiveMode = () => {
-        const activeBtn = document.querySelector(".chart-control.active");
-        return (activeBtn && activeBtn.dataset && activeBtn.dataset.mode) || "both";
-      };
-
-      const setActiveMode = (mode) => {
-        createChart();
-        chartControlButtons.forEach((btn) => {
-          btn.classList.toggle("active", btn.dataset.mode === mode);
+      const updateChartVisibility = () => {
+        modeOrder.forEach((mode) => {
+          const datasetIndex = datasetIndexByMode[mode];
+          if (chart && typeof datasetIndex === "number") {
+            chart.data.datasets[datasetIndex].hidden = !activeModes.has(mode);
+          }
         });
-        updateChartVisibility(mode);
-        updateAxesVisibility(mode);
-        updateLegendEntries(mode);
+      };
+      const updateButtonStates = () => {
+        chartControlButtons.forEach((btn) => {
+          const mode = btn.dataset.mode;
+          btn.classList.toggle("active", activeModes.has(mode));
+        });
+      };
+      const toggleMode = (mode) => {
+        if (mode === "both") {
+          modeOrder.forEach((m) => activeModes.add(m));
+        } else if (mode) {
+          if (activeModes.has(mode)) {
+            activeModes.delete(mode);
+          } else {
+            activeModes.add(mode);
+          }
+        }
+        if (!chart) {
+          createChart();
+        }
+        updateChartVisibility();
+        updateAxesVisibility();
+        updateLegendEntries();
+        updateButtonStates();
         if (chart) {
           chart.update();
         }
@@ -1017,10 +1038,13 @@
 
       const showChart = () => {
         createChart();
+        updateChartVisibility();
+        updateAxesVisibility();
+        updateLegendEntries();
+        updateButtonStates();
         canvas.style.display = "block";
         toggleHistoryBtn.textContent = "Hide History Chart";
         toggleHistoryBtn.classList.add("history-visible");
-        setActiveMode(getActiveMode());
       };
 
       const hideChart = () => {
@@ -1030,7 +1054,7 @@
       };
 
       chartControlButtons.forEach((button) => {
-        button.addEventListener("click", () => setActiveMode(button.dataset.mode));
+        button.addEventListener("click", () => toggleMode(button.dataset.mode));
       });
 
       toggleHistoryBtn.addEventListener("click", () => {
