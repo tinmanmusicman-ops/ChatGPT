@@ -182,46 +182,19 @@
         height: 100px;
       }
       .chart-control {
-        border: 1px solid #3a3a40;
-        background: #1f1f26;
-        color: #f4f6ff;
+        border: 1px solid #1c1c24;
+        background: #0f0f16;
+        color: #8c8caa;
         padding: 6px 12px;
         border-radius: 8px;
         cursor: pointer;
-        transition: background 0.2s ease, color 0.2s ease, filter 0.2s ease;
+        transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
       }
-      .chart-control[data-mode="setpoint"] {
+      .chart-control.active {
         background: #66ff99;
         color: #051b05;
         border-color: #66ff99;
-      }
-      .chart-control[data-mode="actual"] {
-        background: #7da4ff;
-        color: #051b05;
-        border-color: #7da4ff;
-      }
-      .chart-control[data-mode="outside"] {
-        background: #ffd000;
-        color: #051b05;
-        border-color: #ffd000;
-      }
-      .chart-control[data-mode="cooling"] {
-        background: #3d9fff;
-        color: #051b05;
-        border-color: #3d9fff;
-      }
-      .chart-control[data-mode="fan"] {
-        background: #ffa500;
-        color: #051b05;
-        border-color: #ffa500;
-      }
-      .chart-control[data-mode="both"] {
-        background: #000;
-        color: #fff;
-        border-color: #000;
-      }
-      .chart-control.active {
-        filter: brightness(1.15);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
       }
       #history-chart {
         gap: 20;
@@ -230,7 +203,7 @@
         height: 100% !important;
         background: #000;
       }
-.chart-wrap {
+      .chart-wrap {
         height: 420px;
         margin: 24px auto 0;
         background: #000;
@@ -243,6 +216,11 @@
         background-size: 100% 100%;
         background-repeat: no-repeat;
         background-position: center top;
+        transition: background-position 0.4s ease, transform 0.4s ease;
+      }
+      .chart-wrap.logo-top-right {
+        background-position: right top;
+        transform: translateY(-12px);
       }
       .fan-legend-image {
       }
@@ -385,6 +363,7 @@
       const ctx = canvas.getContext("2d");
       const toggleHistoryBtn = document.getElementById("toggle-history");
       let chart;
+      const chartWrap = document.querySelector(".chart-wrap");
       const gradientColorFor = (value) => {
         if (typeof value !== "number" || Number.isNaN(value)) {
           return "#999";
@@ -1043,6 +1022,9 @@
         updateLegendEntries();
         updateButtonStates();
         canvas.style.display = "block";
+        if (chartWrap) {
+          chartWrap.classList.add("logo-top-right");
+        }
         toggleHistoryBtn.textContent = "Hide History Chart";
         toggleHistoryBtn.classList.add("history-visible");
       };
@@ -1051,6 +1033,9 @@
         canvas.style.display = "none";
         toggleHistoryBtn.textContent = "Show History Chart";
         toggleHistoryBtn.classList.remove("history-visible");
+        if (chartWrap) {
+          chartWrap.classList.remove("logo-top-right");
+        }
       };
 
       chartControlButtons.forEach((button) => {
