@@ -84,9 +84,6 @@
         margin-top: -62px;
       }
       .metric-card {
-        border: 3px;
-        border=color: white;
-        border-style: solid;
         background: #2b2b30;
         color: #f5f7ff;
         border: 1px solid #3a3a40;
@@ -249,7 +246,7 @@
         position: relative;
         max-width: 900px;
         width: 100%;
-        padding: 12px 0 0;
+        padding: 12px 0 18px;
         box-sizing: border-box;
         background-image: url("../../../Images/Hands.png");
         background-size: 100% 100%;
@@ -313,13 +310,13 @@
         </div>
         
         <div class="metric-card" data-metric="actual">
-          <div class="label">Current Temperature</div>
-          <div class="value">75</div>
+          <div class="label">Building Temperature</div>
+          <div class="value">100</div>
         </div>
         
         <div class="metric-card" data-metric="setpoint">
           <div class="label">Cooling Set Point</div>
-          <div class="value">74</div>
+          <div class="value">80</div>
         </div>
         
         <div class="metric-card">
@@ -329,12 +326,12 @@
         
         <div class="metric-card" data-metric="fan">
           <div class="label">Fan Setting</div>
-          <div class="value">on</div>
+          <div class="value">Circulate</div>
         </div>
         
         <div class="metric-card" data-metric="cooling">
           <div class="label">Equipment Status</div>
-          <div class="value">cooling</div>
+          <div class="value">idle</div>
         </div>
         
         <div class="metric-card">
@@ -349,7 +346,7 @@
         
         <div class="metric-card" data-metric="outside">
           <div class="label">Outside Temp</div>
-          <div class="value">60</div>
+          <div class="value">90</div>
         </div>
         
       </div>
@@ -363,7 +360,7 @@
 
       <div id="chartcontrols" class="chart-controls">
           <button type="button" class="chart-control" data-mode="setpoint">Set Point</button>
-          <button type="button" class="chart-control" data-mode="actual">Current Temp</button>
+          <button type="button" class="chart-control" data-mode="actual">Building Temp</button>
           <button type="button" class="chart-control" data-mode="outside">Outside Temp</button>
           <button type="button" class="chart-control" data-mode="cooling">AC Status</button>
           <button type="button" class="chart-control" data-mode="fan">Fan Mode</button>
@@ -381,7 +378,7 @@
     </div>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-      const dashboardData = {"headers": ["Timestamp", "Type", "Current Temperature", "Cooling Set Point", "Climate Setting", "Fan Setting", "Equipment Status", "Studio", "Request Expires (local time)", "Outside Temp"], "latestRow": ["Tuesday Nov 25 2025 8:11 PM", "request (studio 11, zone3, 50m)", "75", "74", "cool", "on", "cooling", "11", "8:54 PM", "PN60"], "history": [{"label": "Sunday Nov 23 2025 3:03 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 3:06 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 11:20 PM", "value": 75.0}, {"label": "Tuesday Nov 25 2025 7:59 PM", "value": 72.0}, {"label": "Tuesday Nov 25 2025 8:01 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:04 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:11 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:46 PM", "value": 74.0}, {"label": "Friday Nov 21 2025 6:51 PM", "value": 74.0}, {"label": "Sunday Nov 23 2025 1:56 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 2:02 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 2:46 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 2:59 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 3:03 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 3:06 PM", "value": 75.0}, {"label": "Sunday Nov 23 2025 11:20 PM", "value": 75.0}, {"label": "Tuesday Nov 25 2025 7:59 PM", "value": 72.0}, {"label": "Tuesday Nov 25 2025 8:01 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:04 PM", "value": 74.0}, {"label": "Tuesday Nov 25 2025 8:11 PM", "value": 74.0}], "chartLabels": ["Sunday Nov 23 2025 3:03 PM", "Sunday Nov 23 2025 3:06 PM", "Sunday Nov 23 2025 11:20 PM", "Tuesday Nov 25 2025 7:59 PM", "Tuesday Nov 25 2025 8:01 PM", "Tuesday Nov 25 2025 8:04 PM", "Tuesday Nov 25 2025 8:11 PM", "Tuesday Nov 25 2025 8:46 PM", "Friday Nov 21 2025 6:51 PM", "Sunday Nov 23 2025 1:56 PM", "Sunday Nov 23 2025 2:02 PM", "Sunday Nov 23 2025 2:46 PM", "Sunday Nov 23 2025 2:59 PM", "Sunday Nov 23 2025 3:03 PM", "Sunday Nov 23 2025 3:06 PM", "Sunday Nov 23 2025 11:20 PM", "Tuesday Nov 25 2025 7:59 PM", "Tuesday Nov 25 2025 8:01 PM", "Tuesday Nov 25 2025 8:04 PM", "Tuesday Nov 25 2025 8:11 PM"], "setpoint": [75.0, 75.0, 75.0, 72.0, 74.0, 74.0, 74.0, 74.0, 74.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 72.0, 74.0, 74.0, 74.0], "actual": [76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 72.0, 65.0, 50.0, 90.0, 90.0, 76.0, 76.0, 76.0, 76.0, 76.0, 76.0, 75.0], "setpointLabel": "Set Point", "actualLabel": "Current Temperature", "fan": [2, 2, 2, 1, 0, 2, 2, 2, 1, 2, 2, 2, 2, 0, 2, 2, 1, 2, 2, 2], "fanLegend": ["Auto", "Circulate", "On"], "outside": [71.0, 72.0, 80.0, 73.0, 80.0, 76.0, 80.0, 76.0, 76.0, 80.0, 76.0, 80.0, 80.0, 60.0, 77.0, 70.0, 80.0, 79.0, 70.0, 60.0], "outsideLabel": "Outside Temp", "outsideFlags": ["S", "S", "S", "P", "S", "P", "S", "P", "P", "S", "R", "S", "R", "N", "O", "O", "S", "P", "O", "P"], "outsideFlagDayChars": ["7", "7", "8", "7", "8", "7", "8", "7", "7", "8", "N", "8", "8", "6", "N", "7", "8", "7", "7", "N"], "cooling": [1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], "coolingLegend": ["Idle", "Cooling"], "coolingLabel": "Equipment Status", "latestActual": 75.0, "latestSetpoint": 74.0, "latestOutside": 60.0, "latestOutsideRaw": "PN60", "latestOutsideDaylight": false, "latestOutsideFlagDayChar": "N", "latestFan": 2, "latestCooling": 1};
+      const dashboardData = {"headers": ["Timestamp", "Type", "Current Temperature", "Cooling Set Point", "Climate Setting", "Fan Setting", "Equipment Status", "Studio", "Request Expires (local time)", "Outside Temp"], "latestRow": ["Tuesday Nov 25 2025 8:11 PM", "request (studio 11, zone3, 50m)", "100", "80", "cool", "Circulate", "idle", "11", "8:54 PM", "S90"], "history": [{"label": "Sun", "value": 70.0}, {"label": "Sun", "value": 75.0}, {"label": "Sun", "value": 75.0}, {"label": "Sun", "value": 75.0}, {"label": "Sun", "value": 75.0}, {"label": "Sun", "value": 75.0}, {"label": "Sun", "value": 75.0}, {"label": "Tue", "value": 72.0}, {"label": "Tue", "value": 74.0}, {"label": "Tue", "value": 74.0}, {"label": "Tue", "value": 74.0}, {"label": "Tue", "value": 74.0}, {"label": "Fri", "value": 74.0}, {"label": "Sun", "value": 75.0}, {"label": "Sun", "value": 75.0}, {"label": "Sun", "value": 75.0}, {"label": "Sun", "value": 75.0}, {"label": "Sun", "value": 75.0}, {"label": "Sun", "value": 75.0}, {"label": "Sun", "value": 74.0}, {"label": "Tue", "value": 72.0}, {"label": "Tue", "value": 74.0}, {"label": "Tue", "value": 74.0}, {"label": "Tue", "value": 80.0}], "chartLabels": ["Sun", "Sun", "Sun", "Sun", "Sun", "Sun", "Sun", "Tue", "Tue", "Tue", "Tue", "Tue", "Fri", "Sun", "Sun", "Sun", "Sun", "Sun", "Sun", "Sun", "Tue", "Tue", "Tue", "Tue"], "setpoint": [70.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 72.0, 74.0, 74.0, 74.0, 74.0, 74.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 74.0, 72.0, 74.0, 74.0, 80.0], "actual": [45.0, 71.0, 72.0, 73.0, 74.0, 75.0, 75.0, 75.0, 75.0, 73.0, 72.0, 71.0, 70.0, 68.0, 65.0, 61.0, 64.0, 63.0, 65.0, 65.0, 70.0, 66.0, 71.0, 100.0], "setpointLabel": "Set Point", "actualLabel": "Current Temperature", "fan": ["A", "A", "O", "O", "O", "O", "O", "C", "C", "C", "C", "A", "A", "A", "A", "A", "A", "A", "A", "A", "C", "C", "C", "C"], "fanLegend": ["Auto", "Circulate", "On"], "outside": [55.0, 65.0, 65.0, 65.0, 62.0, 59.0, 57.0, 53.0, 52.0, 50.0, 49.0, 49.0, 48.0, 48.0, 47.0, 46.0, 46.0, 47.0, 48.0, 54.0, 58.0, 61.0, 63.0, 90.0], "outsideLabel": "Outside Temp", "outsideFlags": ["S", "S", "P", "O", "R", "R", "P", "P", "O", "O", "P", "P", "P", "P", "O", "P", "P", "P", "P", "P", "P", "S", "S", "S"], "outsideFlagDayChars": ["5", "6", "6", "6", "6", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "4", "5", "5", "6", "6", "9"], "cooling": [0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "coolingLegend": ["Idle", "Cooling"], "coolingLabel": "Equipment Status", "latestActual": 100.0, "latestSetpoint": 80.0, "latestOutside": 90.0, "latestOutsideRaw": "S90", "latestOutsideDaylight": true, "latestOutsideFlagDayChar": "9", "latestFan": "C", "latestCooling": 0};
       const chartLabels = dashboardData.chartLabels || [];
       const setpointSeries = dashboardData.setpoint || [];
       const actualSeries = dashboardData.actual || [];
@@ -391,11 +388,42 @@
       const outsideFlags = dashboardData.outsideFlags || [];
       const outsideFlagDayChars = dashboardData.outsideFlagDayChars || [];
       const setpointLabel = dashboardData.setpointLabel || "Target Temperature";
-      const actualLabel = dashboardData.actualLabel || "Actual Temperature";
+      const actualLabel = dashboardData.actualLabel || "Building Temperature";
       const outsideLabel = dashboardData.outsideLabel || "Outside Temp";
       const coolingLabel = dashboardData.coolingLabel || "Cooling Status";
       const fanLegend = dashboardData.fanLegend || ["On", "Circulate", "Auto"];
       const coolingLegend = dashboardData.coolingLegend || ["Idle", "Cooling"];
+      const fanStateLabels = {
+        A: "Auto",
+        C: "Circulate",
+        O: "On",
+      };
+      const fanStateToNumeric = {
+        A: 0,
+        C: 1,
+        O: 2,
+      };
+      const normalizeFanState = (value) => {
+        if (typeof value === "string") {
+          return value.trim().toUpperCase();
+        }
+        if (typeof value === "number" && Number.isFinite(value)) {
+          if (value === 1) {
+            return "C";
+          }
+          if (value === 2) {
+            return "O";
+          }
+        }
+        return "A";
+      };
+      const fanSeriesNumeric = fanSeries.map(
+        (value) => fanStateToNumeric[normalizeFanState(value)] ?? 0
+      );
+      const fanLabelForValue = (value) => {
+        const normalized = normalizeFanState(value);
+        return fanStateLabels[normalized] || String(value);
+      };
       const chartControlButtons = document.querySelectorAll(".chart-control");
       const canvas = document.getElementById("history-chart");
       const ctx = canvas.getContext("2d");
@@ -406,7 +434,7 @@
         if (typeof value !== "number" || Number.isNaN(value)) {
           return "#999";
         }
-        const ratio = Math.max(0, Math.min((value - 50) / 40, 1));
+        const ratio = Math.max(0, Math.min((value - 45) / 55, 1));
         const start = [50, 130, 255];
         const end = [255, 40, 40];
         const rgb = start.map((component, idx) =>
@@ -417,8 +445,8 @@
       const colorForPoint = (value) => gradientColorFor(value ?? 50);
       const gradientColorForOutside = (value) => {
         const numeric = typeof value === "number" ? value : parseFloat(value);
-        const clamped = Number.isNaN(numeric) ? 50 : Math.max(50, Math.min(numeric, 90));
-        const ratio = Math.max(0, Math.min((clamped - 50) / 40, 1));
+        const clamped = Number.isNaN(numeric) ? 50 : Math.max(45, Math.min(numeric, 100));
+        const ratio = Math.max(0, Math.min((clamped - 45) / 55, 1));
         const start = [0, 0, 0];
         const end = [255, 214, 0];
         const rgb = start.map((component, idx) =>
@@ -604,7 +632,11 @@
           valueEl.style.color = style.text;
         }
       };
-      const latestFanValue = dashboardData.latestFan ?? findLastNumber(fanSeries);
+      const latestFanRaw = dashboardData.latestFan;
+      const latestFanValue =
+        fanStateToNumeric[normalizeFanState(latestFanRaw)] ??
+        findLastNumber(fanSeriesNumeric) ??
+        0;
       applyFanCardStyle(document.querySelector('.metric-card[data-metric="fan"]'), latestFanValue);
       const coolingStyleMap = {
         idle: {
@@ -650,8 +682,8 @@
       );
       const gradientColorForCooling = (value) => {
         const ratio = Math.max(0, Math.min(value ?? 0, 1));
-        const start = [200, 200, 200];
-        const end = [61, 159, 255];
+        const start = [255, 214, 0];
+        const end = [90, 230, 150];
         const rgb = start.map((component, idx) =>
           Math.round(component + (end[idx] - component) * ratio)
         );
@@ -698,6 +730,65 @@
         const startValue = ctx.p0?.parsed.y ?? ctx.parsed.y ?? 0;
         const endValue = ctx.p1?.parsed.y ?? ctx.parsed.y ?? startValue;
         return buildCoolingGradient(ctx, startValue, endValue);
+      };
+      const fanColorMap = {
+        auto: "#b4b4b4",
+        circulate: "#fff4b2",
+        on: "#00ff7f",
+      };
+      const fanColorForValue = (value) => {
+        const normalized = normalizeFanState(value);
+        if (normalized === "C") {
+          return fanColorMap.circulate;
+        }
+        if (normalized === "O") {
+          return fanColorMap.on;
+        }
+        return fanColorMap.auto;
+      };
+      const buildFanGradient = (ctx, startValue, endValue) => {
+        if (!ctx || !ctx.chart || !ctx.chart.ctx || !ctx.p0 || !ctx.p1) {
+          return fanColorForValue(endValue);
+        }
+        const gradient = ctx.chart.ctx.createLinearGradient(
+          ctx.p0.x,
+          ctx.p0.y,
+          ctx.p1.x,
+          ctx.p1.y
+        );
+        gradient.addColorStop(0, fanColorForValue(startValue));
+        gradient.addColorStop(1, fanColorForValue(endValue));
+        return gradient;
+      };
+      const fanSegmentColor = (ctx) => {
+        const startValue =
+          ctx.p0?.parsed?.y ??
+          ctx.p0?.parsed ??
+          ctx.parsed?.y ??
+          ctx.parsed ??
+          0;
+        const endValue =
+          ctx.p1?.parsed?.y ??
+          ctx.p1?.parsed ??
+          ctx.parsed?.y ??
+          ctx.parsed ??
+          startValue;
+        if (fanColorForValue(startValue) === fanColorForValue(endValue)) {
+          return fanColorForValue(endValue);
+        }
+        return buildFanGradient(ctx, startValue, endValue);
+      };
+      const fanSegmentDash = (ctx) => {
+        const value =
+          ctx.p1?.parsed?.y ??
+          ctx.p1?.parsed ??
+          ctx.p0?.parsed?.y ??
+          ctx.p0?.parsed ??
+          ctx.parsed?.y ??
+          ctx.parsed ??
+          0;
+        const numeric = fanStateToNumeric[normalizeFanState(value)] ?? 0;
+        return numeric >= 2 ? [] : [4, 4];
       };
       
       function updateLegendImage() {
@@ -841,18 +932,18 @@
                 backgroundColor: "rgba(255,107,107,0.2)",
                 yAxisID: "cooling",
                 spanGaps: true,
-                borderDash: [6, 4],
                 pointRadius: 0,
               },
               {
                 label: "Fan Mode",
-                data: fanSeries,
-                borderColor: "#ffa500",
+                data: fanSeriesNumeric,
+                segment: {
+                  borderColor: fanSegmentColor,
+                },
                 backgroundColor: "rgba(255,165,0,0.3)",
                 yAxisID: "fan",
                 spanGaps: true,
-                borderDash: [4, 4],
-                pointRadius: 4,
+                pointRadius: 0,
               },
             ],
           },
@@ -872,8 +963,8 @@
 
                 y: {
                 beginAtZero: false,
-                min: 55,
-                max: 90,
+                min: 45,
+                max: 100,
                 ticks: {
                   color: (ctx) => colorForPoint(ctx.tick.value),
                 },
@@ -888,15 +979,18 @@
                 max: 2,
                 ticks: {
                   stepSize: 1,
-                  callback: (value) => fanLegend[Math.round(value)] || "",
-                  color: "#ffa500",
+                  callback: (value) => fanLabelForValue(value) || "",
+                  color: (ctx) => {
+                    const tickValue = ctx.tick?.value ?? ctx.parsed ?? null;
+                    return fanColorForValue(tickValue);
+                  },
                 },
                 grid: {
                   drawOnChartArea: false,
                   color: "rgba(255,255,255,0.08)",
                 },
               },
-              cooling: {
+                cooling: {
                 type: "linear",
                 position: "right",
                 offset: false,
@@ -905,19 +999,22 @@
                 ticks: {
                   stepSize: 1,
                   callback: (value) => coolingLegend[Math.round(value)] || "",
-                  color: "#ff6b6b",
+                  color: (ctx) => {
+                    const numeric = Number(ctx.tick.value);
+                    return Number.isNaN(numeric) || numeric <= 0 ? "#ffd000" : "#32d15c";
+                  },
                 },
                 grid: {
                   drawOnChartArea: true,
-                  color: "rgba(255,255,255,0.08)",
+                  color: "rgba(50,209,92,0.15)",
                 },
               },
               x: {
                 ticks: {
-                  
                   color: "#f4f6ff",
                   maxRotation: 0,
                   minRotation: 90,
+                  padding: 8,
                 },
                 grid: {
                   color: "rgba(255,255,255,0.08)",
@@ -941,8 +1038,8 @@
                   label: (context) => {
                     const label = context.dataset.label || "";
                     if (context.dataset.yAxisID === "fan") {
-                      const value = context.parsed.y;
-                      return `\${label}: \${fanLegend[Math.round(value)] || "Unknown"}`;
+                      const value = context.parsed?.y ?? context.parsed;
+                      return `\${label}: \${fanLabelForValue(value) || "Unknown"}`;
                     }
                     if (context.dataset.yAxisID === "cooling") {
                       const value = context.parsed.y;
