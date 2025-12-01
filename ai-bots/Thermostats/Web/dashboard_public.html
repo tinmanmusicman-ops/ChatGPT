@@ -331,7 +331,7 @@
         
         <div class="metric-card" data-metric="cooling">
           <div class="label">Equipment Status</div>
-          <div class="value">idle</div>
+          <div class="value">cooling</div>
         </div>
         
         <div class="metric-card">
@@ -346,7 +346,7 @@
         
         <div class="metric-card" data-metric="outside">
           <div class="label">Outside Temp</div>
-          <div class="value">90</div>
+          <div class="value">57</div>
         </div>
         
       </div>
@@ -378,7 +378,7 @@
     </div>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-      const dashboardData = {"headers": ["Timestamp", "Type", "Current Temperature", "Cooling Set Point", "Climate Setting", "Fan Setting", "Equipment Status", "Studio", "Request Expires (local time)", "Outside Temp"], "latestRow": ["Tuesday Nov 25 2025 8:11 PM", "request (studio 11, zone3, 50m)", "100", "80", "cool", "Circulate", "idle", "11", "8:54 PM", "S90"], "history": [{"label": "Sun", "value": 70.0}, {"label": "Sun", "value": 75.0}, {"label": "Sun", "value": 75.0}, {"label": "Sun", "value": 75.0}, {"label": "Sun", "value": 75.0}, {"label": "Sun", "value": 75.0}, {"label": "Sun", "value": 75.0}, {"label": "Tue", "value": 72.0}, {"label": "Tue", "value": 74.0}, {"label": "Tue", "value": 74.0}, {"label": "Tue", "value": 74.0}, {"label": "Tue", "value": 74.0}, {"label": "Fri", "value": 74.0}, {"label": "Sun", "value": 75.0}, {"label": "Sun", "value": 75.0}, {"label": "Sun", "value": 75.0}, {"label": "Sun", "value": 75.0}, {"label": "Sun", "value": 75.0}, {"label": "Sun", "value": 75.0}, {"label": "Sun", "value": 74.0}, {"label": "Tue", "value": 72.0}, {"label": "Tue", "value": 74.0}, {"label": "Tue", "value": 74.0}, {"label": "Tue", "value": 80.0}], "chartLabels": ["Sun", "Sun", "Sun", "Sun", "Sun", "Sun", "Sun", "Tue", "Tue", "Tue", "Tue", "Tue", "Fri", "Sun", "Sun", "Sun", "Sun", "Sun", "Sun", "Sun", "Tue", "Tue", "Tue", "Tue"], "setpoint": [70.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 72.0, 74.0, 74.0, 74.0, 74.0, 74.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 74.0, 72.0, 74.0, 74.0, 80.0], "actual": [45.0, 71.0, 72.0, 73.0, 74.0, 75.0, 75.0, 75.0, 75.0, 73.0, 72.0, 71.0, 70.0, 68.0, 65.0, 61.0, 64.0, 63.0, 65.0, 65.0, 70.0, 66.0, 71.0, 100.0], "setpointLabel": "Set Point", "actualLabel": "Current Temperature", "fan": ["A", "A", "O", "O", "O", "O", "O", "C", "C", "C", "C", "A", "A", "A", "A", "A", "A", "A", "A", "A", "C", "C", "C", "C"], "fanLegend": ["Auto", "Circulate", "On"], "outside": [55.0, 65.0, 65.0, 65.0, 62.0, 59.0, 57.0, 53.0, 52.0, 50.0, 49.0, 49.0, 48.0, 48.0, 47.0, 46.0, 46.0, 47.0, 48.0, 54.0, 58.0, 61.0, 63.0, 90.0], "outsideLabel": "Outside Temp", "outsideFlags": ["S", "S", "P", "O", "R", "R", "P", "P", "O", "O", "P", "P", "P", "P", "O", "P", "P", "P", "P", "P", "P", "S", "S", "S"], "outsideFlagDayChars": ["5", "6", "6", "6", "6", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "4", "5", "5", "6", "6", "9"], "cooling": [0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "coolingLegend": ["Idle", "Cooling"], "coolingLabel": "Equipment Status", "latestActual": 100.0, "latestSetpoint": 80.0, "latestOutside": 90.0, "latestOutsideRaw": "S90", "latestOutsideDaylight": true, "latestOutsideFlagDayChar": "9", "latestFan": "C", "latestCooling": 0};
+      const dashboardData = {"headers": ["Timestamp", "Type", "Current Temperature", "Cooling Set Point", "Climate Setting", "Fan Setting", "Equipment Status", "Studio", "Request Expires (local time)", "Outside Temp"], "latestRow": ["Tuesday Nov 25 2025 8:11 PM", "request (studio 11, zone3, 50m)", "100", "80", "cool", "Circulate", "cooling", "11", "8:54 PM", "NN57.0 | Mostly Cloudy"], "history": [{"label": "Nov 23   1:56 PM", "value": 70.0}, {"label": "Nov 23   2:02 PM", "value": 75.0}, {"label": "Nov 23   2:46 PM", "value": 75.0}, {"label": "Nov 23   2:59 PM", "value": 75.0}, {"label": "Nov 23   3:03 PM", "value": 75.0}, {"label": "Nov 23   3:06 PM", "value": 75.0}, {"label": "Nov 23   11:20 PM", "value": 75.0}, {"label": "Nov 25   7:59 PM", "value": 72.0}, {"label": "Nov 25   8:01 PM", "value": 74.0}, {"label": "Nov 25   8:04 PM", "value": 74.0}, {"label": "Nov 25   8:11 PM", "value": 74.0}, {"label": "Nov 25   8:46 PM", "value": 74.0}, {"label": "Nov 21   6:51 PM", "value": 74.0}, {"label": "Nov 23   1:56 PM", "value": 75.0}, {"label": "Nov 23   2:02 PM", "value": 75.0}, {"label": "Nov 23   2:46 PM", "value": 75.0}, {"label": "Nov 23   2:59 PM", "value": 75.0}, {"label": "Nov 23   3:03 PM", "value": 75.0}, {"label": "Nov 23   3:06 PM", "value": 75.0}, {"label": "Nov 23   11:20 PM", "value": 74.0}, {"label": "Nov 25   7:59 PM", "value": 72.0}, {"label": "Nov 25   8:01 PM", "value": 74.0}, {"label": "Nov 25   8:04 PM", "value": 74.0}, {"label": "Nov 25   8:11 PM", "value": 80.0}], "chartLabels": ["Nov 23   1:56 PM", "Nov 23   2:02 PM", "Nov 23   2:46 PM", "Nov 23   2:59 PM", "Nov 23   3:03 PM", "Nov 23   3:06 PM", "Nov 23   11:20 PM", "Nov 25   7:59 PM", "Nov 25   8:01 PM", "Nov 25   8:04 PM", "Nov 25   8:11 PM", "Nov 25   8:46 PM", "Nov 21   6:51 PM", "Nov 23   1:56 PM", "Nov 23   2:02 PM", "Nov 23   2:46 PM", "Nov 23   2:59 PM", "Nov 23   3:03 PM", "Nov 23   3:06 PM", "Nov 23   11:20 PM", "Nov 25   7:59 PM", "Nov 25   8:01 PM", "Nov 25   8:04 PM", "Nov 25   8:11 PM"], "setpoint": [70.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 72.0, 74.0, 74.0, 74.0, 74.0, 74.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 74.0, 72.0, 74.0, 74.0, 80.0], "actual": [45.0, 71.0, 72.0, 73.0, 74.0, 75.0, 75.0, 75.0, 75.0, 73.0, 72.0, 71.0, 70.0, 68.0, 65.0, 61.0, 64.0, 63.0, 65.0, 65.0, 70.0, 66.0, 71.0, 100.0], "setpointLabel": "Set Point", "actualLabel": "Current Temperature", "fan": ["A", "A", "O", "O", "O", "O", "O", "C", "C", "C", "C", "A", "A", "A", "A", "A", "A", "A", "A", "A", "C", "C", "C", "C"], "fanLegend": ["Auto", "Circulate", "On"], "outside": [55.0, 65.0, 65.0, 65.0, 62.0, 59.0, 57.0, 53.0, 52.0, 50.0, 49.0, 49.0, 48.0, 48.0, 47.0, 46.0, 46.0, 47.0, 48.0, 54.0, 58.0, 61.0, 63.0, 57.0], "outsideLabel": "Outside Temp", "outsideFlags": ["S", "S", "P", "O", "R", "R", "P", "P", "O", "O", "P", "P", "P", "P", "O", "P", "P", "P", "P", "P", "P", "S", "S", "O"], "outsideFlagDayChars": ["5", "6", "6", "6", "6", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "4", "5", "5", "6", "6", "N"], "cooling": [0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], "coolingLegend": ["Idle", "Cooling"], "coolingLabel": "Equipment Status", "latestActual": 100.0, "latestSetpoint": 80.0, "latestOutside": 57.0, "latestOutsideRaw": "NN57.0 | Mostly Cloudy", "latestOutsideDaylight": false, "latestOutsideFlag": "O", "latestOutsideFlagDayChar": "N", "latestFan": "C", "latestCooling": 1, "latestTimestampDay": null};
       const chartLabels = dashboardData.chartLabels || [];
       const setpointSeries = dashboardData.setpoint || [];
       const actualSeries = dashboardData.actual || [];
@@ -500,8 +500,9 @@
       const latestActualValue = dashboardData.latestActual ?? findLastNumber(actualSeries) ?? 50;
       const latestSetpointValue = dashboardData.latestSetpoint ?? findLastNumber(setpointSeries) ?? 50;
       const latestOutsideValue = dashboardData.latestOutside ?? findLastNumber(outsideSeries) ?? 50;
+      const latestOutsideFlag = dashboardData.latestOutsideFlag || "";
       const outsideFlagRaw = (dashboardData.latestOutsideRaw || "").trim().toUpperCase();
-      const outsideFlag = outsideFlagRaw ? outsideFlagRaw[0] : "";
+      const outsideFlag = latestOutsideFlag || (outsideFlagRaw ? outsideFlagRaw[0] : "");
       const outsideFlagDayChar = outsideFlagRaw && outsideFlagRaw.length > 1 ? outsideFlagRaw[1] : "D";
       const outsideDaylight =
         typeof dashboardData.latestOutsideDaylight === "boolean"
@@ -733,7 +734,7 @@
       };
       const fanColorMap = {
         auto: "#b4b4b4",
-        circulate: "#fff4b2",
+        circulate: "#ff9c33",
         on: "#00ff7f",
       };
       const fanColorForValue = (value) => {

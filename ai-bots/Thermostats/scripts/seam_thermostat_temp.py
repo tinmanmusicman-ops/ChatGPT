@@ -179,6 +179,7 @@ def load_config(path: Path) -> Dict[str, Any]:
     cfg.setdefault("test_mode", False)
     cfg.setdefault("weather_base_url", "https://api.weather.gov")
     cfg.setdefault("weather_timeout_seconds", cfg["timeout_seconds"])
+    cfg.setdefault("google_sheet_name", "NWS")
     return cfg
 
 
@@ -274,6 +275,8 @@ def fetch_weather_conditions(cfg: Dict[str, Any], verbose: bool = False) -> Opti
             "temp": cached.get("temp"),
             "flag": cached.get("flag"),
             "daylight": cached.get("daylight", True),
+            "cached": True,
+            "forecast_desc": "",
         }
     points_url = f"{base_url}/points/{lat},{lon}"
     if verbose:
@@ -327,10 +330,22 @@ def fetch_weather_conditions(cfg: Dict[str, Any], verbose: bool = False) -> Opti
     flag = _determine_weather_flag(main_weather, detailed, is_night)
     final_temp = temp_f if temp_f is not None else forecast_temp
     _save_weather_cache(final_temp, flag, not is_night)
-    return {"temp": final_temp, "flag": flag, "daylight": not is_night}
+    return {
+        "temp": final_temp,
+        "flag": flag,
+        "daylight": not is_night,
+        "forecast_desc": forecast_desc,
+        "cached": False,
+    }
 
 
-def format_weather_entry(temp_value: Optional[float], flag: str, daylight: bool) -> str:
+def format_weather_entry(
+    temp_value: Optional[float],
+    flag: str,
+    daylight: bool,
+    forecast_desc: str,
+    cached: bool = False,
+) -> str:
     if temp_value is None:
         return f"{flag}{'D' if daylight else 'N'}"
     temp_num = float(temp_value)
@@ -338,7 +353,12 @@ def format_weather_entry(temp_value: Optional[float], flag: str, daylight: bool)
         formatted = f"{int(temp_num)}"
     else:
         formatted = f"{temp_num:.1f}"
-    return f"{flag}{'D' if daylight else 'N'}{formatted}"
+    entry = f"{flag}{'D' if daylight else 'N'}{formatted}"
+    if forecast_desc:
+        entry = f"{entry} | {forecast_desc}"
+    if cached:
+        entry = f"{entry} cached"
+    return entry
 
 
 def request_token(cfg: Dict[str, Any], verbose: bool = False) -> str:
@@ -675,12 +695,12 @@ def format_expiration_local(expires_iso: Optional[str], tz_name: str) -> str:
         return ""
 
 
-def ensure_thermostat_sheet(spreadsheet: gspread.Spreadsheet) -> gspread.Worksheet:
+def ensure_thermostat_sheet(spreadsheet: gspread.Spreadsheet, title: str = "Thermostats") -> gspread.Worksheet:
     """Ensure Thermostats worksheet exists with headers."""
     try:
-        ws = spreadsheet.worksheet("Thermostats")
+        ws = spreadsheet.worksheet(title)
     except gspread.WorksheetNotFound:
-        ws = spreadsheet.add_worksheet(title="Thermostats", rows=1000, cols=11)
+        ws = spreadsheet.add_worksheet(title=title, rows=1000, cols=11)
     headers = [
         "Timestamp",
         "Type",
@@ -713,7 +733,8 @@ def append_thermostat_row(
         sa_path = resolve_service_account_path(cfg)
         client = gspread.service_account(filename=str(sa_path))
         spreadsheet = client.open_by_key(cfg["spreadsheet_id"])
-        ws = ensure_thermostat_sheet(spreadsheet)
+        sheet_name = cfg.get("google_sheet_name", "NWS")
+        ws = ensure_thermostat_sheet(spreadsheet, title=sheet_name)
 
         props = payload.get("properties") or payload.get("device", {}).get("properties") or payload.get("device", {})
         climate_props = props.get("current_climate_setting") or {}
@@ -1188,11 +1209,13 @@ def main() -> None:
     try:
         weather_data = fetch_weather_conditions(cfg, verbose=args.verbose)
         if weather_data:
-        weather_entry = format_weather_entry(
-            weather_data.get("temp"),
-            weather_data.get("flag", ""),
-            weather_data.get("daylight", True),
-        )
+           weather_entry = format_weather_entry(
+               weather_data.get("temp"),
+               weather_data.get("flag", ""),
+               weather_data.get("daylight", True),
+               weather_data.get("forecast_desc", ""),
+               weather_data.get("cached", False),
+           )
     except Exception as weather_exc:
         print(f"[weather] Failed to fetch outside conditions: {weather_exc}", file=sys.stderr)
     try:

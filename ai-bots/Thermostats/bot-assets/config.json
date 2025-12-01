@@ -15,7 +15,7 @@
   "request_timeout_minutes": 60,
   "service_account_json": "Global.json",
   "spreadsheet_id": "1IYrpGlyCSIilIEyRA70Uq2iUofl-sPA94ygH9ZL-2ag",
-  "google_sheet_name": "Thermostats",
+  "google_sheet_name": "NWS",
   "sheet_tab": "Thermostats",
   "data_range": "A:I",
   "delete_temp_files": false,
