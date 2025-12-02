@@ -304,6 +304,10 @@
         color: #9fd8ff;
         text-decoration: none;
       }
+      .chart-history ul a.active {
+        font-weight: 600;
+        text-decoration: underline;
+      }
       .chart-history ul.hidden {
         display: none;
       }
@@ -419,50 +423,82 @@
         <pre id="js-log"></pre>
       </div>
     </div>
+        <script id="dashboard-data-inline" type="application/json">
+{"headers": ["Timestamp", "Type", "Current Temperature", "Cooling Set Point", "Climate Setting", "Fan Setting", "Equipment Status", "Studio", "Request Expires (local time)", "Outside Temp"], "latestRow": ["Tuesday Nov 25 2025 8:11 PM", "request (studio 11, zone3, 50m)", "80", "80", "cool", "Circulate", "cooling", "11", "8:54 PM", "NN57.0 | Mostly Cloudy"], "history": [{"label": "Sunday Nov 23     1:56 PM", "value": 70.0}, {"label": "Sunday Nov 23     2:02 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:46 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:59 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:03 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:06 PM", "value": 75.0}, {"label": "Sunday Nov 23     11:20 PM", "value": 75.0}, {"label": "Tuesday Nov 25     7:59 PM", "value": 72.0}, {"label": "Tuesday Nov 25     8:01 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:04 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:11 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:46 PM", "value": 74.0}, {"label": "Friday Nov 21     6:51 PM", "value": 74.0}, {"label": "Sunday Nov 23     1:56 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:02 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:46 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:59 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:03 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:06 PM", "value": 75.0}, {"label": "Sunday Nov 23     11:20 PM", "value": 74.0}, {"label": "Tuesday Nov 25     7:59 PM", "value": 72.0}, {"label": "Tuesday Nov 25     8:01 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:04 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:11 PM", "value": 80.0}], "chartLabels": ["Sunday Nov 23     1:56 PM", "Sunday Nov 23     2:02 PM", "Sunday Nov 23     2:46 PM", "Sunday Nov 23     2:59 PM", "Sunday Nov 23     3:03 PM", "Sunday Nov 23     3:06 PM", "Sunday Nov 23     11:20 PM", "Tuesday Nov 25     7:59 PM", "Tuesday Nov 25     8:01 PM", "Tuesday Nov 25     8:04 PM", "Tuesday Nov 25     8:11 PM", "Tuesday Nov 25     8:46 PM", "Friday Nov 21     6:51 PM", "Sunday Nov 23     1:56 PM", "Sunday Nov 23     2:02 PM", "Sunday Nov 23     2:46 PM", "Sunday Nov 23     2:59 PM", "Sunday Nov 23     3:03 PM", "Sunday Nov 23     3:06 PM", "Sunday Nov 23     11:20 PM", "Tuesday Nov 25     7:59 PM", "Tuesday Nov 25     8:01 PM", "Tuesday Nov 25     8:04 PM", "Tuesday Nov 25     8:11 PM"], "setpoint": [70.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 72.0, 74.0, 74.0, 74.0, 74.0, 74.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 74.0, 72.0, 74.0, 74.0, 80.0], "actual": [45.0, 71.0, 72.0, 73.0, 74.0, 75.0, 75.0, 75.0, 75.0, 73.0, 72.0, 71.0, 70.0, 68.0, 65.0, 61.0, 64.0, 63.0, 65.0, 65.0, 70.0, 66.0, 71.0, 80.0], "setpointLabel": "Set Point", "actualLabel": "Current Temperature", "fan": ["A", "A", "O", "O", "O", "O", "O", "C", "C", "C", "C", "A", "A", "A", "A", "A", "A", "A", "A", "A", "C", "C", "C", "C"], "fanLegend": ["Auto", "Circulate", "On"], "outside": [55.0, 65.0, 65.0, 65.0, 62.0, 59.0, 57.0, 53.0, 52.0, 50.0, 49.0, 49.0, 48.0, 48.0, 47.0, 46.0, 46.0, 47.0, 48.0, 54.0, 58.0, 61.0, 63.0, 57.0], "outsideLabel": "Outside Temp", "outsideFlags": ["S", "S", "P", "O", "R", "R", "P", "P", "O", "O", "P", "P", "P", "P", "O", "P", "P", "P", "P", "P", "P", "S", "S", "N"], "outsideFlagDayChars": ["5", "6", "6", "6", "6", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "4", "5", "5", "6", "6", "N"], "cooling": [0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], "coolingLegend": ["Idle", "Cooling"], "coolingLabel": "Equipment Status", "latestActual": 80.0, "latestSetpoint": 80.0, "latestOutside": 57.0, "latestOutsideRaw": "NN57.0 | Mostly Cloudy", "latestOutsideDaylight": false, "latestOutsideFlagDayChar": "N", "latestFan": "C", "latestCooling": 1, "generatedTimestamp": "Tuesday Dec 02 2025 03:14:19 AM", "generatedDateSlug": "2025-12-02", "archiveDates": [{"slug": "2025-12-04", "label": "Dec 04, 2025"}, {"slug": "2025-12-03", "label": "Dec 03, 2025"}, {"slug": "2025-12-02", "label": "Dec 02, 2025"}]}
+    </script>
+    
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-      const dashboardData = {"headers": ["Timestamp", "Type", "Current Temperature", "Cooling Set Point", "Climate Setting", "Fan Setting", "Equipment Status", "Studio", "Request Expires (local time)", "Outside Temp"], "latestRow": ["Tuesday Nov 25 2025 8:11 PM", "request (studio 11, zone3, 50m)", "80", "80", "cool", "Circulate", "cooling", "11", "8:54 PM", "NN57.0 | Mostly Cloudy"], "history": [{"label": "Sunday Nov 23     1:56 PM", "value": 70.0}, {"label": "Sunday Nov 23     2:02 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:46 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:59 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:03 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:06 PM", "value": 75.0}, {"label": "Sunday Nov 23     11:20 PM", "value": 75.0}, {"label": "Tuesday Nov 25     7:59 PM", "value": 72.0}, {"label": "Tuesday Nov 25     8:01 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:04 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:11 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:46 PM", "value": 74.0}, {"label": "Friday Nov 21     6:51 PM", "value": 74.0}, {"label": "Sunday Nov 23     1:56 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:02 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:46 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:59 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:03 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:06 PM", "value": 75.0}, {"label": "Sunday Nov 23     11:20 PM", "value": 74.0}, {"label": "Tuesday Nov 25     7:59 PM", "value": 72.0}, {"label": "Tuesday Nov 25     8:01 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:04 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:11 PM", "value": 80.0}], "chartLabels": ["Sunday Nov 23     1:56 PM", "Sunday Nov 23     2:02 PM", "Sunday Nov 23     2:46 PM", "Sunday Nov 23     2:59 PM", "Sunday Nov 23     3:03 PM", "Sunday Nov 23     3:06 PM", "Sunday Nov 23     11:20 PM", "Tuesday Nov 25     7:59 PM", "Tuesday Nov 25     8:01 PM", "Tuesday Nov 25     8:04 PM", "Tuesday Nov 25     8:11 PM", "Tuesday Nov 25     8:46 PM", "Friday Nov 21     6:51 PM", "Sunday Nov 23     1:56 PM", "Sunday Nov 23     2:02 PM", "Sunday Nov 23     2:46 PM", "Sunday Nov 23     2:59 PM", "Sunday Nov 23     3:03 PM", "Sunday Nov 23     3:06 PM", "Sunday Nov 23     11:20 PM", "Tuesday Nov 25     7:59 PM", "Tuesday Nov 25     8:01 PM", "Tuesday Nov 25     8:04 PM", "Tuesday Nov 25     8:11 PM"], "setpoint": [70.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 72.0, 74.0, 74.0, 74.0, 74.0, 74.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 74.0, 72.0, 74.0, 74.0, 80.0], "actual": [45.0, 71.0, 72.0, 73.0, 74.0, 75.0, 75.0, 75.0, 75.0, 73.0, 72.0, 71.0, 70.0, 68.0, 65.0, 61.0, 64.0, 63.0, 65.0, 65.0, 70.0, 66.0, 71.0, 80.0], "setpointLabel": "Set Point", "actualLabel": "Current Temperature", "fan": ["A", "A", "O", "O", "O", "O", "O", "C", "C", "C", "C", "A", "A", "A", "A", "A", "A", "A", "A", "A", "C", "C", "C", "C"], "fanLegend": ["Auto", "Circulate", "On"], "outside": [55.0, 65.0, 65.0, 65.0, 62.0, 59.0, 57.0, 53.0, 52.0, 50.0, 49.0, 49.0, 48.0, 48.0, 47.0, 46.0, 46.0, 47.0, 48.0, 54.0, 58.0, 61.0, 63.0, 57.0], "outsideLabel": "Outside Temp", "outsideFlags": ["S", "S", "P", "O", "R", "R", "P", "P", "O", "O", "P", "P", "P", "P", "O", "P", "P", "P", "P", "P", "P", "S", "S", "N"], "outsideFlagDayChars": ["5", "6", "6", "6", "6", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "4", "5", "5", "6", "6", "N"], "cooling": [0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], "coolingLegend": ["Idle", "Cooling"], "coolingLabel": "Equipment Status", "latestActual": 80.0, "latestSetpoint": 80.0, "latestOutside": 57.0, "latestOutsideRaw": "NN57.0 | Mostly Cloudy", "latestOutsideDaylight": false, "latestOutsideFlagDayChar": "N", "latestFan": "C", "latestCooling": 1, "generatedTimestamp": "Tuesday Dec 02 2025 01:49:15 AM", "generatedDateSlug": "2025-12-02", "archiveDates": [{"slug": "2025-12-07", "label": "Dec 07, 2025"}, {"slug": "2025-12-06", "label": "Dec 06, 2025"}, {"slug": "2025-12-05", "label": "Dec 05, 2025"}, {"slug": "2025-12-04", "label": "Dec 04, 2025"}, {"slug": "2025-12-03", "label": "Dec 03, 2025"}, {"slug": "2025-12-02", "label": "Dec 02, 2025"}]};
-      const archiveDates = dashboardData.archiveDates || [];
+      const dashboardDataUrl = "dashboard_data.json";
       const archiveBasePath = "chart%20hist/";
-      const chartHistoryList = document.getElementById("chart-history-list");
-      const chartHistoryToggle = document.getElementById("chart-history-toggle");
-      if (chartHistoryList) {
-        archiveDates.forEach((entry) => {
-          const label = entry.label || entry.slug || "Unknown";
-          const slug = entry.slug;
-          const item = document.createElement("li");
-          const link = document.createElement("a");
-          link.textContent = label;
-          if (slug) {
-            link.href = `${archiveBasePath}${slug}.html`;
-            link.target = "_blank";
-            link.rel = "noopener noreferrer";
-          } else {
-            link.href = "#";
+      const dashboardDataInlineEl = document.getElementById("dashboard-data-inline");
+      const dashboardDataInline = (() => {
+          if (!dashboardDataInlineEl) {
+            return null;
           }
-          item.appendChild(link);
-          chartHistoryList.appendChild(item);
-        });
-      }
-      if (chartHistoryToggle && chartHistoryList) {
-        chartHistoryToggle.addEventListener("click", () => {
-          chartHistoryList.classList.toggle("hidden");
-        });
-      }
-      const chartLabels = dashboardData.chartLabels || [];
-      const setpointSeries = dashboardData.setpoint || [];
-      const actualSeries = dashboardData.actual || [];
-      const outsideSeries = dashboardData.outside || [];
-      const fanSeries = dashboardData.fan || [];
-      const coolingSeries = dashboardData.cooling || [];
-      const outsideFlags = dashboardData.outsideFlags || [];
-      const outsideFlagDayChars = dashboardData.outsideFlagDayChars || [];
-      const setpointLabel = dashboardData.setpointLabel || "Target Temperature";
-      const actualLabel = dashboardData.actualLabel || "Building Temperature";
-      const outsideLabel = dashboardData.outsideLabel || "Outside Temp";
-      const coolingLabel = dashboardData.coolingLabel || "Cooling Status";
-      const fanLegend = dashboardData.fanLegend || ["On", "Circulate", "Auto"];
-      const coolingLegend = dashboardData.coolingLegend || ["Idle", "Cooling"];
+        try {
+          return JSON.parse(dashboardDataInlineEl.textContent || "");
+        } catch (warning) {
+          console.warn("Failed to parse inline dashboard data; falling back to fetched data.", warning);
+          return null;
+        }
+      })();
+      let chart;
+      let currentArchiveSlug = null;
+      const initializeDashboard = (dashboardData, slug = null) => {
+        currentArchiveSlug = slug || null;
+        if (chart) {
+          chart.destroy();
+          chart = null;
+        }
+        const archiveDates = dashboardData.archiveDates || [];
+        const chartHistoryList = document.getElementById("chart-history-list");
+        const chartHistoryToggle = document.getElementById("chart-history-toggle");
+        if (chartHistoryList) {
+          chartHistoryList.textContent = "";
+          archiveDates.forEach((entry) => {
+            const label = entry.label || entry.slug || "Unknown";
+            const slugValue = entry.slug;
+            const item = document.createElement("li");
+            const link = document.createElement("a");
+            link.textContent = label;
+            link.href = "#";
+            link.setAttribute("role", "button");
+            if (slugValue) {
+              link.dataset.slug = slugValue;
+              link.onclick = (event) => {
+                event.preventDefault();
+                loadDashboardData(`${archiveBasePath}${slugValue}.json`, slugValue);
+              };
+              if (slugValue === currentArchiveSlug) {
+                link.classList.add("active");
+              }
+            } else {
+              link.setAttribute("aria-disabled", "true");
+            }
+            item.appendChild(link);
+            chartHistoryList.appendChild(item);
+          });
+        }
+        if (chartHistoryToggle && chartHistoryList) {
+          chartHistoryToggle.onclick = () => {
+            chartHistoryList.classList.toggle("hidden");
+          };
+        }
+        const chartLabels = dashboardData.chartLabels || [];
+        const setpointSeries = dashboardData.setpoint || [];
+        const actualSeries = dashboardData.actual || [];
+        const outsideSeries = dashboardData.outside || [];
+        const fanSeries = dashboardData.fan || [];
+        const coolingSeries = dashboardData.cooling || [];
+        const outsideFlags = dashboardData.outsideFlags || [];
+        const outsideFlagDayChars = dashboardData.outsideFlagDayChars || [];
+        const setpointLabel = dashboardData.setpointLabel || "Target Temperature";
+        const actualLabel = dashboardData.actualLabel || "Building Temperature";
+        const outsideLabel = dashboardData.outsideLabel || "Outside Temp";
+        const coolingLabel = dashboardData.coolingLabel || "Cooling Status";
+        const fanLegend = dashboardData.fanLegend || ["On", "Circulate", "Auto"];
+        const coolingLegend = dashboardData.coolingLegend || ["Idle", "Cooling"];
       const fanStateLabels = {
         A: "Auto",
         C: "Circulate",
@@ -499,7 +535,6 @@
       const ctx = canvas.getContext("2d");
       const toggleHistoryBtn = document.getElementById("toggle-history");
       const handsLogoTop = document.querySelector(".hands-logo-top");
-      let chart;
       const gradientColorFor = (value) => {
         if (typeof value !== "number" || Number.isNaN(value)) {
           return "#999";
@@ -1222,19 +1257,43 @@
       };
 
       chartControlButtons.forEach((button) => {
-        button.addEventListener("click", () => toggleMode(button.dataset.mode));
+        button.onclick = () => toggleMode(button.dataset.mode);
       });
 
-      toggleHistoryBtn.addEventListener("click", () => {
+      toggleHistoryBtn.onclick = () => {
         if (canvas.style.display === "none" || !canvas.style.display) {
           showChart();
         } else {
           hideChart();
         }
-      });
+      };
 
       showChart();
-    </script>
+      };
+      const loadDashboardData = async (url = dashboardDataUrl, slug = null) => {
+        try {
+          const response = await fetch(url, { cache: "no-store" });
+          if (!response.ok) {
+            throw new Error(`Failed to load dashboard data: ${response.status}`);
+          }
+          const data = await response.json();
+          initializeDashboard(data, slug);
+        } catch (error) {
+          console.error("Failed to load dashboard data:", error);
+          if (dashboardDataInline && url === dashboardDataUrl) {
+            console.info("Using inline dashboard data fallback.");
+            initializeDashboard(dashboardDataInline, slug);
+            return;
+          }
+          const logEl = document.getElementById("js-log");
+          if (logEl) {
+            logEl.textContent = `Failed to load dashboard data: ${error}`;
+            logEl.style.display = "block";
+          }
+        }
+      };
+        loadDashboardData();
+      </script>
     
 
   </body>
