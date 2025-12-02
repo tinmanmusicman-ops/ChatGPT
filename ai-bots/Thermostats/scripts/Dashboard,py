@@ -34,12 +34,6 @@ DATE_FORMATS = (
     "%m/%d/%Y %H:%M",
     "%m-%d-%Y %H:%M:%S",
     "%A %m/%d/%Y %H:%M",
-    "%m/%d/%Y %I:%M:%S %p",
-    "%m/%d/%Y %I:%M %p",
-    "%Y-%m-%d %I:%M:%S %p",
-    "%Y-%m-%d %I:%M %p",
-    "%Y-%m-%dT%H:%M:%S",
-    "%Y-%m-%dT%H:%M:%S.%f",
 )
 
 
@@ -400,56 +394,20 @@ def build_dashboard_html(
             logger.debug("Non-numeric chart value %r; defaulting to 0", val)
             return 0.0
 
-    def _parse_datetime_value(value: str) -> Optional[datetime]:
+    def _format_chart_label(value: str) -> str:
         text = str(value).strip()
         if not text:
-            return None
+            return ""
         for fmt in DATE_FORMATS:
             try:
-                return datetime.strptime(text, fmt)
+                dt = datetime.strptime(text, fmt)
+                return dt.strftime("%a")
             except ValueError:
                 continue
-        iso_like = text.rstrip("Z")
-        try:
-            return datetime.fromisoformat(iso_like)
-        except ValueError:
-            pass
-        if iso_like != text:
-            # Try stripping trailing timezone offsets if present.
-            zone_free = re.split(r"[+-]\d{2}:?\d{2}$", text)[0].strip()
-            if zone_free and zone_free != text:
-                try:
-                    return datetime.fromisoformat(zone_free)
-                except ValueError:
-                    pass
-        return None
-
-    def _infer_outside_flag(raw_value: str, default_flag: str) -> str:
-        normalized = (default_flag or "").upper()
-        text = (raw_value or "").lower()
-        if not text:
-            return normalized
-        if "partly" in text:
-            return "P"
-        if "sunny" in text or "clear" in text:
-            return "S"
-        if "cloud" in text or "overcast" in text:
-            return "O"
-        if any(keyword in text for keyword in ("rain", "storm", "shower", "drizzle", "snow", "sleet", "flurries", "ice", "blizzard")):
-            return "R"
-        return normalized
-
-    def _format_chart_label(value: str) -> str:
-        dt = _parse_datetime_value(value)
-        if dt:
-            return dt.strftime("%a")
-        text = str(value).strip()
-        text = text.split(' ')
-#        logger.info((text[1]) + "/" + (text[2]) + "   " + (text[4]) + "" +  (text[5]));
-        return (text[1]) + " " + (text[2]) + "   " + (text[4]) + " " +  (text[5]) if text else ""
+        text = text.split(" ");
+        return text[0] + " " + text[1] + " " + text[2] + "     " + text[4] + " " + text[5] 
 
     title = "Lockout Music Studios Oceanside CA"
-
     def _find_index(keywords: Tuple[str, ...]) -> Optional[int]:
         for idx, header in enumerate(headers):
             if not header:
@@ -524,10 +482,9 @@ def build_dashboard_html(
             if outside_idx is not None and outside_idx < len(row)
             else ""
         )
-        base_flag = raw_value[:1].upper() if raw_value else ""
-        normalized_flag = _infer_outside_flag(raw_value, base_flag)
+        flag = raw_value[:1].upper() if raw_value else ""
         day_char = raw_value[1].upper() if len(raw_value) > 1 else "D"
-        outside_flags.append(normalized_flag)
+        outside_flags.append(flag)
         outside_flag_day_chars.append(day_char)
         outside_series.append(_extract_clamped(outside_idx, row))
     cooling_series = [_cooling_value(row) for row in history_rows]
@@ -555,8 +512,6 @@ def build_dashboard_html(
     latest_outside_raw = (
         str(latest_row[outside_idx]).strip() if outside_idx is not None and outside_idx < len(latest_row) else ""
     )
-    latest_outside_default_flag = latest_outside_raw[:1].upper() if latest_outside_raw else ""
-    latest_outside_flag = _infer_outside_flag(latest_outside_raw, latest_outside_default_flag)
     latest_outside_flag_day_char = (
         latest_outside_raw[1].upper() if len(latest_outside_raw) > 1 else "D"
     )
@@ -568,16 +523,6 @@ def build_dashboard_html(
             if float(latest_outside_value).is_integer()
             else f"{latest_outside_value:.1f}"
         )
-    latest_timestamp_raw = (
-        str(latest_row[0]).strip()
-        if latest_row and len(latest_row) > 0
-        else ""
-    )
-    latest_timestamp_dt = _parse_datetime_value(latest_timestamp_raw)
-    latest_timestamp_day = (
-        latest_timestamp_dt.strftime("%A") if latest_timestamp_dt else None
-    )
-    print(f"Latest timestamp day: {latest_timestamp_day or 'Unknown'}")
     data_json = json.dumps(
         {
             "headers": headers,
@@ -602,11 +547,9 @@ def build_dashboard_html(
             "latestOutside": latest_outside_value,
             "latestOutsideRaw": latest_outside_raw,
             "latestOutsideDaylight": latest_outside_daylight,
-            "latestOutsideFlag": latest_outside_flag,
             "latestOutsideFlagDayChar": latest_outside_flag_day_char,
             "latestFan": latest_fan_value,
             "latestCooling": latest_cooling_value,
-            "latestTimestampDay": latest_timestamp_day,
         }
     )
     latest_outside_raw = (
@@ -769,9 +712,8 @@ def build_dashboard_html(
       const latestActualValue = dashboardData.latestActual ?? findLastNumber(actualSeries) ?? 50;
       const latestSetpointValue = dashboardData.latestSetpoint ?? findLastNumber(setpointSeries) ?? 50;
       const latestOutsideValue = dashboardData.latestOutside ?? findLastNumber(outsideSeries) ?? 50;
-      const latestOutsideFlag = dashboardData.latestOutsideFlag || "";
       const outsideFlagRaw = (dashboardData.latestOutsideRaw || "").trim().toUpperCase();
-      const outsideFlag = latestOutsideFlag || (outsideFlagRaw ? outsideFlagRaw[0] : "");
+      const outsideFlag = outsideFlagRaw ? outsideFlagRaw[0] : "";
       const outsideFlagDayChar = outsideFlagRaw && outsideFlagRaw.length > 1 ? outsideFlagRaw[1] : "D";
       const outsideDaylight =
         typeof dashboardData.latestOutsideDaylight === "boolean"
@@ -866,7 +808,7 @@ def build_dashboard_html(
           text: "#1a1a1a",
         }},
         circulate: {{
-          background: "radial-gradient(circle at 50% 40%, #ffd54f 0%, #f0a500 40%, #c47f00 100%)",
+          background: "radial-gradient(circle at 50% 40%, #ffd54f 0%, #f0a500 40%, #c2923a 100%)",
           border: "#c47f00",
           text: "#2d1e00",
         }},
@@ -952,8 +894,8 @@ def build_dashboard_html(
       );
       const gradientColorForCooling = (value) => {{
         const ratio = Math.max(0, Math.min(value ?? 0, 1));
-        const start = [255, 214, 0];
-        const end = [90, 230, 150];
+        const start = [211, 211, 211];
+        const end = [0, 128, 64];
         const rgb = start.map((component, idx) =>
           Math.round(component + (end[idx] - component) * ratio)
         );
@@ -1003,7 +945,7 @@ def build_dashboard_html(
       }};
       const fanColorMap = {{
         auto: "#b4b4b4",
-        circulate: "#ff9c33",
+        circulate: "#a86c59",
         on: "#00ff7f",
       }};
       const fanColorForValue = (value) => {{
@@ -1445,6 +1387,10 @@ def build_dashboard_html(
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap">
     <style>
       body {{
+        forced-color-adjust: none;
+          -webkit-text-fill-color: initial;
+            color: inherot;
+        
         margin: 0;
         font-family: 'Inter', system-ui, sans-serif;
         background: #4a4a4a;
@@ -1678,7 +1624,7 @@ def build_dashboard_html(
         background: #000;
       }}
       .chart-wrap {{
-        height: 360px;
+        height: 600px;
         margin: 8px auto 0;
         background: #000;
         position: relative;
