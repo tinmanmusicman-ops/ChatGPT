@@ -9,7 +9,9 @@
     "Equipment Status",
     "Studio",
     "Request Expires (local time)",
-    "Outside Temp"
+    "Outside Temp",
+    "Condenser State",
+    "condenser minutes"
   ],
   "latestRow": [
     "Tuesday Nov 25 2025 8:11 PM",
@@ -21,7 +23,9 @@
     "cooling",
     "11",
     "8:54 PM",
-    "NN57.0 | Mostly Cloudy"
+    "NN57.0 | Mostly Cloudy",
+    "On",
+    "35"
   ],
   "history": [
     {
@@ -342,6 +346,32 @@
     "Cooling"
   ],
   "coolingLabel": "Equipment Status",
+  "condenserMinutes": [
+    null,
+    null,
+    0.0,
+    0.0,
+    0.0,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    0.0
+  ],
   "latestActual": 60.0,
   "latestSetpoint": 80.0,
   "latestOutside": 57.0,
@@ -350,7 +380,8 @@
   "latestOutsideFlagDayChar": "N",
   "latestFan": "C",
   "latestCooling": 1,
-  "generatedTimestamp": "Tuesday Dec 02 2025 01:37:12 PM",
+  "latestCondenserState": "On",
+  "generatedTimestamp": "Tuesday Dec 02 2025 07:42:52 PM",
   "generatedDateSlug": "2025-12-02",
   "archiveDates": [
     {
