@@ -1,4 +1,5 @@
 (() => {
+  
   console.log("Starting Javascript")
   const dataEl = document.getElementById("dashboard-data-inline");
   const parseInlineData = () => {
@@ -33,13 +34,6 @@
   const chartHistoryList = document.getElementById("chart-history-list");
   const chartHistoryToggle = document.getElementById("chart-history-toggle");
   const chartHistoryStatus = document.getElementById("chart-history-status");
-  const updateChartFilterSummary = (minutes) => {
-    if (!chartHistoryStatus) {
-      return;
-    }
-    const formatted = formatMinutesValue(minutes) || "0 min";
-    chartHistoryStatus.textContent = `Total condenser runtime: ${formatted}`;
-  };
   const archiveLabelMap = new Map();
   const chartControlButtons = document.querySelectorAll(".chart-control");
   const canvas = document.getElementById("history-chart");
@@ -67,12 +61,6 @@
   const getFanLegend = () => getDashboardValue("fanLegend", ["On", "Circulate", "Auto"]);
   const getCoolingLegend = () => getDashboardValue("coolingLegend", ["Idle", "Cooling"]);
   const getCondenserMinutes = () => getDashboardValue("condenserMinutes", []);
-  const getTotalCondenserMinutes = () => getDashboardValue("totalCondenserMinutes", "");
-  const getTotalCondenserMinutesValue = () =>
-    Number(getDashboardValue("totalCondenserMinutesValue", 0));
-  const getTotalCondenserCost = () => getDashboardValue("totalCondenserCost", "$0.00");
-  const getTotalCondenserCostValue = () =>
-    Number(getDashboardValue("totalCondenserCostValue", 0));
 
   const fanStateLabels = {
     A: "Auto",
@@ -153,12 +141,6 @@
       return `${numeric} min`;
     }
     return `${numeric.toFixed(1)} min`;
-  };
-  const formatCurrencyValue = (value) => {
-    if (value === null || value === undefined || Number.isNaN(Number(value))) {
-      return "$0.00";
-    }
-    return `$${Number(value).toFixed(2)}`;
   };
   const gradientColorFor = (value) => {
     if (typeof value !== "number" || Number.isNaN(value)) {
@@ -376,6 +358,7 @@
     const text = (stateValue || "").trim().toLowerCase();
     const isOn = text.includes("on");
     const style = isOn ? coolingStyleMap.cooling : coolingStyleMap.idle;
+    console.log("[condenser card] state:", stateValue, "isOn:", isOn, "style:", style);
     card.style.background = style.background;
     card.style.borderColor = style.border;
     card.style.color = style.text;
@@ -841,27 +824,6 @@
       setCardValue(condenserCard, condenserStateValue || "Unknown");
       applyCondenserCardStyle(condenserCard, condenserStateValue);
     }
-    const condenserMinutesCard = document.querySelector('.metric-card[data-metric="condenser-minutes"]');
-    const totalMinutes = getTotalCondenserMinutes();
-    const totalMinutesValue = getTotalCondenserMinutesValue();
-    if (condenserMinutesCard) {
-      setCardValue(condenserMinutesCard, totalMinutes);
-    }
-    const totalCostValue = getTotalCondenserCostValue();
-    const condenserRuntimeBadge = document.querySelector(".condenser-runtime");
-    if (condenserRuntimeBadge) {
-      const formatted = formatMinutesValue(totalMinutesValue) || "0 min";
-      const valueEl = condenserRuntimeBadge.querySelector(".value");
-      if (valueEl) {
-        valueEl.textContent = formatted;
-      }
-      const costValueEl = condenserRuntimeBadge.querySelector(".cost-value");
-      if (costValueEl) {
-        costValueEl.textContent = formatCurrencyValue(totalCostValue);
-      }
-    }
-    updateChartFilterSummary(totalMinutesValue);
-    updateChartFilterSummary(totalMinutesValue);
   };
 
   const datasetIndexByMode = {
