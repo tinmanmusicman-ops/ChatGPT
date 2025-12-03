@@ -6,6 +6,7 @@ from typing import Iterable, List, Optional, Tuple
 import json
 import os
 import logging
+import math
 import mimetypes
 import re
 import shutil
@@ -114,6 +115,15 @@ def _normalize_flag(value, default=True) -> bool:
     return bool(value)
 
 
+def _load_float(value, default: float) -> float:
+    if value is None:
+        return default
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return default
+
+
 GLOBAL_SHARED_CONFIG = _load_shared_config()
 GIT_TEST_FLAG = _normalize_flag(GLOBAL_SHARED_CONFIG.get("GitTestFlag"), True)
 
@@ -130,6 +140,7 @@ _DEFAULTS = {
     "sheet_tab": "Sheet1",
     "data_range": "A:J",  # columns range within the sheet tab
     "delete_temp_files": False,
+    "cost_per_minute": 0.05,
 }
 
 def _load_dash_config() -> dict:
@@ -160,7 +171,12 @@ GOOGLE_SHEET_NAME = (
 SHEET_TAB = cfg_payload.get("sheet_tab", _DEFAULTS["sheet_tab"])
 DATA_RANGE = cfg_payload.get("data_range", _DEFAULTS["data_range"])
 DATA_RANGE = _ensure_range_includes(DATA_RANGE, "J")
+DATA_RANGE = _ensure_range_includes(DATA_RANGE, "L")
 DELETE_TEMP_FILES = bool(cfg_payload.get("delete_temp_files", _DEFAULTS["delete_temp_files"]))
+COST_PER_MINUTE_CANDIDATE = cfg_payload.get("cost_per_minute")
+if COST_PER_MINUTE_CANDIDATE is None:
+    COST_PER_MINUTE_CANDIDATE = cfg_payload.get("CostPerMinute")
+COST_PER_MINUTE = _load_float(COST_PER_MINUTE_CANDIDATE, _DEFAULTS["cost_per_minute"])
 
 HISTORY_WINDOW = 24
 CHART_METRIC_INDEX = 1  # Fallback index; overridden to "Current Temperature" if present
@@ -504,6 +520,31 @@ def build_dashboard_html(
         if cooling_idx is not None and len(headers) > cooling_idx
         else "Status"
     )
+    condenser_idx = _find_index(("condenser minutes", "condenser runtime"))
+    condenser_minutes_series = []
+    for row in history_rows:
+        if condenser_idx is None or condenser_idx >= len(row):
+            condenser_minutes_series.append(None)
+            continue
+        value = row[condenser_idx]
+        try:
+            condenser_minutes_series.append(float(value))
+        except (TypeError, ValueError):
+            condenser_minutes_series.append(_safe_float(str(value)))
+    total_condenser_minutes = sum(
+        v for v in condenser_minutes_series if isinstance(v, (int, float)) and not math.isnan(v)
+    )
+    if isinstance(total_condenser_minutes, (int, float)) and math.isfinite(total_condenser_minutes):
+        if float(total_condenser_minutes).is_integer():
+            total_condenser_display = str(int(total_condenser_minutes))
+        else:
+            total_condenser_display = f"{total_condenser_minutes:.1f}"
+        total_condenser_minutes_value = total_condenser_minutes
+    else:
+        total_condenser_display = ""
+        total_condenser_minutes_value = 0
+    total_condenser_cost_value = total_condenser_minutes_value * COST_PER_MINUTE
+    total_condenser_cost_display = f"${total_condenser_cost_value:,.2f}"
     chart_data = []
     for label, sp_val, actual_val in zip(chart_labels, setpoint_series, actual_series):
         selected = sp_val if sp_val is not None else actual_val
@@ -572,6 +613,12 @@ def build_dashboard_html(
         "cooling": cooling_series,
         "coolingLegend": COOLING_LABELS,
         "coolingLabel": cooling_label,
+        "condenserMinutes": condenser_minutes_series,
+        "totalCondenserMinutes": total_condenser_display,
+        "totalCondenserMinutesValue": total_condenser_minutes_value,
+        "totalCondenserCost": total_condenser_cost_display,
+        "totalCondenserCostValue": total_condenser_cost_value,
+        "condenserCostPerMinute": COST_PER_MINUTE,
         "latestActual": latest_actual_value,
         "latestSetpoint": latest_setpoint_value,
         "latestOutside": latest_outside_value,
@@ -601,6 +648,9 @@ def build_dashboard_html(
         seen_labels.add(display_label)
         if idx == outside_idx:
             value = outside_display_value
+        elif idx == condenser_idx:
+            display_label = "Condenser Minutes Past Hour"
+            value = total_condenser_display or "0"
         else:
             value = latest_row[idx] if idx < len(latest_row) else ""
         if value is None:
@@ -616,6 +666,8 @@ def build_dashboard_html(
             metric_attr = ' data-metric="cooling"'
         elif idx == outside_idx:
             metric_attr = ' data-metric="outside"'
+        elif idx == condenser_idx:
+            metric_attr = ' data-metric="condenser-minutes"'
         cards += f"""
         <div class="metric-card"{metric_attr}>
           <div class="label">{display_label}</div>
@@ -725,12 +777,12 @@ def build_dashboard_html(
       .hands-logo-slot {{
         width: 91%;
         display: flex;
-        justify-content: flex-end;
+        justify-content: right;
         align-items: flex-start;
-        padding-left: 12px;
+        padding-left: 52px;
         position: relative;
-        min-height: 60px;
-        margin-top: -62px;
+        min-height: 80px;
+        margin-top: 60px;
       }}
       .metric-card {{
         background: #2b2b30;
@@ -880,6 +932,29 @@ def build_dashboard_html(
         border-color: #063016;
         box-shadow: 0 8px 18px rgba(0, 0, 0, 0.45);
       }}
+      .condenser-runtime {{
+        position: absolute;
+        top: 24px;
+        right: 34px;
+        text-align: right;
+        font-size: 12px;
+        color: #b1ffce;
+        letter-spacing: 0.06em;
+      }}
+      .condenser-runtime .value {{
+        font-size: 16px;
+        font-weight: 600;
+      }}
+      .condenser-runtime .cost-label {{
+        font-size: 10px;
+        opacity: 0.7;
+        margin-top: 6px;
+      }}
+      .condenser-runtime .cost-value {{
+        font-size: 16px;
+        font-weight: 600;
+        color: #fff5c7;
+      }}
       #history-chart {{
         
         gap: 20;
@@ -1013,6 +1088,12 @@ def build_dashboard_html(
       <div id="history" class="history-panel">
 
       <button id="toggle-history">Show History Chart</button>
+      <div class="condenser-runtime">
+        <div class="label">Total condenser runtime</div>
+        <div class="value">{total_condenser_display or "0"} min</div>
+        <div class="cost-label">Estimated condenser cost</div>
+        <div class="cost-value">{total_condenser_cost_display or "$0.00"}</div>
+      </div>
 
       <div id="chartcontrols" class="chart-controls">
           <button type="button" class="chart-control" data-mode="setpoint">Set Point</button>

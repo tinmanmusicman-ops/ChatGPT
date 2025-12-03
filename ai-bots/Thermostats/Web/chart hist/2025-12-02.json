@@ -349,9 +349,9 @@
   "condenserMinutes": [
     null,
     null,
-    35.0,
-    20.0,
-    40.0,
+    0.0,
+    0.0,
+    0.0,
     null,
     null,
     null,
@@ -370,8 +370,10 @@
     null,
     null,
     null,
-    35.0
+    0.0
   ],
+  "totalCondenserMinutes": "0",
+  "totalCondenserMinutesValue": 0.0,
   "latestActual": 60.0,
   "latestSetpoint": 80.0,
   "latestOutside": 57.0,
@@ -380,7 +382,7 @@
   "latestOutsideFlagDayChar": "N",
   "latestFan": "C",
   "latestCooling": 1,
-  "generatedTimestamp": "Tuesday Dec 02 2025 11:08:22 PM",
+  "generatedTimestamp": "Tuesday Dec 02 2025 11:59:28 PM",
   "generatedDateSlug": "2025-12-02",
   "archiveDates": [
     {

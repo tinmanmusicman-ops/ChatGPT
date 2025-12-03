@@ -53,7 +53,7 @@ SUN_API_URL = "https://api.sunrise-sunset.org/json"
 
 def _read_condenser_state() -> Dict[str, int]:
     if not CONDENSER_STATE_FILE.exists():
-        return {"samples": 0, "on_ticks": 0}
+        return {"samples": 1, "on_ticks": 0}
     try:
         raw = CONDENSER_STATE_FILE.read_text(encoding="utf-8")
         data = json.loads(raw)
