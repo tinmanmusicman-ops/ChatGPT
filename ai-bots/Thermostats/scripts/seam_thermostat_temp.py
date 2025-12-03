@@ -42,12 +42,56 @@ TOKEN_PATH = Path(__file__).resolve().parents[2] / "shared" / "Tokens.json"
 DRIVE_SCOPES = ["https://www.googleapis.com/auth/drive.file"]
 DRIVE_FOLDER_NAME = "Termostat Dashboards"
 SNAPSHOT_FILENAME = "thermostat_snapshot.html"
+CONDENSER_SAMPLE_INTERVAL_MINUTES = 5
+CONDENSER_STATE_FILE = Path(__file__).resolve().parent / "condenser_runtime_state.json"
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 WEATHER_CACHE_PATH = Path(__file__).resolve().parent / "weather_cache.json"
 WEATHER_CACHE_TTL = timedelta(minutes=10)
 SUN_CACHE_PATH = Path(__file__).resolve().parent / "sun_cache.json"
 SUN_API_URL = "https://api.sunrise-sunset.org/json"
+
+def _read_condenser_state() -> Dict[str, int]:
+    if not CONDENSER_STATE_FILE.exists():
+        return {"samples": 0, "on_ticks": 0}
+    try:
+        raw = CONDENSER_STATE_FILE.read_text(encoding="utf-8")
+        data = json.loads(raw)
+    except Exception:
+        return {"samples": 0, "on_ticks": 0}
+    return {
+        "samples": int(data.get("samples", 0)),
+        "on_ticks": int(data.get("on_ticks", 0)),
+    }
+
+
+def _write_condenser_state(state: Dict[str, int]) -> None:
+    try:
+        CONDENSER_STATE_FILE.write_text(json.dumps(state), encoding="utf-8")
+    except Exception:
+        pass
+
+
+def _reset_condenser_state() -> None:
+    _write_condenser_state({"samples": 0, "on_ticks": 0})
+
+
+def initialize_condenser_cycle() -> Tuple[bool, int, Dict[str, int]]:
+    state = _read_condenser_state()
+    current_samples = state.get("samples", 0)
+    next_samples = current_samples + 1
+    state["samples"] = next_samples
+    _write_condenser_state(state)
+    run_spreadsheet = next_samples >= 13
+    return run_spreadsheet, next_samples, state
+
+
+def _record_condenser_tick(active: bool) -> None:
+    if not active:
+        return
+    state = _read_condenser_state()
+    state["on_ticks"] = state.get("on_ticks", 0) + 1
+    _write_condenser_state(state)
 
 
 def _load_shared_values() -> Dict[str, Any]:
@@ -359,6 +403,22 @@ def format_weather_entry(
     if cached:
         entry = f"{entry} cached"
     return entry
+
+
+def _determine_equipment_status(props: Dict[str, Any]) -> Tuple[str, bool]:
+    equipment = props.get("equipment_status")
+    if not equipment:
+        if props.get("is_cooling"):
+            equipment = "cooling"
+        elif props.get("is_heating"):
+            equipment = "heating"
+        elif props.get("is_fan_running"):
+            equipment = "fan"
+        else:
+            equipment = "idle"
+    status = equipment or "idle"
+    is_cooling = bool(props.get("is_cooling")) or status.lower() == "cooling"
+    return status, is_cooling
 
 
 def request_token(cfg: Dict[str, Any], verbose: bool = False) -> str:
@@ -712,10 +772,12 @@ def ensure_thermostat_sheet(spreadsheet: gspread.Spreadsheet, title: str = "Ther
         "Studio",
         "Request Expires (local time)",
         "Outside Temp",
+        "Condenser State",
+        "Condenser Minutes",
     ]
     existing = ws.row_values(1)
     if existing != headers:
-        ws.update("A1:J1", [headers], value_input_option="USER_ENTERED")
+        ws.update("A1:L1", [headers], value_input_option="USER_ENTERED")
     return ws
 
 
@@ -727,6 +789,8 @@ def append_thermostat_row(
     studio: Optional[int] = None,
     expiration_local: str = "",
     outside_value: str = "",
+    condenser_state: str = "",
+    condenser_minutes: Optional[int] = None,
 ) -> None:
     """Append one row of thermostat data into the Google Sheet."""
     try:
@@ -773,6 +837,8 @@ def append_thermostat_row(
                 equipment = "fan"
             else:
                 equipment = "idle"
+        if condenser_minutes and condenser_minutes > 0:
+            equipment = "cooling"
 
         tz_name = cfg.get("timezone", "America/Los_Angeles")
         timestamp = now_local_iso(tz_name)
@@ -787,6 +853,8 @@ def append_thermostat_row(
             studio or "",
             expiration_local,
             outside_value,
+            condenser_state,
+            condenser_minutes if condenser_minutes is not None else "",
         ]
         ws.append_row(row, value_input_option="USER_ENTERED")
     except Exception as exc:
@@ -1003,6 +1071,11 @@ def build_snapshot_html(
 def main() -> None:
     berbose = True;
     args = parse_args()
+    run_spreadsheet, cycle_samples, cycle_state = initialize_condenser_cycle()
+    if run_spreadsheet:
+        print(f"[condenser] Threshold reached ({cycle_samples} samples); ready to send to spreadsheet.")
+    else:
+        print(f"[condenser] Cycle {cycle_samples}/13 (state {cycle_state}); continuing.")
     # Step 1: read config (API keys, Gmail creds, Google Sheet info, time zones).
     try:
         cfg = load_config(args.config)
@@ -1137,6 +1210,9 @@ def main() -> None:
 
         payload = fetch_temperature(cfg, headers=headers, verbose=args.verbose)
         reading = extract_temp_payload(payload)
+        device = reading.get("_device", {}) or {}
+        device_props = device.get("properties") or device
+        equipment_status, condenser_active = _determine_equipment_status(device_props)
 
         if args.show_capabilities:
             print_capabilities(reading.get("_device", {}))
@@ -1218,18 +1294,30 @@ def main() -> None:
            )
     except Exception as weather_exc:
         print(f"[weather] Failed to fetch outside conditions: {weather_exc}", file=sys.stderr)
-    try:
-        append_thermostat_row(
-            cfg,
-            reading,
-            payload,
-            entry_type=entry_type,
-            studio=request_studio,
-            expiration_local=expiration_local,
-            outside_value=weather_entry,
-        )
-    except Exception as exc:
-        print(f"[sheet] Failed to log telemetry: {exc}", file=sys.stderr)
+    condenser_ticks = cycle_state.get("on_ticks", 0)
+    condenser_state_label = "on" if condenser_ticks > 0 else "off"
+    condenser_minutes = condenser_ticks * CONDENSER_SAMPLE_INTERVAL_MINUTES
+
+    if run_spreadsheet:
+        try:
+            append_thermostat_row(
+                cfg,
+                reading,
+                payload,
+                entry_type=entry_type,
+                studio=request_studio,
+                expiration_local=expiration_local,
+                outside_value=weather_entry,
+                condenser_state=condenser_state_label,
+                condenser_minutes=condenser_minutes,
+            )
+        except Exception as exc:
+            print(f"[sheet] Failed to log telemetry: {exc}", file=sys.stderr)
+        finally:
+            _reset_condenser_state()
+    else:
+        _record_condenser_tick(condenser_active)
+        print("[condenser] Spreadsheet update deferred until cycle completes.")
 
     # Push a fresh snapshot to Drive (overwrite same file each run).
     try:

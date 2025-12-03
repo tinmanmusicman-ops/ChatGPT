@@ -11,7 +11,7 @@
     "Request Expires (local time)",
     "Outside Temp",
     "Condenser State",
-    "condenser minutes"
+    "Condenser Minutes"
   ],
   "latestRow": [
     "Tuesday Nov 25 2025 8:11 PM",
@@ -349,9 +349,9 @@
   "condenserMinutes": [
     null,
     null,
-    0.0,
-    0.0,
-    0.0,
+    35.0,
+    20.0,
+    40.0,
     null,
     null,
     null,
@@ -370,7 +370,7 @@
     null,
     null,
     null,
-    0.0
+    35.0
   ],
   "latestActual": 60.0,
   "latestSetpoint": 80.0,
@@ -380,8 +380,7 @@
   "latestOutsideFlagDayChar": "N",
   "latestFan": "C",
   "latestCooling": 1,
-  "latestCondenserState": "On",
-  "generatedTimestamp": "Tuesday Dec 02 2025 07:42:52 PM",
+  "generatedTimestamp": "Tuesday Dec 02 2025 11:08:22 PM",
   "generatedDateSlug": "2025-12-02",
   "archiveDates": [
     {
