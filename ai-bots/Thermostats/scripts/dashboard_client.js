@@ -1,5 +1,5 @@
 (() => {
-  
+  // Bootstrap: log once and capture the embedded JSON payload.
   console.log("Starting Javascript")
   const dataEl = document.getElementById("dashboard-data-inline");
   const parseInlineData = () => {
@@ -22,6 +22,7 @@
   const buildArchiveJsonUrl = (slug) =>
     slug ? `${archivePathHref}/${slug}.json?v=${Date.now()}` : null;
   const logEl = document.getElementById("js-log");
+  // Logging helper that writes to the console and the hidden dashboard log area.
   const logMessage = (message, level = "log") => {
     if (logEl) {
       logEl.style.display = "block";
@@ -34,6 +35,7 @@
   const chartHistoryList = document.getElementById("chart-history-list");
   const chartHistoryToggle = document.getElementById("chart-history-toggle");
   const chartHistoryStatus = document.getElementById("chart-history-status");
+  // Reference chart controls, canvas, and state flags used throughout the script.
   const archiveLabelMap = new Map();
   const chartControlButtons = document.querySelectorAll(".chart-control");
   const canvas = document.getElementById("history-chart");
@@ -46,6 +48,7 @@
 
   const getDashboardData = () => dashboardData || {};
   const getDashboardValue = (key, fallback) => getDashboardData()[key] || fallback;
+  // Quick accessor helpers so downstream logic can stay declarative.
   const getChartLabels = () => getDashboardValue("chartLabels", []);
   const getSetpointSeries = () => getDashboardValue("setpoint", []);
   const getActualSeries = () => getDashboardValue("actual", []);
@@ -292,6 +295,7 @@
     1: "circulate",
     2: "on",
   };
+  // Apply themed styles specifically for the fan card so it matches the legend.
   const applyFanCardStyle = (card, fanValue) => {
     if (!card) {
       return;
@@ -330,6 +334,7 @@
     0: "idle",
     1: "cooling",
   };
+  // Same for cooling card; ensures Idle vs Cooling gets different colors.
   const applyCoolingCardStyle = (card, coolingValue) => {
     if (!card) {
       return;
@@ -351,6 +356,7 @@
       valueEl.style.color = style.text;
     }
   };
+  // Mirror the condenser card colors to match cooling card palette when running.
   const applyCondenserCardStyle = (card, stateValue) => {
     if (!card) {
       return;
@@ -583,6 +589,7 @@
     }
   };
 
+  // Create the history chart with five datasets and custom scale/tooltip behavior.
   const createChart = () => {
     if (chart || !ctx) {
       return;
@@ -760,6 +767,7 @@
     updateLegendImage();
   };
 
+  // Re-render all front-panel cards when the data changes (actual, fan, condenser, etc.).
   const updateMetricCards = () => {
     const actualValue = getLatestActualValue();
     const setpointValue = getLatestSetpointValue();
