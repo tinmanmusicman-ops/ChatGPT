@@ -674,8 +674,16 @@ def build_dashboard_html(
           <div class="value">{value}</div>
         </div>
         """
-    script_rel_to_workspace = (SCRIPT_DIR / "dashboard_client.js").relative_to(WORKSPACE_ROOT)
-    script_src_url = f"/dashboard/{script_rel_to_workspace.as_posix()}"
+    script_path = SCRIPT_DIR / "dashboard_client.js"
+    web_output_dir = base_dir.parent / "Web"
+    if output_path.parent == web_output_dir:
+        # HTML generated for the public Web directory should reference the script in the sibling scripts folder.
+        script_src_url = "../scripts/dashboard_client.js"
+    else:
+        script_rel_to_output = Path(
+            os.path.relpath(script_path, start=output_path.parent)
+        )
+        script_src_url = script_rel_to_output.as_posix()
     script_block = f"""    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script id="dashboard-data-inline" type="application/json">
 {data_json}
@@ -1143,7 +1151,13 @@ def main() -> None:
     public_copy = public_dir / "dashboard_public.html"
     try:
         # Keep a human-readable copy alongside the bot so it can be served or published separately.
-        public_copy.write_bytes(target_path.read_bytes())
+        script_path = SCRIPT_DIR / "dashboard_client.js"
+        temp_script_src = Path(os.path.relpath(script_path, start=target_path.parent)).as_posix()
+        web_script_src = Path(os.path.relpath(script_path, start=public_copy.parent)).as_posix()
+        public_html = target_path.read_text(encoding="utf-8")
+        if temp_script_src != web_script_src:
+            public_html = public_html.replace(temp_script_src, web_script_src, 1)
+        public_copy.write_text(public_html, encoding="utf-8")
         logger.info("Wrote public copy to %s", public_copy)
         archive_dir = ARCHIVE_DIR
         archive_dir.mkdir(parents=True, exist_ok=True)
@@ -1154,7 +1168,11 @@ def main() -> None:
         dashboard_data_path = public_dir / "dashboard_data.json"
         dashboard_data_path.write_text(json.dumps(dashboard_payload, indent=2), encoding="utf-8")
         # Automatically stage/commit/push the public HTML and archive copy so repo and remote stay in sync with each generation.
-        git_autopush(public_copy, extra_paths=[archive_target])
+        dashboard_script_path = SCRIPT_DIR / "dashboard_client.js"
+        git_autopush(
+            public_copy,
+            extra_paths=[archive_target, dashboard_data_path, dashboard_script_path],
+        )
     except Exception as exc:
         logger.warning("Failed to write or push public copy %s (%s)", public_copy, exc)
     print(f"Dashboard generated at: {target_path.resolve()}")

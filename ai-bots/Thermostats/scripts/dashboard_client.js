@@ -230,6 +230,8 @@
     return numeric.toFixed(1);
   };
 
+  const TOOLTIP_TEXT_COLOR = "#b1ffce";
+  const TOOLTIP_BADGE_FALLBACK = "#fff5c7";
   const outsideFlagColors = {
     S: "#ffd000",
     P: "#ffb347",
@@ -489,6 +491,46 @@
     return numeric >= 2 ? [] : [4, 4];
   };
 
+  const tooltipBadgeColor = (context) => {
+    const defaultColor = TOOLTIP_BADGE_FALLBACK;
+    const hovered = context?.element;
+    if (hovered?.options) {
+      const borderColor =
+        hovered.options.borderColor ?? hovered.options.backgroundColor;
+      const backgroundColor =
+        hovered.options.backgroundColor ?? borderColor ?? defaultColor;
+      return {
+        borderColor: borderColor || defaultColor,
+        backgroundColor: backgroundColor || borderColor || defaultColor,
+      };
+    }
+    const datasetIndex = context?.datasetIndex ?? -1;
+    const dataset = context?.dataset || {};
+    const parsedValue =
+      context?.parsed?.y ??
+      context?.parsed ??
+      (context?.dataset?.data?.[context.dataIndex] ?? null);
+    let color =
+      dataset.borderColor ??
+      dataset.backgroundColor ??
+      dataset.pointBackgroundColor ??
+      defaultColor;
+    if (datasetIndex === 0 || datasetIndex === 1) {
+      color = colorForPoint(parsedValue);
+    } else if (datasetIndex === 2) {
+      color = gradientColorForOutside(parsedValue);
+    } else if (datasetIndex === 3) {
+      color = gradientColorForCooling(parsedValue ?? 0);
+    } else if (datasetIndex === 4) {
+      color = fanColorForValue(parsedValue ?? 0);
+    }
+    if (!color || color === "transparent") {
+      color = defaultColor;
+    }
+    return { borderColor: color, backgroundColor: color };
+  };
+  const tooltipTextColor = () => TOOLTIP_TEXT_COLOR;
+
   const outsideWeatherIconPlugin = {
     id: "outsideWeatherIcon",
     afterDatasetsDraw: (chartInstance) => {
@@ -660,7 +702,23 @@
             right: 0,
           },
         },
-        animation: false,
+        animation: {
+          duration: 1400,
+          easing: "easeOutQuart",
+        },
+        animations: {
+          tension: {
+            duration: 1000,
+            easing: "easeOutBounce",
+            from: 1,
+            to: 0,
+            loop: false,
+          },
+          y: {
+            easing: "easeInOutElastic",
+            duration: 800,
+          },
+        },
         scales: {
           y: {
             beginAtZero: false,
@@ -760,9 +818,13 @@
                 return `${label}: ${context.parsed.y ?? context.parsed}`;
             },
           },
+            displayColors: true,
+            labelColor: tooltipBadgeColor,
+            titleColor: tooltipTextColor,
+            bodyColor: tooltipTextColor,
+          },
           },
         },
-      },
     });
     updateLegendImage();
   };
