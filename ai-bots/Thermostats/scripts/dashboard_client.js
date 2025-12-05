@@ -32,9 +32,30 @@
     console[level](message);
   };
 
+  const chartHistory = document.getElementById("chart-history");
   const chartHistoryList = document.getElementById("chart-history-list");
   const chartHistoryToggle = document.getElementById("chart-history-toggle");
   const chartHistoryStatus = document.getElementById("chart-history-status");
+  let chartHistoryMonthPicker = null;
+  let chartHistoryMonthList = null;
+  let chartHistoryListsRow = null;
+  let chartHistoryListColumn = null;
+  let chartHistoryHoverBound = false;
+  let chartHistoryListHoverBound = false;
+  const showHistoryFiles = () => {
+    chartHistoryList.classList.remove("hidden");
+    if (chartHistoryListColumn) {
+      chartHistoryListColumn.classList.add("expanded");
+    }
+  };
+  const hideHistoryFiles = () => {
+    chartHistoryList.classList.add("hidden");
+    if (chartHistoryListColumn) {
+      chartHistoryListColumn.classList.remove("expanded");
+    }
+  };
+  let currentMonthKey =
+    (dashboardData.generatedDateSlug || "").slice(0, 7) || "";
   // Reference chart controls, canvas, and state flags used throughout the script.
   const archiveLabelMap = new Map();
   const chartControlButtons = document.querySelectorAll(".chart-control");
@@ -230,7 +251,7 @@
     return numeric.toFixed(1);
   };
 
-  const TOOLTIP_TEXT_COLOR = "#b1ffce";
+  const TOOLTIP_TEXT_COLOR = "#ffffff";
   const TOOLTIP_BADGE_FALLBACK = "#fff5c7";
   const outsideFlagColors = {
     S: "#ffd000",
@@ -491,45 +512,101 @@
     return numeric >= 2 ? [] : [4, 4];
   };
 
+  const legendSwatchColors = {
+    setpoint: "#c5a7ff",
+    actual: "#4b4078",
+    outside: "#bfd0dd",
+    cooling: "#9dcfb2",
+    fan: "#bfa887",
+  };
+  const datasetTooltipColorMap = new Map();
+
+  const getTooltipRawValue = (context) =>
+    context?.parsed?.y ??
+    context?.parsed ??
+    context?.raw ??
+    context?.dataset?.data?.[context.dataIndex];
+
+  const getMonthKeyFromSlug = (slug) => {
+    if (!slug) {
+      return "";
+    }
+    if (slug.includes("-")) {
+      const parts = slug.split("-");
+      if (parts.length >= 2) {
+        return `${parts[0]}-${parts[1]}`;
+      }
+    }
+    return "";
+  };
+  const getMonthKeyFromLabel = (label) => {
+    if (!label) {
+      return "";
+    }
+    const parsed = new Date(label);
+    if (!Number.isNaN(parsed)) {
+      return `${parsed.getFullYear()}-${String(parsed.getMonth() + 1).padStart(2, "0")}`;
+    }
+    return "";
+  };
+  const getMonthLabel = (key) => {
+    if (!key || !key.includes("-")) {
+      return "History";
+    }
+    const [year, month] = key.split("-");
+    const date = new Date(Number(year), Number(month) - 1, 1);
+    return date.toLocaleString("default", { month: "long", year: "numeric" });
+  };
+
+  const formatTooltipValue = (rawValue) => {
+    if (rawValue === null || rawValue === undefined) {
+      return "Unknown";
+    }
+    const numericValue = Number(rawValue);
+    if (!Number.isNaN(numericValue)) {
+      if (Number.isInteger(numericValue)) {
+        return String(Math.round(numericValue));
+      }
+      return numericValue.toFixed(1);
+    }
+    return String(rawValue).trim();
+  };
+
   const tooltipBadgeColor = (context) => {
     const defaultColor = TOOLTIP_BADGE_FALLBACK;
-    const hovered = context?.element;
-    if (hovered?.options) {
-      const borderColor =
-        hovered.options.borderColor ?? hovered.options.backgroundColor;
-      const backgroundColor =
-        hovered.options.backgroundColor ?? borderColor ?? defaultColor;
-      return {
-        borderColor: borderColor || defaultColor,
-        backgroundColor: backgroundColor || borderColor || defaultColor,
-      };
-    }
     const datasetIndex = context?.datasetIndex ?? -1;
     const dataset = context?.dataset || {};
-    const parsedValue =
-      context?.parsed?.y ??
-      context?.parsed ??
-      (context?.dataset?.data?.[context.dataIndex] ?? null);
-    let color =
+    const candidateColor =
+      datasetTooltipColorMap.get(datasetIndex) ??
+      dataset.legendColor ??
       dataset.borderColor ??
       dataset.backgroundColor ??
-      dataset.pointBackgroundColor ??
-      defaultColor;
-    if (datasetIndex === 0 || datasetIndex === 1) {
-      color = colorForPoint(parsedValue);
-    } else if (datasetIndex === 2) {
-      color = gradientColorForOutside(parsedValue);
-    } else if (datasetIndex === 3) {
-      color = gradientColorForCooling(parsedValue ?? 0);
-    } else if (datasetIndex === 4) {
-      color = fanColorForValue(parsedValue ?? 0);
-    }
-    if (!color || color === "transparent") {
-      color = defaultColor;
-    }
+      dataset.pointBackgroundColor;
+    const color =
+      candidateColor && candidateColor !== "transparent"
+        ? candidateColor
+        : defaultColor;
     return { borderColor: color, backgroundColor: color };
   };
   const tooltipTextColor = () => TOOLTIP_TEXT_COLOR;
+
+  const tooltipTopCenterPositioner = function () {
+    const chartArea = this.chart.chartArea || {};
+    const center =
+      typeof chartArea.left === "number" && typeof chartArea.right === "number"
+        ? Math.round((chartArea.left + chartArea.right) / 2)
+        : Math.round(this.chart.width / 2);
+    const top = typeof chartArea.top === "number" ? chartArea.top : 0;
+    const inch = 96; // approximate pixel for 1 inch
+    const extraShift = Math.round(inch * 0.75);
+    const verticalOffset = Math.round(inch * 1.5); // 1.5 inches above
+    // Shift left by roughly 1 inch versus the prior placement.
+    return { x: center + extraShift, y: top + 18 - verticalOffset };
+  };
+
+  if (Chart?.Tooltip && Chart.Tooltip.positioners) {
+    Chart.Tooltip.positioners.customTopCenter = tooltipTopCenterPositioner;
+  }
 
   const outsideWeatherIconPlugin = {
     id: "outsideWeatherIcon",
@@ -647,6 +724,13 @@
             borderColor: segmentColor,
           },
           backgroundColor: "rgba(102,255,153,0.2)",
+          borderColor: legendSwatchColors.setpoint,
+          pointBackgroundColor: legendSwatchColors.setpoint,
+          pointBorderColor: legendSwatchColors.setpoint,
+          legendColor: legendSwatchColors.setpoint,
+          pointRadius: 0,
+          pointHoverRadius: 4,
+          pointBorderWidth: 2,
           spanGaps: true,
         },
         {
@@ -656,14 +740,24 @@
             borderColor: segmentColor,
           },
           backgroundColor: "rgba(125,164,255,0.2)",
+          borderColor: legendSwatchColors.actual,
+          pointBackgroundColor: () => legendSwatchColors.actual,
+          pointBorderColor: () => legendSwatchColors.actual,
+          legendColor: legendSwatchColors.actual,
+          pointRadius: 0,
+          pointHoverRadius: 6,
+          pointBorderWidth: 2,
           spanGaps: true,
         },
         {
           label: getOutsideLabel(),
           data: getOutsideSeries(),
           showLine: false,
-          borderColor: "rgba(0,0,0,0)",
           pointRadius: 0,
+          borderColor: legendSwatchColors.outside,
+          pointBackgroundColor: legendSwatchColors.outside,
+          pointBorderColor: legendSwatchColors.outside,
+          legendColor: legendSwatchColors.outside,
           spanGaps: true,
         },
         {
@@ -674,6 +768,10 @@
           },
           backgroundColor: "rgba(255,107,107,0.2)",
           yAxisID: "cooling",
+          borderColor: legendSwatchColors.cooling,
+          pointBackgroundColor: legendSwatchColors.cooling,
+          pointBorderColor: legendSwatchColors.cooling,
+          legendColor: legendSwatchColors.cooling,
           spanGaps: true,
           pointRadius: 0,
         },
@@ -685,11 +783,21 @@
           },
           backgroundColor: "rgba(255,165,0,0.3)",
           yAxisID: "fan",
+          borderColor: legendSwatchColors.fan,
+          pointBackgroundColor: legendSwatchColors.fan,
+          pointBorderColor: legendSwatchColors.fan,
+          legendColor: legendSwatchColors.fan,
           spanGaps: true,
           pointRadius: 0,
         },
       ],
     };
+    datasetTooltipColorMap.clear();
+    datasetTooltipColorMap.set(0, legendSwatchColors.setpoint);
+    datasetTooltipColorMap.set(1, legendSwatchColors.actual);
+    datasetTooltipColorMap.set(2, legendSwatchColors.outside);
+    datasetTooltipColorMap.set(3, legendSwatchColors.cooling);
+    datasetTooltipColorMap.set(4, legendSwatchColors.fan);
     chart = new Chart(ctx, {
       type: "line",
       data: dataset,
@@ -800,31 +908,38 @@
             callbacks: {
               label: (context) => {
                 const label = context.dataset.label || "";
-              const seriesIndex = context.dataIndex;
-              const minutes = getCondenserMinutes()[seriesIndex];
-              const minuteLabel = formatMinutesValue(minutes);
-            if (context.dataset.yAxisID === "fan") {
-                const value = context.parsed?.y ?? context.parsed;
-                return `${label}: ${fanLabelForValue(value) || "Unknown"}`;
-              }
-              if (context.dataset.yAxisID === "cooling") {
-                const value = context.parsed.y;
-                const statusLine = `${label}: ${getCoolingLegend()[Math.round(value)] || "Unknown"}`;
-                if (minuteLabel) {
-                  return [statusLine, "", `Runtime: ${minuteLabel}`];
+                const seriesIndex = context.dataIndex;
+                const minutes = getCondenserMinutes()[seriesIndex];
+                const minuteLabel = formatMinutesValue(minutes);
+                const rawValue = getTooltipRawValue(context);
+                if (context.dataset.yAxisID === "fan") {
+                  return `${label}: ${fanLabelForValue(rawValue) || "Unknown"}`;
                 }
-                return statusLine;
-              }
-                return `${label}: ${context.parsed.y ?? context.parsed}`;
+                if (context.dataset.yAxisID === "cooling") {
+                  const numeric = Number(rawValue);
+                  const value = Number.isNaN(numeric) ? 0 : numeric;
+                  const statusLine = `${label}: ${getCoolingLegend()[Math.round(value)] || "Unknown"}`;
+                  if (minuteLabel) {
+                    return [statusLine, `     Runtime: ${minuteLabel}`];
+                  }
+                  return statusLine;
+                }
+                const formattedValue = formatTooltipValue(rawValue);
+                return `${label}: ${formattedValue}`;
+              },
             },
-          },
             displayColors: true,
             labelColor: tooltipBadgeColor,
+            labelTextColor: tooltipTextColor,
             titleColor: tooltipTextColor,
             bodyColor: tooltipTextColor,
-          },
+            position: "customTopCenter",
+            yAlign: "top",
+            xAlign: "center",
+            caretSize: 0,
           },
         },
+      },
     });
     updateLegendImage();
   };
@@ -874,7 +989,7 @@
     }
     const actualCard = document.querySelector('.metric-card[data-metric="actual"]');
     setCardValue(actualCard, formatTemperatureValue(actualValue));
-    applyCardColor(actualCard, colorForPoint(actualValue));
+    applyCardColor(actualCard, legendSwatchColors.actual);
     const setpointCard = document.querySelector('.metric-card[data-metric="setpoint"]');
     setCardValue(setpointCard, formatTemperatureValue(setpointValue));
     applyCardColor(setpointCard, colorForPoint(setpointValue));
@@ -1089,31 +1204,136 @@
     if (!chartHistoryList) {
       return;
     }
+    hideHistoryFiles();
     const archiveDates = getArchiveDates();
     chartHistoryList.innerHTML = "";
     archiveLabelMap.clear();
+    const monthGroups = new Map();
+    const monthLabels = new Map();
     archiveDates.forEach((entry) => {
       const label = entry.label || entry.slug || "Unknown";
       const slug = entry.slug || "";
       if (slug) {
         archiveLabelMap.set(slug, label);
       }
-      const item = document.createElement("li");
-      const button = document.createElement("button");
-      button.type = "button";
-      button.textContent = label;
-      button.dataset.slug = slug;
-      button.addEventListener("click", (event) => {
-        event.preventDefault();
-        if (slug) {
-          updateHistoryStatus(slug);
-          currentArchiveSlug = slug;
-          loadDashboardData(slug);
+      const monthKey = getMonthKeyFromSlug(slug) || getMonthKeyFromLabel(label);
+      const monthLabel = getMonthLabel(monthKey);
+      if (!monthGroups.has(monthKey)) {
+        monthGroups.set(monthKey, []);
+        monthLabels.set(monthKey, monthLabel);
+      }
+      monthGroups.get(monthKey).push({ label, slug });
+    });
+
+    // Ensure month picker + row exists.
+    if (chartHistory && !chartHistoryListsRow) {
+      chartHistoryListsRow = document.createElement("div");
+      chartHistoryListsRow.className = "history-lists-row";
+      chartHistoryMonthPicker = document.createElement("div");
+      chartHistoryMonthPicker.className = "history-months";
+      const monthHeader = document.createElement("h5");
+      monthHeader.textContent = "Months";
+      chartHistoryMonthList = document.createElement("ul");
+      chartHistoryMonthList.className = "history-months-list";
+      chartHistoryMonthList.id = "chart-history-months";
+      chartHistoryMonthPicker.appendChild(monthHeader);
+      chartHistoryMonthPicker.appendChild(chartHistoryMonthList);
+      chartHistoryListColumn = document.createElement("div");
+      chartHistoryListColumn.className = "history-list-column";
+      chartHistoryListColumn.appendChild(chartHistoryList);
+      chartHistoryListsRow.appendChild(chartHistoryMonthPicker);
+      chartHistoryListsRow.appendChild(chartHistoryListColumn);
+      chartHistory.appendChild(chartHistoryListsRow);
+      chartHistoryListsRow.addEventListener("mouseenter", showHistoryFiles);
+      chartHistoryListsRow.addEventListener("mouseleave", hideHistoryFiles);
+      if (!chartHistoryHoverBound) {
+        chartHistory.addEventListener("mouseleave", hideHistoryFiles);
+        chartHistoryHoverBound = true;
+      }
+      if (!chartHistoryListHoverBound) {
+        chartHistoryListColumn.addEventListener("mouseenter", showHistoryFiles);
+        chartHistoryListColumn.addEventListener("mouseleave", hideHistoryFiles);
+        chartHistoryListHoverBound = true;
+      }
+    }
+
+    // Render month picker
+    const monthListEl = chartHistoryMonthList;
+    const monthKeys = Array.from(monthGroups.keys()).sort().reverse();
+    const limitedMonthKeys = monthKeys.slice(0, 12);
+    if (monthListEl) {
+      monthListEl.innerHTML = "";
+      limitedMonthKeys.forEach((key) => {
+        const item = document.createElement("li");
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = monthLabels.get(key) || key || "History";
+        button.dataset.month = key;
+        if (key === currentMonthKey) {
+          button.classList.add("active");
         }
-        closeHistoryList();
+        button.addEventListener("click", () => {
+          currentMonthKey = key;
+          renderArchiveList();
+          hideHistoryFiles();
+        });
+        item.appendChild(button);
+        monthListEl.appendChild(item);
       });
-      item.appendChild(button);
-      chartHistoryList.appendChild(item);
+    }
+
+    // Render entries for the current month only.
+    if (!currentMonthKey && archiveDates.length) {
+      const firstEntry = archiveDates[0];
+      currentMonthKey =
+        getMonthKeyFromSlug(firstEntry.slug) ||
+        getMonthKeyFromLabel(firstEntry.label) ||
+        "";
+    }
+    if (currentMonthKey && !limitedMonthKeys.includes(currentMonthKey)) {
+      currentMonthKey = limitedMonthKeys[0] || currentMonthKey;
+    }
+    chartHistoryList.innerHTML = "";
+    limitedMonthKeys.forEach((monthKey) => {
+      const entries = monthGroups.get(monthKey);
+      if (!entries || monthKey !== currentMonthKey) {
+        return;
+      }
+      const monthItem = document.createElement("li");
+      monthItem.className = "history-month";
+      const header = document.createElement("div");
+      header.className = "history-month-header";
+      const monthButton = document.createElement("button");
+      monthButton.type = "button";
+      monthButton.textContent = monthLabels.get(monthKey) || "History";
+      const list = document.createElement("ul");
+      list.className = "history-month-list";
+      entries.forEach((entry) => {
+        const entryItem = document.createElement("li");
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = entry.label;
+        button.dataset.slug = entry.slug;
+        button.addEventListener("click", (event) => {
+          event.preventDefault();
+          if (entry.slug) {
+            updateHistoryStatus(entry.slug);
+            currentArchiveSlug = entry.slug;
+            loadDashboardData(entry.slug);
+          }
+          hideHistoryFiles();
+          closeHistoryList();
+        });
+        entryItem.appendChild(button);
+        list.appendChild(entryItem);
+      });
+      monthButton.addEventListener("click", () => {
+        list.classList.toggle("hidden");
+      });
+      header.appendChild(monthButton);
+      monthItem.appendChild(header);
+      monthItem.appendChild(list);
+      chartHistoryList.appendChild(monthItem);
     });
     setActiveArchiveItem(currentArchiveSlug);
   }

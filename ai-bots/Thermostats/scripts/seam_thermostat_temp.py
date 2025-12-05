@@ -60,7 +60,7 @@ def _read_condenser_state() -> Dict[str, int]:
     except Exception:
         return {"samples": 0, "on_ticks": 0}
     return {
-        "samples": int(data.get("samples", 0)),
+        "samples": int(data.get("samples", 1)),
         "on_ticks": int(data.get("on_ticks", 0)),
     }
 
@@ -73,7 +73,7 @@ def _write_condenser_state(state: Dict[str, int]) -> None:
 
 
 def _reset_condenser_state() -> None:
-    _write_condenser_state({"samples": 0, "on_ticks": 0})
+    _write_condenser_state({"samples": 1, "on_ticks": 0})
 
 
 def initialize_condenser_cycle() -> Tuple[bool, int, Dict[str, int]]:
@@ -223,6 +223,8 @@ def load_config(path: Path) -> Dict[str, Any]:
     cfg.setdefault("test_mode", False)
     cfg.setdefault("weather_base_url", "https://api.weather.gov")
     cfg.setdefault("weather_timeout_seconds", cfg["timeout_seconds"])
+    cfg.setdefault("weather_prefer_open_meteo", False)
+    cfg.setdefault("open_meteo_base_url", "https://api.open-meteo.com")
     cfg.setdefault("google_sheet_name", "NWS")
     return cfg
 
@@ -263,6 +265,53 @@ def _determine_weather_flag(main: str, description: str, is_night: bool) -> str:
     if "cloud" in main_low or "overcast" in desc_low or "overcast" in main_low:
         return "O"
     return "S"
+
+
+def _meteocode_to_flag(code: int, is_night: bool) -> str:
+    if code in {51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82, 85, 86}:
+        return "R"
+    if is_night:
+        return "N"
+    if code in {1, 2, 3, 45, 48}:
+        return "P"
+    if code == 0:
+        return "S"
+    if code in {4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 49, 50}:
+        return "O"
+    return "S"
+
+
+def _fetch_open_meteo_current(lat: float, lon: float, cfg: Dict[str, Any], verbose: bool = False) -> Optional[Dict[str, Any]]:
+    base_url = cfg.get("open_meteo_base_url")
+    if not base_url:
+        return None
+    params = {
+        "latitude": lat,
+        "longitude": lon,
+        "current_weather": "true",
+        "timezone": "UTC",
+    }
+    url = f"{base_url.rstrip('/')}/v1/forecast"
+    if verbose:
+        print(f"[weather] Fetching Open-Meteo current weather from {url} {params}")
+    resp = requests.get(url, params=params, timeout=cfg.get("weather_timeout_seconds", cfg["timeout_seconds"]))
+    resp.raise_for_status()
+    data = resp.json()
+    current = data.get("current_weather", {})
+    temp_c = current.get("temperature")
+    temp_f = None
+    if temp_c is not None:
+        temp_f = (temp_c * 9.0 / 5.0) + 32
+    code = current.get("weathercode")
+    is_day = current.get("is_day") == 1
+    flag = _meteocode_to_flag(int(code) if code is not None else 0, not is_day)
+    return {
+        "temp": temp_f,
+        "flag": flag,
+        "daylight": is_day,
+        "forecast_desc": current.get("weathercode"),
+        "cached": False,
+    }
 
 
 def _fetch_sunrise_sunset(lat: float, lon: float, verbose: bool = False) -> Tuple[Optional[datetime], Optional[datetime]]:
@@ -314,7 +363,14 @@ def fetch_weather_conditions(cfg: Dict[str, Any], verbose: bool = False) -> Opti
     cached = _load_weather_cache()
     if cached:
         if verbose:
-            print("[weather] Using cached forecast (within 10 min).")
+            print(
+                "[weather] Using cached forecast (within 10 min): flag=%s temp=%s daylight=%s"
+                % (
+                    cached.get("flag"),
+                    cached.get("temp"),
+                    cached.get("daylight", True),
+                )
+            )
         return {
             "temp": cached.get("temp"),
             "flag": cached.get("flag"),
@@ -322,65 +378,98 @@ def fetch_weather_conditions(cfg: Dict[str, Any], verbose: bool = False) -> Opti
             "cached": True,
             "forecast_desc": "",
         }
-    points_url = f"{base_url}/points/{lat},{lon}"
-    if verbose:
-        print(f"[weather] Querying points endpoint {points_url}")
-    resp = requests.get(points_url, timeout=cfg.get("weather_timeout_seconds", cfg["timeout_seconds"]))
-    resp.raise_for_status()
-    points = resp.json()
-    properties = points.get("properties", {})
-    stations_url = properties.get("observationStations")
-    if not stations_url:
-        if verbose:
-            print("[weather] No observationStations URL returned.")
-        return None
-    if verbose:
-        print(f"[weather] Fetching observation stations list from {stations_url}")
-    stations_resp = requests.get(stations_url, timeout=cfg.get("weather_timeout_seconds", cfg["timeout_seconds"]))
-    stations_resp.raise_for_status()
-    stations_data = stations_resp.json()
-    features = stations_data.get("features") or []
-    if not features:
-        if verbose:
-            print("[weather] No stations returned for location.")
-        return None
-    station_url = features[0].get("id")
-    if not station_url:
-        if verbose:
-            print("[weather] Station entry missing id.")
-        return None
-    obs_url = f"{station_url}/observations/latest"
-    if verbose:
-        print(f"[weather] Fetching latest observation from {obs_url}")
-    obs_resp = requests.get(obs_url, timeout=cfg.get("weather_timeout_seconds", cfg["timeout_seconds"]))
-    obs_resp.raise_for_status()
-    obs = obs_resp.json()
-    obs_props = obs.get("properties", {})
-    temp_c = obs_props.get("temperature", {}).get("value")
-    temp_f = None
-    if temp_c is not None:
-        temp_f = (temp_c * 9.0 / 5.0) + 32
-    forecast_url = properties.get("forecast")
-    forecast_temp, forecast_desc = _fetch_forecast_summary(forecast_url, cfg, verbose=verbose)
-    main_weather = forecast_desc or obs_props.get("textDescription", "")
-    detailed = obs_props.get("detailedForecast", "")
-    sunrise = sunset = None
+    prefer_open = cfg.get("weather_prefer_open_meteo", False)
+    if prefer_open:
+        try:
+            open_meteo_data = _fetch_open_meteo_current(lat, lon, cfg, verbose)
+            if open_meteo_data:
+                _save_weather_cache(
+                    open_meteo_data.get("temp"),
+                    open_meteo_data.get("flag", ""),
+                    open_meteo_data.get("daylight", True),
+                )
+                return open_meteo_data
+        except Exception as open_exc:
+            if verbose:
+                print(f"[weather] Open-Meteo fetch failed: {open_exc}")
     try:
-        sunrise, sunset = _fetch_sunrise_sunset(float(lat), float(lon), verbose=verbose)
-    except Exception as sun_exc:
+        points_url = f"{base_url}/points/{lat},{lon}"
         if verbose:
-            print(f"[weather] Failed to fetch sunrise/sunset info: {sun_exc}")
-    is_night = _is_night_from_times(sunrise, sunset)
-    flag = _determine_weather_flag(main_weather, detailed, is_night)
-    final_temp = temp_f if temp_f is not None else forecast_temp
-    _save_weather_cache(final_temp, flag, not is_night)
-    return {
-        "temp": final_temp,
-        "flag": flag,
-        "daylight": not is_night,
-        "forecast_desc": forecast_desc,
-        "cached": False,
-    }
+            print(f"[weather] Querying points endpoint {points_url}")
+        resp = requests.get(points_url, timeout=cfg.get("weather_timeout_seconds", cfg["timeout_seconds"]))
+        resp.raise_for_status()
+        points = resp.json()
+        properties = points.get("properties", {})
+        stations_url = properties.get("observationStations")
+        if not stations_url:
+            if verbose:
+                print("[weather] No observationStations URL returned.")
+            raise RuntimeError("No observation stations")
+        if verbose:
+            print(f"[weather] Fetching observation stations list from {stations_url}")
+        stations_resp = requests.get(stations_url, timeout=cfg.get("weather_timeout_seconds", cfg["timeout_seconds"]))
+        stations_resp.raise_for_status()
+        stations_data = stations_resp.json()
+        features = stations_data.get("features") or []
+        if not features:
+            if verbose:
+                print("[weather] No stations returned for location.")
+            raise RuntimeError("No stations returned")
+        station_url = features[0].get("id")
+        if not station_url:
+            if verbose:
+                print("[weather] Station entry missing id.")
+            raise RuntimeError("Station entry missing id")
+        obs_url = f"{station_url}/observations/latest"
+        if verbose:
+            print(f"[weather] Fetching latest observation from {obs_url}")
+        obs_resp = requests.get(obs_url, timeout=cfg.get("weather_timeout_seconds", cfg["timeout_seconds"]))
+        obs_resp.raise_for_status()
+        obs = obs_resp.json()
+        obs_props = obs.get("properties", {})
+        temp_c = obs_props.get("temperature", {}).get("value")
+        temp_f = None
+        if temp_c is not None:
+            temp_f = (temp_c * 9.0 / 5.0) + 32
+        forecast_url = properties.get("forecast")
+        forecast_temp, forecast_desc = _fetch_forecast_summary(forecast_url, cfg, verbose=verbose)
+        observation_text = obs_props.get("textDescription", "")
+        main_weather = observation_text or forecast_desc
+        detailed = obs_props.get("detailedForecast", "") or forecast_desc
+        sunrise = sunset = None
+        try:
+            sunrise, sunset = _fetch_sunrise_sunset(float(lat), float(lon), verbose=verbose)
+        except Exception as sun_exc:
+            if verbose:
+                print(f"[weather] Failed to fetch sunrise/sunset info: {sun_exc}")
+        is_night = _is_night_from_times(sunrise, sunset)
+        flag = _determine_weather_flag(main_weather, detailed, is_night)
+        final_temp = temp_f if temp_f is not None else forecast_temp
+        _save_weather_cache(final_temp, flag, not is_night)
+        return {
+            "temp": final_temp,
+            "flag": flag,
+            "daylight": not is_night,
+            "forecast_desc": forecast_desc,
+            "cached": False,
+        }
+    except Exception as weather_exc:
+        if verbose:
+            print(f"[weather] Failed to fetch outside conditions: {weather_exc}", file=sys.stderr)
+        if not prefer_open:
+            try:
+                open_meteo_data = _fetch_open_meteo_current(lat, lon, cfg, verbose)
+                if open_meteo_data:
+                    _save_weather_cache(
+                        open_meteo_data.get("temp"),
+                        open_meteo_data.get("flag", ""),
+                        open_meteo_data.get("daylight", True),
+                    )
+                    return open_meteo_data
+            except Exception as open_exc:
+                if verbose:
+                    print(f"[weather] Open-Meteo fallback failed: {open_exc}", file=sys.stderr)
+        return None
 
 
 def format_weather_entry(

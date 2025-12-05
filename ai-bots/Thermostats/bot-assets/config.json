@@ -19,6 +19,7 @@
   "sheet_tab": "Thermostats",
   "data_range": "A:I",
   "delete_temp_files": false,
+  "inline_client_script": true,
   "temp_adjust": 0,
   "test": false,
   "test_mode": false,
@@ -26,5 +27,6 @@
   "thermostat_id": "6c89f5f4-568b-44ff-b585-10132bd7e9e9",
   "timeout_seconds": 25,
   "token_url": "https://connect.getseam.com/oauth/token",
-  "timezone": "America/Los_Angeles"
+  "timezone": "America/Los_Angeles",
+  "CostPerMinute": ".05"
 }

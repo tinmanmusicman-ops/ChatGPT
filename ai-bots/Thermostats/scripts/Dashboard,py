@@ -29,6 +29,7 @@ DRIVE_SCOPES = ["https://www.googleapis.com/auth/drive.file"]
 SCRIPT_DIR = Path(__file__).resolve().parent
 ARCHIVE_DIR_NAME = "chart hist"
 ARCHIVE_DIR = SCRIPT_DIR.parent / "Web" / ARCHIVE_DIR_NAME
+INLINE_CLIENT_SCRIPT_DEFAULT = False
 NUMERIC_RE = re.compile(r"-?\d+(?:\.\d+)?")
 DATE_FORMATS = (
     "%Y-%m-%d %H:%M:%S",
@@ -74,8 +75,6 @@ def _ensure_range_includes(range_value: str, column: str) -> str:
         end_cell = f"{column}{digit_part}"
     new_part = f"{start_cell}:{end_cell}" if ":" in part else end_cell
     return f"{prefix}{new_part}"
-NUMERIC_RE = re.compile(r"-?\d+(?:\.\d+)?")
-NUMERIC_RE = re.compile(r"-?\d+(?:\.\d+)?")
 
 
 def _load_global_root() -> Path:
@@ -177,6 +176,12 @@ COST_PER_MINUTE_CANDIDATE = cfg_payload.get("cost_per_minute")
 if COST_PER_MINUTE_CANDIDATE is None:
     COST_PER_MINUTE_CANDIDATE = cfg_payload.get("CostPerMinute")
 COST_PER_MINUTE = _load_float(COST_PER_MINUTE_CANDIDATE, _DEFAULTS["cost_per_minute"])
+# Allow debugging with inline JS via config or env; defaults to external script.
+inline_flag_cfg = cfg_payload.get("inline_client_script", cfg_payload.get("InlineClientScript"))
+INLINE_CLIENT_SCRIPT = _normalize_flag(
+    os.environ.get("INLINE_CLIENT_SCRIPT", inline_flag_cfg),
+    default=INLINE_CLIENT_SCRIPT_DEFAULT,
+)
 
 HISTORY_WINDOW = 24
 CHART_METRIC_INDEX = 1  # Fallback index; overridden to "Current Temperature" if present
@@ -573,10 +578,11 @@ def build_dashboard_html(
     generated_slug = generated_at.strftime("%Y-%m-%d")
     archive_slugs = set()
     if ARCHIVE_DIR.exists():
-        for entry in ARCHIVE_DIR.glob("*.html"):
-            slug = entry.stem
-            if slug:
-                archive_slugs.add(slug)
+        for pattern in ("*.html", "*.json"):
+            for entry in ARCHIVE_DIR.glob(pattern):
+                slug = entry.stem
+                if slug:
+                    archive_slugs.add(slug)
     archive_slugs.add(generated_slug)
     def _format_archive_label(slug: str) -> str:
         try:
@@ -684,7 +690,18 @@ def build_dashboard_html(
             os.path.relpath(script_path, start=output_path.parent)
         )
         script_src_url = script_rel_to_output.as_posix()
-    script_block = f"""    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    if INLINE_CLIENT_SCRIPT:
+        client_js = script_path.read_text(encoding="utf-8")
+        script_block = f"""    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script id="dashboard-data-inline" type="application/json">
+{data_json}
+    </script>
+    <script id="dashboard-client" data-archive-path="{ARCHIVE_DIR_NAME}">
+{client_js}
+    </script>
+    """
+    else:
+        script_block = f"""    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script id="dashboard-data-inline" type="application/json">
 {data_json}
     </script>
@@ -701,9 +718,8 @@ def build_dashboard_html(
     <style>
       body {{
         forced-color-adjust: none;
-          -webkit-text-fill-color: initial;
-            color: inherot;
-        
+        -webkit-text-fill-color: initial;
+        color: inherit;
         margin: 0;
         font-family: 'Inter', system-ui, sans-serif;
         background: #4a4a4a;
@@ -742,7 +758,6 @@ def build_dashboard_html(
       .chartjs-legend {{
       margin-top: -40px;
       }}
-      }}
       .header-label {{
 
         font-size: 80px;
@@ -758,6 +773,22 @@ def build_dashboard_html(
         text-align: center;
         padding: 4px 0;
       }}
+
+#chart-history-months {{
+height: 5px
+padding: 0;
+font-size; 8PX;
+line-height: 1
+height: auto;
+}}
+
+#chart-history-months option {{
+height: 5px
+padding: 1 3px;
+font-size; 8PX;
+line-height: 1;
+}}
+
       .logo-placeholder {{
 
         width: 190px;
@@ -920,7 +951,8 @@ def build_dashboard_html(
         justify-content: center;
         gap: 8px;
         padding: 4px 8px;
-        margin-top: 12px;
+        margin-top: 20px;
+        margin-bottom: 48px;
         font-size: 14px;
         color: #f4f6ff;
         height: 100px;
@@ -964,8 +996,8 @@ def build_dashboard_html(
         color: #fff5c7;
       }}
       #history-chart {{
-        
-        gap: 20;
+
+        gap: 20px;
         display: none;
         width: 100% !important;
         height: 100% !important;
@@ -1002,15 +1034,128 @@ def build_dashboard_html(
       }}
       .chart-history {{
         position: absolute;
-        top: 12px;
-        right: 12px;
-        background: rgba(0, 0, 0, 0.55);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        border-radius: 12px;
-        padding: 10px 12px;
-        max-height: 180px;
-        width: 200px;
+        top: -86px;
+        right: 0;
+        background: #2f3136;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 14px;
+        padding: 12px 14px;
+        max-height: 220px;
+        width: 360px;
+        overflow-y: visible;
+        box-shadow:
+          0 14px 30px rgba(0, 0, 0, 0.45),
+          inset 0 1px 2px rgba(255, 255, 255, 0.15);
+        color: #fff5c7;
+        border-top-color: rgba(255, 255, 255, 0.6);
+        border-left-color: rgba(255, 255, 255, 0.45);
+        border-bottom-color: rgba(0, 0, 0, 0.45);
+        border-right-color: rgba(0, 0, 0, 0.3);
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+      }}
+      .history-months {{
+        width: 150px;
+        max-height: 140px;
         overflow-y: auto;
+        padding-right: 4px;
+        border-right: 1px solid rgba(255, 255, 255, 0.18);
+      }}
+      .history-months h5 {{
+        margin: 0 0 6px;
+        font-size: 12px;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: #fff5c7;
+      }}
+      .history-months-list {{
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: none;
+        flex-direction: column;
+        gap: 2px;
+        max-height: 120px;
+        overflow-y: auto;
+      }}
+      .history-lists-row:hover .history-months-list,
+      .history-months:focus-within .history-months-list {{
+        display: flex;
+      }}
+      .history-months-list li {{
+        margin: 0;
+        padding: 0;
+      }}
+      .history-months-list button {{
+        all: unset;
+        width: 100%;
+        padding: 2px 6px;
+        border-radius: 8px;
+        background: rgba(0, 0, 0, 0.25);
+        color: #fff5c7;
+        font-size: 11px;
+        letter-spacing: 0.03em;
+        line-height: 1.1;
+        cursor: pointer;
+        transition: background 0.2s ease, color 0.2s ease;
+      }}
+      .history-months-list button:hover,
+      .history-months-list button:focus-visible {{
+        background: rgba(102, 255, 153, 0.12);
+        color: #e8ffe8;
+      }}
+      .history-months-list button.active {{
+        background: rgba(102, 255, 153, 0.25);
+        color: #fff;
+      }}
+      .history-list-column {{
+        flex: 1;
+        max-height: 24px;
+        overflow: hidden;
+        min-width: 200px;
+        min-height: 0;
+        padding: 0;
+        transition: max-height 0.2s ease, padding 0.2s ease;
+      }}
+      .history-list-column.expanded {{
+        max-height: 220px;
+        overflow-y: auto;
+        padding: 4px 0;
+      }}
+      .history-month {{
+        margin-bottom: 6px;
+      }}
+      .history-month-header {{
+        display: flex;
+        justify-content: flex-start;
+        gap: 6px;
+        align-items: center;
+        margin: 0 0 4px;
+      }}
+      .history-month-header button {{
+        all: unset;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        cursor: pointer;
+        color: #fff5c7;
+      }}
+      .history-month-list {{
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        font-size: 11px;
+      }}
+      .history-month-list.hidden {{
+        display: none;
+      }}
+      .history-lists-row {{
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        width: 100%;
       }}
       .chart-history h4 {{
         margin: 0 0 6px;
