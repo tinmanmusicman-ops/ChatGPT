@@ -36,6 +36,28 @@
   const chartHistoryList = document.getElementById("chart-history-list");
   const chartHistoryToggle = document.getElementById("chart-history-toggle");
   const chartHistoryStatus = document.getElementById("chart-history-status");
+  const chartArea = document.getElementById("history");
+  const autoplayToggle = document.getElementById("autoplay-toggle");
+  const AUTOPLAY_IDLE_MS = 60_000;
+  const AUTOPLAY_TARGET_MS = 30_000; // target duration for a full autoplay cycle
+  const AUTOPLAY_MIN_STEP_MS = 400; // fastest we'll cycle points
+  const AUTOPLAY_SEQUENCE = [
+    { modes: ["setpoint"] },
+    { modes: ["actual"] },
+    { modes: ["outside"] },
+    { modes: ["cooling"] },
+    { modes: ["fan"] },
+    { pauseMs: 10_000 }, // show hands/logo for 10s with chart hidden
+    { modes: ["actual", "outside"] },           // options 2 + 3
+    { modes: ["actual", "outside", "cooling"] }, // then add option 4
+  ];
+  let autoplayEnabled = true;
+  let autoplayTimer = null;
+  let autoplayIdleTimer = null;
+  let autoplayIndex = 0;
+  let autoplaySegmentIndex = 0;
+  let autoplayStepMs = 3_000;
+  let savedModesBeforeAutoplay = null;
   let chartHistoryMonthPicker = null;
   let chartHistoryMonthList = null;
   let chartHistoryListsRow = null;
@@ -303,9 +325,9 @@
       text: "#1a1a1a",
     },
     circulate: {
-      background: "radial-gradient(circle at 50% 40%, #ffd54f 0%, #f0a500 40%, #c2923a 100%)",
+      background: "#e8d6ae",
       border: "#c47f00",
-      text: "#2d1e00",
+      text: "#000000",
     },
     on: {
       background: "#059c15",
@@ -343,7 +365,7 @@
 
   const coolingStyleMap = {
     idle: {
-      background: "#e0e2e5",
+      background: "#93a5c9 30%",
       border: "#b0b4ba",
       text: "#1a1a1a",
     },
@@ -1002,7 +1024,8 @@
 
     const fanCard = document.querySelector('.metric-card[data-metric="fan"]');
     const fanLabelRaw = getLatestFanRaw();
-    const fanText = fanLabelRaw ? String(fanLabelRaw).trim() : fanStateLabels[normalizeFanState(fanLabelRaw)] || "Auto";
+    const fanNorm = normalizeFanState(fanLabelRaw);
+    const fanText = fanStateLabels[fanNorm] || (fanLabelRaw ? String(fanLabelRaw).trim() : "Auto");
     setCardValue(fanCard, fanText);
     applyFanCardStyle(fanCard, getLatestFanValue());
 
@@ -1093,6 +1116,17 @@
     updateButtonStates();
     chart.update();
   };
+
+  const setModeSet = (modes, animate = false) => {
+    enabledModes.clear();
+    modes.forEach((m) => enabledModes.add(m));
+    updateChartVisibility();
+    updateAxesVisibility();
+    updateButtonStates();
+    if (chart) {
+      chart.update(animate ? undefined : "none");
+    }
+  };
   const toggleMode = (mode) => {
     if (mode === "both") {
       const allEnabled = Object.keys(datasetIndexByMode).every((m) =>
@@ -1138,6 +1172,7 @@
     if (handsLogoTop) {
       handsLogoTop.classList.remove("hidden");
     }
+    scheduleAutoplay();
   };
 
   const hideChart = () => {
@@ -1150,6 +1185,140 @@
     }
     if (handsLogoTop) {
       handsLogoTop.classList.add("hidden");
+    }
+    stopAutoplay();
+  };
+
+  const stopAutoplay = (preserveModes = false) => {
+    if (autoplayTimer) {
+      clearInterval(autoplayTimer);
+      autoplayTimer = null;
+    }
+    if (autoplayIdleTimer) {
+      clearTimeout(autoplayIdleTimer);
+      autoplayIdleTimer = null;
+    }
+    if (chart) {
+      chart.setActiveElements([]);
+      chart.tooltip.setActiveElements([]);
+      chart.update("none");
+    }
+    if (!preserveModes && savedModesBeforeAutoplay) {
+      setModeSet(Array.from(savedModesBeforeAutoplay));
+    }
+    if (!preserveModes) {
+      savedModesBeforeAutoplay = null;
+      autoplaySegmentIndex = 0;
+    }
+  };
+
+  const highlightPoint = (index) => {
+    if (!chart || !chart.data || !chart.data.labels) {
+      return;
+    }
+    const pointIndex = index % chart.data.labels.length;
+    const active = [];
+    chart.data.datasets.forEach((ds, datasetIndex) => {
+      const meta = chart.getDatasetMeta(datasetIndex);
+      const visible = ds && meta && !ds.hidden && !meta.hidden;
+      if (visible) {
+        active.push({ datasetIndex, index: pointIndex });
+      }
+    });
+    chart.setActiveElements(active);
+    chart.tooltip.setActiveElements(active);
+    chart.update("none");
+  };
+
+  const startAutoplay = (immediate = false) => {
+    if (!autoplayEnabled || !chart || !chart.data || !chart.data.labels?.length) {
+      return;
+    }
+    if (!savedModesBeforeAutoplay) {
+      savedModesBeforeAutoplay = new Set(enabledModes);
+    }
+    if (autoplayTimer) {
+      clearInterval(autoplayTimer);
+    }
+    const labelsLen = chart.data.labels.length || 1;
+    const activeSegmentsCount = AUTOPLAY_SEQUENCE.filter((seg) => seg.modes)?.length || 1;
+    const totalSteps = labelsLen * activeSegmentsCount;
+    autoplayStepMs = Math.max(
+      AUTOPLAY_MIN_STEP_MS,
+      Math.round(AUTOPLAY_TARGET_MS / totalSteps)
+    );
+    const applyCurrentSegment = () => {
+      const segment = AUTOPLAY_SEQUENCE[autoplaySegmentIndex % AUTOPLAY_SEQUENCE.length];
+      if (!segment) {
+        return;
+      }
+      if (segment.pauseMs) {
+        if (autoplayTimer) {
+          clearInterval(autoplayTimer);
+          autoplayTimer = null;
+        }
+        hideChart();
+        if (handsLogoTop) {
+          handsLogoTop.classList.remove("hidden");
+        }
+        setTimeout(() => {
+          // Move to next segment after pause
+          autoplaySegmentIndex = (autoplaySegmentIndex + 1) % AUTOPLAY_SEQUENCE.length;
+          showChart();
+          setModeSet(AUTOPLAY_SEQUENCE[autoplaySegmentIndex % AUTOPLAY_SEQUENCE.length].modes || [], true);
+          autoplayIndex = 0;
+          startAutoplay(true);
+        }, segment.pauseMs);
+        return false;
+      }
+      setModeSet(segment.modes || [], true);
+      return true;
+    };
+
+    autoplayIndex = 0;
+    const ready = applyCurrentSegment();
+    if (!ready) {
+      return;
+    }
+    if (immediate) {
+      highlightPoint(autoplayIndex);
+    }
+    autoplayTimer = setInterval(() => {
+      autoplayIndex = (autoplayIndex + 1) % chart.data.labels.length;
+      if (autoplayIndex === 0) {
+        autoplaySegmentIndex = (autoplaySegmentIndex + 1) % AUTOPLAY_SEQUENCE.length;
+        const readyNext = applyCurrentSegment();
+        if (!readyNext) {
+          return;
+        }
+      }
+      highlightPoint(autoplayIndex);
+    }, autoplayStepMs);
+  };
+
+  const scheduleAutoplay = () => {
+    if (!autoplayEnabled) {
+      return;
+    }
+    if (autoplayIdleTimer) {
+      clearTimeout(autoplayIdleTimer);
+    }
+    autoplayIdleTimer = setTimeout(() => {
+      startAutoplay(true);
+    }, AUTOPLAY_IDLE_MS);
+  };
+
+  const markInteraction = () => {
+    stopAutoplay(true);
+    scheduleAutoplay();
+  };
+
+  const ensureAutoplayScheduled = () => {
+    if (!autoplayEnabled) {
+      return;
+    }
+    if (!autoplayTimer && !autoplayIdleTimer) {
+      scheduleAutoplay();
     }
   };
 
@@ -1394,13 +1563,50 @@
     return getDashboardValue("archiveDates", []);
   }
 
-    if (chartControlButtons) {
-      chartControlButtons.forEach((button) => {
-        button.addEventListener("click", () => {
-          toggleMode(button.dataset.mode);
-        });
+  const updateAutoplayToggle = () => {
+    if (!autoplayToggle) {
+      return;
+    }
+    autoplayToggle.classList.toggle("active", autoplayEnabled);
+    autoplayToggle.classList.toggle("off", !autoplayEnabled);
+    autoplayToggle.textContent = autoplayEnabled ? "Auto-play: On" : "Auto-play: Off";
+  };
+
+  const bindAutoplayInteractions = () => {
+    const interactiveEls = [
+      chartArea,
+      canvas,
+      toggleHistoryBtn,
+      chartHistory,
+      ...Array.from(chartControlButtons || []),
+    ].filter(Boolean);
+    const events = ["mousemove", "touchstart", "click"];
+    interactiveEls.forEach((el) => {
+      events.forEach((evt) => {
+        el.addEventListener(evt, markInteraction);
+      });
+    });
+    if (autoplayToggle) {
+      autoplayToggle.addEventListener("click", () => {
+        autoplayEnabled = !autoplayEnabled;
+        stopAutoplay();
+        updateAutoplayToggle();
+        if (autoplayEnabled) {
+          startAutoplay(true);
+        } else {
+          ensureAutoplayScheduled();
+        }
       });
     }
+  };
+
+  if (chartControlButtons) {
+    chartControlButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        toggleMode(button.dataset.mode);
+      });
+    });
+  }
 
   if (toggleHistoryBtn) {
     toggleHistoryBtn.addEventListener("click", () => {
@@ -1419,4 +1625,7 @@
   }
 
   applyDashboardData(dashboardData);
+  bindAutoplayInteractions();
+  updateAutoplayToggle();
+  ensureAutoplayScheduled();
 })();

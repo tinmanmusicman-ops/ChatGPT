@@ -12,14 +12,14 @@
         color: inherit;
         margin: 0;
         font-family: 'Inter', system-ui, sans-serif;
-        background: #4a4a4a;
+        background: linear-gradient(to bottom, #453082, #71688c);
         color: #f4f6ff;
       }
       .container {
         max-width: 900px;
         margin: 1px auto;
         padding: 1px;
-        background: #4a4a4a;
+        background: transparent;
         border-radius: 16px;
       }
       h1 {
@@ -104,14 +104,11 @@ line-height: 1;
         gap: 16px;
       }
       .hands-logo-slot {
-        width: 91%;
-        display: flex;
-        justify-content: right;
-        align-items: flex-start;
-        padding-left: 52px;
-        position: relative;
-        min-height: 80px;
-        margin-top: 60px;
+        display: none;
+        width: 0;
+        height: 0;
+        margin: 0;
+        padding: 0;
       }
       .metric-card {
         background: #2b2b30;
@@ -119,6 +116,36 @@ line-height: 1;
         border: 1px solid #3a3a40;
         border-radius: 12px;
         padding: 16px;
+        min-height: 70px;
+      }
+      .metric-card[data-metric="fan"] {
+        background: #f7e9b5;
+        color: #2b2b30;
+        border-color: #d9c36a;
+      }
+      .metric-card.fan-state-c[data-metric="fan"] {
+        background: #fffde6;
+        color: #5a4a12;
+        border-color: #e9dca8;
+      }
+      .metric-card[data-metric="fan"] .label {
+        color: #6a5a1f;
+        opacity: 0.9;
+      }
+      .metric-card.fan-state-c[data-metric="fan"] .label {
+        color: #5a4a12;
+      }
+      .metric-card[data-metric="fan"] .value {
+        color: #2b2b30;
+      }
+      .metric-card.fan-state-c[data-metric="fan"] .value {
+        color: #5a4a12;
+      }
+      .metric-card[data-metric="timestamp"] .value {
+        font-size: 16px;
+      }
+      .metric-card[data-metric="type"] .value {
+        font-size: 16px;
       }
       .metric-card .label {
         font-size: 14px;
@@ -175,8 +202,7 @@ line-height: 1;
         background-size: contain;
       }
       .history-panel {
-        
-        margin-top: 32px;
+        margin-top: 8px;
         background: rgba(255,255,255,0.02);
         border-radius: 12px;
         padding: 16px;
@@ -196,11 +222,11 @@ line-height: 1;
         position: absolute;
         right: 40px;
         top: -32px;
-        transition: opacity 0.3s ease;
+        opacity: 1;
+        transition: opacity 0.6s ease;
       }
       .hands-logo-top.hidden {
         opacity: 0;
-        visibility: hidden;
       }
       button {
         background: #66ff99;
@@ -257,10 +283,16 @@ line-height: 1;
         transition: background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
       }
       .chart-control.active {
-        background: #063016;
-        color: #d5eadd;
-        border-color: #063016;
-        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.45);
+        background: #0d0d12;
+        color: #66ff99;
+        border-color: #1a1a20;
+        box-shadow: none;
+      }
+      #autoplay-toggle {
+        color: #66ff99;
+      }
+      #autoplay-toggle.off {
+        color: #ff6666;
       }
       .condenser-runtime {
         position: absolute;
@@ -284,6 +316,21 @@ line-height: 1;
         font-size: 16px;
         font-weight: 600;
         color: #fff5c7;
+        background: #000;
+        padding: 2px 6px;
+        border-radius: 6px;
+      }
+      .condenser-runtime .cost-value.cost-ok {
+        color: #00c957;
+      }
+      .condenser-runtime .cost-value.cost-warm {
+        color: #f4a742;
+      }
+      .condenser-runtime .cost-value.cost-hot {
+        color: #f08a24;
+      }
+      .condenser-runtime .cost-value.cost-red {
+        color: #ff1a1a;
       }
       #history-chart {
 
@@ -519,23 +566,23 @@ line-height: 1;
         </div>
       </div>
       <div class="timestamp-row">
-        <div id="dashboard-timestamp" class="date-display">Friday Dec 05 2025 12:45:08 AM</div>
+        <div id="dashboard-timestamp" class="date-display">Friday Dec 05 2025 11:54:45 PM</div>
       </div>
       <div id="Cards" class="card-grid">
         
-        <div class="metric-card">
+        <div class="metric-card" data-metric="timestamp">
           <div class="label">Timestamp</div>
           <div class="value">Tuesday Nov 25 2025 8:11 PM</div>
         </div>
         
-        <div class="metric-card">
+        <div class="metric-card" data-metric="type">
           <div class="label">Type</div>
           <div class="value">request (studio 11, zone3, 50m)</div>
         </div>
         
         <div class="metric-card" data-metric="actual">
           <div class="label">Building Temperature</div>
-          <div class="value">60</div>
+          <div class="value">68</div>
         </div>
         
         <div class="metric-card" data-metric="setpoint">
@@ -545,17 +592,17 @@ line-height: 1;
         
         <div class="metric-card">
           <div class="label">Climate Setting</div>
-          <div class="value">cool</div>
+          <div class="value">Off</div>
         </div>
         
-        <div class="metric-card" data-metric="fan">
+        <div class="metric-card fan-state-o" data-metric="fan">
           <div class="label">Fan Setting</div>
-          <div class="value">Circulate</div>
+          <div class="value">On</div>
         </div>
         
         <div class="metric-card" data-metric="cooling">
           <div class="label">Equipment Status</div>
-          <div class="value">cooling</div>
+          <div class="value">Cooling</div>
         </div>
         
         <div class="metric-card">
@@ -580,7 +627,7 @@ line-height: 1;
         
         <div class="metric-card" data-metric="condenser-minutes">
           <div class="label">Condenser Minutes Past Hour</div>
-          <div class="value">375</div>
+          <div class="value">35</div>
         </div>
         
       </div>
@@ -593,9 +640,9 @@ line-height: 1;
       <button id="toggle-history">Show History Chart</button>
       <div class="condenser-runtime">
         <div class="label">Total condenser runtime</div>
-        <div class="value">375 min</div>
+        <div class="value">35 min</div>
         <div class="cost-label">Estimated condenser cost</div>
-        <div class="cost-value">$18.75</div>
+        <div class="cost-value cost-ok">$1.75</div>
       </div>
 
       <div id="chartcontrols" class="chart-controls">
@@ -606,6 +653,7 @@ line-height: 1;
           <button type="button" class="chart-control" data-mode="fan">Fan Mode</button>
           <button type="button" class="chart-control active" data-mode="both">Combined</button>
           <span>&nbsp;</span>
+          <button type="button" class="chart-control" id="autoplay-toggle">Auto-play: On</button>
         </div>
         <div class="chart-wrap">
           <div>
@@ -623,7 +671,7 @@ line-height: 1;
     </div>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script id="dashboard-data-inline" type="application/json">
-{"headers": ["Timestamp", "Type", "Current Temperature", "Cooling Set Point", "Climate Setting", "Fan Setting", "Equipment Status", "Studio", "Request Expires (local time)", "Outside Temp", "Condenser State", "Condenser Minutes"], "latestRow": ["Tuesday Nov 25 2025 8:11 PM", "request (studio 11, zone3, 50m)", "60", "80", "cool", "Circulate", "cooling", "11", "8:54 PM", "NN57.0 | Mostly Cloudy", "On", "35"], "history": [{"label": "Sunday Nov 23     1:56 PM", "value": 70.0}, {"label": "Sunday Nov 23     2:02 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:46 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:59 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:03 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:06 PM", "value": 75.0}, {"label": "Sunday Nov 23     11:20 PM", "value": 75.0}, {"label": "Tuesday Nov 25     7:59 PM", "value": 72.0}, {"label": "Tuesday Nov 25     8:01 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:04 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:11 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:46 PM", "value": 74.0}, {"label": "Friday Nov 21     6:51 PM", "value": 74.0}, {"label": "Sunday Nov 23     1:56 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:02 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:46 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:59 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:03 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:06 PM", "value": 75.0}, {"label": "Sunday Nov 23     11:20 PM", "value": 74.0}, {"label": "Tuesday Nov 25     7:59 PM", "value": 72.0}, {"label": "Tuesday Nov 25     8:01 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:04 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:11 PM", "value": 80.0}], "chartLabels": ["Sunday Nov 23     1:56 PM", "Sunday Nov 23     2:02 PM", "Sunday Nov 23     2:46 PM", "Sunday Nov 23     2:59 PM", "Sunday Nov 23     3:03 PM", "Sunday Nov 23     3:06 PM", "Sunday Nov 23     11:20 PM", "Tuesday Nov 25     7:59 PM", "Tuesday Nov 25     8:01 PM", "Tuesday Nov 25     8:04 PM", "Tuesday Nov 25     8:11 PM", "Tuesday Nov 25     8:46 PM", "Friday Nov 21     6:51 PM", "Sunday Nov 23     1:56 PM", "Sunday Nov 23     2:02 PM", "Sunday Nov 23     2:46 PM", "Sunday Nov 23     2:59 PM", "Sunday Nov 23     3:03 PM", "Sunday Nov 23     3:06 PM", "Sunday Nov 23     11:20 PM", "Tuesday Nov 25     7:59 PM", "Tuesday Nov 25     8:01 PM", "Tuesday Nov 25     8:04 PM", "Tuesday Nov 25     8:11 PM"], "setpoint": [70.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 72.0, 74.0, 74.0, 74.0, 74.0, 74.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 74.0, 72.0, 74.0, 74.0, 80.0], "actual": [45.0, 71.0, 72.0, 73.0, 74.0, 75.0, 75.0, 75.0, 75.0, 73.0, 72.0, 71.0, 70.0, 68.0, 65.0, 61.0, 64.0, 63.0, 65.0, 65.0, 70.0, 66.0, 71.0, 60.0], "setpointLabel": "Set Point", "actualLabel": "Current Temperature", "fan": ["A", "A", "O", "O", "O", "O", "O", "C", "C", "C", "C", "A", "A", "A", "A", "A", "A", "A", "A", "A", "C", "C", "C", "C"], "fanLegend": ["Auto", "Circulate", "On"], "outside": [55.0, 65.0, 65.0, 65.0, 62.0, 59.0, 57.0, 53.0, 52.0, 50.0, 49.0, 49.0, 48.0, 48.0, 47.0, 46.0, 46.0, 47.0, 48.0, 54.0, 58.0, 61.0, 63.0, 57.0], "outsideLabel": "Outside Temp", "outsideFlags": ["S", "S", "P", "O", "R", "R", "P", "P", "O", "O", "P", "P", "P", "P", "O", "P", "P", "P", "P", "P", "P", "S", "S", "N"], "outsideFlagDayChars": ["5", "6", "6", "6", "6", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "4", "5", "5", "6", "6", "N"], "cooling": [0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1], "coolingLegend": ["Idle", "Cooling"], "coolingLabel": "Equipment Status", "condenserMinutes": [null, null, 35.0, 20.0, 40.0, null, null, null, null, 35.0, null, 35.0, null, 35.0, null, 35.0, null, 35.0, null, 35.0, null, 35.0, null, 35.0], "totalCondenserMinutes": "375", "totalCondenserMinutesValue": 375.0, "totalCondenserCost": "$18.75", "totalCondenserCostValue": 18.75, "condenserCostPerMinute": 0.05, "latestActual": 60.0, "latestSetpoint": 80.0, "latestOutside": 57.0, "latestOutsideRaw": "NN57.0 | Mostly Cloudy", "latestOutsideDaylight": false, "latestOutsideFlagDayChar": "N", "latestFan": "C", "latestCooling": 1, "generatedTimestamp": "Friday Dec 05 2025 12:45:08 AM", "generatedDateSlug": "2025-12-05", "archiveDates": [{"slug": "2025-12-07", "label": "Dec 07, 2025"}, {"slug": "2025-12-06", "label": "Dec 06, 2025"}, {"slug": "2025-12-05", "label": "Dec 05, 2025"}, {"slug": "2025-12-04", "label": "Dec 04, 2025"}, {"slug": "2025-12-03", "label": "Dec 03, 2025"}, {"slug": "2025-12-02", "label": "Dec 02, 2025"}, {"slug": "2025-11-30", "label": "Nov 30, 2025"}, {"slug": "2025-11-29", "label": "Nov 29, 2025"}], "archivePath": "chart hist"}
+{"headers": ["Timestamp", "Type", "Current Temperature", "Cooling Set Point", "Climate Setting", "Fan Setting", "Equipment Status", "Studio", "Request Expires (local time)", "Outside Temp", "Condenser State", "Condenser Minutes"], "latestRow": ["Tuesday Nov 25 2025 8:11 PM", "request (studio 11, zone3, 50m)", "68", "80", "Off", "On", "Cooling", "11", "8:54 PM", "NN57.0 | Mostly Cloudy", "On", "35"], "history": [{"label": "Sunday Nov 23     1:56 PM", "value": 70.0}, {"label": "Sunday Nov 23     2:02 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:46 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:59 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:03 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:06 PM", "value": 75.0}, {"label": "Sunday Nov 23     11:20 PM", "value": 75.0}, {"label": "Tuesday Nov 25     7:59 PM", "value": 72.0}, {"label": "Tuesday Nov 25     8:01 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:04 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:11 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:46 PM", "value": 74.0}, {"label": "Friday Nov 21     6:51 PM", "value": 74.0}, {"label": "Sunday Nov 23     1:56 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:02 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:46 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:59 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:03 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:06 PM", "value": 75.0}, {"label": "Sunday Nov 23     11:20 PM", "value": 74.0}, {"label": "Tuesday Nov 25     7:59 PM", "value": 72.0}, {"label": "Tuesday Nov 25     8:01 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:04 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:11 PM", "value": 80.0}], "chartLabels": ["Sunday Nov 23     1:56 PM", "Sunday Nov 23     2:02 PM", "Sunday Nov 23     2:46 PM", "Sunday Nov 23     2:59 PM", "Sunday Nov 23     3:03 PM", "Sunday Nov 23     3:06 PM", "Sunday Nov 23     11:20 PM", "Tuesday Nov 25     7:59 PM", "Tuesday Nov 25     8:01 PM", "Tuesday Nov 25     8:04 PM", "Tuesday Nov 25     8:11 PM", "Tuesday Nov 25     8:46 PM", "Friday Nov 21     6:51 PM", "Sunday Nov 23     1:56 PM", "Sunday Nov 23     2:02 PM", "Sunday Nov 23     2:46 PM", "Sunday Nov 23     2:59 PM", "Sunday Nov 23     3:03 PM", "Sunday Nov 23     3:06 PM", "Sunday Nov 23     11:20 PM", "Tuesday Nov 25     7:59 PM", "Tuesday Nov 25     8:01 PM", "Tuesday Nov 25     8:04 PM", "Tuesday Nov 25     8:11 PM"], "setpoint": [70.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 72.0, 74.0, 74.0, 74.0, 74.0, 74.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 74.0, 72.0, 74.0, 74.0, 80.0], "actual": [45.0, 71.0, 72.0, 73.0, 74.0, 75.0, 75.0, 75.0, 75.0, 73.0, 72.0, 71.0, 70.0, 68.0, 65.0, 61.0, 64.0, 63.0, 65.0, 65.0, 70.0, 66.0, 71.0, 68.0], "setpointLabel": "Set Point", "actualLabel": "Current Temperature", "fan": ["A", "A", "O", "O", "O", "O", "O", "C", "C", "C", "C", "A", "A", "A", "A", "A", "A", "A", "A", "A", "C", "C", "C", "O"], "fanLegend": ["Auto", "Circulate", "On"], "outside": [55.0, 65.0, 65.0, 65.0, 62.0, 59.0, 57.0, 53.0, 52.0, 50.0, 49.0, 49.0, 48.0, 48.0, 47.0, 46.0, 46.0, 47.0, 48.0, 54.0, 58.0, 61.0, 63.0, 57.0], "outsideLabel": "Outside Temp", "outsideFlags": ["S", "S", "P", "O", "R", "R", "P", "P", "O", "O", "P", "P", "P", "P", "O", "P", "P", "P", "P", "P", "P", "S", "S", "N"], "outsideFlagDayChars": ["5", "6", "6", "6", "6", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "4", "5", "5", "6", "6", "N"], "cooling": [0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1], "coolingLegend": ["Idle", "Cooling"], "coolingLabel": "Equipment Status", "condenserMinutes": [null, null, 0.0, 0.0, 0.0, null, null, null, null, 0.0, null, 0.0, null, 0.0, null, 0.0, null, 0.0, null, 0.0, null, 0.0, null, 35.0], "totalCondenserMinutes": "35", "totalCondenserMinutesValue": 35.0, "totalCondenserCost": "$1.75", "totalCondenserCostValue": 1.75, "condenserCostPerMinute": 0.05, "latestActual": 68.0, "latestSetpoint": 80.0, "latestOutside": 57.0, "latestOutsideRaw": "NN57.0 | Mostly Cloudy", "latestOutsideDaylight": false, "latestOutsideFlagDayChar": "N", "latestFan": "O", "latestCooling": 1, "generatedTimestamp": "Friday Dec 05 2025 11:54:45 PM", "generatedDateSlug": "2025-12-05", "archiveDates": [{"slug": "2025-12-07", "label": "Dec 07, 2025"}, {"slug": "2025-12-06", "label": "Dec 06, 2025"}, {"slug": "2025-12-05", "label": "Dec 05, 2025"}, {"slug": "2025-12-04", "label": "Dec 04, 2025"}, {"slug": "2025-12-03", "label": "Dec 03, 2025"}, {"slug": "2025-12-02", "label": "Dec 02, 2025"}, {"slug": "2025-11-30", "label": "Nov 30, 2025"}, {"slug": "2025-11-29", "label": "Nov 29, 2025"}], "archivePath": "chart hist"}
     </script>
     <script id="dashboard-client" data-archive-path="chart hist">
 (() => {
@@ -664,6 +712,28 @@ line-height: 1;
   const chartHistoryList = document.getElementById("chart-history-list");
   const chartHistoryToggle = document.getElementById("chart-history-toggle");
   const chartHistoryStatus = document.getElementById("chart-history-status");
+  const chartArea = document.getElementById("history");
+  const autoplayToggle = document.getElementById("autoplay-toggle");
+  const AUTOPLAY_IDLE_MS = 60_000;
+  const AUTOPLAY_TARGET_MS = 30_000; // target duration for a full autoplay cycle
+  const AUTOPLAY_MIN_STEP_MS = 400; // fastest we'll cycle points
+  const AUTOPLAY_SEQUENCE = [
+    { modes: ["setpoint"] },
+    { modes: ["actual"] },
+    { modes: ["outside"] },
+    { modes: ["cooling"] },
+    { modes: ["fan"] },
+    { pauseMs: 10_000 }, // show hands/logo for 10s with chart hidden
+    { modes: ["actual", "outside"] },           // options 2 + 3
+    { modes: ["actual", "outside", "cooling"] }, // then add option 4
+  ];
+  let autoplayEnabled = true;
+  let autoplayTimer = null;
+  let autoplayIdleTimer = null;
+  let autoplayIndex = 0;
+  let autoplaySegmentIndex = 0;
+  let autoplayStepMs = 3_000;
+  let savedModesBeforeAutoplay = null;
   let chartHistoryMonthPicker = null;
   let chartHistoryMonthList = null;
   let chartHistoryListsRow = null;
@@ -931,9 +1001,9 @@ line-height: 1;
       text: "#1a1a1a",
     },
     circulate: {
-      background: "radial-gradient(circle at 50% 40%, #ffd54f 0%, #f0a500 40%, #c2923a 100%)",
+      background: "#e8d6ae",
       border: "#c47f00",
-      text: "#2d1e00",
+      text: "#000000",
     },
     on: {
       background: "#059c15",
@@ -971,7 +1041,7 @@ line-height: 1;
 
   const coolingStyleMap = {
     idle: {
-      background: "#e0e2e5",
+      background: "#93a5c9 30%",
       border: "#b0b4ba",
       text: "#1a1a1a",
     },
@@ -1441,6 +1511,12 @@ line-height: 1;
         animation: {
           duration: 1400,
           easing: "easeOutQuart",
+          onComplete: () => {
+            reapplyVisibility();
+            if (chart) {
+              chart.update("none");
+            }
+          },
         },
         animations: {
           tension: {
@@ -1624,7 +1700,8 @@ line-height: 1;
 
     const fanCard = document.querySelector('.metric-card[data-metric="fan"]');
     const fanLabelRaw = getLatestFanRaw();
-    const fanText = fanLabelRaw ? String(fanLabelRaw).trim() : fanStateLabels[normalizeFanState(fanLabelRaw)] || "Auto";
+    const fanNorm = normalizeFanState(fanLabelRaw);
+    const fanText = fanStateLabels[fanNorm] || (fanLabelRaw ? String(fanLabelRaw).trim() : "Auto");
     setCardValue(fanCard, fanText);
     applyFanCardStyle(fanCard, getLatestFanValue());
 
@@ -1697,6 +1774,35 @@ line-height: 1;
       }
     });
   };
+
+  // Force a repaint of dataset segments by temporarily enabling all modes.
+  const reapplyVisibility = () => {
+    if (!chart) {
+      return;
+    }
+    const currentModes = new Set(enabledModes);
+    Object.keys(datasetIndexByMode).forEach((m) => enabledModes.add(m));
+    updateChartVisibility();
+    updateAxesVisibility();
+    chart.update();
+    enabledModes.clear();
+    currentModes.forEach((m) => enabledModes.add(m));
+    updateChartVisibility();
+    updateAxesVisibility();
+    updateButtonStates();
+    chart.update();
+  };
+
+  const setModeSet = (modes, animate = false) => {
+    enabledModes.clear();
+    modes.forEach((m) => enabledModes.add(m));
+    updateChartVisibility();
+    updateAxesVisibility();
+    updateButtonStates();
+    if (chart) {
+      chart.update(animate ? undefined : "none");
+    }
+  };
   const toggleMode = (mode) => {
     if (mode === "both") {
       const allEnabled = Object.keys(datasetIndexByMode).every((m) =>
@@ -1742,6 +1848,7 @@ line-height: 1;
     if (handsLogoTop) {
       handsLogoTop.classList.remove("hidden");
     }
+    scheduleAutoplay();
   };
 
   const hideChart = () => {
@@ -1754,6 +1861,140 @@ line-height: 1;
     }
     if (handsLogoTop) {
       handsLogoTop.classList.add("hidden");
+    }
+    stopAutoplay();
+  };
+
+  const stopAutoplay = (preserveModes = false) => {
+    if (autoplayTimer) {
+      clearInterval(autoplayTimer);
+      autoplayTimer = null;
+    }
+    if (autoplayIdleTimer) {
+      clearTimeout(autoplayIdleTimer);
+      autoplayIdleTimer = null;
+    }
+    if (chart) {
+      chart.setActiveElements([]);
+      chart.tooltip.setActiveElements([]);
+      chart.update("none");
+    }
+    if (!preserveModes && savedModesBeforeAutoplay) {
+      setModeSet(Array.from(savedModesBeforeAutoplay));
+    }
+    if (!preserveModes) {
+      savedModesBeforeAutoplay = null;
+      autoplaySegmentIndex = 0;
+    }
+  };
+
+  const highlightPoint = (index) => {
+    if (!chart || !chart.data || !chart.data.labels) {
+      return;
+    }
+    const pointIndex = index % chart.data.labels.length;
+    const active = [];
+    chart.data.datasets.forEach((ds, datasetIndex) => {
+      const meta = chart.getDatasetMeta(datasetIndex);
+      const visible = ds && meta && !ds.hidden && !meta.hidden;
+      if (visible) {
+        active.push({ datasetIndex, index: pointIndex });
+      }
+    });
+    chart.setActiveElements(active);
+    chart.tooltip.setActiveElements(active);
+    chart.update("none");
+  };
+
+  const startAutoplay = (immediate = false) => {
+    if (!autoplayEnabled || !chart || !chart.data || !chart.data.labels?.length) {
+      return;
+    }
+    if (!savedModesBeforeAutoplay) {
+      savedModesBeforeAutoplay = new Set(enabledModes);
+    }
+    if (autoplayTimer) {
+      clearInterval(autoplayTimer);
+    }
+    const labelsLen = chart.data.labels.length || 1;
+    const activeSegmentsCount = AUTOPLAY_SEQUENCE.filter((seg) => seg.modes)?.length || 1;
+    const totalSteps = labelsLen * activeSegmentsCount;
+    autoplayStepMs = Math.max(
+      AUTOPLAY_MIN_STEP_MS,
+      Math.round(AUTOPLAY_TARGET_MS / totalSteps)
+    );
+    const applyCurrentSegment = () => {
+      const segment = AUTOPLAY_SEQUENCE[autoplaySegmentIndex % AUTOPLAY_SEQUENCE.length];
+      if (!segment) {
+        return;
+      }
+      if (segment.pauseMs) {
+        if (autoplayTimer) {
+          clearInterval(autoplayTimer);
+          autoplayTimer = null;
+        }
+        hideChart();
+        if (handsLogoTop) {
+          handsLogoTop.classList.remove("hidden");
+        }
+        setTimeout(() => {
+          // Move to next segment after pause
+          autoplaySegmentIndex = (autoplaySegmentIndex + 1) % AUTOPLAY_SEQUENCE.length;
+          showChart();
+          setModeSet(AUTOPLAY_SEQUENCE[autoplaySegmentIndex % AUTOPLAY_SEQUENCE.length].modes || [], true);
+          autoplayIndex = 0;
+          startAutoplay(true);
+        }, segment.pauseMs);
+        return false;
+      }
+      setModeSet(segment.modes || [], true);
+      return true;
+    };
+
+    autoplayIndex = 0;
+    const ready = applyCurrentSegment();
+    if (!ready) {
+      return;
+    }
+    if (immediate) {
+      highlightPoint(autoplayIndex);
+    }
+    autoplayTimer = setInterval(() => {
+      autoplayIndex = (autoplayIndex + 1) % chart.data.labels.length;
+      if (autoplayIndex === 0) {
+        autoplaySegmentIndex = (autoplaySegmentIndex + 1) % AUTOPLAY_SEQUENCE.length;
+        const readyNext = applyCurrentSegment();
+        if (!readyNext) {
+          return;
+        }
+      }
+      highlightPoint(autoplayIndex);
+    }, autoplayStepMs);
+  };
+
+  const scheduleAutoplay = () => {
+    if (!autoplayEnabled) {
+      return;
+    }
+    if (autoplayIdleTimer) {
+      clearTimeout(autoplayIdleTimer);
+    }
+    autoplayIdleTimer = setTimeout(() => {
+      startAutoplay(true);
+    }, AUTOPLAY_IDLE_MS);
+  };
+
+  const markInteraction = () => {
+    stopAutoplay(true);
+    scheduleAutoplay();
+  };
+
+  const ensureAutoplayScheduled = () => {
+    if (!autoplayEnabled) {
+      return;
+    }
+    if (!autoplayTimer && !autoplayIdleTimer) {
+      scheduleAutoplay();
     }
   };
 
@@ -1990,6 +2231,7 @@ line-height: 1;
       chart.options.plugins.legend.display = false;
       chart.update();
     }
+    reapplyVisibility();
     showChart();
   }
 
@@ -1997,13 +2239,50 @@ line-height: 1;
     return getDashboardValue("archiveDates", []);
   }
 
-    if (chartControlButtons) {
-      chartControlButtons.forEach((button) => {
-        button.addEventListener("click", () => {
-          toggleMode(button.dataset.mode);
-        });
+  const updateAutoplayToggle = () => {
+    if (!autoplayToggle) {
+      return;
+    }
+    autoplayToggle.classList.toggle("active", autoplayEnabled);
+    autoplayToggle.classList.toggle("off", !autoplayEnabled);
+    autoplayToggle.textContent = autoplayEnabled ? "Auto-play: On" : "Auto-play: Off";
+  };
+
+  const bindAutoplayInteractions = () => {
+    const interactiveEls = [
+      chartArea,
+      canvas,
+      toggleHistoryBtn,
+      chartHistory,
+      ...Array.from(chartControlButtons || []),
+    ].filter(Boolean);
+    const events = ["mousemove", "touchstart", "click"];
+    interactiveEls.forEach((el) => {
+      events.forEach((evt) => {
+        el.addEventListener(evt, markInteraction);
+      });
+    });
+    if (autoplayToggle) {
+      autoplayToggle.addEventListener("click", () => {
+        autoplayEnabled = !autoplayEnabled;
+        stopAutoplay();
+        updateAutoplayToggle();
+        if (autoplayEnabled) {
+          startAutoplay(true);
+        } else {
+          ensureAutoplayScheduled();
+        }
       });
     }
+  };
+
+  if (chartControlButtons) {
+    chartControlButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        toggleMode(button.dataset.mode);
+      });
+    });
+  }
 
   if (toggleHistoryBtn) {
     toggleHistoryBtn.addEventListener("click", () => {
@@ -2022,6 +2301,9 @@ line-height: 1;
   }
 
   applyDashboardData(dashboardData);
+  bindAutoplayInteractions();
+  updateAutoplayToggle();
+  ensureAutoplayScheduled();
 })();
 
     </script>
