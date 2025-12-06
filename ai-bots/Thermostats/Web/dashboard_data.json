@@ -15,17 +15,17 @@
   ],
   "latestRow": [
     "Tuesday Nov 25 2025 8:11 PM",
-    "request (studio 11, zone3, 50m)",
-    "60",
+    "95",
+    "95",
     "80",
-    "cool",
-    "Circulate",
-    "cooling",
+    "Off",
+    "On",
+    "Cooling",
     "11",
     "8:54 PM",
     "NN57.0 | Mostly Cloudy",
     "On",
-    "35"
+    "10"
   ],
   "history": [
     {
@@ -199,9 +199,9 @@
     65.0,
     65.0,
     70.0,
-    66.0,
-    71.0,
-    60.0
+    88.0,
+    90.0,
+    95.0
   ],
   "setpointLabel": "Set Point",
   "actualLabel": "Current Temperature",
@@ -229,7 +229,7 @@
     "C",
     "C",
     "C",
-    "C"
+    "O"
   ],
   "fanLegend": [
     "Auto",
@@ -349,44 +349,44 @@
   "condenserMinutes": [
     null,
     null,
-    35.0,
-    20.0,
-    40.0,
+    0.0,
+    0.0,
+    0.0,
     null,
     null,
     null,
     null,
-    35.0,
+    0.0,
     null,
-    35.0,
+    0.0,
     null,
-    35.0,
+    0.0,
     null,
-    35.0,
+    0.0,
     null,
-    35.0,
+    0.0,
     null,
-    35.0,
+    0.0,
     null,
-    35.0,
+    0.0,
     null,
-    35.0
+    10.0
   ],
-  "totalCondenserMinutes": "375",
-  "totalCondenserMinutesValue": 375.0,
-  "totalCondenserCost": "$18.75",
-  "totalCondenserCostValue": 18.75,
+  "totalCondenserMinutes": "10",
+  "totalCondenserMinutesValue": 10.0,
+  "totalCondenserCost": "$0.50",
+  "totalCondenserCostValue": 0.5,
   "condenserCostPerMinute": 0.05,
-  "latestActual": 60.0,
+  "latestActual": 95.0,
   "latestSetpoint": 80.0,
   "latestOutside": 57.0,
   "latestOutsideRaw": "NN57.0 | Mostly Cloudy",
   "latestOutsideDaylight": false,
   "latestOutsideFlagDayChar": "N",
-  "latestFan": "C",
+  "latestFan": "O",
   "latestCooling": 1,
-  "generatedTimestamp": "Wednesday Dec 03 2025 10:23:03 PM",
-  "generatedDateSlug": "2025-12-03",
+  "generatedTimestamp": "Saturday Dec 06 2025 02:03:55 AM",
+  "generatedDateSlug": "2025-12-06",
   "archiveDates": [
     {
       "slug": "2025-12-07",
@@ -411,6 +411,14 @@
     {
       "slug": "2025-12-02",
       "label": "Dec 02, 2025"
+    },
+    {
+      "slug": "2025-11-30",
+      "label": "Nov 30, 2025"
+    },
+    {
+      "slug": "2025-11-29",
+      "label": "Nov 29, 2025"
     }
   ],
   "archivePath": "chart hist"

@@ -450,19 +450,6 @@ def build_dashboard_html(
         text = text.split(" ");
         return text[0] + " " + text[1] + " " + text[2] + "     " + text[4] + " " + text[5] 
 
-    def _format_card_timestamp(value: str) -> str:
-        """Short, fixed timestamp for card display to reduce wrapping."""
-        text = str(value or "").strip()
-        if not text:
-            return ""
-        for fmt in DATE_FORMATS:
-            try:
-                dt = datetime.strptime(text, fmt)
-                return dt.strftime("%m/%d %I:%M %p")
-            except ValueError:
-                continue
-        return text
-
     title = "Lockout Music Studios Oceanside CA"
     def _find_index(keywords: Tuple[str, ...]) -> Optional[int]:
         for idx, header in enumerate(headers):
@@ -492,8 +479,6 @@ def build_dashboard_html(
     cooling_idx = _find_index(
         ("equipment status", "equipment status", "status", "equipment", "cooling status")
     )
-    timestamp_idx = _find_index(("timestamp",))
-    type_idx = _find_index(("type",))
     FAN_LABELS = ["Auto", "Circulate", "On"]
     COOLING_LABELS = ["Idle", "Cooling"]
 
@@ -576,14 +561,6 @@ def build_dashboard_html(
         total_condenser_minutes_value = 0
     total_condenser_cost_value = total_condenser_minutes_value * COST_PER_MINUTE
     total_condenser_cost_display = f"${total_condenser_cost_value:,.2f}"
-    if total_condenser_cost_value < 5:
-        condenser_cost_class = "cost-ok"
-    elif total_condenser_cost_value < 10:
-        condenser_cost_class = "cost-warm"
-    elif total_condenser_cost_value < 15:
-        condenser_cost_class = "cost-hot"
-    else:
-        condenser_cost_class = "cost-red"
     chart_data = []
     for label, sp_val, actual_val in zip(chart_labels, setpoint_series, actual_series):
         selected = sp_val if sp_val is not None else actual_val
@@ -693,8 +670,6 @@ def build_dashboard_html(
             value = total_condenser_display or "0"
         else:
             value = latest_row[idx] if idx < len(latest_row) else ""
-        if idx == timestamp_idx:
-            value = _format_card_timestamp(value)
         if value is None:
             value = ""
         metric_attr = ""
@@ -713,10 +688,6 @@ def build_dashboard_html(
             metric_attr = ' data-metric="outside"'
         elif idx == condenser_idx:
             metric_attr = ' data-metric="condenser-minutes"'
-        elif idx == timestamp_idx:
-            metric_attr = ' data-metric="timestamp"'
-        elif idx == type_idx:
-            metric_attr = ' data-metric="type"'
         cards += f"""
         <div class="metric-card{fan_state_class}"{metric_attr}>
           <div class="label">{display_label}</div>
@@ -765,14 +736,14 @@ def build_dashboard_html(
         color: inherit;
         margin: 0;
         font-family: 'Inter', system-ui, sans-serif;
-        background: linear-gradient(to bottom, #453082, #71688c);
+        background: #4a4a4a;
         color: #f4f6ff;
       }}
       .container {{
         max-width: 900px;
         margin: 1px auto;
         padding: 1px;
-        background: transparent;
+        background: #4a4a4a;
         border-radius: 16px;
       }}
       h1 {{
@@ -857,11 +828,14 @@ line-height: 1;
         gap: 16px;
       }}
       .hands-logo-slot {{
-        display: none;
-        width: 0;
-        height: 0;
-        margin: 0;
-        padding: 0;
+        width: 91%;
+        display: flex;
+        justify-content: right;
+        align-items: flex-start;
+        padding-left: 52px;
+        position: relative;
+        min-height: 80px;
+        margin-top: 60px;
       }}
       .metric-card {{
         background: #2b2b30;
@@ -869,7 +843,7 @@ line-height: 1;
         border: 1px solid #3a3a40;
         border-radius: 12px;
         padding: 16px;
-        min-height: 70px;
+        min-height: 140px;
       }}
       .metric-card[data-metric="fan"] {{
         background: #f7e9b5;
@@ -893,12 +867,6 @@ line-height: 1;
       }}
       .metric-card.fan-state-c[data-metric="fan"] .value {{
         color: #5a4a12;
-      }}
-      .metric-card[data-metric="timestamp"] .value {{
-        font-size: 16px;
-      }}
-      .metric-card[data-metric="type"] .value {{
-        font-size: 16px;
       }}
       .metric-card .label {{
         font-size: 14px;
@@ -955,7 +923,8 @@ line-height: 1;
         background-size: contain;
       }}
       .history-panel {{
-        margin-top: 8px;
+        
+        margin-top: 32px;
         background: rgba(255,255,255,0.02);
         border-radius: 12px;
         padding: 16px;
@@ -1036,10 +1005,10 @@ line-height: 1;
         transition: background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
       }}
       .chart-control.active {{
-        background: #0d0d12;
-        color: #66ff99;
-        border-color: #1a1a20;
-        box-shadow: none;
+        background: #063016;
+        color: #d5eadd;
+        border-color: #063016;
+        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.45);
       }}
       #autoplay-toggle {{
         color: #66ff99;
@@ -1069,21 +1038,6 @@ line-height: 1;
         font-size: 16px;
         font-weight: 600;
         color: #fff5c7;
-        background: linear-gradient(to bottom, #241B44, #332459);
-        padding: 2px 6px;
-        border-radius: 6px;
-      }}
-      .condenser-runtime .cost-value.cost-ok {{
-        color: #00C853;
-      }}
-      .condenser-runtime .cost-value.cost-warm {{
-        color: #ffcc99;
-      }}
-      .condenser-runtime .cost-value.cost-hot {{
-        color: #f08a24;
-      }}
-      .condenser-runtime .cost-value.cost-red {{
-        color: #FF1744;
       }}
       #history-chart {{
 
@@ -1091,38 +1045,21 @@ line-height: 1;
         display: none;
         width: 100% !important;
         height: 100% !important;
-        background: linear-gradient(
-          to bottom,
-          #0F0B1A 0%,
-          #2A1E55 40%,
-          #332459 75%
-        );
+        background: #000;
       }}
       .chart-wrap {{
         height: 600px;
         margin: 8px auto 0;
-        background: linear-gradient(
-          to bottom,
-          #0F0B1A 0%,
-          #2A1E55 40%,
-          #332459 75%
-        );
+        background: #000;
         position: relative;
         max-width: 900px;
         width: 100%;
         padding: 12px 0 18px;
         box-sizing: border-box;
-        background-image:
-          url("../../../Images/Hands.png"),
-          linear-gradient(
-            to bottom,
-            #0F0B1A 0%,
-            #2A1E55 40%,
-            #332459 75%
-          );
-        background-size: contain, cover;
-        background-repeat: no-repeat, no-repeat;
-        background-position: center top, center;
+        background-image: url("../../../Images/Hands.png");
+        background-size: 100% 100%;
+        background-repeat: no-repeat;
+        background-position: center top;
       }}
       .fan-legend-image {{
       }}
@@ -1352,7 +1289,7 @@ line-height: 1;
         <div class="label">Total condenser runtime</div>
         <div class="value">{total_condenser_display or "0"} min</div>
         <div class="cost-label">Estimated condenser cost</div>
-        <div class="cost-value {condenser_cost_class}">{total_condenser_cost_display or "$0.00"}</div>
+        <div class="cost-value">{total_condenser_cost_display or "$0.00"}</div>
       </div>
 
       <div id="chartcontrols" class="chart-controls">
