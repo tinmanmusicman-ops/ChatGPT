@@ -718,7 +718,7 @@ def build_dashboard_html(
         elif idx == type_idx:
             metric_attr = ' data-metric="type"'
         cards += f"""
-        <div class="metric-card{fan_state_class}"{metric_attr}>
+        <div class="metric-card frame2{fan_state_class}"{metric_attr}>
           <div class="label">{display_label}</div>
           <div class="value">{value}</div>
         </div>
@@ -765,20 +765,40 @@ def build_dashboard_html(
         color: inherit;
         margin: 0;
         font-family: 'Inter', system-ui, sans-serif;
-        background: linear-gradient(to bottom, #453082, #71688c);
+        background: linear-gradient(to bottom, #070312, #160d30, #221542, #453082, #5b517a, #71688c, #71688c, #877796, #71688c);
         color: #f4f6ff;
+      }}
+      .screen-bezel {{
+        border-radius: 10px;
+        padding: 12px;
+        background: #0d0d12;
+        box-shadow:
+          0 3px 10px rgba(0,0,0,0.7),
+          inset 0 1px 3px rgba(255,255,255,0.03),
+          inset 0 -2px 5px rgba(0,0,0,0.6),
+          inset 0 0 8px rgba(120, 60, 200, 0.15);
+      }}
+      .frame {{
+        border: 25px solid rgba(255,255,255,0.05);
+        border-radius: 12px;
+        box-shadow:
+          0 4px 6px rgba(0,0,0,0.45),
+          inset 0 4px 4px rgba(255,255,255,0.03),
+          inset 0 -2px 4px rgba(0,0,0,0.35);
+      }}
+      .frame2 {{
+        border: 6px solid rgba(255,255,255,0.05);
+        border-radius: 12px;
+        box-shadow:
+          0 4px 12px rgba(0,0,0,0.45),
+          inset 0 1px 2px rgba(255,255,255,0.03),
+          inset 0 -2px 4px rgba(0,0,0,0.35);
       }}
       .container {{
         max-width: 900px;
         margin: 1px auto;
-        padding: 24px;
+        padding: 40px;
         background: transparent;
-        border-radius: 22px;
-        box-shadow:
-          0 0 18px rgba(255, 255, 255, 0.05),
-          0 0 32px rgba(0, 0, 0, 0.45),
-          inset 0 1px 4px rgba(255, 255, 255, 0.06),
-          inset 0 -2px 8px rgba(0, 0, 0, 0.45);
       }}
       h1 {{
         margin: 0 0 16px;
@@ -856,7 +876,8 @@ line-height: 1;
         object-fit: contain;
       }}
       .card-grid {{
-
+        border-radius: 2px;
+        padding: 10px;
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
         gap: 16px;
@@ -988,31 +1009,34 @@ line-height: 1;
       }}
       button {{
         background: #66ff99;
-        border: none;
+        border: 8px outset;
         color: #051b05;
         padding: 10px 18px;
         border-radius: 8px;
         font-weight: 600;
         cursor: pointer;
-        transition: transform 0.2s ease;
+        transition: transform 0.8s ease;
       }}
       #toggle-history {{
+        display: inline-block;
+        min-width: 190px;
+        border: 5px outset #1f1f26;
         background: #111117;
         color: #c7cbcf;
-        border: 1px solid #1f1f26;
         padding: 10px 18px;
         border-radius: 8px;
         font-weight: 600;
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
-        transition: background 0.3s ease, color 0.3s ease;
+        transition: background 0.3s ease, color 0.8s ease;
       }}
       #toggle-history.history-visible {{
-        background: #063016;
+        border: 5px outset #063016;
+        background: #021409;
         color: #dceadf;
-        border-color: #063016;
         box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+        transition: background 0.3s ease;
       }}
       button:active {{
         transform: scale(0.98);
@@ -1032,13 +1056,13 @@ line-height: 1;
         height: 100px;
       }}
       .chart-control {{
-        border: 1px solid #1a1a20;
+        border: 4px outset #1a1a20;
         background: #0d0d12;
         color: #6f7176;
         padding: 6px 12px;
         border-radius: 8px;
         cursor: pointer;
-        transition: background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+        transition: background 1.3s ease, color 1.3s ease, box-shadow 1.3s ease;
       }}
       .chart-control.active {{
         background: #0d0d12;
@@ -1106,28 +1130,40 @@ line-height: 1;
       .chart-wrap {{
         height: 600px;
         margin: 8px auto 0;
-        background: linear-gradient(
-          to bottom,
-          #0F0B1A 0%,
-          #2A1E55 40%,
-          #332459 75%
-        );
+        background: #0F0B1A;
         position: relative;
         max-width: 900px;
         width: 100%;
-        padding: 12px 0 18px;
+        padding: 0;
         box-sizing: border-box;
-        background-image:
-          url("../../../Images/Hands.png"),
-          linear-gradient(
-            to bottom,
-            #0F0B1A 0%,
-            #2A1E55 40%,
-            #332459 75%
-          );
-        background-size: contain, cover;
-        background-repeat: no-repeat, no-repeat;
-        background-position: center top, center;
+        background-image: url("../../../Images/Hands.png");
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center top;
+        border: 4px solid rgba(220, 220, 220, 0.45);
+        border-radius: 4px;
+        box-shadow:
+          0 0 18px rgba(255, 255, 255, 0.35),
+          0 0 4px rgba(255, 255, 255, 0.25),
+          inset 0 0 22px rgba(0, 0, 0, 0.75),
+          inset 0 0 12px rgba(255, 255, 255, 0.12);
+      }}
+      .chart-wrap::before {{
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: url("../../../Images/Hands.png");
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center top;
+        opacity: 0;
+        transition: opacity 0.6s ease;
+        pointer-events: none;
+        border-radius: inherit;
+        z-index: 1;
+      }}
+      .chart-wrap.show-hands::before {{
+        opacity: 1;
       }}
       .fan-legend-image {{
       }}
@@ -1149,7 +1185,7 @@ line-height: 1;
         top: -86px;
         right: 0;
         background: #2f3136;
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        border: 1px ridge rgba(255, 255, 255, 0.2);
         border-radius: 14px;
         padding: 12px 14px;
         max-height: 220px;
@@ -1200,6 +1236,7 @@ line-height: 1;
         padding: 0;
       }}
       .history-months-list button {{
+        border: 8px outset;
         all: unset;
         width: 100%;
         padding: 2px 6px;
@@ -1333,7 +1370,7 @@ line-height: 1;
     </style>
   </head>
   <body>
-    <div class="container">
+    <div class="container frame">
       <div class="header-row">
         <div id="Company">Lockout Music Studios  Oceanside</div>
         <div id="Logo"class="logo-placeholder">
@@ -1343,14 +1380,14 @@ line-height: 1;
       <div class="timestamp-row">
         <div id="dashboard-timestamp" class="date-display">{generated_label}</div>
       </div>
-      <div id="Cards" class="card-grid">
+      <div id="Cards" class="card-grid frame2">
         {cards}
       </div>
       <div class="hands-logo-slot" aria-hidden="true">
         <div class="hands-logo-top"></div>
       </div>
         
-      <div id="history" class="history-panel">
+      <div id="history" class="history-panel frame">
 
       <button id="toggle-history">Show History Chart</button>
       <div class="condenser-runtime">
