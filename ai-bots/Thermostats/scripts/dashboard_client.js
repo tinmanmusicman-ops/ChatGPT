@@ -1,5 +1,5 @@
 (() => {
-  // Bootstrap: log once and capture the embedded JSON payload.
+  //  Bootstrap: log once and capture the embedded JSON payload.
   console.log("Starting Javascript")
   const dataEl = document.getElementById("dashboard-data-inline");
   const parseInlineData = () => {
