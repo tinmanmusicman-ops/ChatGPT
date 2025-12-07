@@ -7,28 +7,45 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap">
     <style>
       body {
-
-/* linear-gradient(to bottom, #0d0a17, #1a1530, #281f4a), */
-    url('data:image/svg+xml;utf8,      <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">        <filter id="noise">          <feTurbulence type="fractalNoise" baseFrequency="0.6" numOctaves="3"/>        </filter>        <rect width="100%" height="100%" filter="url(#noise)" opacity="0.018"/>      </svg>');
-  background-blend-mode: overlay;
-  background-repeat: repeat;
-
-
-
         forced-color-adjust: none;
         -webkit-text-fill-color: initial;
         color: inherit;
         margin: 0;
         font-family: 'Inter', system-ui, sans-serif;
-        background: linear-gradient(to bottom, #453082, #71688c); 
+        background: linear-gradient(to bottom, #070312, #160d30, #221542, #453082, #5b517a, #71688c, #71688c, #877796, #71688c);
         color: #f4f6ff;
+      }
+      .screen-bezel {
+        border-radius: 10px;
+        padding: 12px;
+        background: #0d0d12;
+        box-shadow:
+          0 3px 10px rgba(0,0,0,0.7),
+          inset 0 1px 3px rgba(255,255,255,0.03),
+          inset 0 -2px 5px rgba(0,0,0,0.6),
+          inset 0 0 8px rgba(120, 60, 200, 0.15);
+      }
+      .frame {
+        border: 25px solid rgba(255,255,255,0.05);
+        border-radius: 12px;
+        box-shadow:
+          0 4px 6px rgba(0,0,0,0.45),
+          inset 0 4px 4px rgba(255,255,255,0.03),
+          inset 0 -2px 4px rgba(0,0,0,0.35);
+      }
+      .frame2 {
+        border: 6px solid rgba(255,255,255,0.05);
+        border-radius: 12px;
+        box-shadow:
+          0 4px 12px rgba(0,0,0,0.45),
+          inset 0 1px 2px rgba(255,255,255,0.03),
+          inset 0 -2px 4px rgba(0,0,0,0.35);
       }
       .container {
         max-width: 900px;
         margin: 1px auto;
-        padding: 1px;
+        padding: 40px;
         background: transparent;
-        border-radius: 16px;
       }
       h1 {
         margin: 0 0 16px;
@@ -105,12 +122,57 @@ line-height: 1;
         max-height: 100%;
         object-fit: contain;
       }
-      .card-grid {
+.card-grid {
+  padding: 18px 22px;
+  border-radius: 12px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
 
+  /* Recessed panel styling */
+  background: linear-gradient(
+    to bottom,
+    #120f1c 0%,
+    #1a162b 50%,
+    #0f0d17 100%
+  );
+  border: 2px solid rgba(200, 220, 255, 0.08);
+  box-shadow:
+    inset 0 2px 12px rgba(255, 255, 255, 0.04),
+    inset 0 -2px 18px rgba(0, 0, 0, 0.7),
+    inset 0 0 24px rgba(0, 0, 0, 0.8),
+    0 2px 4px rgba(0, 0, 0, 0.5);
+  background-blend-mode: overlay;
+
+  /* Enables grain layer */
+  position: relative;
+  overflow: hidden;
+}
+
+/* Grain overlay */
+.card-grid::after {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 1;
+
+  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAEklEQVR42mP8/5+hHgAHggJ/P4qUPwAAAABJRU5ErkJggg==");
+  background-repeat: repeat;
+  opacity: 0.07;
+  mix-blend-mode: soft-light;
+}
+
+/*
+      .card-grid {
+        border-radius: 2px;
+        padding: 10px;
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
         gap: 16px;
       }
+*/
       .hands-logo-slot {
         display: none;
         width: 0;
@@ -121,7 +183,7 @@ line-height: 1;
       .metric-card {
         background: #2b2b30;
         color: #f5f7ff;
-        border: 1px solid #3a3a40;
+        border: 10px ridge #3a3a40;
         border-radius: 12px;
         padding: 16px;
         min-height: 70px;
@@ -209,6 +271,20 @@ line-height: 1;
         background-position: center;
         background-size: contain;
       }
+      /* Constrain outside metric graphic to the right half, keep text on left */
+      .metric-card[data-metric="outside"] {
+        padding-right: 50%;
+      }
+      .metric-card .sunny-graphic {
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: 50%;
+        height: 100%;
+        transform: none;
+        background-size: contain;
+        background-position: center;
+      }
       .history-panel {
         margin-top: 8px;
         background: rgba(255,255,255,0.02);
@@ -238,31 +314,34 @@ line-height: 1;
       }
       button {
         background: #66ff99;
-        border: none;
+        border: 8px outset;
         color: #051b05;
         padding: 10px 18px;
         border-radius: 8px;
         font-weight: 600;
         cursor: pointer;
-        transition: transform 0.2s ease;
+        transition: transform 0.8s ease;
       }
       #toggle-history {
+        display: inline-block;
+        min-width: 190px;
+        border: 5px outset #1f1f26;
         background: #111117;
         color: #c7cbcf;
-        border: 1px solid #1f1f26;
         padding: 10px 18px;
         border-radius: 8px;
         font-weight: 600;
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
-        transition: background 0.3s ease, color 0.3s ease;
+        transition: background 0.3s ease, color 0.8s ease;
       }
       #toggle-history.history-visible {
-        background: #063016;
+        border: 5px outset #063016;
+        background: #021409;
         color: #dceadf;
-        border-color: #063016;
         box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+        transition: background 0.3s ease;
       }
       button:active {
         transform: scale(0.98);
@@ -282,13 +361,13 @@ line-height: 1;
         height: 100px;
       }
       .chart-control {
-        border: 1px solid #1a1a20;
+        border: 4px outset #1a1a20;
         background: #0d0d12;
         color: #6f7176;
         padding: 6px 12px;
         border-radius: 8px;
         cursor: pointer;
-        transition: background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+        transition: background 1.3s ease, color 1.3s ease, box-shadow 1.3s ease;
       }
       .chart-control.active {
         background: #0d0d12;
@@ -348,36 +427,52 @@ line-height: 1;
         height: 100% !important;
         background: linear-gradient(
           to bottom,
-          #0F0B1A 0%,
-          #2A1E55 40%,
-          #332459 75%
-        );
+          #000 0%,
+          #0F0B1A 20%,
+          #1a142b 40%,
+          #1f1445 50%,
+          #2A1E55 60%,
+          #2A1E55 70%,
+          #5e508f 96%
+  );
       }
       .chart-wrap {
         height: 600px;
         margin: 8px auto 0;
-        background: linear-gradient(
-          to bottom,
-          #0F0B1A 0%,
-          #2A1E55 40%,
-          #332459 75%
-        );
+        background: #0F0B1A;
         position: relative;
         max-width: 900px;
         width: 100%;
-        padding: 12px 0 18px;
+        padding: 0;
         box-sizing: border-box;
-        background-image:
-          url("../../../Images/Hands.png"),
-          linear-gradient(
-            to bottom,
-            #0F0B1A 0%,
-            #2A1E55 40%,
-            #332459 75%
-          );
-        background-size: contain, cover;
-        background-repeat: no-repeat, no-repeat;
-        background-position: center top, center;
+        background-image: url("../../../Images/Hands.png");
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center top;
+        border: 4px solid rgba(220, 220, 220, 0.45);
+        border-radius: 4px;
+        box-shadow:
+          0 0 18px rgba(255, 255, 255, 0.35),
+          0 0 4px rgba(255, 255, 255, 0.25),
+          inset 0 0 22px rgba(0, 0, 0, 0.75),
+          inset 0 0 12px rgba(255, 255, 255, 0.12);
+      }
+      .chart-wrap::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: url("../../../Images/Hands.png");
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center top;
+        opacity: 0;
+        transition: opacity 0.6s ease;
+        pointer-events: none;
+        border-radius: inherit;
+        z-index: 1;
+      }
+      .chart-wrap.show-hands::before {
+        opacity: 1;
       }
       .fan-legend-image {
       }
@@ -399,7 +494,7 @@ line-height: 1;
         top: -86px;
         right: 0;
         background: #2f3136;
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        border: 1px ridge rgba(255, 255, 255, 0.2);
         border-radius: 14px;
         padding: 12px 14px;
         max-height: 220px;
@@ -450,6 +545,7 @@ line-height: 1;
         padding: 0;
       }
       .history-months-list button {
+        border: 8px outset;
         all: unset;
         width: 100%;
         padding: 2px 6px;
@@ -583,7 +679,7 @@ line-height: 1;
     </style>
   </head>
   <body>
-    <div class="container">
+    <div class="container frame">
       <div class="header-row">
         <div id="Company">Lockout Music Studios  Oceanside</div>
         <div id="Logo"class="logo-placeholder">
@@ -591,68 +687,68 @@ line-height: 1;
         </div>
       </div>
       <div class="timestamp-row">
-        <div id="dashboard-timestamp" class="date-display">Saturday Dec 06 2025 03:49:08 AM</div>
+        <div id="dashboard-timestamp" class="date-display">Saturday Dec 06 2025 05:46:22 PM</div>
       </div>
-      <div id="Cards" class="card-grid">
+      <div id="Cards" class="card-grid frame2">
         
-        <div class="metric-card" data-metric="timestamp">
+        <div class="metric-card frame2" data-metric="timestamp">
           <div class="label">Timestamp</div>
           <div class="value">Tuesday Nov 25 2025 8:11 PM</div>
         </div>
         
-        <div class="metric-card" data-metric="type">
+        <div class="metric-card frame2" data-metric="type">
           <div class="label">Type</div>
-          <div class="value">95</div>
+          <div class="value">System</div>
         </div>
         
-        <div class="metric-card" data-metric="actual">
+        <div class="metric-card frame2" data-metric="actual">
           <div class="label">Building Temperature</div>
           <div class="value">95</div>
         </div>
         
-        <div class="metric-card" data-metric="setpoint">
+        <div class="metric-card frame2" data-metric="setpoint">
           <div class="label">Cooling Set Point</div>
           <div class="value">80</div>
         </div>
         
-        <div class="metric-card">
+        <div class="metric-card frame2">
           <div class="label">Climate Setting</div>
           <div class="value">Off</div>
         </div>
         
-        <div class="metric-card fan-state-o" data-metric="fan">
+        <div class="metric-card frame2 fan-state-o" data-metric="fan">
           <div class="label">Fan Setting</div>
           <div class="value">On</div>
         </div>
         
-        <div class="metric-card" data-metric="cooling">
+        <div class="metric-card frame2" data-metric="cooling">
           <div class="label">Equipment Status</div>
           <div class="value">Cooling</div>
         </div>
         
-        <div class="metric-card">
+        <div class="metric-card frame2">
           <div class="label">Studio</div>
           <div class="value">11</div>
         </div>
         
-        <div class="metric-card">
+        <div class="metric-card frame2">
           <div class="label">Request Expires (local time)</div>
           <div class="value">8:54 PM</div>
         </div>
         
-        <div class="metric-card" data-metric="outside">
+        <div class="metric-card frame2" data-metric="outside">
           <div class="label">Outside Temp</div>
           <div class="value">57</div>
         </div>
         
-        <div class="metric-card">
+        <div class="metric-card frame2" data-metric="condenser-state">
           <div class="label">Condenser State</div>
           <div class="value">On</div>
         </div>
         
-        <div class="metric-card" data-metric="condenser-minutes">
+        <div class="metric-card frame2" data-metric="condenser-minutes">
           <div class="label">Condenser Minutes Past Hour</div>
-          <div class="value">10</div>
+          <div class="value">500</div>
         </div>
         
       </div>
@@ -660,14 +756,14 @@ line-height: 1;
         <div class="hands-logo-top"></div>
       </div>
         
-      <div id="history" class="history-panel">
+      <div id="history" class="history-panel frame">
 
       <button id="toggle-history">Show History Chart</button>
       <div class="condenser-runtime">
         <div class="label">Total condenser runtime</div>
-        <div class="value">10 min</div>
+        <div class="value">500 min</div>
         <div class="cost-label">Estimated condenser cost</div>
-        <div class="cost-value cost-ok">$0.50</div>
+        <div class="cost-value cost-red">$25.00</div>
       </div>
 
       <div id="chartcontrols" class="chart-controls">
@@ -696,11 +792,11 @@ line-height: 1;
     </div>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script id="dashboard-data-inline" type="application/json">
-{"headers": ["Timestamp", "Type", "Current Temperature", "Cooling Set Point", "Climate Setting", "Fan Setting", "Equipment Status", "Studio", "Request Expires (local time)", "Outside Temp", "Condenser State", "Condenser Minutes"], "latestRow": ["Tuesday Nov 25 2025 8:11 PM", "95", "95", "80", "Off", "On", "Cooling", "11", "8:54 PM", "NN57.0 | Mostly Cloudy", "On", "10"], "history": [{"label": "Sunday Nov 23     1:56 PM", "value": 70.0}, {"label": "Sunday Nov 23     2:02 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:46 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:59 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:03 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:06 PM", "value": 75.0}, {"label": "Sunday Nov 23     11:20 PM", "value": 75.0}, {"label": "Tuesday Nov 25     7:59 PM", "value": 72.0}, {"label": "Tuesday Nov 25     8:01 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:04 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:11 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:46 PM", "value": 74.0}, {"label": "Friday Nov 21     6:51 PM", "value": 74.0}, {"label": "Sunday Nov 23     1:56 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:02 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:46 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:59 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:03 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:06 PM", "value": 75.0}, {"label": "Sunday Nov 23     11:20 PM", "value": 74.0}, {"label": "Tuesday Nov 25     7:59 PM", "value": 72.0}, {"label": "Tuesday Nov 25     8:01 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:04 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:11 PM", "value": 80.0}], "chartLabels": ["Sunday Nov 23     1:56 PM", "Sunday Nov 23     2:02 PM", "Sunday Nov 23     2:46 PM", "Sunday Nov 23     2:59 PM", "Sunday Nov 23     3:03 PM", "Sunday Nov 23     3:06 PM", "Sunday Nov 23     11:20 PM", "Tuesday Nov 25     7:59 PM", "Tuesday Nov 25     8:01 PM", "Tuesday Nov 25     8:04 PM", "Tuesday Nov 25     8:11 PM", "Tuesday Nov 25     8:46 PM", "Friday Nov 21     6:51 PM", "Sunday Nov 23     1:56 PM", "Sunday Nov 23     2:02 PM", "Sunday Nov 23     2:46 PM", "Sunday Nov 23     2:59 PM", "Sunday Nov 23     3:03 PM", "Sunday Nov 23     3:06 PM", "Sunday Nov 23     11:20 PM", "Tuesday Nov 25     7:59 PM", "Tuesday Nov 25     8:01 PM", "Tuesday Nov 25     8:04 PM", "Tuesday Nov 25     8:11 PM"], "setpoint": [70.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 72.0, 74.0, 74.0, 74.0, 74.0, 74.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 74.0, 72.0, 74.0, 74.0, 80.0], "actual": [45.0, 71.0, 72.0, 73.0, 74.0, 75.0, 75.0, 75.0, 75.0, 73.0, 72.0, 71.0, 70.0, 68.0, 65.0, 61.0, 64.0, 63.0, 65.0, 65.0, 70.0, 88.0, 90.0, 95.0], "setpointLabel": "Set Point", "actualLabel": "Current Temperature", "fan": ["A", "A", "O", "O", "O", "O", "O", "C", "C", "C", "C", "A", "A", "A", "A", "A", "A", "A", "A", "A", "C", "C", "C", "O"], "fanLegend": ["Auto", "Circulate", "On"], "outside": [55.0, 65.0, 65.0, 65.0, 62.0, 59.0, 57.0, 53.0, 52.0, 50.0, 49.0, 49.0, 48.0, 48.0, 47.0, 46.0, 46.0, 47.0, 48.0, 54.0, 58.0, 61.0, 63.0, 57.0], "outsideLabel": "Outside Temp", "outsideFlags": ["S", "S", "P", "O", "R", "R", "P", "P", "O", "O", "P", "P", "P", "P", "O", "P", "P", "P", "P", "P", "P", "S", "S", "N"], "outsideFlagDayChars": ["5", "6", "6", "6", "6", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "4", "5", "5", "6", "6", "N"], "cooling": [0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1], "coolingLegend": ["Idle", "Cooling"], "coolingLabel": "Equipment Status", "condenserMinutes": [null, null, 0.0, 0.0, 0.0, null, null, null, null, 0.0, null, 0.0, null, 0.0, null, 0.0, null, 0.0, null, 0.0, null, 0.0, null, 10.0], "totalCondenserMinutes": "10", "totalCondenserMinutesValue": 10.0, "totalCondenserCost": "$0.50", "totalCondenserCostValue": 0.5, "condenserCostPerMinute": 0.05, "latestActual": 95.0, "latestSetpoint": 80.0, "latestOutside": 57.0, "latestOutsideRaw": "NN57.0 | Mostly Cloudy", "latestOutsideDaylight": false, "latestOutsideFlagDayChar": "N", "latestFan": "O", "latestCooling": 1, "generatedTimestamp": "Saturday Dec 06 2025 03:49:08 AM", "generatedDateSlug": "2025-12-06", "archiveDates": [{"slug": "2025-12-07", "label": "Dec 07, 2025"}, {"slug": "2025-12-06", "label": "Dec 06, 2025"}, {"slug": "2025-12-05", "label": "Dec 05, 2025"}, {"slug": "2025-12-04", "label": "Dec 04, 2025"}, {"slug": "2025-12-03", "label": "Dec 03, 2025"}, {"slug": "2025-12-02", "label": "Dec 02, 2025"}, {"slug": "2025-11-30", "label": "Nov 30, 2025"}, {"slug": "2025-11-29", "label": "Nov 29, 2025"}], "archivePath": "chart hist"}
+{"headers": ["Timestamp", "Type", "Current Temperature", "Cooling Set Point", "Climate Setting", "Fan Setting", "Equipment Status", "Studio", "Request Expires (local time)", "Outside Temp", "Condenser State", "Condenser Minutes"], "latestRow": ["Tuesday Nov 25 2025 8:11 PM", "System", "95", "80", "Off", "On", "Cooling", "11", "8:54 PM", "NN57.0 | Mostly Cloudy", "On", "500"], "history": [{"label": "Sunday Nov 23     1:56 PM", "value": 70.0}, {"label": "Sunday Nov 23     2:02 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:46 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:59 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:03 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:06 PM", "value": 75.0}, {"label": "Sunday Nov 23     11:20 PM", "value": 75.0}, {"label": "Tuesday Nov 25     7:59 PM", "value": 72.0}, {"label": "Tuesday Nov 25     8:01 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:04 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:11 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:46 PM", "value": 74.0}, {"label": "Friday Nov 21     6:51 PM", "value": 74.0}, {"label": "Sunday Nov 23     1:56 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:02 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:46 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:59 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:03 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:06 PM", "value": 75.0}, {"label": "Sunday Nov 23     11:20 PM", "value": 74.0}, {"label": "Tuesday Nov 25     7:59 PM", "value": 72.0}, {"label": "Tuesday Nov 25     8:01 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:04 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:11 PM", "value": 80.0}], "chartLabels": ["Sunday Nov 23     1:56 PM", "Sunday Nov 23     2:02 PM", "Sunday Nov 23     2:46 PM", "Sunday Nov 23     2:59 PM", "Sunday Nov 23     3:03 PM", "Sunday Nov 23     3:06 PM", "Sunday Nov 23     11:20 PM", "Tuesday Nov 25     7:59 PM", "Tuesday Nov 25     8:01 PM", "Tuesday Nov 25     8:04 PM", "Tuesday Nov 25     8:11 PM", "Tuesday Nov 25     8:46 PM", "Friday Nov 21     6:51 PM", "Sunday Nov 23     1:56 PM", "Sunday Nov 23     2:02 PM", "Sunday Nov 23     2:46 PM", "Sunday Nov 23     2:59 PM", "Sunday Nov 23     3:03 PM", "Sunday Nov 23     3:06 PM", "Sunday Nov 23     11:20 PM", "Tuesday Nov 25     7:59 PM", "Tuesday Nov 25     8:01 PM", "Tuesday Nov 25     8:04 PM", "Tuesday Nov 25     8:11 PM"], "setpoint": [70.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 72.0, 74.0, 74.0, 74.0, 74.0, 74.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 74.0, 72.0, 74.0, 74.0, 80.0], "actual": [45.0, 71.0, 72.0, 73.0, 74.0, 75.0, 75.0, 75.0, 75.0, 73.0, 72.0, 71.0, 70.0, 68.0, 65.0, 61.0, 64.0, 63.0, 65.0, 65.0, 70.0, 88.0, 90.0, 95.0], "setpointLabel": "Set Point", "actualLabel": "Current Temperature", "fan": ["A", "A", "O", "O", "O", "O", "O", "C", "C", "C", "C", "A", "A", "A", "A", "A", "A", "A", "A", "A", "C", "C", "C", "O"], "fanLegend": ["Auto", "Circulate", "On"], "outside": [55.0, 65.0, 65.0, 65.0, 62.0, 59.0, 57.0, 53.0, 52.0, 50.0, 49.0, 49.0, 48.0, 48.0, 47.0, 46.0, 46.0, 47.0, 48.0, 54.0, 58.0, 61.0, 63.0, 57.0], "outsideLabel": "Outside Temp", "outsideFlags": ["S", "S", "P", "O", "R", "R", "P", "P", "O", "O", "P", "P", "P", "P", "O", "P", "P", "P", "P", "P", "P", "S", "S", "N"], "outsideFlagDayChars": ["5", "6", "6", "6", "6", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "4", "5", "5", "6", "6", "N"], "cooling": [0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1], "coolingLegend": ["Idle", "Cooling"], "coolingLabel": "Equipment Status", "condenserMinutes": [null, null, 0.0, 0.0, 0.0, null, null, null, null, 0.0, null, 0.0, null, 0.0, null, 0.0, null, 0.0, null, 0.0, null, 0.0, null, 500.0], "totalCondenserMinutes": "500", "totalCondenserMinutesValue": 500.0, "totalCondenserCost": "$25.00", "totalCondenserCostValue": 25.0, "condenserCostPerMinute": 0.05, "latestActual": 95.0, "latestSetpoint": 80.0, "latestOutside": 57.0, "latestOutsideRaw": "NN57.0 | Mostly Cloudy", "latestOutsideDaylight": false, "latestOutsideFlagDayChar": "N", "latestFan": "O", "latestCooling": 1, "latestCondenserState": "On", "generatedTimestamp": "Saturday Dec 06 2025 05:46:22 PM", "generatedDateSlug": "2025-12-06", "archiveDates": [{"slug": "2025-12-07", "label": "Dec 07, 2025"}, {"slug": "2025-12-06", "label": "Dec 06, 2025"}, {"slug": "2025-12-05", "label": "Dec 05, 2025"}, {"slug": "2025-12-04", "label": "Dec 04, 2025"}, {"slug": "2025-12-03", "label": "Dec 03, 2025"}, {"slug": "2025-12-02", "label": "Dec 02, 2025"}, {"slug": "2025-11-30", "label": "Nov 30, 2025"}, {"slug": "2025-11-29", "label": "Nov 29, 2025"}], "archivePath": "chart hist"}
     </script>
     <script id="dashboard-client" data-archive-path="chart hist">
 (() => {
-  // Bootstrap: log once and capture the embedded JSON payload.
+  //  Bootstrap: log once and capture the embedded JSON payload.
   console.log("Starting Javascript")
   const dataEl = document.getElementById("dashboard-data-inline");
   const parseInlineData = () => {

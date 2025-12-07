@@ -1033,6 +1033,20 @@ line-height: 1;
         background-position: center;
         background-size: contain;
       }}
+      /* Constrain outside metric graphic to the right half, keep text on left */
+      .metric-card[data-metric="outside"] {{
+        padding-right: 50%;
+      }}
+      .metric-card .sunny-graphic {{
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: 50%;
+        height: 100%;
+        transform: none;
+        background-size: contain;
+        background-position: center;
+      }}
       .history-panel {{
         margin-top: 8px;
         background: rgba(255,255,255,0.02);

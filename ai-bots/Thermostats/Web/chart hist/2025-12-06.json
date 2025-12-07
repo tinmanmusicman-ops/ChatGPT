@@ -15,8 +15,8 @@
   ],
   "latestRow": [
     "Tuesday Nov 25 2025 8:11 PM",
-    "request (studio 11, zone3, 50m)",
-    "68",
+    "System",
+    "95",
     "80",
     "Off",
     "On",
@@ -25,7 +25,7 @@
     "8:54 PM",
     "NN57.0 | Mostly Cloudy",
     "On",
-    "10"
+    "500"
   ],
   "history": [
     {
@@ -199,9 +199,9 @@
     65.0,
     65.0,
     70.0,
-    66.0,
-    71.0,
-    68.0
+    88.0,
+    90.0,
+    95.0
   ],
   "setpointLabel": "Set Point",
   "actualLabel": "Current Temperature",
@@ -370,14 +370,14 @@
     null,
     0.0,
     null,
-    10.0
+    500.0
   ],
-  "totalCondenserMinutes": "10",
-  "totalCondenserMinutesValue": 10.0,
-  "totalCondenserCost": "$0.50",
-  "totalCondenserCostValue": 0.5,
+  "totalCondenserMinutes": "500",
+  "totalCondenserMinutesValue": 500.0,
+  "totalCondenserCost": "$25.00",
+  "totalCondenserCostValue": 25.0,
   "condenserCostPerMinute": 0.05,
-  "latestActual": 68.0,
+  "latestActual": 95.0,
   "latestSetpoint": 80.0,
   "latestOutside": 57.0,
   "latestOutsideRaw": "NN57.0 | Mostly Cloudy",
@@ -385,7 +385,8 @@
   "latestOutsideFlagDayChar": "N",
   "latestFan": "O",
   "latestCooling": 1,
-  "generatedTimestamp": "Saturday Dec 06 2025 01:04:20 AM",
+  "latestCondenserState": "On",
+  "generatedTimestamp": "Saturday Dec 06 2025 05:46:22 PM",
   "generatedDateSlug": "2025-12-06",
   "archiveDates": [
     {
