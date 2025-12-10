@@ -34,6 +34,22 @@ def tower_static(filename):
     return send_from_directory(UI_DIR, filename)
 
 
+@app.route("/tower/read-log")
+def read_log():
+    try:
+        with open(job_pipeline.LOG_FILE_PATH, encoding="utf-8") as f:
+            return jsonify({"text": f.read()})
+    except FileNotFoundError:
+        return jsonify({"text": ""})
+
+
+@app.route("/tower/clear-log", methods=["POST"])
+def clear_log():
+    job_pipeline.LOG_FILE_PATH.parent.mkdir(parents=True, exist_ok=True)
+    job_pipeline.LOG_FILE_PATH.write_text("", encoding="utf-8")
+    return jsonify({"status": "cleared"})
+
+
 @app.route("/Images/<path:filename>")
 def shared_image(filename):
     return send_from_directory(IMAGES_DIR, filename)
@@ -46,42 +62,26 @@ def shared_image(filename):
 
 @app.route("/tower/import-job")
 def import_job():
-    result = job_pipeline.run_import_job()
-    return jsonify({
-        "status": "ok",
-        "action": "import_job executed",
-        "result": result
-    })
+    job_pipeline.run_import_job()
+    return jsonify({"status": "launched"})
 
 
 @app.route("/tower/scam-check")
 def scam_check():
-    result = job_pipeline.run_scam_check()
-    return jsonify({
-        "status": "ok",
-        "action": "scam_check executed",
-        "result": result
-    })
+    job_pipeline.run_scam_check()
+    return jsonify({"status": "launched"})
 
 
 @app.route("/tower/verify-company")
 def verify_company():
-    result = job_pipeline.run_verify_company()
-    return jsonify({
-        "status": "ok",
-        "action": "verify_company executed",
-        "result": result
-    })
+    job_pipeline.run_verify_company()
+    return jsonify({"status": "launched"})
 
 
 @app.route("/tower/jason-configuration")
 def jason_configuration():
-    result = job_pipeline.run_jason_configuration()
-    return jsonify({
-        "status": "ok",
-        "action": "jason_configuration executed",
-        "result": result
-    })
+    job_pipeline.run_jason_configuration()
+    return jsonify({"status": "launched"})
 
 
 @app.route("/tower/enrich-company")

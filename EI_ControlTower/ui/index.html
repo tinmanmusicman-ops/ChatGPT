@@ -5,6 +5,7 @@
   <title>HSST Control Tower</title>
 <style>
 body {
+        forced-color-adjust: none;
 
   color: #eee;
   font-family: Arial, sans-serif;
@@ -121,6 +122,50 @@ section {
   box-sizing: border-box;
 }
 
+.log-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.log-normal {
+  color: #e0e0e0;
+}
+
+.log-start {
+  color: #00e5ff;
+  font-weight: 600;
+}
+
+.log-end {
+  color: #00ff95;
+  font-weight: 600;
+}
+
+.log-error {
+  color: #ff4d4d;
+  font-weight: 600;
+}
+
+.log-heading {
+  color: #c8c8ff;
+  font-weight: 600;
+}
+
+.log-stderr {
+  color: #66aaff;
+}
+
+.log-info {
+  color: #4dd0e1;
+}
+
+.log-program {
+  color: #c38aff;
+}
+
 .dashboard-right h3 {
   margin-top: 0;
   margin-bottom: 10px;
@@ -202,7 +247,11 @@ button:hover {
         </div>
 
         <div class="dashboard-right">
-          <h3>Activity Log</h3>
+          <div class="log-header">
+            <h3>Activity Log</h3>
+            <button id="copy-log-btn">Copy</button>
+            <button id="clear-log-btn">Clear</button>
+          </div>
           <pre id="log-output">(logs will appear here)</pre>
         </div>
       </div>

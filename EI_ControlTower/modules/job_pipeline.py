@@ -1,111 +1,92 @@
 """
-Job Pipeline Module – Phase C Integration
-This module now includes real integration for importing a job
-by calling the existing batch file:
-C:\\ChatGPT\\ai-bots\\Jobs\\scripts\\do.bat
+Job Pipeline Module, Phase C
+Streams Python script output for Control Tower job actions directly into the
+shared dashboard log instead of relying on batch files.
 """
 
 import subprocess
+import threading
+from pathlib import Path
 
-def run_import_job():
+LOG_FILE_PATH = Path(r"C:\ChatGPT\ai-bots\Logs\dashboard_log.txt")
+
+
+def append_log(text: str):
+    LOG_FILE_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with LOG_FILE_PATH.open("a", encoding="utf-8") as log_file:
+        log_file.write(text)
+
+
+def run_and_stream(label: str, script_path: str):
+    append_log(f"=== {label} STARTED ===\n")
+
     try:
-        # Execute the existing batch file that runs the import workflow
-        result = subprocess.run(
-            [r"C:\\ChatGPT\\ai-bots\\Jobs\\scripts\\do.bat"],
-            capture_output=True,
+        process = subprocess.Popen(
+            ["python", script_path],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
             text=True,
-            shell=True
+            bufsize=1
         )
+    except Exception as exc:
+        append_log(f"=== {label} FAILED ===\n{exc}\n")
+        append_log(f"=== {label} FINISHED ===\n")
+        return
 
-        return {
-            "success": True,
-            "stdout": result.stdout,
-            "stderr": result.stderr
-        }
+    def stream_pipe(pipe, prefix: str = ""):
+        for line in iter(pipe.readline, ""):
+            append_log(f"{prefix}{line}")
+        pipe.close()
 
-    except Exception as e:
-        return {
-            "success": False,
-            "error": str(e)
-        }
+    def monitor_process():
+        stdout_thread = threading.Thread(target=stream_pipe, args=(process.stdout,))
+        stderr_thread = threading.Thread(target=stream_pipe, args=(process.stderr, "[stderr] "))
+        stdout_thread.start()
+        stderr_thread.start()
+        stdout_thread.join()
+        stderr_thread.join()
+        process.wait()
+        append_log(f"=== {label} FINISHED ===\n")
+
+    threading.Thread(target=monitor_process, daemon=True).start()
+
 
 def stub():
     """Legacy stub for endpoints that still rely on placeholder behavior."""
     print("Job pipeline stub invoked.")
 
+
+def run_import_job():
+    run_and_stream(
+        "Import Job",
+        r"C:\ChatGPT\ai-bots\Jobs\scripts\Indeed.py"
+    )
+
+    return {"status": "launched", "script": "Indeed.py"}
+
+
 def run_scam_check():
-    """
-    Executes the Scam Check workflow by running the existing batch file:
-    C:\ChatGPT\ai-bots\Scams\scripts\IsitScam.bat
-    """
+    run_and_stream(
+        "Scam Check",
+        r"C:\ChatGPT\ai-bots\Scams\scripts\IsitScam.py"
+    )
 
-    import subprocess
+    return {"status": "launched", "script": "IsitScam.py"}
 
-    try:
-        result = subprocess.run(
-            [r"C:\ChatGPT\ai-bots\Scams\scripts\IsitScam.bat"],
-            capture_output=True,
-            text=True,
-            shell=True
-        )
-
-        return {
-            "success": True,
-            "stdout": result.stdout,
-            "stderr": result.stderr
-        }
-
-    except Exception as e:
-        return {
-            "success": False,
-            "error": str(e)
-        }
 
 def run_verify_company():
-    """
-    Launches the interactive company verification window by executing:
-    C:\ChatGPT\ai-bots\Information\Scripts\Company.py
-    """
+    run_and_stream(
+        "Verify Company",
+        r"C:\ChatGPT\ai-bots\Information\Scripts\Company.py"
+    )
 
-    import subprocess
+    return {"status": "launched", "script": "Company.py"}
 
-    try:
-        subprocess.Popen(
-            ['python', r"C:\ChatGPT\ai-bots\Information\Scripts\Company.py"],
-            shell=True
-        )
-
-        return {
-            "success": True,
-            "message": "Company verification script launched."
-        }
-
-    except Exception as e:
-        return {
-            "success": False,
-            "error": str(e)
-        }
 
 def run_jason_configuration():
-    """
-    Launches the Jason configuration editor GUI.
-    """
+    run_and_stream(
+        "Jason Configuration",
+        r"C:\ChatGPT\ai-bots\config-editor\scripts\config_editor.py"
+    )
 
-    import subprocess
-
-    try:
-        subprocess.Popen(
-            ['python', r"C:\ChatGPT\ai-bots\config-editor\scripts\config_editor.py"],
-            shell=True
-        )
-
-        return {
-            "success": True,
-            "message": "Jason configuration editor launched."
-        }
-
-    except Exception as e:
-        return {
-            "success": False,
-            "error": str(e)
-        }
+    return {"status": "launched", "script": "config_editor.py"}
