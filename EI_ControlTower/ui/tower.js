@@ -8,20 +8,40 @@ function callEndpoint(endpoint) {
 }
 
 // JOB PIPELINE
-document.getElementById("import-job").onclick = () =>
-    callEndpoint("/tower/import-job");
+const ACTIVE_DURATION = 6000;
 
-document.getElementById("scam-check").onclick = () =>
-    callEndpoint("/tower/scam-check");
+function activateButton(button) {
+    button.classList.add("btn-active");
 
-document.getElementById("verify-company").onclick = () =>
-    callEndpoint("/tower/verify-company");
+    if (button._activeTimer) {
+        clearTimeout(button._activeTimer);
+    }
 
-document.getElementById("process-fax").onclick = () =>
-    callEndpoint("/tower/fax-queue");
+    button._activeTimer = setTimeout(() => {
+        button.classList.remove("btn-active");
+        button._activeTimer = null;
+    }, ACTIVE_DURATION);
+}
 
-document.getElementById("facility-check").onclick = () =>
-    callEndpoint("/tower/facility-check");
+const jobButtons = {
+    "import-job": "/tower/import-job",
+    "scam-check": "/tower/scam-check",
+    "verify-company": "/tower/verify-company",
+    "process-fax": "/tower/fax-queue",
+    "facility-check": "/tower/facility-check"
+};
+
+Object.entries(jobButtons).forEach(([id, endpoint]) => {
+    const button = document.getElementById(id);
+    if (!button) {
+        return;
+    }
+
+    button.addEventListener("click", () => {
+        callEndpoint(endpoint);
+        activateButton(button);
+    });
+});
 
 document.getElementById("json-config-btn").onclick = () =>
     callEndpoint("/tower/jason-configuration");
@@ -107,3 +127,90 @@ document.getElementById("copy-log-btn").onclick = () => {
     }
     document.body.removeChild(textarea);
 };
+
+const flipUnits = {
+    hours: {
+        container: document.querySelector('[data-unit="hours"]'),
+        value: null,
+        timer: null
+    },
+    minutes: {
+        container: document.querySelector('[data-unit="minutes"]'),
+        value: null,
+        timer: null
+    },
+    seconds: {
+        container: document.querySelector('[data-unit="seconds"]'),
+        value: null,
+        timer: null
+    }
+};
+
+let isFirstFlipUpdate = true;
+
+function pad(value) {
+    return value.toString().padStart(2, "0");
+}
+
+function setFlipValue(unitName, newValue, animate = true) {
+    const unit = flipUnits[unitName];
+    if (!unit?.container) {
+        return;
+    }
+
+    const flip = unit.container.querySelector(".flip");
+    const top = flip.querySelector(".top");
+    const bottom = flip.querySelector(".bottom");
+
+    if (unit.value === null || !animate) {
+        top.textContent = newValue;
+        bottom.textContent = newValue;
+        unit.value = newValue;
+        return;
+    }
+
+    if (unit.value === newValue) {
+        return;
+    }
+
+    top.textContent = unit.value;
+    bottom.textContent = newValue;
+
+    flip.classList.add("animate");
+
+    if (unit.timer) {
+        clearTimeout(unit.timer);
+    }
+
+    unit.timer = setTimeout(() => {
+        flip.classList.remove("animate");
+        top.textContent = newValue;
+        bottom.textContent = newValue;
+        unit.timer = null;
+    }, 700);
+
+    unit.value = newValue;
+}
+
+function updateFlipClock() {
+    const now = new Date();
+    const timeParts = {
+        hours: pad(now.getHours()),
+        minutes: pad(now.getMinutes()),
+        seconds: pad(now.getSeconds())
+    };
+
+    const animate = !isFirstFlipUpdate;
+    Object.entries(timeParts).forEach(([unit, value]) => {
+        setFlipValue(unit, value, animate);
+    });
+
+    isFirstFlipUpdate = false;
+}
+
+function startFlipClock() {
+    updateFlipClock();
+    setInterval(updateFlipClock, 1000);
+}
+
+startFlipClock();
