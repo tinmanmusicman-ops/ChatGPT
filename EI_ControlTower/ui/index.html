@@ -9,46 +9,40 @@
 <body>
   <h1>HSST CONTROL TOWER</h1>
 
-  <section id="job-pipeline">
-    <h2>Job Pipeline</h2>
-    <button id="import-job">Import Job</button>
-    <button id="scam-check">Scam Check</button>
-    <button id="enrich-company">Enrich Company</button>
-    <button id="push-ss">Push to SS</button>
-  </section>
+  <div class="control-tower">
+    <section id="job-pipeline">
+      <div class="pipeline-content">
+        <div class="link-banner">
+          <div class="spreadsheet-link">
+            <a href="https://docs.google.com/spreadsheets/d/1IYrpGlyCSIilIEyRA70Uq2iUofl-sPA94ygH9ZL-2ag/edit?gid=392501150#gid=392501150" target="_blank" rel="noopener">
+              Spreadsheet Activity
+            </a>
+          </div>
+          <div class="thermostat-link">
+            <a href="https://tinmanmusicman-ops.github.io/ChatGPT/ai-bots/Thermostats/Web/dashboard_public.html" target="_blank" rel="noopener">
+              Thermostat Dashboard
+            </a>
+          </div>
+          <button id="jason-configuration">Jason configuration</button>
+        </div>
 
-  <section id="facility-panel">
-    <h2>Facility Dashboard</h2>
-    <button id="read-thermostat">Read Thermostat</button>
-    <button id="open-dashboard">Open Dashboard</button>
-    <button id="weather-sync">Weather Sync</button>
-  </section>
+        <div class="pipeline-body">
+          <div class="pipeline-actions">
+            <h2>Job Pipeline</h2>
+            <button id="import-job">Import Job</button>
+            <button id="scam-check">Scam Check</button>
+            <button id="verify-company">Verify Company</button>
+            <button id="process-fax">Process Fax</button>
+            <button id="facility-check">Facility Check</button>
+          </div>
 
-  <section id="fax-engine">
-    <h2>Fax Engine</h2>
-    <button id="fax-queue">View Queue</button>
-    <button id="fax-retry">Retry Failed</button>
-    <button id="fax-log">Sent Log</button>
-  </section>
-
-  <section id="security">
-    <h2>Security</h2>
-    <button id="security-notify">Notify SS</button>
-    <button id="security-log">View Log</button>
-  </section>
-
-  <section id="config">
-    <h2>Config Manager</h2>
-    <button id="config-load">Load Config</button>
-    <button id="config-edit">Edit Config</button>
-    <button id="config-refresh">Refresh</button>
-  </section>
-
-  <section id="stinky">
-    <h2>Stinky Status</h2>
-    <p>Last Bath: TBD</p>
-    <button id="stinky-bath">Give Bath</button>
-  </section>
+          <div class="logo-panel">
+            <img src="/tower/hands.png" alt="Hands logo">
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
 
   <script src="/tower/tower.js"></script>
 </body>

@@ -68,6 +68,16 @@ def verify_company():
     })
 
 
+@app.route("/tower/jason-configuration")
+def jason_configuration():
+    result = job_pipeline.run_jason_configuration()
+    return jsonify({
+        "status": "ok",
+        "action": "jason_configuration executed",
+        "result": result
+    })
+
+
 @app.route("/tower/enrich-company")
 def enrich_company():
     job_pipeline.stub()

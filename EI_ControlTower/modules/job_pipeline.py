@@ -29,6 +29,10 @@ def run_import_job():
             "error": str(e)
         }
 
+def stub():
+    """Legacy stub for endpoints that still rely on placeholder behavior."""
+    print("Job pipeline stub invoked.")
+
 def run_scam_check():
     """
     Executes the Scam Check workflow by running the existing batch file:
@@ -66,17 +70,38 @@ def run_verify_company():
     import subprocess
 
     try:
-        result = subprocess.run(
-            ["python", r"C:\\ChatGPT\\ai-bots\\Information\\Scripts\\Company.py"],
-            capture_output=True,
-            text=True,
+        subprocess.Popen(
+            ['python', r"C:\ChatGPT\ai-bots\Information\Scripts\Company.py"],
             shell=True
         )
 
         return {
             "success": True,
-            "stdout": result.stdout,
-            "stderr": result.stderr
+            "message": "Company verification script launched."
+        }
+
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
+def run_jason_configuration():
+    """
+    Launches the Jason configuration editor GUI.
+    """
+
+    import subprocess
+
+    try:
+        subprocess.Popen(
+            ['python', r"C:\ChatGPT\ai-bots\config-editor\scripts\config_editor.py"],
+            shell=True
+        )
+
+        return {
+            "success": True,
+            "message": "Jason configuration editor launched."
         }
 
     except Exception as e:
