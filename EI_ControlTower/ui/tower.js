@@ -23,5 +23,5 @@ document.getElementById("process-fax").onclick = () =>
 document.getElementById("facility-check").onclick = () =>
     callEndpoint("/tower/facility-check");
 
-document.getElementById("jason-configuration").onclick = () =>
+document.getElementById("json-config-btn").onclick = () =>
     callEndpoint("/tower/jason-configuration");

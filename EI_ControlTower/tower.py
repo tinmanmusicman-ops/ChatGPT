@@ -15,6 +15,7 @@ app = Flask(__name__)
 
 BASE_DIR = Path(__file__).resolve().parent
 UI_DIR = BASE_DIR / "ui"
+IMAGES_DIR = BASE_DIR.parent / "Images"
 
 
 # -------------------------
@@ -31,6 +32,11 @@ def tower_ui():
 @app.route("/tower/<path:filename>")
 def tower_static(filename):
     return send_from_directory(UI_DIR, filename)
+
+
+@app.route("/Images/<path:filename>")
+def shared_image(filename):
+    return send_from_directory(IMAGES_DIR, filename)
 
 
 # -------------------------
