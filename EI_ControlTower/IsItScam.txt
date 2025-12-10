@@ -1,0 +1,1 @@
+C:\Users\SCRC\AppData\Local\Programs\Python\Python314\python.exe: can't open file 'C:\\ChatGPT\\EI_ControlTower\\IsItScam.py': [Errno 2] No such file or directory
