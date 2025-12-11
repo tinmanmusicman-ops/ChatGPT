@@ -15,14 +15,16 @@ import os
 import re
 import subprocess
 import sys
+import time
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import inch
-from reportlab.platypus import ListFlowable, ListItem, Paragraph, SimpleDocTemplate, Spacer
+from reportlab.platypus import Frame, ListFlowable, ListItem, PageTemplate, Paragraph, SimpleDocTemplate, Spacer
 
 try:
     from openai import OpenAI
@@ -32,7 +34,9 @@ except ImportError as exc:  # pragma: no cover
 else:
     OPENAI_IMPORT_ERROR = None  # type: ignore[name-defined]
 
-EM_DASH = "\u2014"
+HYPHEN = "-"
+SOFT_BLACK = colors.HexColor("#1A1A1A")
+SOFT_WHITE = colors.HexColor("#F2F2F2")
 client: Optional[OpenAI] = None
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
@@ -40,6 +44,8 @@ BOT_ASSETS_DIR = ROOT_DIR / "bot-assets"
 CONFIG_PATH = BOT_ASSETS_DIR / "config.json"
 RESUME_TEXT_OUTPUT_PATH: Optional[Path] = None
 PDF_OUTPUT_PATH: Optional[Path] = None
+COVER_LETTER_PDF_PATH: Optional[Path] = None
+JOB_ID: Optional[str] = None
 
 
 def load_json(path: Path) -> Any:
@@ -71,6 +77,14 @@ def configure_logger(config: Dict[str, Any]) -> logging.Logger:
     return logger
 
 
+
+
+
+
+class ClipboardEmptyError(RuntimeError):
+    """Indicates that clipboard-based job description sourcing failed."""
+
+
 def read_clipboard(logger: logging.Logger) -> str:
     command = ["powershell", "-NoProfile", "-Command", "Get-Clipboard -Raw"]
     logger.debug("Reading clipboard using PowerShell: %s", " ".join(command))
@@ -87,8 +101,18 @@ def read_clipboard(logger: logging.Logger) -> str:
 
     payload = completed.stdout.strip()
     if not payload:
-        raise RuntimeError("Clipboard is empty. Please copy the job description before running.")
+        raise ClipboardEmptyError("Clipboard is empty. Please copy the job description before running.")
     return payload
+
+
+def get_clipboard_job_description(logger: logging.Logger) -> str:
+    try:
+        description = read_clipboard(logger)
+    except ClipboardEmptyError:
+        logger.warning("Clipboard is empty. Aborting targeted resume generation.")
+        raise
+    logger.info("Using clipboard as job description source.")
+    return description
 
 
 def build_prompt(job_description: str, base_resume: Dict[str, Any]) -> str:
@@ -181,10 +205,11 @@ def extract_json_payload(text: str) -> Dict[str, str]:
     return {"resume": resume_text, "cover_letter": cover_letter_text}
 
 
-def normalize_em_dashes(text: str) -> str:
-    normalized = text.replace("--", EM_DASH)
-    normalized = normalized.replace("–", EM_DASH)
-    normalized = normalized.replace(" - ", f" {EM_DASH} ")
+def normalize_dashes(text: str) -> str:
+    normalized = text.replace("--", HYPHEN)
+    normalized = normalized.replace("—", HYPHEN)
+    normalized = normalized.replace("–", HYPHEN)
+    normalized = normalized.replace("ƒ?", HYPHEN)
     return normalized
 
 
@@ -264,6 +289,7 @@ def _flush_bullets(bullets: list[str], story: list, body_style: ParagraphStyle) 
             leftIndent=0.25 * inch,
             bulletFontName="Helvetica",
             bulletFontSize=11,
+            bulletColor=SOFT_WHITE,
         )
     )
 
@@ -295,7 +321,7 @@ def build_experience_lines(base_resume: Dict[str, Any]) -> list[str]:
         location = job.get("location", "")
         start = job.get("start", "")
         end = job.get("end", "")
-        header = f"{title} — {company}, {location} ({start} — {end})"
+        header = f"{title} {HYPHEN} {company}, {location} ({start} {HYPHEN} {end})"
         lines.append(header)
         for highlight in job.get("highlights", []):
             lines.append(f"- {highlight}")
@@ -309,7 +335,7 @@ def build_education_lines(base_resume: Dict[str, Any]) -> list[str]:
         school = entry.get("school", entry.get("provider", ""))
         location = entry.get("location", "")
         date = entry.get("date", "")
-        summary_line = f"{degree} — {school}"
+        summary_line = f"{degree} {HYPHEN} {school}"
         if location:
             summary_line += f", {location}"
         if date:
@@ -353,8 +379,23 @@ def extract_name(text: str, base_resume: Dict[str, Any]) -> str:
     return fallback or "NAME"
 
 
+def draw_gradient_bg(canvas, doc) -> None:
+    canvas.saveState()
+    page_width, page_height = letter
+    shading = canvas.linearGradient(
+        0,
+        page_height,
+        0,
+        0,
+        (SOFT_BLACK, colors.HexColor("#000000")),
+        extend=True,
+    )
+    canvas.shade(shading)
+    canvas.restoreState()
+
+
 def save_pdf_resume(text: str, output_path: Path) -> None:
-    normalized = normalize_em_dashes(text)
+    normalized = normalize_dashes(text)
     base_resume = load_base_resume_data()
     sections = parse_resume_into_sections(normalized)
     name = extract_name(normalized, base_resume)
@@ -366,6 +407,8 @@ def save_pdf_resume(text: str, output_path: Path) -> None:
         leading=18,
         alignment=TA_CENTER,
         spaceAfter=8,
+        textColor=SOFT_WHITE,
+        bulletColor=SOFT_WHITE,
     )
     heading_style = ParagraphStyle(
         "SectionHeading",
@@ -375,6 +418,8 @@ def save_pdf_resume(text: str, output_path: Path) -> None:
         alignment=TA_LEFT,
         spaceBefore=12,
         spaceAfter=6,
+        textColor=SOFT_WHITE,
+        bulletColor=SOFT_WHITE,
     )
     body_style = ParagraphStyle(
         "BodyText",
@@ -383,6 +428,8 @@ def save_pdf_resume(text: str, output_path: Path) -> None:
         leading=14,
         alignment=TA_LEFT,
         spaceAfter=4,
+        textColor=SOFT_WHITE,
+        bulletColor=SOFT_WHITE,
     )
 
     doc = SimpleDocTemplate(
@@ -393,6 +440,17 @@ def save_pdf_resume(text: str, output_path: Path) -> None:
         topMargin=inch,
         bottomMargin=inch,
     )
+
+    frame = Frame(
+        doc.leftMargin,
+        doc.bottomMargin,
+        doc.width,
+        doc.height,
+        id="normal",
+    )
+    dark_page = PageTemplate(id="DarkPage", frames=[frame], onPage=draw_gradient_bg)
+    doc.addPageTemplates(dark_page)
+    doc.pageTemplates = [dark_page]
 
     story: list = [Paragraph(name, name_style), Spacer(1, 6)]
     combined_sections: dict[str, list[str]] = {}
@@ -435,7 +493,62 @@ def save_pdf_resume(text: str, output_path: Path) -> None:
         append_section(heading, combined_sections.get(heading, []))
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    doc.build(story)
+    doc.build(story, onFirstPage=draw_gradient_bg, onLaterPages=draw_gradient_bg)
+
+
+def save_cover_letter_pdf(text: str, output_path: Path) -> None:
+    normalized = normalize_dashes(text)
+
+    doc = SimpleDocTemplate(
+        str(output_path),
+        pagesize=letter,
+        rightMargin=inch,
+        leftMargin=inch,
+        topMargin=inch,
+        bottomMargin=inch,
+    )
+
+    frame = Frame(
+        doc.leftMargin,
+        doc.bottomMargin,
+        doc.width,
+        doc.height,
+        id="cover_letter",
+    )
+    dark_page = PageTemplate(id="CoverLetterDarkPage", frames=[frame], onPage=draw_gradient_bg)
+    doc.addPageTemplates(dark_page)
+    doc.pageTemplates = [dark_page]
+
+    body_style = ParagraphStyle(
+        "CoverLetterBody",
+        fontName="Helvetica",
+        fontSize=11,
+        leading=14,
+        alignment=TA_LEFT,
+        spaceAfter=4,
+        textColor=SOFT_WHITE,
+        bulletColor=SOFT_WHITE,
+    )
+    story: list = []
+    bullets: list[str] = []
+    for raw_line in normalized.replace("\r", "").splitlines():
+        stripped = raw_line.strip()
+        if not stripped:
+            _flush_bullets(bullets, story, body_style)
+            bullets.clear()
+            if story:
+                story.append(Spacer(1, 6))
+            continue
+        if re.match(r"^[-•]\s+", stripped):
+            bullets.append(stripped)
+            continue
+        _flush_bullets(bullets, story, body_style)
+        bullets.clear()
+        story.append(Paragraph(stripped, body_style))
+    _flush_bullets(bullets, story, body_style)
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    doc.build(story, onFirstPage=draw_gradient_bg, onLaterPages=draw_gradient_bg)
 
 
 def save_output(target: Path, contents: str, logger: logging.Logger) -> None:
@@ -465,12 +578,24 @@ def main() -> int:
         return 1
 
     logger = configure_logger(config)
-    global RESUME_TEXT_OUTPUT_PATH, PDF_OUTPUT_PATH
+    global RESUME_TEXT_OUTPUT_PATH, PDF_OUTPUT_PATH, COVER_LETTER_PDF_PATH, JOB_ID
     RESUME_TEXT_OUTPUT_PATH = ROOT_DIR / config["output_resume_path"]
     PDF_OUTPUT_PATH = ROOT_DIR / config["output_resume_pdf_path"]
+    JOB_ID = PDF_OUTPUT_PATH.stem if PDF_OUTPUT_PATH else None
+    COVER_LETTER_PDF_PATH = (
+        ROOT_DIR / f"CoverLetter_{JOB_ID}.pdf" if JOB_ID else None
+    )
+
+    start_time: Optional[float] = None
+
     try:
         ensure_openai_module(logger)
-        job_description = read_clipboard(logger)
+        job_description = get_clipboard_job_description(logger)
+        if not job_description or len(job_description.strip()) < 50:
+            logger.error("No valid job description detected — aborting resume generation.")
+            print("❌ No valid job description detected. Please copy the full JD from the job page and run again.")
+            return 1
+        start_time = time.perf_counter()
         base_resume_path = BOT_ASSETS_DIR / config["base_resume_path"]
         base_resume = load_json(base_resume_path)
         payload = generate_documents(base_resume, job_description, config, logger)
@@ -478,10 +603,18 @@ def main() -> int:
         cover_letter_output = ROOT_DIR / config["output_cover_letter_path"]
         save_output(resume_output, payload["resume"], logger)
         save_output(cover_letter_output, payload["cover_letter"], logger)
+        if COVER_LETTER_PDF_PATH:
+            save_cover_letter_pdf(payload["cover_letter"], COVER_LETTER_PDF_PATH)
+            logger.info("Saved %s", COVER_LETTER_PDF_PATH)
         logger.info("Resume Engine completed successfully.")
         if PDF_OUTPUT_PATH and PDF_OUTPUT_PATH.exists():
             print(f"[PDF LINK] /view/{PDF_OUTPUT_PATH.name}")
+        if COVER_LETTER_PDF_PATH and COVER_LETTER_PDF_PATH.exists():
+            print(f"[PDF COVER LETTER] /view/{COVER_LETTER_PDF_PATH.name}")
+        elapsed = time.perf_counter() - (start_time or time.perf_counter())
         return 0
+    except ClipboardEmptyError:
+        return 1
     except Exception as exc:  # pragma: no cover
         logger.exception("Resume Engine failed: %s", exc)
         print(f"Resume Engine failed: {exc}", file=sys.stderr)

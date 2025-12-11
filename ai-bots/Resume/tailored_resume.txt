@@ -1,64 +1,57 @@
 Timothy Inman
-Automation Engineer
+Remote Appointment Setter | Cold Calling Specialist
 
 Summary
-Human-centered Automation Engineer specializing in building scalable, accessible automation systems that empower people rather than replace them. Expert in designing AI/EI workflows, optimizing data processes, and creating dashboards with advanced UI features—including dark mode—for enhanced usability and accessibility. Proven ability to deliver automation solutions that improve efficiency while keeping the human element at the core.
+Experienced remote professional with a proven track record in high-volume outbound calling, appointment setting, and customer engagement. Recognized for consistently exceeding targets, building rapport quickly, and delivering results in fast-paced, commission-driven environments. Adept at managing homeowner lists, qualifying leads, and booking appointments with professionalism and persistence. Highly motivated, resilient, and ready to maximize earning potential as a top-performing appointment setter.
 
-Skills
-- Automation & Workflow Design
-- Dark Mode & Accessibility Implementation
-- GENESYS Cloud
-- MS Dynamics/CRM
-- Scripting (Python, C#.NET, VBA, JavaScript)
-- HTML/CSS (including responsive and high-contrast/dark mode UIs)
-- Team Foundation Server
-- Cross-Functional Collaboration
-- Business Planning
-- Zapier, Shopify, Make
+Core Skills
+- Cold Calling & Appointment Setting
+- High-Volume Outbound Calling
+- Lead Qualification
+- CRM & Call Tracking Tools
+- Professional Communication
+- Resilience & Thick Skin
+- Remote Work Discipline
+- Target Achievement
+- Customer Relationship Building
+- Self-Motivation & Accountability
 
-Key Achievements (2024–2025)
-- Designed and built automated HVAC/Thermostat dashboards with runtime analysis, condenser cost calculation, weather API integration, and animated Chart.js visuals, including dark mode and accessibility features.
-- Developed HTML/JavaScript dashboards with interactive legends, tooltips, high-contrast and dark mode support, and responsive UI components.
-- Built automation frameworks for recruiters and employers, including resume analyzers, job-lead processors, scoring tools, and Excel workflow engines.
-- Implemented end-to-end Python automation systems launched through batch files, enabling zero-cost workflow orchestration.
-- Developed self-updating dashboards, Google Drive push utilities, JSON-driven configuration engines, and multi-site thermostat configuration tools.
-- Created demonstration modes with automated cycling, dataset animations, UI transitions, and accessibility-focused layouts.
-- Standardized ID, naming, and schema structures across all automation projects to ensure clarity and maintainability.
-- Demonstrated Human-EI engineering workflows where the human directs architecture and EI executes development tasks.
+Key Achievements
+- Consistently ranked #1 in call center performance metrics at Best Buy, maintaining top 10 status month after month.
+- Achieved 100% CSAT scores through empathetic, results-driven communication on financial and technical queues.
+- Delivered a 10-month special project in just 2 months by automating workflow processes, demonstrating efficiency and drive.
+- Managed incoming and outgoing calls, handling high-pressure situations with professionalism and reliability.
+- Developed automation frameworks to streamline lead processing and appointment scheduling for recruiters and employers.
 
 Professional Experience
-Best Buy, Carlsbad, CA
-Customer Care Senior Advisor | Sep 2019 – Sep 2025
-- Managed incoming and outgoing calls in all financial and technical queues, achieving consistent 100% CSAT through empathy and meaningful connection.
-- Ranked #1 in recent call center performance metrics and consistently top 10 each month.
-- Collaborated with leadership on process improvements to increase productivity and accuracy.
-- Delivered a 10-month special project in 2 months by developing an automated Excel solution.
-- Completed training in Nov 2019; promoted to Senior Advisor in Feb 2020.
 
-Walmart, Oceanside, CA
-Electronics Sales Associate | Feb 2018 – Sep 2019
-- Managed the Photo Center and drove technology improvements that increased customer satisfaction by 50%.
+Best Buy — Carlsbad, CA
+Customer Care Senior Advisor | September 2019 – September 2025
+- Managed high-volume inbound and outbound calls, consistently exceeding appointment and satisfaction targets.
+- Booked and qualified appointments, ensuring all leads were handled with professionalism and urgency.
+- Collaborated with leadership to improve call scripts and processes, increasing productivity and accuracy.
+- Recognized for resilience, adaptability, and ability to thrive in commission-driven environments.
 
-TIMDOC Solutions, Portland, ME
-Owner | Mar 2017 – Feb 2018
-- Developed innovative workflow and home automation solutions.
+Walmart — Oceanside, CA
+Electronics Sales Associate | February 2018 – September 2019
+- Managed customer interactions in a fast-paced environment, driving satisfaction and repeat business.
+- Increased customer satisfaction by 50% through technology-driven process improvements.
 
-Tyler Technologies, Yarmouth, ME
-Software Developer | Aug 2004 – Mar 2017
-- Supported Tyler employees during implementation cycles.
-- Developed productivity solutions for municipalities across the U.S.
-- Architected a custom solution eliminating dependency on third-party software.
-- Researched and implemented replacement forms engine for Tyler Forms.
+TIMDOC Solutions — Portland, ME
+Owner | March 2017 – February 2018
+- Developed workflow automation solutions to improve lead management and appointment scheduling for clients.
 
-Direct Mail of Maine, Scarborough, ME
-Laser Room Department Manager | Jul 1997 – Aug 2004
-- Managed print production using high-speed OCE laser printers.
-- Automated manual mail presorting processes, cutting processing time in half.
-- Automated daily print workflows, reducing labor burden and improving throughput.
+Tyler Technologies — Yarmouth, ME
+Software Developer | August 2004 – March 2017
+- Supported internal and external clients, ensuring clear communication and timely delivery of solutions.
+
+Direct Mail of Maine — Scarborough, ME
+Laser Room Department Manager | July 1997 – August 2004
+- Managed high-volume production workflows, automating processes to improve throughput and efficiency.
 
 Education
-High School Diploma, Stearns High School, Millinocket, ME
-Generative AI Mastermind, Outskill, Oct 18–19, 2025
+High School Diploma — Stearns High School, Millinocket, ME
+Generative AI Mastermind — Outskill, October 2025
 
 Certifications
 - The Fundamentals of ChatGPT — Alison — 10/24/2025
@@ -68,3 +61,7 @@ Certifications
 - Shopify for Beginners — Alison — 10/27/2025
 - WordPress — Alison — 10/28/2025
 - Python — Alison — 10/29/2025
+
+Average Weekly Appointments: 15–20 (based on prior call center and appointment-setting experience)
+
+References available upon request.
