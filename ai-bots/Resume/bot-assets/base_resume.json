@@ -1,0 +1,114 @@
+{
+  "name": "Timothy Inman",
+  "title": "Automation Engineer",
+  "summary": "Human-centered Automation Engineer who understands that people aren\u2019t being replaced \u2014 their roles are evolving. I design AI/EI workflows where automated systems where automated systems handle execution while people guide, oversee, and validate the process. My work focuses on building scalable automation, optimizing data workflows, and creating accessible, human-guided systems that improve efficiency without removing the human element.",
+  "skills": [
+    "Automation",
+    "GENESYS Cloud",
+    "MS Dynamics/CRM",
+    "Scripting",
+    "C#.NET",
+    "VBA",
+    "Python",
+    "HTML/CSS",
+    "Team Foundation Server",
+    "JavaScript",
+    "Cross Functional Collaboration",
+    "Business Planning",
+    "Zapier",
+    "Shopify",
+    "Make"
+  ],
+  "achievements_2024_2025": [
+    "Designed and built automated HVAC/Thermostat dashboards with runtime analysis, condenser cost calculation, weather API integration, and animated Chart.js visuals.",
+    "Built automation frameworks for recruiters and employers including resume analyzers, job-lead processors, scoring tools, and Excel workflow engines.",
+    "Implemented end-to-end Python automation systems launched through batch files, enabling zero-cost workflow orchestration.",
+    "Developed self-updating dashboards, Google Drive push utilities, JSON-driven configuration engines, and multi-site thermostat configuration tools.",
+    "Created demonstration modes with automated cycling, dataset animations, UI transitions, and accessibility-focused layouts.",
+    "Standardized ID, naming, and schema structures across all automation projects to ensure clarity and maintainability.",
+    "Developed HTML/JavaScript dashboards with interactive legends, tooltips, high-contrast modes, and responsive UI components.",
+    "Demonstrated Human-EI engineering workflows where the human directs architecture and EI executes development tasks."
+  ],
+  "experience": [
+    {
+      "company": "Best Buy",
+      "location": "Carlsbad, CA",
+      "start": "September 2019",
+      "end": "September 2025",
+      "title": "Customer Care Senior Advisor",
+      "highlights": [
+        "Managed incoming and outgoing calls in all financial and technical queues, achieving consistent 100 percent CSAT through empathy and meaningful connection.",
+        "Ranked #1 in recent call center performance metrics and consistently top 10 each month.",
+        "Collaborated with leadership on process improvements to increase productivity and accuracy.",
+        "Delivered a 10-month special project in 2 months by developing an automated Excel solution.",
+        "Completed training in November 2019; promoted to Senior Advisor in February 2020."
+      ]
+    },
+    {
+      "company": "Walmart",
+      "location": "Oceanside, CA",
+      "start": "February 2018",
+      "end": "September 2019",
+      "title": "Electronics Sales Associate",
+      "highlights": [
+        "Managed the Photo Center and drove technology improvements that increased customer satisfaction by 50 percent."
+      ]
+    },
+    {
+      "company": "TIMDOC Solutions",
+      "location": "Portland, ME",
+      "start": "March 2017",
+      "end": "February 2018",
+      "title": "Owner",
+      "highlights": [
+        "Developed innovative workflow and home automation solutions."
+      ]
+    },
+    {
+      "company": "Tyler Technologies",
+      "location": "Yarmouth, ME",
+      "start": "August 2004",
+      "end": "March 2017",
+      "title": "Software Developer",
+      "highlights": [
+        "Supported Tyler employees during implementation cycles.",
+        "Developed productivity solutions for municipalities across the U.S.",
+        "Architected a custom solution eliminating dependency on third-party software.",
+        "Researched and implemented replacement forms engine for Tyler Forms."
+      ]
+    },
+    {
+      "company": "Direct Mail of Maine",
+      "location": "Scarborough, ME",
+      "start": "July 1997",
+      "end": "August 2004",
+      "title": "Laser Room Department Manager",
+      "highlights": [
+        "Managed print production using high-speed OCE laser printers.",
+        "Automated manual mail presorting processes, cutting processing time in half.",
+        "Automated daily print workflows, reducing labor burden and improving throughput."
+      ]
+    }
+  ],
+  "education": [
+    {
+      "degree": "High School Diploma",
+      "school": "Stearns High School",
+      "location": "Millinocket, ME"
+    },
+    {
+      "program": "Generative AI Mastermind",
+      "provider": "Outskill",
+      "date": "October 18\u201319, 2025"
+    }
+  ],
+  "certifications": [
+    "The Fundamentals of ChatGPT \u2014 Alison \u2014 10/24/2025",
+    "Introduction to AI in Business \u2014 Alison \u2014 10/25/2025",
+    "AI: Preparing for the Future of Work \u2014 Alison \u2014 10/25/2025",
+    "AI for Marketing \u2014 Alison \u2014 10/26/2025",
+    "Shopify for Beginners \u2014 Alison \u2014 10/27/2025",
+    "WordPress \u2014 Alison \u2014 10/28/2025",
+    "Python \u2014 Alison \u2014 10/29/2025"
+  ]
+}

@@ -1,0 +1,70 @@
+Timothy Inman
+Automation Engineer
+
+Summary
+Human-centered Automation Engineer specializing in building scalable, accessible automation systems that empower people rather than replace them. Expert in designing AI/EI workflows, optimizing data processes, and creating dashboards with advanced UI features—including dark mode—for enhanced usability and accessibility. Proven ability to deliver automation solutions that improve efficiency while keeping the human element at the core.
+
+Skills
+- Automation & Workflow Design
+- Dark Mode & Accessibility Implementation
+- GENESYS Cloud
+- MS Dynamics/CRM
+- Scripting (Python, C#.NET, VBA, JavaScript)
+- HTML/CSS (including responsive and high-contrast/dark mode UIs)
+- Team Foundation Server
+- Cross-Functional Collaboration
+- Business Planning
+- Zapier, Shopify, Make
+
+Key Achievements (2024–2025)
+- Designed and built automated HVAC/Thermostat dashboards with runtime analysis, condenser cost calculation, weather API integration, and animated Chart.js visuals, including dark mode and accessibility features.
+- Developed HTML/JavaScript dashboards with interactive legends, tooltips, high-contrast and dark mode support, and responsive UI components.
+- Built automation frameworks for recruiters and employers, including resume analyzers, job-lead processors, scoring tools, and Excel workflow engines.
+- Implemented end-to-end Python automation systems launched through batch files, enabling zero-cost workflow orchestration.
+- Developed self-updating dashboards, Google Drive push utilities, JSON-driven configuration engines, and multi-site thermostat configuration tools.
+- Created demonstration modes with automated cycling, dataset animations, UI transitions, and accessibility-focused layouts.
+- Standardized ID, naming, and schema structures across all automation projects to ensure clarity and maintainability.
+- Demonstrated Human-EI engineering workflows where the human directs architecture and EI executes development tasks.
+
+Professional Experience
+Best Buy, Carlsbad, CA
+Customer Care Senior Advisor | Sep 2019 – Sep 2025
+- Managed incoming and outgoing calls in all financial and technical queues, achieving consistent 100% CSAT through empathy and meaningful connection.
+- Ranked #1 in recent call center performance metrics and consistently top 10 each month.
+- Collaborated with leadership on process improvements to increase productivity and accuracy.
+- Delivered a 10-month special project in 2 months by developing an automated Excel solution.
+- Completed training in Nov 2019; promoted to Senior Advisor in Feb 2020.
+
+Walmart, Oceanside, CA
+Electronics Sales Associate | Feb 2018 – Sep 2019
+- Managed the Photo Center and drove technology improvements that increased customer satisfaction by 50%.
+
+TIMDOC Solutions, Portland, ME
+Owner | Mar 2017 – Feb 2018
+- Developed innovative workflow and home automation solutions.
+
+Tyler Technologies, Yarmouth, ME
+Software Developer | Aug 2004 – Mar 2017
+- Supported Tyler employees during implementation cycles.
+- Developed productivity solutions for municipalities across the U.S.
+- Architected a custom solution eliminating dependency on third-party software.
+- Researched and implemented replacement forms engine for Tyler Forms.
+
+Direct Mail of Maine, Scarborough, ME
+Laser Room Department Manager | Jul 1997 – Aug 2004
+- Managed print production using high-speed OCE laser printers.
+- Automated manual mail presorting processes, cutting processing time in half.
+- Automated daily print workflows, reducing labor burden and improving throughput.
+
+Education
+High School Diploma, Stearns High School, Millinocket, ME
+Generative AI Mastermind, Outskill, Oct 18–19, 2025
+
+Certifications
+- The Fundamentals of ChatGPT — Alison — 10/24/2025
+- Introduction to AI in Business — Alison — 10/25/2025
+- AI: Preparing for the Future of Work — Alison — 10/25/2025
+- AI for Marketing — Alison — 10/26/2025
+- Shopify for Beginners — Alison — 10/27/2025
+- WordPress — Alison — 10/28/2025
+- Python — Alison — 10/29/2025

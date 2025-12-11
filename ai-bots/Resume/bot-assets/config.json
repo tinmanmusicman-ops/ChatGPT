@@ -1,0 +1,13 @@
+{
+  "base_resume_path": "base_resume.json",
+  "output_resume_path": "tailored_resume.txt",
+  "output_resume_pdf_path": "tailored_resume.pdf",
+  "output_cover_letter_path": "cover_letter.txt",
+
+  "model": "gpt-4.1",
+  "temperature": 0.2,
+  "max_tokens": 8000,
+
+  "logging": true,
+  "debug": false
+}
