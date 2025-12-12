@@ -1017,7 +1017,11 @@
     }
     const actualCard = document.querySelector('.metric-card[data-metric="actual"]');
     setCardValue(actualCard, formatTemperatureValue(actualValue));
-    applyCardColor(actualCard, legendSwatchColors.actual);
+    const actualNumeric = Number(actualValue);
+    const actualCardColor = Number.isFinite(actualNumeric)
+      ? colorForPoint(actualNumeric)
+      : legendSwatchColors.actual;
+    applyCardColor(actualCard, actualCardColor);
     const setpointCard = document.querySelector('.metric-card[data-metric="setpoint"]');
     setCardValue(setpointCard, formatTemperatureValue(setpointValue));
     applyCardColor(setpointCard, colorForPoint(setpointValue));

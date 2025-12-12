@@ -1,3 +1,8 @@
+import subprocess
+import sys
+import threading
+import time
+from datetime import datetime, timedelta
 from flask import Flask, send_from_directory, jsonify
 from pathlib import Path
 
@@ -16,6 +21,9 @@ app = Flask(__name__)
 BASE_DIR = Path(__file__).resolve().parent
 UI_DIR = BASE_DIR / "ui"
 IMAGES_DIR = BASE_DIR.parent / "Images"
+BASE_OUTPUT_DIR = BASE_DIR.parent / "ai-bots" / "Resume"
+AI_BOTS_ROOT = BASE_DIR.parent / "ai-bots"
+DASHBOARD_SCRIPT_PATH = AI_BOTS_ROOT / "Thermostats" / "scripts" / "Dashboard.py"
 
 
 # -------------------------
@@ -24,6 +32,11 @@ IMAGES_DIR = BASE_DIR.parent / "Images"
 @app.route("/tower")
 def tower_ui():
     return send_from_directory(UI_DIR, "index.html")
+
+
+@app.route("/health")
+def health():
+    return {"status": "ok"}, 200
 
 
 # -------------------------
@@ -55,6 +68,11 @@ def shared_image(filename):
     return send_from_directory(IMAGES_DIR, filename)
 
 
+@app.route("/view/<path:filename>")
+def view_file(filename):
+    return send_from_directory(BASE_OUTPUT_DIR, filename, mimetype="application/pdf")
+
+
 # -------------------------
 # BUTTON ENDPOINTS (STUB ONLY)
 # Each returns a simple JSON message
@@ -84,10 +102,22 @@ def jason_configuration():
     return jsonify({"status": "launched"})
 
 
+@app.route("/tower/facility-check")
+def facility_check():
+    job_pipeline.run_facility_check()
+    return jsonify({"status": "launched"})
+
+
 @app.route("/tower/enrich-company")
 def enrich_company():
     job_pipeline.stub()
     return jsonify({"status": "ok", "action": "enrich_company stub called"})
+
+
+@app.route("/tower/targeted-resume")
+def targeted_resume():
+    job_pipeline.run_targeted_resume()
+    return jsonify({"status": "launched"})
 
 
 @app.route("/tower/push-ss")
@@ -171,6 +201,48 @@ def stinky_bath():
 # -------------------------
 # RUN SERVER
 # -------------------------
+def _seconds_until_next_snapshot() -> float:
+    now = datetime.now()
+    next_run = now.replace(hour=0, minute=1, second=0, microsecond=0)
+    if next_run <= now:
+        next_run += timedelta(days=1)
+    return (next_run - now).total_seconds()
+
+
+def run_dashboard_snapshot() -> None:
+    label = "Nightly Dashboard Snapshot"
+    job_pipeline.append_log(f"=== {label} STARTED ===\n")
+    try:
+        result = subprocess.run(
+            [sys.executable, str(DASHBOARD_SCRIPT_PATH)],
+            capture_output=True,
+            text=True,
+        )
+        if result.stdout:
+            job_pipeline.append_log(result.stdout)
+        if result.stderr:
+            job_pipeline.append_log(f"[stderr] {result.stderr}")
+        if result.returncode != 0:
+            raise RuntimeError(
+                f"{DASHBOARD_SCRIPT_PATH} exited with {result.returncode}"
+            )
+    except Exception as exc:
+        job_pipeline.append_log(f"=== {label} FAILED ===\n{exc}\n")
+    finally:
+        job_pipeline.append_log(f"=== {label} FINISHED ===\n")
+
+
+def schedule_dashboard_snapshot() -> None:
+    def worker() -> None:
+        while True:
+            wait_seconds = _seconds_until_next_snapshot()
+            time.sleep(wait_seconds)
+            run_dashboard_snapshot()
+
+    threading.Thread(target=worker, daemon=True).start()
+
+
 if __name__ == "__main__":
+    schedule_dashboard_snapshot()
     print("HSST Control Tower Flask Server Running (Skeleton Mode)")
     app.run(host="0.0.0.0", port=5000, debug=True)

@@ -1,51 +1,62 @@
 Timothy Inman
-Oceanside, CA 92056 | Automation Engineer | timothy.inman@email.com
+Automation Engineer
 
 Summary
-Motivated, reliable professional with a strong background in customer care, technology, and process improvement. Experienced in providing empathetic support, building trust, and ensuring the well-being of individuals. Adept at adapting to new environments, collaborating with diverse teams, and maintaining a positive, human-centered approach. Committed to supporting individuals with developmental disabilities in a residential setting with compassion, patience, and reliability.
+Forward-thinking Automation Engineer specializing in human-centered, AI/EI-driven workflow design. Expert in building scalable automation systems where execution is handled by intelligent automation, while people guide, oversee, and validate processes. Adept at creating accessible, efficient, and human-guided solutions that optimize data workflows and elevate operational control. Passionate about integrating automation with human insight to drive continuous improvement and business value.
 
-Key Skills
-- Compassionate Care & Support
-- Empathy & Active Listening
-- Reliability & Punctuality
-- Communication & Teamwork
-- Problem Solving
-- Adaptability
-- Conflict Resolution
-- Process Improvement
-- Safety Awareness
+Core Skills
+- Automation & Workflow Orchestration
+- GENESYS Cloud
+- MS Dynamics/CRM
+- Scripting (Python, C#.NET, VBA, JavaScript)
+- Data Integration & Dashboard Development
+- Cross-Functional Collaboration
+- Business Process Optimization
+- Zapier, Make, Shopify
+- Team Foundation Server
+- Human-in-the-Loop Automation
+
+Recent Achievements (2024–2025)
+- Designed and implemented automated HVAC/Thermostat dashboards featuring runtime analysis, cost calculations, weather API integration, and animated Chart.js visuals.
+- Built automation frameworks for recruiters and employers, including resume analyzers, job-lead processors, scoring tools, and Excel workflow engines.
+- Developed end-to-end Python automation systems for zero-cost workflow orchestration, launched via batch files.
+- Created self-updating dashboards, Google Drive push utilities, JSON-driven configuration engines, and multi-site thermostat configuration tools.
+- Developed HTML/JavaScript dashboards with interactive legends, tooltips, high-contrast modes, and responsive UI components.
+- Standardized ID, naming, and schema structures across automation projects to ensure clarity and maintainability.
+- Demonstrated Human-EI engineering workflows where humans architect and EI executes development tasks.
 
 Professional Experience
 
 Best Buy, Carlsbad, CA
-Customer Care Senior Advisor | September 2019 – September 2025
-- Provided empathetic support to customers, achieving consistent 100% satisfaction through meaningful connection and understanding.
-- Managed high-volume calls, resolving both technical and financial issues with patience and professionalism.
-- Collaborated with leadership to improve processes, increasing productivity and accuracy for both customers and team members.
-- Recognized for top performance and reliability in a fast-paced environment.
+Customer Care Senior Advisor | Sep 2019 – Sep 2025
+- Managed high-volume financial and technical queues, achieving consistent 100% CSAT through empathy and meaningful connection.
+- Ranked #1 in call center performance metrics; consistently top 10 monthly.
+- Collaborated with leadership on process improvements to increase productivity and accuracy.
+- Delivered a 10-month special project in 2 months by developing an automated Excel solution.
+- Promoted to Senior Advisor within 3 months of training completion.
 
 Walmart, Oceanside, CA
-Electronics Sales Associate | February 2018 – September 2019
-- Assisted customers with technology needs, ensuring a welcoming and supportive environment.
-- Managed the Photo Center, improving customer satisfaction by 50% through attentive service and clear communication.
+Electronics Sales Associate | Feb 2018 – Sep 2019
+- Managed the Photo Center and drove technology improvements, increasing customer satisfaction by 50%.
 
 TIMDOC Solutions, Portland, ME
-Owner | March 2017 – February 2018
-- Developed solutions to improve daily living and workflow efficiency, focusing on user needs and accessibility.
+Owner | Mar 2017 – Feb 2018
+- Developed innovative workflow and home automation solutions for clients.
 
 Tyler Technologies, Yarmouth, ME
-Software Developer | August 2004 – March 2017
-- Supported colleagues and clients, ensuring smooth implementation and training cycles.
-- Developed solutions to improve productivity and user experience.
+Software Developer | Aug 2004 – Mar 2017
+- Supported implementation cycles and developed productivity solutions for municipalities nationwide.
+- Architected custom solutions to eliminate third-party dependencies.
+- Researched and implemented a replacement forms engine for Tyler Forms.
 
 Direct Mail of Maine, Scarborough, ME
-Laser Room Department Manager | July 1997 – August 2004
-- Managed a team in a production environment, ensuring safety, reliability, and efficiency.
-- Automated manual processes to reduce workload and improve outcomes for staff.
+Laser Room Department Manager | Jul 1997 – Aug 2004
+- Managed print production using high-speed OCE laser printers.
+- Automated manual mail presorting and daily print workflows, reducing processing time and labor burden.
 
 Education
-High School Diploma
-Stearns High School, Millinocket, ME
+- High School Diploma, Stearns High School, Millinocket, ME
+- Generative AI Mastermind, Outskill, Oct 2025
 
 Certifications
 - The Fundamentals of ChatGPT — Alison — 10/24/2025
@@ -55,9 +66,3 @@ Certifications
 - Shopify for Beginners — Alison — 10/27/2025
 - WordPress — Alison — 10/28/2025
 - Python — Alison — 10/29/2025
-
-Availability
-- Day Shift, Night Shift, Overnight Shift (Preferred)
-- Willing and able to commute or relocate to Oceanside, CA 92056
-
-References available upon request.

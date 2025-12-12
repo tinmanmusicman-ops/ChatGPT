@@ -8,6 +8,13 @@
   "temperature": 0.2,
   "max_tokens": 8000,
   "spreadsheet_id": "1IYrpGlyCSIilIEyRA70Uq2iUofl-sPA94ygH9ZL-2ag",
+  "worksheet_name": "Jobs",
+  "job_description_column": "Job Description",
+  "company_column": "Company",
+  "job_title_column": "Job Title",
+  "resume_link_column": "Resume PDF Link",
+  "cover_letter_link_column": "Cover Letter PDF Link",
+  "processed_timestamp_column": "Processed Timestamp",
 
   "logging": true,
   "debug": false

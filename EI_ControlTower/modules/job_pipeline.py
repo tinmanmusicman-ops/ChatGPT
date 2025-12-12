@@ -90,3 +90,21 @@ def run_jason_configuration():
     )
 
     return {"status": "launched", "script": "config_editor.py"}
+
+
+def run_facility_check():
+    run_and_stream(
+        "Facility Check",
+        r"C:\ChatGPT\ai-bots\Security\scripts\SiteCheck.py"
+    )
+
+    return {"status": "launched", "script": "SiteCheck.py"}
+
+
+def run_targeted_resume():
+    run_and_stream(
+        "Targeted Resume",
+        r"C:\ChatGPT\ai-bots\Resume\scripts\Resume.py"
+    )
+
+    return {"status": "launched", "script": "Resume.py"}

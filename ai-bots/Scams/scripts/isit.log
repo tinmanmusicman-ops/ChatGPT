@@ -131,3 +131,104 @@
 2025-11-24 15:10:15,630 [INFO] send_scam_notification: sent analysis reply to tim.inman.2024@gmail.com.
 2025-11-24 15:10:15,630 [INFO] Notification sent to tim.inman.2024@gmail.com about sender=noreply@findcareer.pmta.sailthru.com subject=GOOGLE PAY \U0001f4b3 Balance: $500
 2025-11-24 15:10:15,630 [INFO] Sender: noreply@findcareer.pmta.sailthru.com | Subject: Scam Fwd: GOOGLE PAY \U0001f4b3 Balance: $500 | Summary: The email is likely a scam attempting to phish for personal information. | Action: Moved to 'Scam' (copied + deleted original).
+2025-12-01 11:47:33,795 [DEBUG] Entering fetch_unread_scam
+2025-12-01 11:47:33,795 [DEBUG] Entering load_config
+2025-12-01 11:47:33,803 [INFO] Configuration loaded successfully.
+2025-12-01 11:47:34,839 [DEBUG] Entering decode_subject
+2025-12-01 11:47:34,840 [DEBUG] Entering strip_scam_prefix
+2025-12-01 11:47:34,840 [DEBUG] Entering extract_body
+2025-12-01 11:47:34,840 [DEBUG] Entering collect_from_blocks
+2025-12-01 11:47:34,841 [INFO] collect_from_blocks: extracted 1 sender blocks.
+2025-12-01 11:47:34,841 [DEBUG] Entering analyze_body
+2025-12-01 11:47:34,843 [DEBUG] Starting new HTTPS connection (1): api.openai.com:443
+2025-12-01 11:47:38,480 [DEBUG] https://api.openai.com:443 "POST /v1/chat/completions HTTP/1.1" 200 None
+2025-12-01 11:47:38,481 [INFO] analyze_body: received response for sender noreply@findcareer.pmta.sailthru.com.
+2025-12-01 11:47:38,482 [INFO] Evaluation -> sender=noreply@findcareer.pmta.sailthru.com subject=\U0001f4e8 Delivered $647.60, Timothy? is_scam=True confidence=0.9 summary=The email contains a suspicious offer and prompts to click a link, indicating it is likely a scam.
+2025-12-01 11:47:39,233 [DEBUG] Entering send_scam_notification
+2025-12-01 11:47:39,240 [DEBUG] Entering clean_header_value
+2025-12-01 11:47:39,240 [DEBUG] Entering clean_header_value
+2025-12-01 11:47:41,819 [INFO] send_scam_notification: sent analysis reply to tim.inman.2024@gmail.com.
+2025-12-01 11:47:41,819 [INFO] Notification sent to tim.inman.2024@gmail.com about sender=noreply@findcareer.pmta.sailthru.com subject=\U0001f4e8 Delivered $647.60, Timothy?
+2025-12-01 11:47:41,819 [INFO] Sender: noreply@findcareer.pmta.sailthru.com | Subject: Scam Fwd: \U0001f4e8 Delivered $647.60, Timothy? | Summary: The email contains a suspicious offer and prompts to click a link, indicating it is likely a scam. | Action: Moved to 'Scam' (copied + deleted original).
+2025-12-08 14:07:14,766 [DEBUG] Entering fetch_unread_scam
+2025-12-08 14:07:14,766 [DEBUG] Entering load_config
+2025-12-08 14:07:14,775 [INFO] Configuration loaded successfully.
+2025-12-08 14:07:15,969 [DEBUG] Entering decode_subject
+2025-12-08 14:07:15,970 [DEBUG] Entering strip_scam_prefix
+2025-12-08 14:07:15,970 [DEBUG] Entering extract_body
+2025-12-08 14:07:15,971 [DEBUG] Entering collect_from_blocks
+2025-12-08 14:07:15,971 [INFO] collect_from_blocks: markers found but no valid email addresses detected.
+2025-12-08 14:07:15,971 [DEBUG] Entering analyze_body
+2025-12-08 14:07:15,974 [DEBUG] Starting new HTTPS connection (1): api.openai.com:443
+2025-12-08 14:07:18,817 [DEBUG] https://api.openai.com:443 "POST /v1/chat/completions HTTP/1.1" 200 None
+2025-12-08 14:07:18,825 [INFO] analyze_body: received response for sender unknown.
+2025-12-08 14:07:18,827 [INFO] Evaluation -> sender=unknown subject=New text message from (813) 540-9269 is_scam=True confidence=0.85 summary=The email appears to be a scam due to its unsolicited nature and suspicious links.
+2025-12-08 14:07:19,518 [DEBUG] Entering send_scam_notification
+2025-12-08 14:07:19,526 [DEBUG] Entering clean_header_value
+2025-12-08 14:07:19,526 [DEBUG] Entering clean_header_value
+2025-12-08 14:07:20,821 [INFO] send_scam_notification: sent analysis reply to tinmanmusicman@gmail.com.
+2025-12-08 14:07:20,821 [INFO] Notification sent to tinmanmusicman@gmail.com about sender=unknown subject=New text message from (813) 540-9269
+2025-12-08 14:07:20,821 [INFO] Sender: unknown | Subject: Scam Fwd: New text message from (813) 540-9269 | Summary: The email appears to be a scam due to its unsolicited nature and suspicious links. | Action: Moved to 'Scam' (copied + deleted original).
+2025-12-08 14:07:28,644 [DEBUG] Entering fetch_unread_scam
+2025-12-08 14:07:28,644 [DEBUG] Entering load_config
+2025-12-08 14:07:28,645 [INFO] Configuration loaded successfully.
+2025-12-08 14:07:29,998 [DEBUG] Entering decode_subject
+2025-12-08 14:07:29,998 [DEBUG] Entering strip_scam_prefix
+2025-12-08 14:07:29,999 [DEBUG] Entering extract_body
+2025-12-08 14:07:29,999 [INFO] extract_body: extracted single-part text body.
+2025-12-08 14:07:30,000 [DEBUG] Entering collect_from_blocks
+2025-12-08 14:07:30,000 [INFO] collect_from_blocks: no forwarded From: markers detected.
+2025-12-08 14:07:30,001 [DEBUG] Entering analyze_body
+2025-12-08 14:07:30,005 [DEBUG] Starting new HTTPS connection (1): api.openai.com:443
+2025-12-08 14:07:33,397 [DEBUG] https://api.openai.com:443 "POST /v1/chat/completions HTTP/1.1" 200 None
+2025-12-08 14:07:33,407 [INFO] analyze_body: received response for sender unknown.
+2025-12-08 14:07:33,410 [INFO] Evaluation -> sender=unknown subject=Scam Evaluation is_scam=True confidence=0.85 summary=The email is likely a scam based on several red flags.
+2025-12-08 14:07:34,245 [DEBUG] Entering send_scam_notification
+2025-12-08 14:07:34,252 [DEBUG] Entering clean_header_value
+2025-12-08 14:07:34,252 [DEBUG] Entering clean_header_value
+2025-12-08 14:07:35,489 [INFO] send_scam_notification: sent analysis reply to tinmanmusicman@gmail.com.
+2025-12-08 14:07:35,490 [INFO] Notification sent to tinmanmusicman@gmail.com about sender=unknown subject=Scam Evaluation
+2025-12-08 14:07:35,490 [INFO] Sender: unknown | Subject: Scam Evaluation | Summary: The email is likely a scam based on several red flags. | Action: Moved to 'Scam' (copied + deleted original).
+2025-12-10 01:07:15,037 [DEBUG] Entering fetch_unread_scam
+2025-12-10 01:07:15,037 [DEBUG] Entering load_config
+2025-12-10 01:07:15,037 [INFO] Configuration loaded successfully.
+2025-12-10 01:07:15,722 [INFO] No unread Primary emails with 'Scam' in the subject.
+2025-12-10 01:07:27,640 [DEBUG] Entering fetch_unread_scam
+2025-12-10 01:07:27,640 [DEBUG] Entering load_config
+2025-12-10 01:07:27,641 [INFO] Configuration loaded successfully.
+2025-12-10 01:07:28,532 [INFO] No unread Primary emails with 'Scam' in the subject.
+2025-12-10 01:19:03,615 [DEBUG] Entering fetch_unread_scam
+2025-12-10 01:19:03,616 [DEBUG] Entering load_config
+2025-12-10 01:19:03,616 [INFO] Configuration loaded successfully.
+2025-12-10 01:19:04,686 [DEBUG] Entering decode_subject
+2025-12-10 01:19:04,686 [DEBUG] Entering strip_scam_prefix
+2025-12-10 01:19:04,686 [DEBUG] Entering extract_body
+2025-12-10 01:19:04,687 [DEBUG] Entering collect_from_blocks
+2025-12-10 01:19:04,687 [INFO] collect_from_blocks: markers found but no valid email addresses detected.
+2025-12-10 01:19:04,687 [DEBUG] Entering analyze_body
+2025-12-10 01:19:04,690 [DEBUG] Starting new HTTPS connection (1): api.openai.com:443
+2025-12-10 01:19:07,278 [DEBUG] https://api.openai.com:443 "POST /v1/chat/completions HTTP/1.1" 200 None
+2025-12-10 01:19:07,287 [INFO] analyze_body: received response for sender unknown.
+2025-12-10 01:19:07,289 [INFO] Evaluation -> sender=unknown subject=New text message from (813) 540-9269 is_scam=True confidence=0.85 summary=The email appears to be a scam due to an unsolicited job offer and suspicious links.
+2025-12-10 01:19:08,049 [DEBUG] Entering send_scam_notification
+2025-12-10 01:19:08,055 [DEBUG] Entering clean_header_value
+2025-12-10 01:19:08,056 [DEBUG] Entering clean_header_value
+2025-12-10 01:19:09,463 [INFO] send_scam_notification: sent analysis reply to tinmanmusicman@gmail.com.
+2025-12-10 01:19:09,463 [INFO] Notification sent to tinmanmusicman@gmail.com about sender=unknown subject=New text message from (813) 540-9269
+2025-12-10 01:19:09,463 [INFO] Sender: unknown | Subject: Scam Fwd: New text message from (813) 540-9269 | Summary: The email appears to be a scam due to an unsolicited job offer and suspicious links. | Action: Moved to 'Scam' (copied + deleted original).
+2025-12-10 01:35:30,946 [DEBUG] Entering fetch_unread_scam
+2025-12-10 01:35:30,946 [DEBUG] Entering load_config
+2025-12-10 01:35:30,946 [INFO] Configuration loaded successfully.
+2025-12-10 01:35:31,981 [INFO] No unread Primary emails with 'Scam' in the subject.
+2025-12-10 01:38:51,228 [DEBUG] Entering fetch_unread_scam
+2025-12-10 01:38:51,228 [DEBUG] Entering load_config
+2025-12-10 01:38:51,229 [INFO] Configuration loaded successfully.
+2025-12-10 01:38:52,106 [INFO] No unread Primary emails with 'Scam' in the subject.
+2025-12-10 02:04:52,398 [DEBUG] Entering fetch_unread_scam
+2025-12-10 02:04:52,398 [DEBUG] Entering load_config
+2025-12-10 02:04:52,399 [INFO] Configuration loaded successfully.
+2025-12-10 02:04:52,959 [INFO] No unread Primary emails with 'Scam' in the subject.
+2025-12-10 03:59:30,231 [DEBUG] Entering fetch_unread_scam
+2025-12-10 03:59:30,232 [DEBUG] Entering load_config
+2025-12-10 03:59:30,248 [INFO] Configuration loaded successfully.
+2025-12-10 03:59:31,177 [INFO] No unread Primary emails with 'Scam' in the subject.

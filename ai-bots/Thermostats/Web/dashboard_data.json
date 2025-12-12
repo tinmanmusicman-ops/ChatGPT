@@ -15,7 +15,7 @@
   ],
   "latestRow": [
     "Tuesday Nov 25 2025 8:11 PM",
-    "95",
+    "System",
     "95",
     "80",
     "Off",
@@ -25,7 +25,7 @@
     "8:54 PM",
     "NN57.0 | Mostly Cloudy",
     "On",
-    "10"
+    "500"
   ],
   "history": [
     {
@@ -370,12 +370,12 @@
     null,
     0.0,
     null,
-    10.0
+    500.0
   ],
-  "totalCondenserMinutes": "10",
-  "totalCondenserMinutesValue": 10.0,
-  "totalCondenserCost": "$0.50",
-  "totalCondenserCostValue": 0.5,
+  "totalCondenserMinutes": "500",
+  "totalCondenserMinutesValue": 500.0,
+  "totalCondenserCost": "$25.00",
+  "totalCondenserCostValue": 25.0,
   "condenserCostPerMinute": 0.05,
   "latestActual": 95.0,
   "latestSetpoint": 80.0,
@@ -385,8 +385,9 @@
   "latestOutsideFlagDayChar": "N",
   "latestFan": "O",
   "latestCooling": 1,
-  "generatedTimestamp": "Saturday Dec 06 2025 02:03:55 AM",
-  "generatedDateSlug": "2025-12-06",
+  "latestCondenserState": "On",
+  "generatedTimestamp": "Sunday Dec 07 2025 11:47:10 AM",
+  "generatedDateSlug": "2025-12-07",
   "archiveDates": [
     {
       "slug": "2025-12-07",

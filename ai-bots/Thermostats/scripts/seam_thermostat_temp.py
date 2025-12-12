@@ -47,7 +47,7 @@ CONDENSER_STATE_FILE = Path(__file__).resolve().parent / "condenser_runtime_stat
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 WEATHER_CACHE_PATH = Path(__file__).resolve().parent / "weather_cache.json"
-WEATHER_CACHE_TTL = timedelta(minutes=10)
+WEATHER_CACHE_TTL = timedelta(minutes=60)
 SUN_CACHE_PATH = Path(__file__).resolve().parent / "sun_cache.json"
 SUN_API_URL = "https://api.sunrise-sunset.org/json"
 
@@ -360,34 +360,11 @@ def fetch_weather_conditions(cfg: Dict[str, Any], verbose: bool = False) -> Opti
         if verbose:
             print("[weather] Missing lat/lon/base_url; skipping outside temperature fetch.")
         return None
-    cached = _load_weather_cache()
-    if cached:
-        if verbose:
-            print(
-                "[weather] Using cached forecast (within 10 min): flag=%s temp=%s daylight=%s"
-                % (
-                    cached.get("flag"),
-                    cached.get("temp"),
-                    cached.get("daylight", True),
-                )
-            )
-        return {
-            "temp": cached.get("temp"),
-            "flag": cached.get("flag"),
-            "daylight": cached.get("daylight", True),
-            "cached": True,
-            "forecast_desc": "",
-        }
     prefer_open = cfg.get("weather_prefer_open_meteo", False)
     if prefer_open:
         try:
             open_meteo_data = _fetch_open_meteo_current(lat, lon, cfg, verbose)
             if open_meteo_data:
-                _save_weather_cache(
-                    open_meteo_data.get("temp"),
-                    open_meteo_data.get("flag", ""),
-                    open_meteo_data.get("daylight", True),
-                )
                 return open_meteo_data
         except Exception as open_exc:
             if verbose:
@@ -445,7 +422,6 @@ def fetch_weather_conditions(cfg: Dict[str, Any], verbose: bool = False) -> Opti
         is_night = _is_night_from_times(sunrise, sunset)
         flag = _determine_weather_flag(main_weather, detailed, is_night)
         final_temp = temp_f if temp_f is not None else forecast_temp
-        _save_weather_cache(final_temp, flag, not is_night)
         return {
             "temp": final_temp,
             "flag": flag,
@@ -460,11 +436,6 @@ def fetch_weather_conditions(cfg: Dict[str, Any], verbose: bool = False) -> Opti
             try:
                 open_meteo_data = _fetch_open_meteo_current(lat, lon, cfg, verbose)
                 if open_meteo_data:
-                    _save_weather_cache(
-                        open_meteo_data.get("temp"),
-                        open_meteo_data.get("flag", ""),
-                        open_meteo_data.get("daylight", True),
-                    )
                     return open_meteo_data
             except Exception as open_exc:
                 if verbose:
@@ -495,7 +466,8 @@ def format_weather_entry(
 
 
 def _determine_equipment_status(props: Dict[str, Any]) -> Tuple[str, bool]:
-    equipment = props.get("equipment_status")
+    raw_equipment = props.get("equipment_status")
+    equipment = str(raw_equipment).strip() if raw_equipment is not None else ""
     if not equipment:
         if props.get("is_cooling"):
             equipment = "cooling"
@@ -506,8 +478,10 @@ def _determine_equipment_status(props: Dict[str, Any]) -> Tuple[str, bool]:
         else:
             equipment = "idle"
     status = equipment or "idle"
-    is_cooling = bool(props.get("is_cooling")) or status.lower() == "cooling"
-    return status, is_cooling
+    status_lower = status.lower()
+    is_cooling = "cool" in status_lower
+    normalized_status = "cooling" if is_cooling else "idle"
+    return normalized_status, is_cooling
 
 
 def request_token(cfg: Dict[str, Any], verbose: bool = False) -> str:
@@ -916,7 +890,8 @@ def append_thermostat_row(
             if c_val is not None:
                 cool_set_point_f = c_val * 9.0 / 5.0 + 32
 
-        equipment = props.get("equipment_status")
+        raw_equipment = props.get("equipment_status")
+        equipment = str(raw_equipment).strip() if raw_equipment is not None else ""
         if not equipment:
             if props.get("is_cooling"):
                 equipment = "cooling"
@@ -926,8 +901,9 @@ def append_thermostat_row(
                 equipment = "fan"
             else:
                 equipment = "idle"
+        equipment_state = "cooling" if "cool" in equipment.lower() else "idle"
         if condenser_minutes and condenser_minutes > 0:
-            equipment = "cooling"
+            equipment_state = "cooling"
 
         tz_name = cfg.get("timezone", "America/Los_Angeles")
         timestamp = now_local_iso(tz_name)
@@ -938,7 +914,7 @@ def append_thermostat_row(
             cool_set_point_f if cool_set_point_f is not None else "",
             climate,
             fan,
-            equipment,
+            equipment_state,
             studio or "",
             expiration_local,
             outside_value,
@@ -1369,25 +1345,25 @@ def main() -> None:
     if mode:
         print(f"Mode   : {mode}")
 
-    # Append telemetry to sheet at the very end.
-    weather_entry = ""
-    try:
-        weather_data = fetch_weather_conditions(cfg, verbose=args.verbose)
-        if weather_data:
-           weather_entry = format_weather_entry(
-               weather_data.get("temp"),
-               weather_data.get("flag", ""),
-               weather_data.get("daylight", True),
-               weather_data.get("forecast_desc", ""),
-               weather_data.get("cached", False),
-           )
-    except Exception as weather_exc:
-        print(f"[weather] Failed to fetch outside conditions: {weather_exc}", file=sys.stderr)
+    # Append telemetry to sheet at the very end (hourly based on cycle count).
     condenser_ticks = cycle_state.get("on_ticks", 0)
     condenser_state_label = "on" if condenser_ticks > 0 else "off"
     condenser_minutes = condenser_ticks * CONDENSER_SAMPLE_INTERVAL_MINUTES
 
     if run_spreadsheet:
+        weather_entry = ""
+        try:
+            weather_data = fetch_weather_conditions(cfg, verbose=args.verbose)
+            if weather_data:
+               weather_entry = format_weather_entry(
+                   weather_data.get("temp"),
+                   weather_data.get("flag", ""),
+                   weather_data.get("daylight", True),
+                   weather_data.get("forecast_desc", ""),
+                   weather_data.get("cached", False),
+               )
+        except Exception as weather_exc:
+            print(f"[weather] Failed to fetch outside conditions: {weather_exc}", file=sys.stderr)
         try:
             append_thermostat_row(
                 cfg,

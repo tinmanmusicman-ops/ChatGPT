@@ -1,3 +1,45 @@
 /ai-bots/Shared
 __pycache__/
 *.pyc
+
+# Local docs / binaries
+*.pdf
+*.docx
+*.zip
+
+# Local images / assets
+*.png
+*.jpg
+*.jpeg
+*.jfif
+
+# Local logs / caches / scratch
+*.log
+*.dot
+*.xml
+*.bat
+*.json
+*.txt
+
+# Local folders in this repo
+/Images/
+/LinedIn/
+/ai-bots/Logs/
+
+# Local backups / copies
+**/* - Copy*/
+
+# Repo-specific untracked items
+/BuildRequirements/Extensions/JDE/popup.html
+/BuildRequirements/Extensions/JDE/popup.js
+/ChatGPT5_2_features.py
+/create_resume_flowchart_pdf.py
+/HSST_ControlTower_Help.md
+/HSST_ControlTower_HowTo.md
+/ai-bots/Thermostats/Backup/
+/ai-bots/Thermostats/Web/* - Copy*.html
+/ai-bots/Thermostats/Web/test-dashboard_public.html
+/ai-bots/Thermostats/Web/Reverse - Copy.html
+/ai-bots/Thermostats/Web/SourceForReverEngine.html
+/ai-bots/Thermostats/Web/TBI-dashboard_public.html
+/ai-bots/Thermostats/scripts/Dashboard_modified.py

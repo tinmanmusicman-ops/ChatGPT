@@ -39,7 +39,6 @@ section {
 }
 
 .links-bar {
-
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -48,12 +47,17 @@ section {
 }
 
 .link-buttons {
+  color: #81d4fa;
+  width: 210px;
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
 }
 
+
+
 .link-buttons a {
+
   color: #81d4fa;
   text-decoration: none;
   font-weight: 600;
@@ -65,6 +69,7 @@ section {
 }
 
 .links-bar button {
+
   background: #222;
   color: #fff;
   border: 1px solid #444;
@@ -74,7 +79,29 @@ section {
   font-weight: 600;
 }
 
+.top-right-links {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.top-right-links a {
+  color: #81d4fa;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 4px 2px;
+}
+
+.top-right-links a:hover {
+  text-decoration: underline;
+}
+
+
 .dashboard-header-row {
+
+  color: #FAEBD7;
   font-size: 54px;
   display: flex;
   align-items: center;
@@ -84,13 +111,14 @@ section {
 }
 
 .dashboard-title {
+  color: rgb(112, 84, 84);
   font-size: 54px;
   text-align: center;
   width: 353px;
 
   margin: 0;
   font-size: 1.3rem;
-  color: #c38aff;
+  color: #663f8f;
   font-weight: 700;
 }
 
@@ -143,7 +171,7 @@ section {
 .flip-colon {
   font-size: 20px;
   font-weight: 600;
-  color: var(--clock-digit);
+  color: #36f5f2;
   line-height: 1;
   margin: 0;
   align-self: stretch;
@@ -229,10 +257,35 @@ section {
   }
 }
 
+#clear-log-btn {
+color: #FAEBD7;
+}
+
+.logopo {
+margin: 0 120px;
+width: 130px;
+height: 90px;
+}
+
+
+
 .dashboard-columns {
   display: flex;
   gap: 24px;
   flex-wrap: wrap;
+}
+
+#job-scripts-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    width: 100%;
+}
+
+.job-column {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
 .dashboard-left {
@@ -313,13 +366,30 @@ section {
   font-weight: 600;
 }
 
-.dashboard-right pre {
+.log-output {
   margin: 0;
   white-space: pre-wrap;
   word-break: break-word;
   font-size: 0.9rem;
   line-height: 1.3;
   color: #ccc;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.log-file-link {
+  color: #cfe3ff;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.log-file-link:hover {
+  color: #ffffff;
+}
+
+.log-output a {
+  color: #ff8c00;
+  text-decoration: underline;
 }
 
 button {
@@ -340,6 +410,30 @@ button:hover {
   background: #2a2a2a;
 }
 
+#json-config-btn {
+  color: #FAEBD7 !important;
+}
+
+.health {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-left: 8px;
+  transition: background-color 0.3s ease;
+}
+
+.health.green {
+  background-color: #3bd671;
+}
+
+.health.yellow {
+  background-color: #f5d742;
+}
+
+.health.red {
+  background-color: #d63b3b;
+}
 @media (max-width: 640px) {
   .dashboard-columns {
     flex-direction: column;
@@ -355,7 +449,7 @@ button:hover {
 </head>
 
 <body>
-  <h1>HSST CONTROL DASHBOARD</h1>
+  <h1 style="color: #b8aea0;">HSST CONTROL DASHBOARD</h1>
 
   <div class="control-tower">
     <section id="job-pipeline">
@@ -364,62 +458,72 @@ button:hover {
           <a href="https://docs.google.com/spreadsheets/d/1IYrpGlyCSIilIEyRA70Uq2iUofl-sPA94ygH9ZL-2ag/edit?gid=392501150#gid=392501150" target="_blank" rel="noopener">Spreadsheet Activity</a>
           <a href="https://drive.google.com/drive/u/0/my-drive" target="_blank" rel="noopener">Google Drive</a>
         </div>
-        <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
         <div class="link-buttons">
-
-          <a href="https://tinmanmusicman-ops.github.io/ChatGPT/ai-bots/Thermostats/Web/dashboard_public.html" target="_blank" rel="noopener">Live Thermostat Dashboard</a>
+          <a href="https://tinmanmusicman-ops.github.io/ChatGPT" target="_blank" rel="noopener">Live Thermostat Dashboard</a>
           <a href="http://localhost/" target="_blank" rel="noopener">Dev Thermostat Dashboard</a>
         </div>
-        <button id="json-config-btn">JSON</button>
-      </div>
-
-      <div class="dashboard-header-row">
-        <h2 class="dashboard-title" style="font-size: 54px;">Job Scripts</h2>
         <div class="header-clock">
           <div id="flip-clock-frame">
             <div class="flip-clock" id="flip-clock">
-            <div class="flip-unit" data-unit="hours">
-              <div class="flip">
-                <div class="top">00</div>
-                <div class="bottom">00</div>
+              <div class="flip-unit" data-unit="hours">
+                <div class="flip">
+                  <div class="top">00</div>
+                  <div class="bottom">00</div>
+                </div>
+              </div>
+              <div class="flip-colon" style="color: #08a192;">:</div>
+              <div class="flip-unit" data-unit="minutes">
+                <div class="flip">
+                  <div class="top">00</div>
+                  <div class="bottom">00</div>
+                </div>
+              </div>
+              <div class="flip-colon"><span style="color: #08a192;">:</span></div>
+              <div class="flip-unit" data-unit="seconds">
+                <div class="flip">
+                  <div class="top">00</div>
+                  <div class="bottom">00</div>
+                </div>
               </div>
             </div>
-            <div class="flip-colon">:</div>
-            <div class="flip-unit" data-unit="minutes">
-              <div class="flip">
-                <div class="top">00</div>
-                <div class="bottom">00</div>
-              </div>
-            </div>
-            <div class="flip-colon">:</div>
-            <div class="flip-unit" data-unit="seconds">
-              <div class="flip">
-                <div class="top">00</div>
-                <div class="bottom">00</div>
-              </div>
-            </div>
-          </div>
           </div>
         </div>
-        <img src="/Images/Hands.png" alt="HSST hands logo" class="dashboard-logo">
+        <div class="top-right-links">
+          <a id="chatbot-help-link" href="https://cdn.botpress.cloud/webchat/v3.4/shareable.html?configUrl=https://files.bpcontent.cloud/2025/11/23/04/20251123044527-N8XXQ6V7.json" target="_blank" rel="noopener">Chatbot&nbsp;&nbsp;</a>
+          <button id="json-config-btn" style="color: #FAEBD7;">JSON</button>
+        </div>
+        <span id="health-indicator" class="health red"></span>
+      </div>
+
+      <div class="dashboard-header-row">
+        <h2 class="dashboard-title" style="font-size: 44px; color: rgb(148, 134, 134)">Job Scripts</h2>
+        <img class="logopo" style="justify-content: left;" src="/Images/Hands.png" alt="HSST hands logo" class="dashboard-logo">
       </div>
 
       <div class="dashboard-columns">
         <div class="dashboard-left">
-          <button id="import-job">Import Job</button>
-          <button id="scam-check">Scam Check</button>
-          <button id="verify-company">Verify Company</button>
-          <button id="process-fax">Process Fax</button>
-          <button id="facility-check">Facility Check</button>
+          <div id="job-scripts-container">
+            <div class="job-column" id="job-col-1">
+              <button id="import-job">Import Job</button>
+              <button id="scam-check">Scam Check</button>
+              <button id="verify-company">Verify Company</button>
+              <button id="process-fax">Process Fax</button>
+              <button id="facility-check">Facility Check</button>
+            </div>
+
+            <div class="job-column" id="job-col-2">
+              <button id="targeted-resume">Targeted Resume</button>
+            </div>
+          </div>
         </div>
 
         <div class="dashboard-right">
           <div class="log-header">
-            <h3>Activity Log</h3>
-            <button id="copy-log-btn">Copy</button>
-            <button id="clear-log-btn">Clear</button>
+            <h3 style="color: #b8aea0">Activity Log</h3>
+            <button id="copy-log-btn" style="color: #b8aea0">Copy</button>
+            <button id="clear-log-btn" style="color: #b8aea0">Clear</button>
           </div>
-          <pre id="log-output">(logs will appear here)</pre>
+          <div id="log-output" class="log-output">(logs will appear here)</div>
         </div>
       </div>
     </section>

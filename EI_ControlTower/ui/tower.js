@@ -28,7 +28,8 @@ const jobButtons = {
     "scam-check": "/tower/scam-check",
     "verify-company": "/tower/verify-company",
     "process-fax": "/tower/fax-queue",
-    "facility-check": "/tower/facility-check"
+    "facility-check": "/tower/facility-check",
+    "targeted-resume": "/tower/targeted-resume"
 };
 
 Object.entries(jobButtons).forEach(([id, endpoint]) => {
@@ -71,8 +72,35 @@ function updateLogPanel(text) {
                 cls = "log-error";
             }
 
-            const safeLine = line.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-            return `<span class="${cls}">${safeLine}</span>`;
+            let rendered = line.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            let filesPayload = null;
+            try {
+                const parsed = JSON.parse(line.trim());
+                if (parsed?.files && Array.isArray(parsed.files)) {
+                    filesPayload = parsed.files;
+                }
+            } catch {
+                // Not a JSON files payload
+            }
+
+            if (filesPayload) {
+                const links = filesPayload
+                    .map(file => `<a class="log-file-link" href="/view/${encodeURIComponent(file.name)}">${file.label}</a>`)
+                    .join(" | ");
+                rendered = links;
+            } else {
+                const linkMatch = line.match(/^\[(PDF LINK|PDF COVER LETTER)\]\s+(.+)$/i);
+                if (linkMatch) {
+                    const tag = linkMatch[1].toUpperCase();
+                    const url = linkMatch[2];
+                    const label =
+                        tag === "PDF COVER LETTER"
+                            ? "View Tailored Cover Letter (PDF)"
+                            : "View Tailored Resume (PDF)";
+                    rendered = `<a class="log-file-link" href="${url}" target="_blank" rel="noreferrer">${label}</a>`;
+                }
+            }
+            return `<span class="${cls}">${rendered}</span>`;
         })
         .join("<br>");
 
@@ -127,6 +155,22 @@ document.getElementById("copy-log-btn").onclick = () => {
     }
     document.body.removeChild(textarea);
 };
+
+setInterval(checkBackendHealth, 10000);
+
+async function checkBackendHealth() {
+    const dot = document.getElementById("health-indicator");
+    if (!dot) {
+        return;
+    }
+
+    try {
+        const response = await fetch("/health");
+        dot.className = response.ok ? "health green" : "health yellow";
+    } catch {
+        dot.className = "health red";
+    }
+}
 
 const flipUnits = {
     hours: {
@@ -195,7 +239,7 @@ function setFlipValue(unitName, newValue, animate = true) {
 function updateFlipClock() {
     const now = new Date();
     const timeParts = {
-        hours: pad(now.getHours()),
+        hours: pad(now.getHours() % 12 || 12),
         minutes: pad(now.getMinutes()),
         seconds: pad(now.getSeconds())
     };

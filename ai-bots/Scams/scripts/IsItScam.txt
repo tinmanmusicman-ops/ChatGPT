@@ -33,3 +33,44 @@ Traceback (most recent call last):
     return codecs.charmap_encode(input,self.errors,encoding_table)[0]
            ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f4b3' in position 88: character maps to <undefined>
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] collect_from_blocks: extracted 1 sender blocks.
+
+[IsitScam] analyze_body: received response for sender noreply@findcareer.pmta.sailthru.com.
+
+[IsitScam] send_scam_notification: sent analysis reply to tim.inman.2024@gmail.com.
+
+Traceback (most recent call last):
+  File "C:\ChatGPT\ai-bots\Scams\scripts\IsItScam.py", line 344, in <module>
+    fetch_unread_scam()
+    ~~~~~~~~~~~~~~~~~^^
+  File "C:\ChatGPT\ai-bots\Scams\scripts\IsItScam.py", line 336, in fetch_unread_scam
+    log(
+    ~~~^
+        f"Sender: {sender_for_ai or 'unknown'} | Subject: {subject} | "
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        f"Summary: {summary} | Action: {action_msg}"
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\ChatGPT\ai-bots\Scams\scripts\IsItScam.py", line 44, in log
+    print(f"[IsitScam] {message}")
+    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\SCRC\AppData\Local\Programs\Python\Python314\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f4e8' in position 77: character maps to <undefined>
+
+
+[IsitScam] Configuration loaded successfully.
+
+[IsitScam] collect_from_blocks: markers found but no valid email addresses detected.
+
+[IsitScam] analyze_body: received response for sender unknown.
+
+[IsitScam] send_scam_notification: sent analysis reply to tinmanmusicman@gmail.com.
+
+[IsitScam] Sender: unknown | Subject: Scam Fwd: New text message from (813) 540-9269 | Summary: The email appears to be a scam due to its unsolicited nature and suspicious links. | Action: Moved to 'Scam' (copied + deleted original).
