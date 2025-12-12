@@ -12,7 +12,9 @@ from __future__ import annotations
 import json
 import logging
 import os
+import platform
 import re
+import shutil
 import subprocess
 import sys
 import time
@@ -81,40 +83,6 @@ def configure_logger(config: Dict[str, Any]) -> logging.Logger:
 
 
 
-class ClipboardEmptyError(RuntimeError):
-    """Indicates that clipboard-based job description sourcing failed."""
-
-
-def read_clipboard(logger: logging.Logger) -> str:
-    command = ["powershell", "-NoProfile", "-Command", "Get-Clipboard -Raw"]
-    logger.debug("Reading clipboard using PowerShell: %s", " ".join(command))
-    try:
-        completed = subprocess.run(
-            command, capture_output=True, text=True, check=False
-        )
-    except FileNotFoundError:
-        raise RuntimeError("PowerShell is required to read the clipboard on this machine.")
-
-    if completed.returncode != 0:
-        stderr = completed.stderr.strip()
-        raise RuntimeError(f"Clipboard access failed: {stderr or 'unknown error'}")
-
-    payload = completed.stdout.strip()
-    if not payload:
-        raise ClipboardEmptyError("Clipboard is empty. Please copy the job description before running.")
-    return payload
-
-
-def get_clipboard_job_description(logger: logging.Logger) -> str:
-    try:
-        description = read_clipboard(logger)
-    except ClipboardEmptyError:
-        logger.warning("Clipboard is empty. Aborting targeted resume generation.")
-        raise
-    logger.info("Using clipboard as job description source.")
-    return description
-
-
 def build_prompt(job_description: str, base_resume: Dict[str, Any]) -> str:
     base_json = json.dumps(base_resume, indent=2, ensure_ascii=False)
     prompt = (
@@ -127,6 +95,52 @@ def build_prompt(job_description: str, base_resume: Dict[str, Any]) -> str:
         "Each value should be a polished, fully formatted document adapted to the job."
     )
     return prompt
+
+
+def _read_clipboard_with_pyperclip() -> Optional[str]:
+    try:
+        import pyperclip
+    except ImportError:
+        return None
+    try:
+        return pyperclip.paste()
+    except Exception:
+        return None
+
+
+def _clipboard_command_options() -> list[list[str]]:
+    system = platform.system()
+    if system == "Windows":
+        return [["powershell", "-NoProfile", "-Command", "Get-Clipboard"]]
+    if system == "Darwin":
+        return [["/usr/bin/pbpaste"]]
+    return [
+        ["xclip", "-selection", "clipboard", "-o"],
+        ["xsel", "--clipboard", "--output"],
+    ]
+
+
+def _run_clipboard_command(command: list[str]) -> Optional[str]:
+    if not command:
+        return None
+    if shutil.which(command[0]) is None:
+        return None
+    try:
+        result = subprocess.run(command, capture_output=True, text=True, check=True)
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return None
+    return result.stdout
+
+
+def get_job_description_from_clipboard() -> str:
+    text = _read_clipboard_with_pyperclip()
+    if text:
+        return text
+    for command in _clipboard_command_options():
+        output = _run_clipboard_command(command)
+        if output:
+            return output
+    raise RuntimeError("Unable to read job description from the clipboard.")
 
 
 def get_openai_client(logger: logging.Logger) -> OpenAI:
@@ -590,10 +604,15 @@ def main() -> int:
 
     try:
         ensure_openai_module(logger)
-        job_description = get_clipboard_job_description(logger)
-        if not job_description or len(job_description.strip()) < 50:
-            logger.error("No valid job description detected — aborting resume generation.")
-            print("❌ No valid job description detected. Please copy the full JD from the job page and run again.")
+        try:
+            job_description = get_job_description_from_clipboard().strip()
+        except Exception as exc:  # pragma: no cover
+            logger.error("Failed to load job description: %s", exc)
+            print("ERROR: Failed to load job description; cannot continue without it.", file=sys.stderr)
+            return 1
+        if not job_description:
+            logger.error("Job description is empty; aborting resume generation.")
+            print("ERROR: Job description is empty; aborting resume generation.", file=sys.stderr)
             return 1
         start_time = time.perf_counter()
         base_resume_path = BOT_ASSETS_DIR / config["base_resume_path"]
@@ -613,8 +632,6 @@ def main() -> int:
             print(f"[PDF COVER LETTER] /view/{COVER_LETTER_PDF_PATH.name}")
         elapsed = time.perf_counter() - (start_time or time.perf_counter())
         return 0
-    except ClipboardEmptyError:
-        return 1
     except Exception as exc:  # pragma: no cover
         logger.exception("Resume Engine failed: %s", exc)
         print(f"Resume Engine failed: {exc}", file=sys.stderr)
