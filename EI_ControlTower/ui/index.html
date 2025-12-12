@@ -4,17 +4,24 @@
   <meta charset="UTF-8">
   <title>HSST Control Tower</title>
 <style>
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 body {
         forced-color-adjust: none;
 
   color: #eee;
   font-family: Arial, sans-serif;
+  margin: 0;
   padding: 20px;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
-  animation: colorChange 10s infinate alternate;
+  animation: colorChange 10s infinite alternate;
 }
 
 @keyframes colorChange {
@@ -33,9 +40,17 @@ section {
   border: 3px ridge #444;
   border-radius: 10px;
   padding: 20px;
-  width: min(780px, 100%);
+  width: 100%;
+  max-width: 780px;
+  margin: 0 auto;
   background: #0b0b0b;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+}
+
+.control-tower {
+  width: 100%;
+  display: flex;
+  justify-content: center;
 }
 
 .links-bar {
@@ -262,9 +277,9 @@ color: #FAEBD7;
 }
 
 .logopo {
-margin: 0 120px;
-width: 130px;
-height: 90px;
+  margin: 0;
+  width: 130px;
+  height: 90px;
 }
 
 
@@ -435,6 +450,19 @@ button:hover {
   background-color: #d63b3b;
 }
 @media (max-width: 640px) {
+  body {
+    padding: 12px;
+  }
+
+  section {
+    padding: 14px;
+  }
+
+  .dashboard-header-row {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
   .dashboard-columns {
     flex-direction: column;
   }
