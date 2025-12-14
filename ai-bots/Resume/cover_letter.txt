@@ -2,17 +2,17 @@ Timothy Inman
 
 December 14, 2025
 
-Dear Hiring Committee,
+Dear Viasat Operations Analytics Team,
 
-I am excited to apply for the Program Instructor position at BASE Programs. As a dedicated educator and technologist with deep roots in the Oceanside community, I am passionate about empowering youth, fostering creativity, and supporting lifelong learning. Your mission to enrich the lives of young people aligns perfectly with my own commitment to student-centered growth and inclusive education.
+I am excited to apply for the Data Analyst position at Viasat in Carlsbad, CA. With a strong background in automation, data analysis, and dashboard development, I am eager to contribute to your mission of delivering connections that change the world. My experience aligns closely with your needs: aggregating and cleansing data from diverse sources, automating reporting, and building actionable dashboards that drive business decisions.
 
-Throughout my career, I have demonstrated a strong ability to lead, mentor, and inspire young learners. At Best Buy, I consistently achieved top performance by building meaningful connections and delivering empathetic support—skills that translate directly to creating a positive, inclusive classroom environment. My experience managing the Photo Center at Walmart allowed me to engage with youth and families, introducing them to new technologies and encouraging curiosity and confidence.
+In my current role as a Customer Care Senior Advisor at Best Buy, I have consistently leveraged Python, SQL, and advanced Excel automation to streamline reporting and uncover insights that improve operational efficiency. I recently designed and implemented automated dashboards for HVAC runtime and cost analysis, integrating weather APIs and animated data visualizations to provide stakeholders with clear, actionable information. My work has reduced project timelines, standardized data schemas, and ensured data-driven decision-making across teams.
 
-I am adept at facilitating engaging activities across a range of subjects, including STEM, art, and academics. My background in automation and workflow design has equipped me with the organizational and data management skills needed to track attendance, monitor student progress, and support grant requirements. I am flexible, adaptable, and thrive in collaborative settings, always eager to contribute to a team that values creativity and personal growth.
+I am adept at synthesizing large datasets, identifying data gaps, and developing solutions that enhance data quality and accessibility. My experience building automation frameworks and self-updating dashboards has equipped me with the technical and analytical skills to support Viasat’s manufacturing, supply chain, and business systems. I am comfortable collaborating with cross-functional teams, engaging stakeholders, and translating complex data into intuitive visualizations using Tableau, Power BI, and Python visualization libraries.
 
-I am available for both morning and afternoon shifts and am enthusiastic about supporting students at any of your Oceanside or Camp Pendleton locations. I look forward to the opportunity to help BASE Programs continue its mission of empowering youth and building a community of lifelong learners.
+Viasat’s commitment to innovation and inclusivity resonates with my own values. I am passionate about creating human-centered data solutions that empower people and drive positive impact. I am confident that my blend of technical expertise, analytical rigor, and collaborative approach will make me a valuable asset to your Operations Analytics team.
 
-Thank you for your consideration. I am excited to bring my passion, experience, and dedication to your team.
+Thank you for considering my application. I look forward to the opportunity to discuss how I can contribute to Viasat’s continued success.
 
 Sincerely,
 
