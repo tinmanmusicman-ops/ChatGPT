@@ -51,46 +51,115 @@ WEATHER_CACHE_TTL = timedelta(minutes=60)
 SUN_CACHE_PATH = Path(__file__).resolve().parent / "sun_cache.json"
 SUN_API_URL = "https://api.sunrise-sunset.org/json"
 
-def _read_condenser_state() -> Dict[str, int]:
+def _parse_iso(ts: Optional[str]) -> Optional[datetime]:
+    if not ts:
+        return None
+    try:
+        if ts.endswith("Z"):
+            ts = ts[:-1]
+        return datetime.fromisoformat(ts)
+    except Exception:
+        return None
+
+
+def _floor_to_interval(dt: datetime, minutes: int) -> datetime:
+    dt = dt.replace(second=0, microsecond=0)
+    minute = dt.minute - (dt.minute % minutes)
+    return dt.replace(minute=minute)
+
+
+def _read_condenser_state() -> Dict[str, Any]:
     if not CONDENSER_STATE_FILE.exists():
-        return {"samples": 1, "on_ticks": 0}
+        return {
+            "samples": 1,
+            "on_ticks": 0,
+            "last_slot_iso": None,
+            "last_tick_slot_iso": None,
+            "last_sheet_hour_iso": None,
+        }
     try:
         raw = CONDENSER_STATE_FILE.read_text(encoding="utf-8")
         data = json.loads(raw)
     except Exception:
-        return {"samples": 0, "on_ticks": 0}
+        return {
+            "samples": 0,
+            "on_ticks": 0,
+            "last_slot_iso": None,
+            "last_tick_slot_iso": None,
+            "last_sheet_hour_iso": None,
+        }
     return {
         "samples": int(data.get("samples", 1)),
         "on_ticks": int(data.get("on_ticks", 0)),
+        "last_slot_iso": data.get("last_slot_iso"),
+        "last_tick_slot_iso": data.get("last_tick_slot_iso"),
+        "last_sheet_hour_iso": data.get("last_sheet_hour_iso"),
     }
 
 
-def _write_condenser_state(state: Dict[str, int]) -> None:
+def _write_condenser_state(state: Dict[str, Any]) -> None:
     try:
         CONDENSER_STATE_FILE.write_text(json.dumps(state), encoding="utf-8")
     except Exception:
         pass
 
 
-def _reset_condenser_state() -> None:
-    _write_condenser_state({"samples": 1, "on_ticks": 0})
+def _reset_condenser_state(now_slot: Optional[datetime] = None) -> None:
+    payload: Dict[str, Any] = {
+        "samples": 1,
+        "on_ticks": 0,
+        "last_slot_iso": now_slot.isoformat() if now_slot else None,
+        "last_tick_slot_iso": None,
+        "last_sheet_hour_iso": now_slot.replace(minute=0, second=0, microsecond=0).isoformat()
+        if now_slot
+        else None,
+    }
+    _write_condenser_state(payload)
 
 
-def initialize_condenser_cycle() -> Tuple[bool, int, Dict[str, int]]:
+def initialize_condenser_cycle(tz_name: str) -> Tuple[bool, int, Dict[str, Any], datetime]:
+    tz = pytz.timezone(tz_name)
+    now_local = datetime.now(tz)
+    now_slot = _floor_to_interval(now_local, CONDENSER_SAMPLE_INTERVAL_MINUTES)
     state = _read_condenser_state()
-    current_samples = state.get("samples", 0)
-    next_samples = current_samples + 1
+    last_slot = _parse_iso(state.get("last_slot_iso"))
+
+    if last_slot is None:
+        # First run (or state got wiped): count this slot as sample 1.
+        next_samples = max(1, int(state.get("samples", 0)) or 1)
+    else:
+        # If Task Scheduler was delayed, "catch up" samples based on wall-clock 5-min slots,
+        # but do not double-count within the same slot.
+        delta_slots = int(
+            max(0.0, (now_slot - last_slot).total_seconds()) // (CONDENSER_SAMPLE_INTERVAL_MINUTES * 60)
+        )
+        next_samples = int(state.get("samples", 0)) + (delta_slots if delta_slots > 0 else 0)
+        next_samples = max(1, next_samples)
+
     state["samples"] = next_samples
+    state["last_slot_iso"] = now_slot.isoformat()
+
+    # Force spreadsheet sync to the wall clock: one update per hour, on the first run within the :00 slot.
+    last_sheet_hour = _parse_iso(state.get("last_sheet_hour_iso"))
+    current_hour = now_slot.replace(minute=0, second=0, microsecond=0)
+    already_logged_this_hour = bool(last_sheet_hour and last_sheet_hour == current_hour)
+    run_spreadsheet = (now_slot.minute == 0) and (not already_logged_this_hour)
+    if run_spreadsheet:
+        state["last_sheet_hour_iso"] = current_hour.isoformat()
+
     _write_condenser_state(state)
-    run_spreadsheet = next_samples >= 13
-    return run_spreadsheet, next_samples, state
+    return run_spreadsheet, next_samples, state, now_slot
 
 
-def _record_condenser_tick(active: bool) -> None:
+def _record_condenser_tick(active: bool, now_slot: datetime) -> None:
     if not active:
         return
     state = _read_condenser_state()
+    last_tick_slot = _parse_iso(state.get("last_tick_slot_iso"))
+    if last_tick_slot is not None and last_tick_slot == now_slot:
+        return
     state["on_ticks"] = state.get("on_ticks", 0) + 1
+    state["last_tick_slot_iso"] = now_slot.isoformat()
     _write_condenser_state(state)
 
 
@@ -227,17 +296,6 @@ def load_config(path: Path) -> Dict[str, Any]:
     cfg.setdefault("open_meteo_base_url", "https://api.open-meteo.com")
     cfg.setdefault("google_sheet_name", "NWS")
     return cfg
-
-
-def _parse_iso(ts: Optional[str]) -> Optional[datetime]:
-    if not ts:
-        return None
-    try:
-        if ts.endswith("Z"):
-            ts = ts[:-1]
-        return datetime.fromisoformat(ts)
-    except Exception:
-        return None
 
 
 def _is_night_from_times(sunrise: Optional[datetime], sunset: Optional[datetime]) -> bool:
@@ -1136,17 +1194,20 @@ def build_snapshot_html(
 def main() -> None:
     berbose = True;
     args = parse_args()
-    run_spreadsheet, cycle_samples, cycle_state = initialize_condenser_cycle()
-    if run_spreadsheet:
-        print(f"[condenser] Threshold reached ({cycle_samples} samples); ready to send to spreadsheet.")
-    else:
-        print(f"[condenser] Cycle {cycle_samples}/13 (state {cycle_state}); continuing.")
     # Step 1: read config (API keys, Gmail creds, Google Sheet info, time zones).
     try:
         cfg = load_config(args.config)
     except Exception as exc:
         print(f"Unable to load config: {exc}", file=sys.stderr)
         sys.exit(1)
+
+    run_spreadsheet, cycle_samples, cycle_state, condenser_slot = initialize_condenser_cycle(
+        cfg.get("timezone", "America/Los_Angeles")
+    )
+    if run_spreadsheet:
+        print(f"[condenser] Hour boundary reached; ready to send to spreadsheet (state {cycle_state}).")
+    else:
+        print(f"[condenser] Slot sample={cycle_samples} (state {cycle_state}); continuing.")
 
     # Step 2: restore any previously active request (for honoring timeouts).
     state_path = request_state_path(cfg)
@@ -1379,10 +1440,10 @@ def main() -> None:
         except Exception as exc:
             print(f"[sheet] Failed to log telemetry: {exc}", file=sys.stderr)
         finally:
-            _reset_condenser_state()
+            _reset_condenser_state(condenser_slot)
     else:
-        _record_condenser_tick(condenser_active)
-        print("[condenser] Spreadsheet update deferred until cycle completes.")
+        _record_condenser_tick(condenser_active, condenser_slot)
+        print("[condenser] Spreadsheet update deferred until the top-of-hour slot.")
 
     # Push a fresh snapshot to Drive (overwrite same file each run).
     try:

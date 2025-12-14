@@ -15,6 +15,7 @@ import os
 import platform
 import re
 import shutil
+import shlex
 import subprocess
 import sys
 import time
@@ -48,6 +49,8 @@ else:
 HYPHEN = "-"
 SOFT_BLACK = colors.HexColor("#1A1A1A")
 SOFT_WHITE = colors.HexColor("#F2F2F2")
+GRADIENT_TOP = colors.HexColor("#121212")
+GRADIENT_BOTTOM = colors.HexColor("#2b2b2b")
 client: Optional[OpenAI] = None
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
@@ -420,6 +423,12 @@ def upload_pdfs_and_update_sheet(
     worksheet.update_cell(row_number, headers[sheet_config.resume_link_column], resume_link)
     worksheet.update_cell(row_number, headers[sheet_config.cover_letter_link_column], cover_link)
     worksheet.update_cell(row_number, headers[sheet_config.processed_timestamp_column], timestamp)
+
+    # Clear the marker checkbox/value in column B so the same row won't be processed again.
+    try:
+        worksheet.update_cell(row_number, 2, "")
+    except Exception as exc:
+        logger.warning("Unable to clear column B marker for row %s (%s)", row_number, exc)
     logger.info(
         "Uploaded PDFs for row %s to Drive folder %s (resume=%s cover_letter=%s jd=%s) and recorded links in spreadsheet",
         row_number,
@@ -567,7 +576,180 @@ def extract_json_payload(text: str) -> Dict[str, str]:
     if not resume_text or not cover_letter_text:
         raise ValueError("Both `resume` and `cover_letter` fields must be non-empty.")
 
+    cover_letter_text = normalize_cover_letter_header(cover_letter_text)
     return {"resume": resume_text, "cover_letter": cover_letter_text}
+
+
+def normalize_cover_letter_header(text: str) -> str:
+    """Normalize the cover letter header to: Name, today's date, then a greeting.
+
+    Removes common AI placeholders and boilerplate contact lines like location, phone, and email.
+    """
+    if not text.strip():
+        return text
+
+    # Remove any standalone placeholder date lines anywhere in the document
+    text = re.sub(
+        r"(?im)^\s*(\[date\]|\{date\}|<date>)\s*$",
+        "",
+        text,
+    )
+
+    months = (
+        "January|February|March|April|May|June|July|August|September|October|November|December"
+    )
+    date_line_re = re.compile(
+        rf"^\s*(?:{months})\s+(?:\d{{1,2}},\s+)?\d{{4}}\s*$",
+        flags=re.IGNORECASE,
+    )
+    month_year_only_re = re.compile(rf"^\s*(?:{months})\s+\d{{4}}\s*$", flags=re.IGNORECASE)
+    placeholder_date_re = re.compile(r"^\s*(?:\[date\]|\{date\}|<date>)\s*$", flags=re.IGNORECASE)
+    email_re = re.compile(r"\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b", flags=re.IGNORECASE)
+    phone_re = re.compile(r"^\s*(?:\+?1[\s.-]?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}\s*$")
+    location_re = re.compile(r"^\s*[A-Za-z .'-]+,\s*[A-Za-z]{2}\s*$")
+
+    today = datetime.now().strftime("%B %d, %Y")
+    lines = text.replace("\r", "").split("\n")
+
+    # Identify the start of the header block. Prefer a "name-like" line to skip AI notes.
+    name_like_re = re.compile(r"^\s*[A-Z][A-Za-z.'-]+(?:\s+[A-Z][A-Za-z.'-]+)+\s*$")
+    first_nonempty = next((i for i, line in enumerate(lines) if line.strip()), None)
+    for idx, line in enumerate(lines[:20]):
+        if name_like_re.match(line or ""):
+            first_nonempty = idx
+            break
+    if first_nonempty is None:
+        return text
+    header_end = next(
+        (i for i in range(first_nonempty, min(len(lines), first_nonempty + 20)) if not lines[i].strip()),
+        min(len(lines), first_nonempty + 20),
+    )
+
+    name_line = lines[first_nonempty].strip()
+    header_block = lines[first_nonempty:header_end]
+    body_lines = lines[header_end:]
+
+    # If the "name" line is actually a placeholder, leave the original alone.
+    if placeholder_date_re.match(name_line):
+        return text
+
+    # Drop boilerplate contact/date lines in the header block.
+    cleaned_header: list[str] = []
+    placeholder_field_re = re.compile(
+        r"^\s*\[(?:your\s+)?(?:email|e-?mail|phone|address|city|state|zip|location|linkedin).*\]\s*$",
+        flags=re.IGNORECASE,
+    )
+    for line in header_block[1:]:
+        stripped = line.strip()
+        if not stripped:
+            continue
+        if placeholder_date_re.match(stripped) or date_line_re.match(stripped):
+            continue
+        if placeholder_field_re.match(stripped):
+            continue
+        if email_re.search(stripped):
+            continue
+        if phone_re.match(stripped):
+            continue
+        if location_re.match(stripped):
+            continue
+        cleaned_header.append(stripped)
+
+    # If there is meaningful header info we didn't recognize, keep it between name and date.
+    new_lines: list[str] = [name_line, ""]
+    if cleaned_header:
+        new_lines.extend(cleaned_header)
+        new_lines.append("")
+    new_lines.append(today)
+    new_lines.append("")
+
+    # If the body already begins with a greeting, don't add another.
+    body_stripped = [ln for ln in body_lines if ln.strip()]
+    if not (body_stripped and re.match(r"^\s*(dear|hello)\b", body_stripped[0], flags=re.IGNORECASE)):
+        new_lines.append("Hello Team,")
+        new_lines.append("")
+
+    # Trim leading blank lines in body before appending.
+    while body_lines and not body_lines[0].strip():
+        body_lines = body_lines[1:]
+
+    # Drop any redundant month/year-only date lines from the body (e.g., "June 2025").
+    body_lines = [line for line in body_lines if not month_year_only_re.match(line.strip())]
+    new_lines.extend(body_lines)
+
+    # Normalize spacing: collapse multiple blank lines to a single blank line.
+    collapsed: list[str] = []
+    blank = False
+    for line in new_lines:
+        if not line.strip():
+            if not blank:
+                collapsed.append("")
+            blank = True
+            continue
+        blank = False
+        collapsed.append(line.rstrip())
+
+    return "\n".join(collapsed).strip()
+
+
+def _resolve_blocking_text_editor(path: Path) -> list[str] | str:
+    """Return a blocking command to open a text file for human review."""
+    is_windows = platform.system().lower().startswith("win")
+    posix = not is_windows
+    override = os.environ.get("RESUME_COVER_LETTER_EDITOR", "").strip()
+    if override:
+        if is_windows:
+            return f'{override} "{path}"'
+        return shlex.split(override, posix=posix) + [str(path)]
+
+    editor = os.environ.get("EDITOR", "").strip()
+    if editor:
+        if is_windows:
+            return f'{editor} "{path}"'
+        return shlex.split(editor, posix=posix) + [str(path)]
+
+    system = platform.system().lower()
+    if system.startswith("win"):
+        return ["notepad.exe", str(path)]
+    if system == "darwin":
+        return ["open", "-W", "-t", str(path)]
+
+    for candidate in ("sensible-editor", "editor", "nano", "vi"):
+        if shutil.which(candidate):
+            return [candidate, str(path)]
+
+    raise RuntimeError(
+        "No blocking text editor found. Set RESUME_COVER_LETTER_EDITOR or EDITOR to continue."
+    )
+
+
+def review_cover_letter_text(path: Path, logger: logging.Logger) -> bool:
+    """Open the cover letter for human review; return True only if the file is saved/modified."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.touch(exist_ok=True)
+
+    before_mtime = path.stat().st_mtime
+    cmd = _resolve_blocking_text_editor(path)
+    logger.info("Opening cover letter for review: %s", path)
+    logger.info(
+        "Editor command: %s",
+        cmd if isinstance(cmd, str) else " ".join(cmd),
+    )
+    try:
+        subprocess.run(cmd, check=False, shell=isinstance(cmd, str))
+    except FileNotFoundError as exc:  # pragma: no cover
+        if isinstance(cmd, str):
+            raise RuntimeError("Editor command failed to start.") from exc
+        raise RuntimeError(f"Editor not found: {cmd[0]}") from exc
+
+    after_mtime = path.stat().st_mtime
+    if after_mtime <= before_mtime:
+        logger.warning("Cover letter not saved/modified; skipping PDF generation.")
+        return False
+    if not path.read_text(encoding="utf-8").strip():
+        logger.warning("Cover letter file is empty after review; skipping PDF generation.")
+        return False
+    return True
 
 
 def normalize_dashes(text: str) -> str:
@@ -654,7 +836,7 @@ def _flush_bullets(bullets: list[str], story: list, body_style: ParagraphStyle) 
             leftIndent=0.25 * inch,
             bulletFontName="Helvetica",
             bulletFontSize=11,
-            bulletColor=SOFT_WHITE,
+            bulletColor=colors.black,
         )
     )
 
@@ -744,18 +926,20 @@ def extract_name(text: str, base_resume: Dict[str, Any]) -> str:
     return fallback or "NAME"
 
 
-def draw_gradient_bg(canvas, doc) -> None:
+def _draw_vertical_gradient_background(canvas, doc) -> None:
     canvas.saveState()
-    page_width, page_height = letter
-    shading = canvas.linearGradient(
-        0,
-        page_height,
-        0,
-        0,
-        (SOFT_BLACK, colors.HexColor("#000000")),
-        extend=True,
-    )
-    canvas.shade(shading)
+    width, height = doc.pagesize
+    steps = 120
+    top_r, top_g, top_b = GRADIENT_TOP.red, GRADIENT_TOP.green, GRADIENT_TOP.blue
+    bottom_r, bottom_g, bottom_b = GRADIENT_BOTTOM.red, GRADIENT_BOTTOM.green, GRADIENT_BOTTOM.blue
+    step_height = height / steps
+    for index in range(steps):
+        blend = index / max(steps - 1, 1)
+        r = bottom_r + (top_r - bottom_r) * blend
+        g = bottom_g + (top_g - bottom_g) * blend
+        b = bottom_b + (top_b - bottom_b) * blend
+        canvas.setFillColor(colors.Color(r, g, b))
+        canvas.rect(0, index * step_height, width, step_height, stroke=0, fill=1)
     canvas.restoreState()
 
 
@@ -806,17 +990,6 @@ def save_pdf_resume(text: str, output_path: Path) -> None:
         bottomMargin=inch,
     )
 
-    frame = Frame(
-        doc.leftMargin,
-        doc.bottomMargin,
-        doc.width,
-        doc.height,
-        id="normal",
-    )
-    dark_page = PageTemplate(id="DarkPage", frames=[frame], onPage=draw_gradient_bg)
-    doc.addPageTemplates(dark_page)
-    doc.pageTemplates = [dark_page]
-
     story: list = [Paragraph(name, name_style), Spacer(1, 6)]
     combined_sections: dict[str, list[str]] = {}
 
@@ -858,7 +1031,11 @@ def save_pdf_resume(text: str, output_path: Path) -> None:
         append_section(heading, combined_sections.get(heading, []))
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    doc.build(story, onFirstPage=draw_gradient_bg, onLaterPages=draw_gradient_bg)
+    doc.build(
+        story,
+        onFirstPage=_draw_vertical_gradient_background,
+        onLaterPages=_draw_vertical_gradient_background,
+    )
 
 
 def save_cover_letter_pdf(text: str, output_path: Path) -> None:
@@ -872,17 +1049,6 @@ def save_cover_letter_pdf(text: str, output_path: Path) -> None:
         topMargin=inch,
         bottomMargin=inch,
     )
-
-    frame = Frame(
-        doc.leftMargin,
-        doc.bottomMargin,
-        doc.width,
-        doc.height,
-        id="cover_letter",
-    )
-    dark_page = PageTemplate(id="CoverLetterDarkPage", frames=[frame], onPage=draw_gradient_bg)
-    doc.addPageTemplates(dark_page)
-    doc.pageTemplates = [dark_page]
 
     body_style = ParagraphStyle(
         "CoverLetterBody",
@@ -913,7 +1079,11 @@ def save_cover_letter_pdf(text: str, output_path: Path) -> None:
     _flush_bullets(bullets, story, body_style)
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    doc.build(story, onFirstPage=draw_gradient_bg, onLaterPages=draw_gradient_bg)
+    doc.build(
+        story,
+        onFirstPage=_draw_vertical_gradient_background,
+        onLaterPages=_draw_vertical_gradient_background,
+    )
 
 
 def save_job_description_pdf(text: str, output_path: Path) -> None:
@@ -949,15 +1119,12 @@ def main() -> int:
 
     logger = configure_logger(config)
     global RESUME_TEXT_OUTPUT_PATH, PDF_OUTPUT_PATH, COVER_LETTER_PDF_PATH, JOB_DESCRIPTION_PDF_PATH, JOB_ID
-    RESUME_TEXT_OUTPUT_PATH = ROOT_DIR / config["output_resume_path"]
-    PDF_OUTPUT_PATH = ROOT_DIR / config["output_resume_pdf_path"]
+    # Local temp outputs are intentionally stable names for manual reuse.
+    RESUME_TEXT_OUTPUT_PATH = ROOT_DIR / "resume.txt"
+    PDF_OUTPUT_PATH = ROOT_DIR / "resume.pdf"
+    COVER_LETTER_PDF_PATH = ROOT_DIR / "cover_letter.pdf"
+    JOB_DESCRIPTION_PDF_PATH = ROOT_DIR / "job_description.pdf"
     JOB_ID = PDF_OUTPUT_PATH.stem if PDF_OUTPUT_PATH else None
-    COVER_LETTER_PDF_PATH = (
-        ROOT_DIR / f"CoverLetter_{JOB_ID}.pdf" if JOB_ID else None
-    )
-    JOB_DESCRIPTION_PDF_PATH = (
-        ROOT_DIR / f"JobDescription_{JOB_ID}.pdf" if JOB_ID else None
-    )
     try:
         sheet_config = load_sheet_config(config)
     except Exception as exc:  # pragma: no cover
@@ -1020,12 +1187,14 @@ def main() -> int:
         base_resume = load_json(base_resume_path)
         payload = generate_documents(base_resume, job_description, config, logger)
         resume_output = RESUME_TEXT_OUTPUT_PATH
-        cover_letter_output = ROOT_DIR / config["output_cover_letter_path"]
+        cover_letter_output = ROOT_DIR / "cover_letter.txt"
         save_output(resume_output, payload["resume"], logger)
         save_output(cover_letter_output, payload["cover_letter"], logger)
         if COVER_LETTER_PDF_PATH:
-            save_cover_letter_pdf(payload["cover_letter"], COVER_LETTER_PDF_PATH)
-            logger.info("Saved %s", COVER_LETTER_PDF_PATH)
+            if review_cover_letter_text(cover_letter_output, logger):
+                reviewed_text = cover_letter_output.read_text(encoding="utf-8")
+                save_cover_letter_pdf(reviewed_text, COVER_LETTER_PDF_PATH)
+                logger.info("Saved %s", COVER_LETTER_PDF_PATH)
         if (
             PDF_OUTPUT_PATH
             and PDF_OUTPUT_PATH.exists()

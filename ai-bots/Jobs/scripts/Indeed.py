@@ -515,6 +515,7 @@ def get_unread_email_body(cfg):
 _GSHEET_WORKSHEET = None
 _GSHEET_EXISTING_URLS = None
 _DRIVE_SERVICE = None
+_SHEETS_SERVICE = None
 _CLEARED_THIS_RUN = False
 
 
@@ -566,10 +567,11 @@ def get_gsheet_worksheet(cfg):
 def _clear_data_rows_and_comments(ws, cfg, start_row: int = 2):
     """Remove all data rows (and associated comments) starting at start_row."""
     last_col = COLUMN_LETTERS[len(SHEET_HEADERS) - 1]
-    clear_range = f"A{start_row}:{last_col}"
+    # Column B is user-owned; do not clear it.
+    clear_ranges = [f"A{start_row}:A{last_col}", f"C{start_row}:{last_col}"]
     try:
-        ws.batch_clear([clear_range])
-        print(f"[INFO] Cleared worksheet range {clear_range}.")
+        ws.batch_clear(clear_ranges)
+        print(f"[INFO] Cleared worksheet ranges: {', '.join(clear_ranges)}.")
     except Exception as exc:
         print(f"[WARN] Failed to clear worksheet values: {exc}")
 
@@ -632,6 +634,124 @@ def _get_drive_service(cfg):
     creds = Credentials.from_service_account_file(str(sa), scopes=scopes)
     _DRIVE_SERVICE = build("drive", "v3", credentials=creds, cache_discovery=False)
     return _DRIVE_SERVICE
+
+
+def _get_sheets_service(cfg):
+    """Create (or reuse) Sheets API client for data validation."""
+    global _SHEETS_SERVICE
+    if _SHEETS_SERVICE is not None:
+        return _SHEETS_SERVICE
+
+    sa = _resolve_service_account_path(cfg)
+    scopes = [
+        "https://www.googleapis.com/auth/spreadsheets",
+    ]
+    creds = Credentials.from_service_account_file(str(sa), scopes=scopes)
+    _SHEETS_SERVICE = build("sheets", "v4", credentials=creds, cache_discovery=False)
+    return _SHEETS_SERVICE
+
+
+def _apply_checkbox_validation_to_b(ws, cfg, row_numbers: List[int]) -> None:
+    """Apply checkbox validation to column B for specific rows only.
+
+    Checked value is "X"; unchecked value is blank.
+    """
+    if not row_numbers:
+        return
+    try:
+        sheet_id = int(ws.id)
+    except (TypeError, ValueError):
+        sheet_id = ws.id
+
+    requests = []
+    for row_number in row_numbers:
+        requests.append(
+            {
+                "setDataValidation": {
+                    "range": {
+                        "sheetId": sheet_id,
+                        "startRowIndex": row_number - 1,
+                        "endRowIndex": row_number,
+                        "startColumnIndex": 1,  # B
+                        "endColumnIndex": 2,
+                    },
+                    "rule": {
+                        "condition": {
+                            "type": "BOOLEAN",
+                            "values": [
+                                {"userEnteredValue": "X"},
+                                {"userEnteredValue": ""},
+                            ],
+                        },
+                        "strict": True,
+                        "showCustomUi": True,
+                    },
+                }
+            }
+        )
+
+    try:
+        service = _get_sheets_service(cfg)
+        service.spreadsheets().batchUpdate(
+            spreadsheetId=ws.spreadsheet.id,
+            body={"requests": requests},
+        ).execute()
+    except Exception as exc:
+        print(f"[WARN] Failed to apply checkbox validation to column B: {exc}")
+
+
+def _copy_template_row_format_and_validation(ws, cfg, row_numbers: List[int], *, template_row: int = 2) -> None:
+    """Copy formatting + data validation from a template row into specific rows.
+
+    The intent is to keep column B user-owned while still guaranteeing that new rows
+    inherit checkbox validation from the sheet itself (without column-wide rules).
+    """
+    if not row_numbers:
+        return
+
+    try:
+        sheet_id = int(ws.id)
+    except (TypeError, ValueError):
+        sheet_id = ws.id
+
+    # We only manage A and C-K, but copying template formatting/validation over A-K is safe
+    # and intentionally does not "check" the checkbox (it only copies the rule).
+    start_col = 0  # A
+    end_col = 11   # K (exclusive index)
+
+    requests: list[dict] = []
+    for row_number in row_numbers:
+        for paste_type in ("PASTE_FORMAT", "PASTE_DATA_VALIDATION"):
+            requests.append(
+                {
+                    "copyPaste": {
+                        "source": {
+                            "sheetId": sheet_id,
+                            "startRowIndex": template_row - 1,
+                            "endRowIndex": template_row,
+                            "startColumnIndex": start_col,
+                            "endColumnIndex": end_col,
+                        },
+                        "destination": {
+                            "sheetId": sheet_id,
+                            "startRowIndex": row_number - 1,
+                            "endRowIndex": row_number,
+                            "startColumnIndex": start_col,
+                            "endColumnIndex": end_col,
+                        },
+                        "pasteType": paste_type,
+                    }
+                }
+            )
+
+    try:
+        service = _get_sheets_service(cfg)
+        service.spreadsheets().batchUpdate(
+            spreadsheetId=ws.spreadsheet.id,
+            body={"requests": requests},
+        ).execute()
+    except Exception as exc:
+        print(f"[WARN] Failed to apply template row formatting/validation: {exc}")
 
 
 def _create_ttt_comment(ws, cfg, row_number, col_idx, note_text):
@@ -704,20 +824,39 @@ def _ensure_sheet_headers(ws):
         print(f"[WARN] Could not read sheet headers: {exc}")
         return
 
-    normalized = [cell.strip() for cell in current[:len(SHEET_HEADERS)]]
-    if normalized == SHEET_HEADERS and len(current) == len(SHEET_HEADERS):
-        return
-
-    try:
-        ws.update(range_name="A1:K1", values=[SHEET_HEADERS])
-        print("[INFO] Sheet headers refreshed.")
-    except Exception as exc:
-        print(f"[WARN] Failed to update sheet headers: {exc}")
+    # Column B is user-owned (previously "Elapsed Seconds") and should not be managed by this script.
+    expected_by_col = {
+        "A": "Timestamp",
+        "C": "Job Link",
+        "D": "Company",
+        "E": "Location",
+        "F": "Work Arrangement",
+        "G": "Salary",
+        "H": "Company Summary",
+        "I": "Decision Factors",
+        "J": "Source Email",
+        "K": "SWOT",
+    }
+    updated = False
+    for col, header in expected_by_col.items():
+        col_idx = COLUMN_LETTERS.index(col)
+        existing = current[col_idx].strip() if col_idx < len(current) else ""
+        if existing == header:
+            continue
+        try:
+            ws.update_acell(f"{col}1", header)
+            updated = True
+        except Exception as exc:
+            print(f"[WARN] Failed to update header {col}1: {exc}")
+    if updated:
+        print("[INFO] Sheet headers refreshed (excluding column B).")
 
 def _ensure_wrap_clip(ws):
     '''Ensure sheet columns retain CLIP wrapping.'''
     try:
-        ws.format('A:J', {'wrapStrategy': 'CLIP'})
+        # Column B is user-owned; do not alter its formatting.
+        ws.format('A:A', {'wrapStrategy': 'CLIP'})
+        ws.format('C:J', {'wrapStrategy': 'CLIP'})
     except Exception as exc:
         print(f"[WARN] Failed to enforce wrap strategy: {exc}")
 
@@ -735,11 +874,53 @@ def append_jobs_to_sheet(jobs,cfg,from_email,elapsed):
     now = datetime.now()
     ts_cell = now.strftime("%Y-%m-%d %H:%M:%S")
     ts_note = now.strftime("%A, %B %d, %I:%M %p")
-    try:
-        current_row_count = len(ws.get_all_values())
-    except Exception:
-        current_row_count = ws.row_count or 1
-    row_base = current_row_count + 1
+
+    def _next_available_row() -> int:
+        """Return the next writable row, ignoring column B checkbox/default values.
+
+        Anchor off column C (Job Link) because timestamps in column A are only written
+        for the first row of each batch.
+        """
+        values = None
+        try:
+            values = ws.col_values(3, value_render_option="FORMULA")
+        except Exception:
+            values = None
+        if values is None:
+            try:
+                values = ws.col_values(3, value_render_option="UNFORMATTED_VALUE")
+            except Exception:
+                values = None
+        if not values:
+            return 2
+        last = 1
+        for idx, value in enumerate(values, start=1):
+            if idx == 1:
+                continue
+            if str(value or "").strip():
+                last = idx
+        return max(2, last + 1)
+
+    row_base = _next_available_row()
+
+    def _ensure_row_capacity(required_last_row: int) -> None:
+        """Ensure the sheet has at least required_last_row rows before writing ranges."""
+        try:
+            current_max = int(getattr(ws, "row_count", 0) or 0)
+        except Exception:
+            current_max = 0
+        if current_max and required_last_row <= current_max:
+            return
+        missing = required_last_row - (current_max or 0)
+        # Add buffer so we don't constantly hit the 1000-row ceiling.
+        to_add = max(missing, 500)
+        if to_add <= 0:
+            return
+        try:
+            ws.add_rows(to_add)
+            print(f"[INFO] Expanded worksheet by {to_add} row(s) to fit new data.")
+        except Exception as exc:
+            print(f"[WARN] Unable to expand worksheet rows to {required_last_row}: {exc}")
 
     def _escape_for_formula(text: str | None) -> str:
         return (text or "").replace('"', '""')
@@ -754,7 +935,8 @@ def append_jobs_to_sheet(jobs,cfg,from_email,elapsed):
             except Exception:
                 return str(value)
         return str(value)
-    rows = []
+    rows_a = []
+    rows_c_to_k = []
     new_urls = []
     note_rows = []
 
@@ -773,26 +955,27 @@ def append_jobs_to_sheet(jobs,cfg,from_email,elapsed):
         swot_value = _format_swot_text(raw_swot)
         # Only the note should get the formatted version; keep cell contents unchanged.
 
-        row_values = [
-            ts_cell if i == 0 else "",
-            f"{elapsed:.3f}" if i == 0 else "",
-            hyperlink,
-            _cell_value(job.get("company_name")),
-            _cell_value(job.get("location")),
-            _cell_value(job.get("work_arrangement")),
-            _cell_value(job.get("salary")),
-            _cell_value(job.get("company_summary")),
-            _cell_value(job.get("decision_factors")),
-            _cell_value(from_email if i == 0 else ""),
-            raw_swot,
-        ]
-        rows.append(row_values)
+        # Column B is user-owned: do not write values into it at all.
+        rows_a.append([ts_cell if i == 0 else ""])
+        rows_c_to_k.append(
+            [
+                hyperlink,
+                _cell_value(job.get("company_name")),
+                _cell_value(job.get("location")),
+                _cell_value(job.get("work_arrangement")),
+                _cell_value(job.get("salary")),
+                _cell_value(job.get("company_summary")),
+                _cell_value(job.get("decision_factors")),
+                _cell_value(from_email if i == 0 else ""),
+                raw_swot,
+            ]
+        )
         if url:
             new_urls.append(url)
         note_rows.append(
             [
                 ts_note if i == 0 else "",
-                f"{elapsed:.3f}" if i == 0 else "",
+                "",
                 _cell_value(url or job_name),
                 _cell_value(job.get("company_name")),
                 _cell_value(job.get("location")),
@@ -804,15 +987,24 @@ def append_jobs_to_sheet(jobs,cfg,from_email,elapsed):
                 swot_value,
             ]
         )
-    if not rows:
+    if not rows_a:
         print("[INFO] No new rows to append after removing duplicates.")
         return
 
     try:
-        ws.append_rows(rows, value_input_option="USER_ENTERED")
+        # Write only the columns we own (A and C-K), leaving column B untouched.
+        start_row = row_base
+        end_row = row_base + len(rows_a) - 1
+        _ensure_row_capacity(end_row)
+        template_row = int(cfg.get("template_row", 2) or 2)
+        # Never use column-wide checkbox validation for column B: default checkbox values can make Sheets treat
+        # rows as "used" and push writes past the max row limit (e.g., row 1001+).
+        _copy_template_row_format_and_validation(ws, cfg, list(range(start_row, end_row + 1)), template_row=template_row)
+        ws.update(f"A{start_row}:A{end_row}", rows_a, value_input_option="USER_ENTERED")
+        ws.update(f"C{start_row}:K{end_row}", rows_c_to_k, value_input_option="USER_ENTERED")
         for url in new_urls:
             existing_urls.add(url)
-        print(f"[OK] Appended {len(rows)} row(s).")
+        print(f"[OK] Appended {len(rows_a)} row(s).")
 
         for row_offset, note_values in enumerate(note_rows):
             row_number = row_base + row_offset
@@ -825,6 +1017,8 @@ def append_jobs_to_sheet(jobs,cfg,from_email,elapsed):
                 if row_number == 1:
                     continue
                 column_letter = COLUMN_LETTERS[col_idx]
+                if column_letter == "B":
+                    continue
                 if column_letter == "K":
                     note_text = _format_swot_text(note_text)
                 cell = f"{column_letter}{row_number}"

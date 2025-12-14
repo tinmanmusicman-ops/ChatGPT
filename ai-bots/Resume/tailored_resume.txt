@@ -1,62 +1,63 @@
 Timothy Inman
-Automation Engineer
+Remote | timothy.inman@email.com | (555) 555-5555
+
+Junior Account Manager | Customer Engagement | Virtual Platforms
 
 Summary
-Forward-thinking Automation Engineer specializing in human-centered, AI/EI-driven workflow design. Expert in building scalable automation systems where execution is handled by intelligent automation, while people guide, oversee, and validate processes. Adept at creating accessible, efficient, and human-guided solutions that optimize data workflows and elevate operational control. Passionate about integrating automation with human insight to drive continuous improvement and business value.
+Detail-oriented and proactive professional with a strong background in customer engagement, workflow automation, and virtual platform support. Experienced in managing customer communications, moderating virtual meetings, and optimizing processes for efficiency and clarity. Adept at balancing multiple priorities in fast-paced environments, delivering exceptional service, and leveraging technology to enhance user experiences. Passionate about supporting and growing customer relationships in remote, collaborative teams.
 
-Core Skills
-- Automation & Workflow Orchestration
-- GENESYS Cloud
-- MS Dynamics/CRM
-- Scripting (Python, C#.NET, VBA, JavaScript)
-- Data Integration & Dashboard Development
+Key Skills
+- Customer Engagement & Account Management
+- Virtual Meeting Moderation (Zoom)
+- Google Workspace Proficiency
+- Email Communication & Campaigns
+- Workflow Automation & Reporting
+- QA & Feature Testing
+- Process Optimization
 - Cross-Functional Collaboration
-- Business Process Optimization
-- Zapier, Make, Shopify
-- Team Foundation Server
-- Human-in-the-Loop Automation
-
-Recent Achievements (2024–2025)
-- Designed and implemented automated HVAC/Thermostat dashboards featuring runtime analysis, cost calculations, weather API integration, and animated Chart.js visuals.
-- Built automation frameworks for recruiters and employers, including resume analyzers, job-lead processors, scoring tools, and Excel workflow engines.
-- Developed end-to-end Python automation systems for zero-cost workflow orchestration, launched via batch files.
-- Created self-updating dashboards, Google Drive push utilities, JSON-driven configuration engines, and multi-site thermostat configuration tools.
-- Developed HTML/JavaScript dashboards with interactive legends, tooltips, high-contrast modes, and responsive UI components.
-- Standardized ID, naming, and schema structures across automation projects to ensure clarity and maintainability.
-- Demonstrated Human-EI engineering workflows where humans architect and EI executes development tasks.
+- Detail-Oriented & Self-Motivated
+- Strong Written & Verbal Communication
 
 Professional Experience
 
 Best Buy, Carlsbad, CA
 Customer Care Senior Advisor | Sep 2019 – Sep 2025
-- Managed high-volume financial and technical queues, achieving consistent 100% CSAT through empathy and meaningful connection.
-- Ranked #1 in call center performance metrics; consistently top 10 monthly.
-- Collaborated with leadership on process improvements to increase productivity and accuracy.
-- Delivered a 10-month special project in 2 months by developing an automated Excel solution.
-- Promoted to Senior Advisor within 3 months of training completion.
-
-Walmart, Oceanside, CA
-Electronics Sales Associate | Feb 2018 – Sep 2019
-- Managed the Photo Center and drove technology improvements, increasing customer satisfaction by 50%.
+- Managed high-volume customer interactions across financial and technical queues, consistently achieving 100% CSAT through empathetic communication and meaningful connections.
+- Ranked #1 in recent call center performance metrics; consistently top 10 monthly.
+- Collaborated with leadership to implement process improvements, increasing productivity and accuracy.
+- Delivered a 10-month special project in 2 months by developing an automated Excel reporting solution.
+- Promoted to Senior Advisor within 3 months of completing training.
 
 TIMDOC Solutions, Portland, ME
 Owner | Mar 2017 – Feb 2018
-- Developed innovative workflow and home automation solutions for clients.
+- Developed workflow automation solutions to streamline client operations and improve customer satisfaction.
+- Designed and implemented client communication processes, ensuring timely and effective engagement.
+
+Walmart, Oceanside, CA
+Electronics Sales Associate | Feb 2018 – Sep 2019
+- Managed the Photo Center and implemented technology improvements, increasing customer satisfaction by 50%.
+- Provided product support and guidance to customers, ensuring a positive experience.
 
 Tyler Technologies, Yarmouth, ME
 Software Developer | Aug 2004 – Mar 2017
-- Supported implementation cycles and developed productivity solutions for municipalities nationwide.
-- Architected custom solutions to eliminate third-party dependencies.
-- Researched and implemented a replacement forms engine for Tyler Forms.
+- Supported internal teams and clients during implementation cycles, ensuring smooth onboarding and issue resolution.
+- Developed productivity solutions and automated reporting tools for municipalities nationwide.
 
 Direct Mail of Maine, Scarborough, ME
 Laser Room Department Manager | Jul 1997 – Aug 2004
-- Managed print production using high-speed OCE laser printers.
-- Automated manual mail presorting and daily print workflows, reducing processing time and labor burden.
+- Managed production workflows and automated manual processes, reducing turnaround times and improving accuracy.
+
+Selected Achievements
+- Built automation frameworks for recruiters and employers, including email workflow engines and reporting tools.
+- Developed self-updating dashboards and reporting utilities for tracking engagement and performance metrics.
+- Standardized communication and reporting structures to ensure clarity and maintainability across projects.
 
 Education
-- High School Diploma, Stearns High School, Millinocket, ME
-- Generative AI Mastermind, Outskill, Oct 2025
+High School Diploma
+Stearns High School, Millinocket, ME
+
+Professional Development
+Generative AI Mastermind, Outskill | Oct 2025
 
 Certifications
 - The Fundamentals of ChatGPT — Alison — 10/24/2025
@@ -66,3 +67,8 @@ Certifications
 - Shopify for Beginners — Alison — 10/27/2025
 - WordPress — Alison — 10/28/2025
 - Python — Alison — 10/29/2025
+
+Technical Proficiencies
+Zoom | Google Workspace | MS Dynamics/CRM | Excel | Python | HTML/CSS | JavaScript | Automation Tools (Zapier, Make)
+
+References available upon request.
