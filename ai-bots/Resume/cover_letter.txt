@@ -5,22 +5,20 @@ December 14, 2025
 
 Hello Team,
 
-Hiring Manager
-Pinnacle Method Consulting
+Jerry.ai Hiring Team
+Palo Alto, CA
 
-Re: Customer Service Specialist II – Remote
+Dear Jerry.ai Team,
 
-Dear Hiring Manager,
+I am excited to apply for the Software Engineer I (Entry) position at Jerry. As a human-centered automation engineer with a passion for building scalable, user-first software, I am eager to contribute to Jerry’s mission of radically simplifying car ownership through AI-powered innovation.
 
-I am excited to apply for the Customer Service Specialist II position sourced by Pinnacle Method Consulting. With over a decade of experience in customer care, process optimization, and technology-driven service delivery, I am confident in my ability to deliver exceptional results for your client in the industrial technology sector.
+Throughout my career, I have designed and delivered automation solutions that blend technical excellence with a focus on the end user. My experience includes building Python-driven automation frameworks, developing interactive dashboards with JavaScript and Chart.js, and optimizing data workflows for both internal teams and external clients. At Best Buy, I was recognized for my ability to quickly deliver high-impact solutions—completing a 10-month special project in just 2 months by automating complex Excel workflows. My work has always centered on making technology accessible, efficient, and empowering for people.
 
-Throughout my career, I have consistently served as a primary point of contact for customers, resolving inquiries and complaints with empathy, efficiency, and a focus on long-term satisfaction. At Best Buy, I achieved a 100% CSAT rating and ranked #1 in call center performance metrics by combining strong communication skills with a genuine commitment to customer success. My experience managing order processing, quotations, and contract administration has honed my attention to detail and ability to handle multiple priorities in fast-paced environments.
+I am particularly drawn to Jerry’s commitment to combining AI with human agents to create seamless, high-quality experiences for millions of users. Your rapid growth, modern tech stack, and culture of mentorship and merit-based advancement are exactly what I am seeking as I transition into a software engineering role. While I am familiar with Python, JavaScript, and automation tools, I am eager to deepen my skills in React, Node, AWS, and TypeScript, and to learn from the talented engineers at Jerry.
 
-I am proficient in CRM systems such as MS Dynamics and have a working knowledge of Salesforce, enabling me to manage customer data, track interactions, and support seamless order fulfillment. My background in automation and process improvement allows me to identify opportunities to streamline workflows, reduce errors, and enhance the customer experience. I thrive in collaborative settings, working closely with sales teams and internal departments to ensure accurate and timely delivery of solutions.
+I thrive in fast-paced, high-growth environments and am motivated by the opportunity to make an immediate impact. My curiosity, hustle, and pride in building robust, user-focused software align perfectly with Jerry’s values. I am excited to join a team that is not only transforming an industry but also values learning, collaboration, and real-world impact from day one.
 
-I am particularly drawn to this opportunity because of its blend of customer service and inside sales operations, as well as the chance to contribute to innovative solutions within a diverse and inclusive workplace. My adaptability, organizational skills, and problem-solving mindset make me well-suited to excel in a hybrid work environment and support your client’s mission of operational excellence.
-
-Thank you for considering my application. I look forward to the opportunity to discuss how my experience and skills can contribute to your client’s continued success.
+Thank you for considering my application. I look forward to the opportunity to discuss how my background and passion for technology can contribute to Jerry’s continued success.
 
 Sincerely,
 
