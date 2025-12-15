@@ -82,6 +82,18 @@ SERVICE_ACCOUNT_REQUIRED_KEYS = (
     "client_x509_cert_url",
     "universe_domain",
 )
+CONTACT_INFO_CACHE: Optional[Dict[str, Any]] = None
+JOB_CLOSED_INDICATORS: tuple[str, ...] = (
+    "no longer accepting applications",
+    "position has been filled",
+    "job is no longer available",
+    "posting has expired",
+    "applications are closed",
+    "requisition closed",
+    "this job has been filled",
+    "job unavailable",
+    "posting removed",
+)
 
 
 def load_json(path: Path) -> Any:
@@ -111,6 +123,73 @@ def configure_logger(config: Dict[str, Any]) -> logging.Logger:
     logger = logging.getLogger("ResumeEngine")
     logger.setLevel(level)
     return logger
+
+
+def _set_contact_info_cache(contact: Optional[Dict[str, Any]]) -> None:
+    global CONTACT_INFO_CACHE
+    CONTACT_INFO_CACHE = contact if isinstance(contact, dict) else None
+
+
+def _get_contact_info_cache() -> Optional[Dict[str, Any]]:
+    if CONTACT_INFO_CACHE is not None:
+        return CONTACT_INFO_CACHE
+    try:
+        data = load_base_resume_data()
+    except Exception:
+        return None
+    contact = data.get("contact")
+    if isinstance(contact, dict):
+        _set_contact_info_cache(contact)
+        return contact
+    _set_contact_info_cache(None)
+    return None
+
+
+def _format_contact_line(contact: Optional[Dict[str, Any]]) -> Optional[str]:
+    if not isinstance(contact, dict):
+        return None
+    parts: list[str] = []
+    for key in ("location", "email", "phone"):
+        value = str(contact.get(key, "")).strip()
+        if value:
+            parts.append(value)
+    linkedin = str(contact.get("linkedin", "")).strip()
+    if linkedin:
+        parts.append(linkedin)
+    return " | ".join(parts) if parts else None
+
+
+def detect_closed_job_indicator(job_description: str) -> Optional[str]:
+    """Return the matched closed-job phrase if the posting is no longer actionable."""
+    lowered = job_description.lower()
+    for indicator in JOB_CLOSED_INDICATORS:
+        if indicator in lowered:
+            match = re.search(re.escape(indicator), job_description, flags=re.IGNORECASE)
+            if match:
+                return match.group(0)
+            return indicator
+    return None
+
+
+def _extract_job_metadata_from_text(job_description: str) -> tuple[str, str]:
+    """Best-effort extraction for job title/company; fall back to env vars or 'unknown'."""
+    job_title = _get_env_str("RESUME_JOB_TITLE")
+    company = _get_env_str("RESUME_COMPANY")
+    if not job_title:
+        title_match = re.search(
+            r"(?im)^(?:job\s*title|position|role)\s*[:\-]\s*(.+)$",
+            job_description,
+        )
+        if title_match:
+            job_title = title_match.group(1).strip()
+    if not company:
+        company_match = re.search(
+            r"(?im)^(?:company|employer|organization|organisation)\s*[:\-]\s*(.+)$",
+            job_description,
+        )
+        if company_match:
+            company = company_match.group(1).strip()
+    return (job_title or "unknown", company or "unknown")
 
 
 @dataclass
@@ -655,8 +734,13 @@ def normalize_cover_letter_header(text: str) -> str:
             continue
         cleaned_header.append(stripped)
 
+    contact_line = _format_contact_line(_get_contact_info_cache())
+
     # If there is meaningful header info we didn't recognize, keep it between name and date.
-    new_lines: list[str] = [name_line, ""]
+    new_lines: list[str] = [name_line]
+    if contact_line:
+        new_lines.append(contact_line)
+    new_lines.append("")
     if cleaned_header:
         new_lines.extend(cleaned_header)
         new_lines.append("")
@@ -980,6 +1064,16 @@ def save_pdf_resume(text: str, output_path: Path) -> None:
         textColor=SOFT_WHITE,
         bulletColor=SOFT_WHITE,
     )
+    contact_style = ParagraphStyle(
+        "ContactInfo",
+        fontName="Helvetica",
+        fontSize=11,
+        leading=13,
+        alignment=TA_CENTER,
+        textColor=SOFT_WHITE,
+        spaceAfter=4,
+        bulletColor=SOFT_WHITE,
+    )
 
     doc = SimpleDocTemplate(
         str(output_path),
@@ -990,7 +1084,12 @@ def save_pdf_resume(text: str, output_path: Path) -> None:
         bottomMargin=inch,
     )
 
-    story: list = [Paragraph(name, name_style), Spacer(1, 6)]
+    story: list = [Paragraph(name, name_style)]
+    contact_line = _format_contact_line(base_resume.get("contact"))
+    if contact_line:
+        story.append(Spacer(1, 4))
+        story.append(Paragraph(contact_line, contact_style))
+    story.append(Spacer(1, 6))
     combined_sections: dict[str, list[str]] = {}
 
     def fallback_lines(heading: str) -> list[str]:
@@ -1146,6 +1245,17 @@ def main() -> int:
             logger.error("Job description is empty; aborting resume generation.")
             print("ERROR: Job description is empty; aborting resume generation.", file=sys.stderr)
             return 1
+        closed_phrase = detect_closed_job_indicator(job_description)
+        if closed_phrase:
+            detected_title, detected_company = _extract_job_metadata_from_text(job_description)
+            logger.info(
+                "Skipped — job no longer accepting applications (job_title=%s company=%s trigger=\"%s\")",
+                detected_title,
+                detected_company,
+                closed_phrase,
+            )
+            print("Skipped — job no longer accepting applications.")
+            return 0
         start_time = time.perf_counter()
         try:
             credentials = load_service_account_credentials()
@@ -1185,6 +1295,8 @@ def main() -> int:
                 return 1
         base_resume_path = BOT_ASSETS_DIR / config["base_resume_path"]
         base_resume = load_json(base_resume_path)
+        contact_section = base_resume.get("contact")
+        _set_contact_info_cache(contact_section if isinstance(contact_section, dict) else None)
         payload = generate_documents(base_resume, job_description, config, logger)
         resume_output = RESUME_TEXT_OUTPUT_PATH
         cover_letter_output = ROOT_DIR / "cover_letter.txt"
