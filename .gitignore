@@ -20,6 +20,7 @@ __pycache__/
 *.bat
 *.json
 *.txt
+!/bridge/**
 
 # Local folders in this repo
 /Images/
