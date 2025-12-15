@@ -47,3 +47,6 @@ __pycache__/
 /ai-bots/Thermostats/Web/SourceForReverEngine.html
 /ai-bots/Thermostats/Web/TBI-dashboard_public.html
 /ai-bots/Thermostats/scripts/Dashboard_modified.py
+
+# Allow bridge folder contents to be tracked regardless of extension
+!/bridge/
