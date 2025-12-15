@@ -385,9 +385,13 @@
   "latestOutsideFlagDayChar": "N",
   "latestFan": "O",
   "latestCooling": 1,
-  "generatedTimestamp": "Sunday Dec 14 2025 11:57:10 PM",
-  "generatedDateSlug": "2025-12-14",
+  "generatedTimestamp": "Monday Dec 15 2025 12:01:11 AM",
+  "generatedDateSlug": "2025-12-15",
   "archiveDates": [
+    {
+      "slug": "2025-12-15",
+      "label": "Dec 15, 2025"
+    },
     {
       "slug": "2025-12-14",
       "label": "Dec 14, 2025"
