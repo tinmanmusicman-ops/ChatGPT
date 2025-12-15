@@ -9,9 +9,14 @@ You should see this folder at the repository root as `bridge/` (next to `ai-bots
 - `bridge/README.md`
 - `bridge/codebase_overview.md`
 
-You can verify they exist in the remote branch without switching branches by running:
+You can verify they exist on your current clone by running either of these options:
 
 ```bash
+# Inspect the files in your local clone (no remote required)
+git show develop:bridge/README.md
+git show develop:bridge/codebase_overview.md
+
+# If you have a remote named origin and it carries develop, check there too
 git show origin/develop:bridge/README.md
 git show origin/develop:bridge/codebase_overview.md
 ```
@@ -41,7 +46,8 @@ If those files do not appear on GitHub after selecting `develop` and opening `br
 Quick sanity checks if the folder is still missing:
 
 - Run `git status -sb` to confirm the branch you are on matches the commands above (it should show `## develop`).
-- Verify the remote is set with `git remote -v`; if it points somewhere unexpected, update it or clone fresh.
+- Verify the remote is set with `git remote -v`; if it points somewhere unexpected, update it or clone fresh. If `origin/develop`
+  does not exist yet, the files will only be visible in your local `develop` branch until a push happens.
 - If you are using a fork, replace `origin` with your fork remote name in the commands above.
 
 If you still do not see the files locally:
