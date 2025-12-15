@@ -14,7 +14,7 @@ This repository bundles a set of small automation “bots” (email processors, 
   - **Resume/** – Output location for generated resumes/pdfs consumed by the Control Tower.
   - **Tools/** and **Information/** – Supporting scripts, helpers, and docs for niche tasks.
   - **config-editor/** – Config management scripts, reference PDFs, and sample assets.
-- **bridge/** – Collaboration handoffs (this overview lives here). The folder name is lowercase `bridge/` at the repository root. Make sure you are on the `develop` branch when syncing so these files (README.md and codebase_overview.md) appear locally and on GitHub. If GitHub shows only a `test.txt` file under `bridge/`, the branch selector is likely on a different branch; switch it to `develop`. If your remote does not yet have `develop`, inspect the files locally with `git show develop:bridge/README.md` and `git show develop:bridge/codebase_overview.md`. The folder name on GitHub is also `bridge/` (not `branch/`).
+- **bridge/** – Collaboration handoffs (this overview and `bridge/README.md`). These files are tracked on `develop` under `bridge/`.
 - **Images/** – Shared image assets served by the Control Tower.
 - **BuildRequirements/**, `index.html`, `offscreen_doc.html` – Additional assets and reference material.
 
