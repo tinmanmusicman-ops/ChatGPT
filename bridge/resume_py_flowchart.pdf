@@ -1,0 +1,190 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+2 0 obj
+<< /Length 4767 >>
+stream
+0.82 0.95 0.82 rg
+0 0.5 0 RG
+236.00 732.00 140.00 36.00 re
+B
+BT /F1 9 Tf 246.00 756.00 Td (Start / __main__ entry) Tj ET
+0.91 0.94 0.99 rg
+0.10 0.45 0.91 RG
+216.00 668.00 180.00 44.00 re
+B
+BT /F1 9 Tf 226.00 696.00 Td (Load bot config from config.json) Tj ET
+0.91 0.94 0.99 rg
+0.10 0.45 0.91 RG
+216.00 608.00 180.00 44.00 re
+B
+BT /F1 9 Tf 226.00 636.00 Td (Configure logger) Tj ET
+0.91 0.94 0.99 rg
+0.10 0.45 0.91 RG
+216.00 548.00 180.00 44.00 re
+B
+BT /F1 9 Tf 226.00 576.00 Td (Load sheet column mapping) Tj ET
+0.91 0.94 0.99 rg
+0.10 0.45 0.91 RG
+216.00 488.00 180.00 44.00 re
+B
+BT /F1 9 Tf 226.00 516.00 Td (Ensure OpenAI SDK available) Tj ET
+0.91 0.94 0.99 rg
+0.10 0.45 0.91 RG
+216.00 428.00 180.00 44.00 re
+B
+BT /F1 9 Tf 226.00 456.00 Td (Read job description from clipboard) Tj ET
+1 0.95 0.80 rg
+0.85 0.64 0 RG
+306.00 422.00 m
+398.00 390.00 l
+306.00 358.00 l
+214.00 390.00 l
+h
+B
+BT /F1 9 Tf 236.00 400.00 Td (Job description empty?) Tj ET
+1 0.95 0.80 rg
+0.85 0.64 0 RG
+306.00 362.00 m
+398.00 330.00 l
+306.00 298.00 l
+214.00 330.00 l
+h
+B
+BT /F1 9 Tf 236.00 340.00 Td (Closed-job indicator found?) Tj ET
+0.91 0.94 0.99 rg
+0.10 0.45 0.91 RG
+216.00 248.00 180.00 44.00 re
+B
+BT /F1 9 Tf 226.00 276.00 Td (Load service credentials; resolve worksheet context) Tj ET
+0.91 0.94 0.99 rg
+0.10 0.45 0.91 RG
+216.00 188.00 180.00 44.00 re
+B
+BT /F1 9 Tf 226.00 216.00 Td (Select spreadsheet row \(marker or RESUME_SHEET_ROW\)) Tj ET
+0.91 0.94 0.99 rg
+0.10 0.45 0.91 RG
+216.00 128.00 180.00 44.00 re
+B
+BT /F1 9 Tf 226.00 156.00 Td (Save job description PDF) Tj ET
+0.91 0.94 0.99 rg
+0.10 0.45 0.91 RG
+216.00 68.00 180.00 44.00 re
+B
+BT /F1 9 Tf 226.00 96.00 Td (Generate resume and cover letter text \(OpenAI\)) Tj ET
+0.91 0.94 0.99 rg
+0.10 0.45 0.91 RG
+216.00 8.00 180.00 44.00 re
+B
+BT /F1 9 Tf 226.00 36.00 Td (Save resume.txt / cover_letter.txt and resume PDF) Tj ET
+1 0.95 0.80 rg
+0.85 0.64 0 RG
+306.00 2.00 m
+398.00 -30.00 l
+306.00 -62.00 l
+214.00 -30.00 l
+h
+B
+BT /F1 9 Tf 236.00 -20.00 Td (Cover letter saved after review?) Tj ET
+1 0.95 0.80 rg
+0.85 0.64 0 RG
+306.00 -58.00 m
+398.00 -90.00 l
+306.00 -122.00 l
+214.00 -90.00 l
+h
+B
+BT /F1 9 Tf 236.00 -80.00 Td (All PDFs ready? \(resume, cover letter, JD\)) Tj ET
+0.91 0.94 0.99 rg
+0.10 0.45 0.91 RG
+216.00 -172.00 180.00 44.00 re
+B
+BT /F1 9 Tf 226.00 -144.00 Td (Upload PDFs to Drive; write links to sheet; clear marker) Tj ET
+0.82 0.95 0.82 rg
+0 0.5 0 RG
+236.00 -228.00 140.00 36.00 re
+B
+BT /F1 9 Tf 246.00 -204.00 Td (Success / return 0) Tj ET
+0.82 0.95 0.82 rg
+0 0.5 0 RG
+66.00 192.00 140.00 36.00 re
+B
+BT /F1 9 Tf 76.00 216.00 Td (Error exit / return 1) Tj ET
+0.82 0.95 0.82 rg
+0 0.5 0 RG
+406.00 312.00 140.00 36.00 re
+B
+BT /F1 9 Tf 416.00 336.00 Td (Job closed – skip) Tj ET
+306.00 732.00 m 306.00 712.00 l S
+306.00 712.00 m 307.77 717.73 l 304.23 717.73 l h f
+306.00 668.00 m 306.00 652.00 l S
+306.00 652.00 m 307.77 657.73 l 304.23 657.73 l h f
+306.00 608.00 m 306.00 592.00 l S
+306.00 592.00 m 307.77 597.73 l 304.23 597.73 l h f
+306.00 548.00 m 306.00 532.00 l S
+306.00 532.00 m 307.77 537.73 l 304.23 537.73 l h f
+306.00 488.00 m 306.00 472.00 l S
+306.00 472.00 m 307.77 477.73 l 304.23 477.73 l h f
+306.00 428.00 m 306.00 422.00 l S
+306.00 422.00 m 307.77 427.73 l 304.23 427.73 l h f
+306.00 358.00 m 306.00 362.00 l S
+306.00 362.00 m 304.23 356.27 l 307.77 356.27 l h f
+BT /F1 8 Tf 306.00 368.00 Td (No) Tj ET
+214.00 390.00 m 136.00 228.00 l S
+136.00 228.00 m 140.08 232.40 l 136.89 233.93 l h f
+BT /F1 8 Tf 175.00 317.00 Td (Yes) Tj ET
+306.00 298.00 m 306.00 292.00 l S
+306.00 292.00 m 307.77 297.73 l 304.23 297.73 l h f
+BT /F1 8 Tf 306.00 303.00 Td (No) Tj ET
+398.00 330.00 m 476.00 348.00 l S
+476.00 348.00 m 470.02 348.44 l 470.81 344.98 l h f
+BT /F1 8 Tf 437.00 347.00 Td (Yes) Tj ET
+306.00 248.00 m 306.00 232.00 l S
+306.00 232.00 m 307.77 237.73 l 304.23 237.73 l h f
+306.00 188.00 m 306.00 172.00 l S
+306.00 172.00 m 307.77 177.73 l 304.23 177.73 l h f
+306.00 128.00 m 306.00 112.00 l S
+306.00 112.00 m 307.77 117.73 l 304.23 117.73 l h f
+306.00 68.00 m 306.00 52.00 l S
+306.00 52.00 m 307.77 57.73 l 304.23 57.73 l h f
+306.00 8.00 m 306.00 2.00 l S
+306.00 2.00 m 307.77 7.73 l 304.23 7.73 l h f
+306.00 -62.00 m 306.00 -58.00 l S
+306.00 -58.00 m 304.23 -63.73 l 307.77 -63.73 l h f
+BT /F1 8 Tf 306.00 -52.00 Td (Yes) Tj ET
+214.00 -30.00 m 276.00 -58.00 l S
+276.00 -58.00 m 271.51 -54.02 l 270.05 -57.26 l h f
+BT /F1 8 Tf 245.00 -36.00 Td (No) Tj ET
+306.00 -122.00 m 306.00 -128.00 l S
+306.00 -128.00 m 307.77 -122.27 l 304.23 -122.27 l h f
+BT /F1 8 Tf 306.00 -117.00 Td (Yes) Tj ET
+398.00 -90.00 m 336.00 -188.00 l S
+336.00 -188.00 m 340.56 -184.10 l 337.57 -182.21 l h f
+BT /F1 8 Tf 367.00 -131.00 Td (No) Tj ET
+306.00 -172.00 m 306.00 -188.00 l S
+306.00 -188.00 m 307.77 -182.27 l 304.23 -182.27 l h f
+endstream
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 2 0 R /Resources << /Font << /F1 1 0 R >> >> >>
+endobj
+4 0 obj
+<< /Type /Pages /Count 1 /Kids [3 0 R] >>
+endobj
+5 0 obj
+<< /Type /Catalog /Pages 4 0 R >>
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000079 00000 n 
+0000004898 00000 n 
+0000005024 00000 n 
+0000005081 00000 n 
+trailer
+<< /Size 6 /Root 5 0 R >>
+startxref
+5130
+%%EOF
