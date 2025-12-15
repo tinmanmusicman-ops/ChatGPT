@@ -4,6 +4,18 @@ This folder holds collaboration handoff files. The current codebase overview liv
 
 You should see this folder at the repository root as `bridge/` (next to `ai-bots/` and `EI_ControlTower/`). On GitHub, the path is `bridge/` in the branch that carries these files—double-check the spelling (it is **not** `branch/`). If you only see a placeholder like `test.txt`, you are probably on a different branch or an outdated snapshot. Switch to the branch that contains the bridge docs: **`develop`**.
 
+**Exact save location:** both handoff files are committed under `bridge/` at the repository root on the `develop` branch:
+
+- `bridge/README.md`
+- `bridge/codebase_overview.md`
+
+You can verify they exist in the remote branch without switching branches by running:
+
+```bash
+git show origin/develop:bridge/README.md
+git show origin/develop:bridge/codebase_overview.md
+```
+
 To update your local copy from this repository root:
 
 ```bash
