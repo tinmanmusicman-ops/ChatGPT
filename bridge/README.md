@@ -44,3 +44,7 @@ ls bridge
 Codex handshake verification — static test run.
 
 This README now also notes that the file is maintained for reference only.
+All content in this directory is static documentation and does not affect runtime behavior.
+Please keep any future edits non-functional so the bridge remains a simple reference point.
+
+Status note: this document is safe for automated touches; no runtime logic depends on it.
