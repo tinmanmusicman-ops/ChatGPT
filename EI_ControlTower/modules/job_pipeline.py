@@ -8,7 +8,8 @@ import subprocess
 import threading
 from pathlib import Path
 
-LOG_FILE_PATH = Path(r"C:\ChatGPT\ai-bots\Logs\dashboard_log.txt")
+REPO_ROOT = Path(__file__).resolve().parents[2]
+LOG_FILE_PATH = REPO_ROOT / "ai-bots" / "Logs" / "dashboard_log.txt"
 
 
 def append_log(text: str):
