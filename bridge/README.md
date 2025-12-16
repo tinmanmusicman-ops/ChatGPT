@@ -41,3 +41,4 @@ ls bridge
 ## Troubleshooting
 - On GitHub, confirm the branch selector is set to `develop` when browsing `bridge/`.
 - If you are using a fork, replace `origin` with your fork remote name in the commands above.
+Codex handshake verification — static test run.
