@@ -38,7 +38,7 @@ jobs:
 
       - name: Verify base commit
         run: |
-          CURRENT_BASE=$(git merge-base origin/develop HEAD)
+          CURRENT_BASE=$(git merge-base develop HEAD)
 
           if [ "$CURRENT_BASE" != "${{ steps.intent.outputs.base }}" ]; then
             echo "Base commit mismatch"
