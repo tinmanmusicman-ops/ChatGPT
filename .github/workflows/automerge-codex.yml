@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Merge PR
-        uses: peter-evans/merge-pull-request@v3
+        uses: peter-evans/merge-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           pull-request: ${{ github.event.pull_request.number }}
