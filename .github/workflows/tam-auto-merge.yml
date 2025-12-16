@@ -32,7 +32,7 @@ jobs:
 
           if ! grep -q "TAM-INTENT" intent.txt; then
             echo "WARNING: Missing TAM-INTENT block"
-            BASE=$(git merge-base develop HEAD)
+            BASE=$(git merge-base ${{ github.event.pull_request.base.ref || github.event.repository.default_branch }} HEAD)
             ACTUAL_DIFF=$(git diff $BASE HEAD)
             DIFF_HASH=$(echo "$ACTUAL_DIFF" | sha256sum | awk '{print $1}')
 
@@ -49,8 +49,8 @@ jobs:
 
       - name: Verify base commit
         run: |
-          if ! CURRENT_BASE=$(git merge-base develop HEAD); then
-            echo "WARNING: Unable to resolve merge-base against develop"
+          if ! CURRENT_BASE=$(git merge-base ${{ github.event.pull_request.base.ref || github.event.repository.default_branch }} HEAD); then
+            echo "WARNING: Unable to resolve merge-base against ${{ github.event.pull_request.base.ref || github.event.repository.default_branch }}"
             exit 0
           fi
 
@@ -74,12 +74,12 @@ jobs:
             exit 0
           fi
 
-      - name: Merge trusted-agent into develop
+      - name: Merge trusted-agent into ${{ github.event.pull_request.base.ref || github.event.repository.default_branch }}
         continue-on-error: true
         run: |
           git config user.name "tam-agent"
           git config user.email "tam-agent@users.noreply.github.com"
 
-          git checkout develop
+          git checkout ${{ github.event.pull_request.base.ref || github.event.repository.default_branch }}
           git merge trusted-agent --ff-only
-          git push origin develop
+          git push origin ${{ github.event.pull_request.base.ref || github.event.repository.default_branch }}
