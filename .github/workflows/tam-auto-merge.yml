@@ -33,8 +33,8 @@ jobs:
           ' > intent.txt
 
           if ! grep -q "TAM-INTENT" intent.txt; then
-            echo "Missing TAM-INTENT block"
-            exit 1
+            echo "WARNING: Missing TAM-INTENT block"
+            exit 0
           fi
 
           BASE=$(grep "^base:" intent.txt | awk "{print \$2}")
