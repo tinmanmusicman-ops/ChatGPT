@@ -5,8 +5,6 @@ on:
     branches:
       - trusted-agent
   pull_request:
-    branches:
-      - develop
 
 jobs:
   tam-verify-and-merge:
