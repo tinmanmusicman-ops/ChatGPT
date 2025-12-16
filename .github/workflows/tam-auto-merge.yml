@@ -21,7 +21,11 @@ jobs:
       - name: Extract TAM intent
         id: intent
         run: |
-          COMMIT_MSG=$(git log -1 --pretty=%B)
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            COMMIT_MSG="${{ github.event.pull_request.title }}"
+          else
+            COMMIT_MSG=$(git log -1 --pretty=%B)
+          fi
 
           echo "$COMMIT_MSG" | awk '
             /^TAM-INTENT/ {flag=1}
