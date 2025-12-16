@@ -9,6 +9,7 @@ import threading
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+AI_BOTS_ROOT = REPO_ROOT / "ai-bots"
 LOG_FILE_PATH = REPO_ROOT / "ai-bots" / "Logs" / "dashboard_log.txt"
 
 
@@ -60,7 +61,7 @@ def stub():
 def run_import_job():
     run_and_stream(
         "Import Job",
-        r"C:\ChatGPT\ai-bots\Jobs\scripts\Indeed.py"
+        str(AI_BOTS_ROOT / "Jobs" / "scripts" / "Indeed.py")
     )
 
     return {"status": "launched", "script": "Indeed.py"}
@@ -69,7 +70,7 @@ def run_import_job():
 def run_scam_check():
     run_and_stream(
         "Scam Check",
-        r"C:\ChatGPT\ai-bots\Scams\scripts\IsitScam.py"
+        str(AI_BOTS_ROOT / "Scams" / "scripts" / "IsitScam.py")
     )
 
     return {"status": "launched", "script": "IsitScam.py"}
@@ -78,7 +79,7 @@ def run_scam_check():
 def run_verify_company():
     run_and_stream(
         "Verify Company",
-        r"C:\ChatGPT\ai-bots\Information\Scripts\Company.py"
+        str(AI_BOTS_ROOT / "Information" / "Scripts" / "Company.py")
     )
 
     return {"status": "launched", "script": "Company.py"}
@@ -87,7 +88,7 @@ def run_verify_company():
 def run_jason_configuration():
     run_and_stream(
         "Jason Configuration",
-        r"C:\ChatGPT\ai-bots\config-editor\scripts\config_editor.py"
+        str(AI_BOTS_ROOT / "config-editor" / "scripts" / "config_editor.py")
     )
 
     return {"status": "launched", "script": "config_editor.py"}
@@ -96,7 +97,7 @@ def run_jason_configuration():
 def run_facility_check():
     run_and_stream(
         "Facility Check",
-        r"C:\ChatGPT\ai-bots\Security\scripts\SiteCheck.py"
+        str(AI_BOTS_ROOT / "Security" / "scripts" / "SiteCheck.py")
     )
 
     return {"status": "launched", "script": "SiteCheck.py"}
@@ -105,7 +106,7 @@ def run_facility_check():
 def run_targeted_resume():
     run_and_stream(
         "Targeted Resume",
-        r"C:\ChatGPT\ai-bots\Resume\scripts\Resume.py"
+        str(AI_BOTS_ROOT / "Resume" / "scripts" / "Resume.py")
     )
 
     return {"status": "launched", "script": "Resume.py"}
