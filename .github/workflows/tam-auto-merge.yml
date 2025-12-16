@@ -20,37 +20,41 @@ jobs:
         id: intent
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            COMMIT_MSG="${{ github.event.pull_request.title }}"
+            BASE_REF="${{ github.event.pull_request.base.ref }}"
           else
-            COMMIT_MSG=$(git log -1 --pretty=%B)
+            BASE_REF="${{ github.event.repository.default_branch }}"
           fi
 
-          echo "$COMMIT_MSG" | awk '
-            /^TAM-INTENT/ {flag=1}
-            flag {print}
-          ' > intent.txt
-
-          if ! grep -q "TAM-INTENT" intent.txt; then
-            echo "WARNING: Missing TAM-INTENT block"
-            BASE=$(git merge-base origin/${{ github.event.pull_request.base.ref }} HEAD)
-            ACTUAL_DIFF=$(git diff $BASE HEAD)
-            DIFF_HASH=$(echo "$ACTUAL_DIFF" | sha256sum | awk '{print $1}')
-
-            echo "base=$BASE" >> $GITHUB_OUTPUT
-            echo "diff_hash=$DIFF_HASH" >> $GITHUB_OUTPUT
+          if ! BASE=$(git merge-base "origin/$BASE_REF" HEAD); then
+            echo "WARNING: Unable to resolve merge-base against origin/$BASE_REF"
             exit 0
           fi
 
-          BASE=$(grep "^base:" intent.txt | awk "{print \$2}")
-          DIFF_HASH=$(grep "^diff_hash:" intent.txt | awk "{print \$2}")
+          if ! ACTUAL_DIFF=$(git diff "$BASE" HEAD); then
+            echo "WARNING: Unable to compute diff from $BASE to HEAD"
+            exit 0
+          fi
+
+          DIFF_HASH=$(echo "$ACTUAL_DIFF" | sha256sum | awk '{print $1}')
 
           echo "base=$BASE" >> $GITHUB_OUTPUT
           echo "diff_hash=$DIFF_HASH" >> $GITHUB_OUTPUT
 
       - name: Verify base commit
         run: |
-          if ! CURRENT_BASE=$(git merge-base origin/${{ github.event.pull_request.base.ref }} HEAD); then
-            echo "WARNING: Unable to resolve merge-base against ${{ github.event.pull_request.base.ref || github.event.repository.default_branch }}"
+          if [ -z "${{ steps.intent.outputs.base }}" ]; then
+            echo "WARNING: Missing base output; skipping base verification"
+            exit 0
+          fi
+
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE_REF="${{ github.event.pull_request.base.ref }}"
+          else
+            BASE_REF="${{ github.event.repository.default_branch }}"
+          fi
+
+          if ! CURRENT_BASE=$(git merge-base "origin/$BASE_REF" HEAD); then
+            echo "WARNING: Unable to resolve merge-base against origin/$BASE_REF"
             exit 0
           fi
 
@@ -80,6 +84,15 @@ jobs:
           git config user.name "tam-agent"
           git config user.email "tam-agent@users.noreply.github.com"
 
-          git checkout ${{ github.event.pull_request.base.ref || github.event.repository.default_branch }}
-          git merge trusted-agent --ff-only
-          git push origin ${{ github.event.pull_request.base.ref || github.event.repository.default_branch }}
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE_REF="${{ github.event.pull_request.base.ref }}"
+            HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          else
+            BASE_REF="${{ github.event.repository.default_branch }}"
+            HEAD_SHA="${{ github.sha }}"
+          fi
+
+          git fetch origin "$BASE_REF"
+          git checkout -B "$BASE_REF" "origin/$BASE_REF"
+          git merge --ff-only "$HEAD_SHA"
+          git push origin "HEAD:$BASE_REF"
