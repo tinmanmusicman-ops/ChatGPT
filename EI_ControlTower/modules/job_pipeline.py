@@ -5,6 +5,7 @@ shared dashboard log instead of relying on batch files.
 """
 
 import subprocess
+import sys
 import threading
 from pathlib import Path
 
@@ -24,7 +25,7 @@ def run_and_stream(label: str, script_path: str):
 
     try:
         process = subprocess.Popen(
-            ["python", script_path],
+            [sys.executable, script_path],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
