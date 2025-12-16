@@ -1,7 +1,7 @@
 import math
 from pathlib import Path
 
-# Quick TAM workflow verification comment.
+# TAM workflow validation touchpoint.
 
 
 class SimplePDF:
