@@ -16,6 +16,8 @@ from modules import (
     logger
 )
 
+# Comment added solely for TAM validation; no functional changes introduced.
+
 app = Flask(__name__)
 
 BASE_DIR = Path(__file__).resolve().parent
