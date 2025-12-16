@@ -20,10 +20,22 @@ jobs:
         || github.event.pull_request.author_association == 'COLLABORATOR')
     runs-on: ubuntu-latest
     steps:
-      - name: Merge PR
-        uses: peter-evans/merge-pull-request@v7
+      - name: Merge PR (squash) and delete branch
+        uses: actions/github-script@v7
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          pull-request: ${{ github.event.pull_request.number }}
-          merge-method: squash
-          delete-branch: true
+          script: |
+            const pr = context.payload.pull_request;
+            if (!pr) throw new Error("No pull_request in event payload");
+
+            await github.rest.pulls.merge({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number,
+              merge_method: "squash",
+            });
+
+            await github.rest.git.deleteRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: `heads/${pr.head.ref}`,
+            });
