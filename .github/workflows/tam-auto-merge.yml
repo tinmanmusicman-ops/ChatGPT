@@ -1,0 +1,65 @@
+name: TAM Auto Merge
+
+on:
+  push:
+    branches:
+      - trusted-agent
+
+jobs:
+  tam-verify-and-merge:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract TAM intent
+        id: intent
+        run: |
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+
+          echo "$COMMIT_MSG" | awk '
+            /^TAM-INTENT/ {flag=1}
+            flag {print}
+          ' > intent.txt
+
+          if ! grep -q "TAM-INTENT" intent.txt; then
+            echo "Missing TAM-INTENT block"
+            exit 1
+          fi
+
+          BASE=$(grep "^base:" intent.txt | awk "{print \$2}")
+          DIFF_HASH=$(grep "^diff_hash:" intent.txt | awk "{print \$2}")
+
+          echo "base=$BASE" >> $GITHUB_OUTPUT
+          echo "diff_hash=$DIFF_HASH" >> $GITHUB_OUTPUT
+
+      - name: Verify base commit
+        run: |
+          CURRENT_BASE=$(git merge-base origin/develop HEAD)
+
+          if [ "$CURRENT_BASE" != "${{ steps.intent.outputs.base }}" ]; then
+            echo "Base commit mismatch"
+            exit 1
+          fi
+
+      - name: Verify diff hash
+        run: |
+          ACTUAL_DIFF=$(git diff ${{ steps.intent.outputs.base }} HEAD)
+          ACTUAL_HASH=$(echo "$ACTUAL_DIFF" | sha256sum | awk '{print $1}')
+
+          if [ "$ACTUAL_HASH" != "${{ steps.intent.outputs.diff_hash }}" ]; then
+            echo "Diff hash mismatch"
+            exit 1
+          fi
+
+      - name: Merge trusted-agent into develop
+        run: |
+          git config user.name "tam-agent"
+          git config user.email "tam-agent@users.noreply.github.com"
+
+          git checkout develop
+          git merge trusted-agent --ff-only
+          git push origin develop
