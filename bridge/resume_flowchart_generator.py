@@ -1,6 +1,8 @@
 import math
 from pathlib import Path
 
+# Quick TAM workflow verification comment.
+
 
 class SimplePDF:
     def __init__(self, filename: str):
