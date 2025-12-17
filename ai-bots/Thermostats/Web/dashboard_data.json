@@ -385,7 +385,8 @@
   "latestOutsideFlagDayChar": "N",
   "latestFan": "O",
   "latestCooling": 1,
-  "generatedTimestamp": "Wednesday Dec 17 2025 03:19:55 AM",
+  "latestCondenserState": "On",
+  "generatedTimestamp": "Wednesday Dec 17 2025 03:31:13 AM",
   "generatedDateSlug": "2025-12-17",
   "archiveDates": [
     {
