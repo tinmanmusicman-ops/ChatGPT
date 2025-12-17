@@ -15,6 +15,9 @@
   };
 
   let dashboardData = parseInlineData() || {};
+  let masterArchiveDates = Array.isArray(dashboardData.archiveDates)
+    ? dashboardData.archiveDates.slice()
+    : [];
   let currentArchiveSlug = dashboardData.generatedDateSlug || "";
   const scriptEl = document.getElementById("dashboard-client");
   const archivePathRaw = scriptEl?.dataset.archivePath || "chart hist";
@@ -30,6 +33,41 @@
       logEl.scrollTop = logEl.scrollHeight;
     }
     console[level](message);
+  };
+
+  const normalizeArchiveDates = (dates) => {
+    if (!Array.isArray(dates)) {
+      return [];
+    }
+    return dates
+      .map((entry) => {
+        if (!entry) {
+          return null;
+        }
+        if (typeof entry === "string") {
+          return { slug: entry, label: entry };
+        }
+        const slug = typeof entry.slug === "string" ? entry.slug : "";
+        const label =
+          typeof entry.label === "string" && entry.label.trim()
+            ? entry.label
+            : slug;
+        return slug ? { slug, label } : null;
+      })
+      .filter(Boolean);
+  };
+
+  const mergeArchiveDates = (incomingDates) => {
+    const merged = new Map();
+    normalizeArchiveDates(masterArchiveDates).forEach((entry) => {
+      merged.set(entry.slug, entry);
+    });
+    normalizeArchiveDates(incomingDates).forEach((entry) => {
+      merged.set(entry.slug, entry);
+    });
+    masterArchiveDates = Array.from(merged.values()).sort((a, b) =>
+      (b.slug || "").localeCompare(a.slug || "")
+    );
   };
 
   const chartHistory = document.getElementById("chart-history");
@@ -1539,6 +1577,7 @@
     if (!data) {
       return;
     }
+    mergeArchiveDates(data.archiveDates);
     dashboardData = data;
     currentArchiveSlug = slugHint || data.generatedDateSlug || currentArchiveSlug;
     const isArchiveLoad = Boolean(slugHint);
@@ -1564,7 +1603,7 @@
   }
 
   function getArchiveDates() {
-    return getDashboardValue("archiveDates", []);
+    return masterArchiveDates.length ? masterArchiveDates : getDashboardValue("archiveDates", []);
   }
 
   const updateAutoplayToggle = () => {
