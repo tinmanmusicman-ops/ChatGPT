@@ -463,7 +463,7 @@ def build_dashboard_html(
                 continue
         return text
 
-    title = "Lockout Music Studios Oceanside CA"
+    title = "Any Company Anywhere USA"
     def _find_index(keywords: Tuple[str, ...]) -> Optional[int]:
         for idx, header in enumerate(headers):
             if not header:
@@ -1389,7 +1389,7 @@ line-height: 1;
   <body>
     <div class="container frame">
       <div class="header-row">
-        <div id="Company">Any Company Anywhere USA</div>
+        <div id="Company">Any Company<br>Anywhere USA</div>
         <div id="Logo"class="logo-placeholder">
           <img src="../../../Images/Hands.png" alt="Logo" />
         </div>
