@@ -1,0 +1,57 @@
+%PDF-1.4
+%
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>
+endobj
+4 0 obj
+<< /Length 1982 >>
+stream
+BT
+/F1 16 Tf
+72 740 Td
+(dashboard_public.html overview) Tj
+0 -20 Td (Location: ai-bots/Thermostats/Web/dashboard_public.html) Tj
+0 -20 Td () Tj
+0 -20 Td (Purpose: Public-facing thermostat dashboard for Lockout Music Studios \(Oceanside\).) Tj
+0 -20 Td (Layout:) Tj
+0 -20 Td ( - Header with company name and logo placeholder.) Tj
+0 -20 Td ( - Timestamp row showing generated timestamp.) Tj
+0 -20 Td ( - Grid of metric cards with latest data: timestamp, type, building temp, setpoint, climate setting, fan setting, equipment status, studio, request expires, outside temp, condenser state, condenser minutes.) Tj
+0 -20 Td (History panel:) Tj
+0 -20 Td ( - Show or hide the history chart; displays condenser runtime total and estimated cost callout.) Tj
+0 -20 Td ( - Chart controls toggle series \(set point, building temp, outside temp, equipment status, fan mode, combined\) plus autoplay toggle.) Tj
+0 -20 Td ( - Chart.js canvas renders temperature and status history; history list can surface archived chart files.) Tj
+0 -20 Td (Data and behavior:) Tj
+0 -20 Td ( - Inline JSON payload supplies latest row, history series \(setpoint, actual, outside, fan, cooling, condenser minutes\), and archive metadata.) Tj
+0 -20 Td ( - Uses inline data when available; can fetch archive JSON files from 'chart hist/<slug>.json' if needed.) Tj
+0 -20 Td ( - Colors metric cards based on values \(temperature gradients, fan/cooling states\) and uses weather icons for outside conditions.) Tj
+0 -20 Td ( - Autoplay cycles chart modes and pauses to show the logo; user interactions can open history files and archive months.) Tj
+0 -20 Td ( - Estimates condenser runtime/cost and reports outside conditions and fan/cooling status.) Tj
+0 -20 Td (Visual assets: references Hands.png, LO_Logo.png, and weather icons in the Images folder.) Tj
+0 -20 Td () Tj
+0 -20 Td (Notes: Sample data in the HTML shows latest building temperature 95 F, set point 80 F, outside 57 F, condenser on for 500 minutes.) Tj
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000015 00000 n 
+0000000064 00000 n 
+0000000121 00000 n 
+0000000247 00000 n 
+0000002281 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+2351
+%%EOF
