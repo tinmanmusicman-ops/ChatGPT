@@ -944,7 +944,7 @@
           },
           x: {
             ticks: {
-              color: "#f4f6ff",
+              color: "rgba(255,245,199,0.9)",
               maxRotation: 0,
               minRotation: 90,
               padding: 8,
