@@ -574,7 +574,7 @@
 
   const legendSwatchColors = {
     setpoint: "#c5a7ff",
-    actual: "#4b4078",
+    actual: "mediumblue",
     outside: "#bfd0dd",
     cooling: "#9dcfb2",
     fan: "#bfa887",
@@ -797,9 +797,9 @@
           label: getActualLabel(),
           data: getActualSeries(),
           segment: {
-            borderColor: segmentColor,
+            borderColor: legendSwatchColors.actual,
           },
-          backgroundColor: "rgba(125,164,255,0.2)",
+          backgroundColor: "rgba(0,0,205,0.18)",
           borderColor: legendSwatchColors.actual,
           pointBackgroundColor: () => legendSwatchColors.actual,
           pointBorderColor: () => legendSwatchColors.actual,
