@@ -15,9 +15,6 @@
   };
 
   let dashboardData = parseInlineData() || {};
-  let masterArchiveDates = Array.isArray(dashboardData.archiveDates)
-    ? dashboardData.archiveDates.slice()
-    : [];
   let currentArchiveSlug = dashboardData.generatedDateSlug || "";
   const scriptEl = document.getElementById("dashboard-client");
   const archivePathRaw = scriptEl?.dataset.archivePath || "chart hist";
@@ -33,41 +30,6 @@
       logEl.scrollTop = logEl.scrollHeight;
     }
     console[level](message);
-  };
-
-  const normalizeArchiveDates = (dates) => {
-    if (!Array.isArray(dates)) {
-      return [];
-    }
-    return dates
-      .map((entry) => {
-        if (!entry) {
-          return null;
-        }
-        if (typeof entry === "string") {
-          return { slug: entry, label: entry };
-        }
-        const slug = typeof entry.slug === "string" ? entry.slug : "";
-        const label =
-          typeof entry.label === "string" && entry.label.trim()
-            ? entry.label
-            : slug;
-        return slug ? { slug, label } : null;
-      })
-      .filter(Boolean);
-  };
-
-  const mergeArchiveDates = (incomingDates) => {
-    const merged = new Map();
-    normalizeArchiveDates(masterArchiveDates).forEach((entry) => {
-      merged.set(entry.slug, entry);
-    });
-    normalizeArchiveDates(incomingDates).forEach((entry) => {
-      merged.set(entry.slug, entry);
-    });
-    masterArchiveDates = Array.from(merged.values()).sort((a, b) =>
-      (b.slug || "").localeCompare(a.slug || "")
-    );
   };
 
   const chartHistory = document.getElementById("chart-history");
@@ -574,7 +536,7 @@
 
   const legendSwatchColors = {
     setpoint: "#c5a7ff",
-    actual: "mediumblue",
+    actual: "#4b4078",
     outside: "#bfd0dd",
     cooling: "#9dcfb2",
     fan: "#bfa887",
@@ -781,7 +743,7 @@
           label: getSetpointLabel(),
           data: getSetpointSeries(),
           segment: {
-            borderColor: legendSwatchColors.setpoint,
+            borderColor: segmentColor,
           },
           backgroundColor: "rgba(102,255,153,0.2)",
           borderColor: legendSwatchColors.setpoint,
@@ -797,9 +759,9 @@
           label: getActualLabel(),
           data: getActualSeries(),
           segment: {
-            borderColor: legendSwatchColors.actual,
+            borderColor: segmentColor,
           },
-          backgroundColor: "rgba(0,0,205,0.18)",
+          backgroundColor: "rgba(125,164,255,0.2)",
           borderColor: legendSwatchColors.actual,
           pointBackgroundColor: () => legendSwatchColors.actual,
           pointBorderColor: () => legendSwatchColors.actual,
@@ -944,7 +906,7 @@
           },
           x: {
             ticks: {
-              color: "rgba(255,245,199,0.3)",
+              color: "#f4f6ff",
               maxRotation: 0,
               minRotation: 90,
               padding: 8,
@@ -1577,7 +1539,6 @@
     if (!data) {
       return;
     }
-    mergeArchiveDates(data.archiveDates);
     dashboardData = data;
     currentArchiveSlug = slugHint || data.generatedDateSlug || currentArchiveSlug;
     const isArchiveLoad = Boolean(slugHint);
@@ -1603,7 +1564,7 @@
   }
 
   function getArchiveDates() {
-    return masterArchiveDates.length ? masterArchiveDates : getDashboardValue("archiveDates", []);
+    return getDashboardValue("archiveDates", []);
   }
 
   const updateAutoplayToggle = () => {
