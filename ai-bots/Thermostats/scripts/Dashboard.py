@@ -1332,7 +1332,7 @@ line-height: 1;
       <div class="header-row">
         <div id="Company">Lockout Music Studios  Oceanside</div>
         <div id="Logo"class="logo-placeholder">
-          <img src="../../../Images/LO_Logo.png" alt="Logo" />
+          <img src="../../../Images/Hands.png" alt="Logo" />
         </div>
       </div>
       <div class="timestamp-row">
