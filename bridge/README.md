@@ -51,3 +51,4 @@ Status note: this document is safe for automated touches; no runtime logic depen
 Use plain-text edits only so automated reviews can verify the file remains static documentation.
 Non-functional updates keep the bridge folder aligned with its reference-only purpose.
 Automated changes should remain descriptive so the file stays a passive checklist entry.
+Keep this README concise so automated verification stays fast and predictable.
