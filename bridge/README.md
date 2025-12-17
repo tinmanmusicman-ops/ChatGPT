@@ -48,3 +48,5 @@ All content in this directory is static documentation and does not affect runtim
 Please keep any future edits non-functional so the bridge remains a simple reference point.
 
 Status note: this document is safe for automated touches; no runtime logic depends on it.
+Use plain-text edits only so automated reviews can verify the file remains static documentation.
+Non-functional updates keep the bridge folder aligned with its reference-only purpose.
