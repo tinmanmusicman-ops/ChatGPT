@@ -781,7 +781,7 @@
           label: getSetpointLabel(),
           data: getSetpointSeries(),
           segment: {
-            borderColor: segmentColor,
+            borderColor: legendSwatchColors.setpoint,
           },
           backgroundColor: "rgba(102,255,153,0.2)",
           borderColor: legendSwatchColors.setpoint,
