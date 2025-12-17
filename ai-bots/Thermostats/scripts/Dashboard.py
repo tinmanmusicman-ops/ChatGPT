@@ -492,6 +492,9 @@ def build_dashboard_html(
     cooling_idx = _find_index(
         ("equipment status", "equipment status", "status", "equipment", "cooling status")
     )
+    condenser_state_idx = _find_index(
+        ("condenser state", "compressor state", "condenser status", "compressor status")
+    )
     timestamp_idx = _find_index(("timestamp",))
     type_idx = _find_index(("type",))
     FAN_LABELS = ["Auto", "Circulate", "On"]
@@ -635,6 +638,11 @@ def build_dashboard_html(
             if float(latest_outside_value).is_integer()
             else f"{latest_outside_value:.1f}"
         )
+    latest_condenser_state = (
+        str(latest_row[condenser_state_idx]).strip()
+        if condenser_state_idx is not None and condenser_state_idx < len(latest_row)
+        else ""
+    )
     dashboard_payload = {
         "headers": headers,
         "latestRow": latest_row,
@@ -667,6 +675,7 @@ def build_dashboard_html(
         "latestOutsideFlagDayChar": latest_outside_flag_day_char,
         "latestFan": latest_fan_value,
         "latestCooling": latest_cooling_value,
+        "latestCondenserState": latest_condenser_state,
         "generatedTimestamp": generated_label,
         "generatedDateSlug": generated_slug,
         "archiveDates": archive_dates,
@@ -709,6 +718,8 @@ def build_dashboard_html(
                 fan_state_class = f" fan-state-{latest_fan_value.lower()}"
         elif idx == cooling_idx:
             metric_attr = ' data-metric="cooling"'
+        elif idx == condenser_state_idx:
+            metric_attr = ' data-metric="condenser-state"'
         elif idx == outside_idx:
             metric_attr = ' data-metric="outside"'
         elif idx == condenser_idx:
@@ -718,7 +729,7 @@ def build_dashboard_html(
         elif idx == type_idx:
             metric_attr = ' data-metric="type"'
         cards += f"""
-        <div class="metric-card{fan_state_class}"{metric_attr}>
+        <div class="metric-card frame2{fan_state_class}"{metric_attr}>
           <div class="label">{display_label}</div>
           <div class="value">{value}</div>
         </div>
@@ -765,15 +776,30 @@ def build_dashboard_html(
         color: inherit;
         margin: 0;
         font-family: 'Inter', system-ui, sans-serif;
-        background: linear-gradient(to bottom, #453082, #71688c);
+        background: linear-gradient(to bottom, #070312, #160d30, #221542, #453082, #5b517a, #71688c, #71688c, #877796, #71688c);
         color: #f4f6ff;
+      }}
+      .frame {{
+        border: 25px solid rgba(255,255,255,0.05);
+        border-radius: 12px;
+        box-shadow:
+          0 4px 6px rgba(0,0,0,0.45),
+          inset 0 4px 4px rgba(255,255,255,0.03),
+          inset 0 -2px 4px rgba(0,0,0,0.35);
+      }}
+      .frame2 {{
+        border: 6px solid rgba(255,255,255,0.05);
+        border-radius: 12px;
+        box-shadow:
+          0 4px 12px rgba(0,0,0,0.45),
+          inset 0 1px 2px rgba(255,255,255,0.03),
+          inset 0 -2px 4px rgba(0,0,0,0.35);
       }}
       .container {{
         max-width: 900px;
         margin: 1px auto;
-        padding: 1px;
+        padding: 40px;
         background: transparent;
-        border-radius: 16px;
       }}
       h1 {{
         margin: 0 0 16px;
@@ -851,10 +877,35 @@ line-height: 1;
         object-fit: contain;
       }}
       .card-grid {{
-
+        padding: 18px 22px;
+        border-radius: 12px;
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
         gap: 16px;
+        background: linear-gradient(to bottom, #120f1c 0%, #1a162b 50%, #0f0d17 100%);
+        border: 2px solid rgba(200, 220, 255, 0.08);
+        box-shadow:
+          inset 0 2px 12px rgba(255, 255, 255, 0.04),
+          inset 0 -2px 18px rgba(0, 0, 0, 0.7),
+          inset 0 0 24px rgba(0, 0, 0, 0.8),
+          0 2px 4px rgba(0, 0, 0, 0.5);
+        background-blend-mode: overlay;
+        position: relative;
+        overflow: hidden;
+      }}
+      .card-grid::after {{
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 1;
+        background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAEklEQVR42mP8/5+hHgAHggJ/P4qUPwAAAABJRU5ErkJggg==");
+        background-repeat: repeat;
+        opacity: 0.07;
+        mix-blend-mode: soft-light;
       }}
       .hands-logo-slot {{
         display: none;
@@ -866,7 +917,7 @@ line-height: 1;
       .metric-card {{
         background: #2b2b30;
         color: #f5f7ff;
-        border: 1px solid #3a3a40;
+        border: 10px ridge #3a3a40;
         border-radius: 12px;
         padding: 16px;
         min-height: 70px;
@@ -925,30 +976,38 @@ line-height: 1;
       }}
       .metric-card[data-metric="outside"] {{
         position: relative;
-        padding-right: 160px;
+        overflow: hidden;
+        padding-right: 50%;
+      }}
+      .metric-card[data-metric="outside"] .label,
+      .metric-card[data-metric="outside"] .value {{
+        position: relative;
+        z-index: 2;
       }}
       .metric-card .sunny-graphic {{
         position: absolute;
         top: 0;
         right: 0;
         bottom: 0;
-        width: 150px;
+        width: 50%;
+        z-index: 1;
         pointer-events: none;
         background-repeat: no-repeat;
         background-position: center;
-        background-size: cover;
+        background-size: contain;
       }}
       .metric-card[data-metric="outside"] {{
         position: relative;
-        padding-right: 140px;
+        overflow: hidden;
+        padding-right: 50%;
       }}
       .metric-card .sunny-graphic {{
         position: absolute;
-        right: 12px;
-        top: 50%;
-        width: 120px;
-        height: 90px;
-        transform: translateY(-50%);
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 50%;
+        z-index: 1;
         pointer-events: none;
         background-repeat: no-repeat;
         background-position: center;
@@ -1328,9 +1387,9 @@ line-height: 1;
     </style>
   </head>
   <body>
-    <div class="container">
+    <div class="container frame">
       <div class="header-row">
-        <div id="Company">Lockout Music Studios  Oceanside</div>
+        <div id="Company">Any Company Anywhere USA</div>
         <div id="Logo"class="logo-placeholder">
           <img src="../../../Images/Hands.png" alt="Logo" />
         </div>
@@ -1338,7 +1397,7 @@ line-height: 1;
       <div class="timestamp-row">
         <div id="dashboard-timestamp" class="date-display">{generated_label}</div>
       </div>
-      <div id="Cards" class="card-grid">
+      <div id="Cards" class="card-grid frame2">
         {cards}
       </div>
       <div class="hands-logo-slot" aria-hidden="true">
