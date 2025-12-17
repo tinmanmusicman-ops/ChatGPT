@@ -50,3 +50,4 @@ Please keep any future edits non-functional so the bridge remains a simple refer
 Status note: this document is safe for automated touches; no runtime logic depends on it.
 Use plain-text edits only so automated reviews can verify the file remains static documentation.
 Non-functional updates keep the bridge folder aligned with its reference-only purpose.
+Automated changes should remain descriptive so the file stays a passive checklist entry.
