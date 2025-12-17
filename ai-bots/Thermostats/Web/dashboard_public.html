@@ -8,19 +8,18 @@
     <style>
       body {
         forced-color-adjust: none;
-          -webkit-text-fill-color: initial;
-            color: inherot;
-        
+        -webkit-text-fill-color: initial;
+        color: inherit;
         margin: 0;
         font-family: 'Inter', system-ui, sans-serif;
-        background: #4a4a4a;
+        background: linear-gradient(to bottom, #453082, #71688c);
         color: #f4f6ff;
       }
       .container {
         max-width: 900px;
         margin: 1px auto;
         padding: 1px;
-        background: #4a4a4a;
+        background: transparent;
         border-radius: 16px;
       }
       h1 {
@@ -32,11 +31,22 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 16px;
+        margin-bottom: 12px;
+      }
+      .timestamp-row {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 18px;
+      }
+      .date-display {
+        font-size: 14px;
+        letter-spacing: 0.08em;
+        opacity: 0.8;
+        text-transform: uppercase;
+        white-space: nowrap;
       }
       .chartjs-legend {
       margin-top: -40px;
-      }
       }
       .header-label {
 
@@ -53,6 +63,22 @@
         text-align: center;
         padding: 4px 0;
       }
+
+#chart-history-months {
+height: 5px
+padding: 0;
+font-size; 8PX;
+line-height: 1
+height: auto;
+}
+
+#chart-history-months option {
+height: 5px
+padding: 1 3px;
+font-size; 8PX;
+line-height: 1;
+}
+
       .logo-placeholder {
 
         width: 190px;
@@ -78,14 +104,11 @@
         gap: 16px;
       }
       .hands-logo-slot {
-        width: 91%;
-        display: flex;
-        justify-content: flex-end;
-        align-items: flex-start;
-        padding-left: 12px;
-        position: relative;
-        min-height: 60px;
-        margin-top: -62px;
+        display: none;
+        width: 0;
+        height: 0;
+        margin: 0;
+        padding: 0;
       }
       .metric-card {
         background: #2b2b30;
@@ -93,6 +116,36 @@
         border: 1px solid #3a3a40;
         border-radius: 12px;
         padding: 16px;
+        min-height: 70px;
+      }
+      .metric-card[data-metric="fan"] {
+        background: #f7e9b5;
+        color: #2b2b30;
+        border-color: #d9c36a;
+      }
+      .metric-card.fan-state-c[data-metric="fan"] {
+        background: #fffde6;
+        color: #5a4a12;
+        border-color: #e9dca8;
+      }
+      .metric-card[data-metric="fan"] .label {
+        color: #6a5a1f;
+        opacity: 0.9;
+      }
+      .metric-card.fan-state-c[data-metric="fan"] .label {
+        color: #5a4a12;
+      }
+      .metric-card[data-metric="fan"] .value {
+        color: #2b2b30;
+      }
+      .metric-card.fan-state-c[data-metric="fan"] .value {
+        color: #5a4a12;
+      }
+      .metric-card[data-metric="timestamp"] .value {
+        font-size: 16px;
+      }
+      .metric-card[data-metric="type"] .value {
+        font-size: 16px;
       }
       .metric-card .label {
         font-size: 14px;
@@ -149,8 +202,7 @@
         background-size: contain;
       }
       .history-panel {
-        
-        margin-top: 32px;
+        margin-top: 8px;
         background: rgba(255,255,255,0.02);
         border-radius: 12px;
         padding: 16px;
@@ -170,11 +222,11 @@
         position: absolute;
         right: 40px;
         top: -32px;
-        transition: opacity 0.3s ease;
+        opacity: 1;
+        transition: opacity 0.6s ease;
       }
       .hands-logo-top.hidden {
         opacity: 0;
-        visibility: hidden;
       }
       button {
         background: #66ff99;
@@ -215,7 +267,8 @@
         justify-content: center;
         gap: 8px;
         padding: 4px 8px;
-        margin-top: 12px;
+        margin-top: 20px;
+        margin-bottom: 48px;
         font-size: 14px;
         color: #f4f6ff;
         height: 100px;
@@ -230,32 +283,93 @@
         transition: background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
       }
       .chart-control.active {
-        background: #063016;
-        color: #d5eadd;
-        border-color: #063016;
-        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.45);
+        background: #0d0d12;
+        color: #66ff99;
+        border-color: #1a1a20;
+        box-shadow: none;
+      }
+      #autoplay-toggle {
+        color: #66ff99;
+      }
+      #autoplay-toggle.off {
+        color: #ff6666;
+      }
+      .condenser-runtime {
+        position: absolute;
+        top: 24px;
+        right: 34px;
+        text-align: right;
+        font-size: 12px;
+        color: #b1ffce;
+        letter-spacing: 0.06em;
+      }
+      .condenser-runtime .value {
+        font-size: 16px;
+        font-weight: 600;
+      }
+      .condenser-runtime .cost-label {
+        font-size: 10px;
+        opacity: 0.7;
+        margin-top: 6px;
+      }
+      .condenser-runtime .cost-value {
+        font-size: 16px;
+        font-weight: 600;
+        color: #fff5c7;
+        background: linear-gradient(to bottom, #241B44, #332459);
+        padding: 2px 6px;
+        border-radius: 6px;
+      }
+      .condenser-runtime .cost-value.cost-ok {
+        color: #00C853;
+      }
+      .condenser-runtime .cost-value.cost-warm {
+        color: #ffcc99;
+      }
+      .condenser-runtime .cost-value.cost-hot {
+        color: #f08a24;
+      }
+      .condenser-runtime .cost-value.cost-red {
+        color: #FF1744;
       }
       #history-chart {
-        
-        gap: 20;
+
+        gap: 20px;
         display: none;
         width: 100% !important;
         height: 100% !important;
-        background: #000;
+        background: linear-gradient(
+          to bottom,
+          #0F0B1A 0%,
+          #2A1E55 40%,
+          #332459 75%
+        );
       }
       .chart-wrap {
-        height: 420px;
+        height: 600px;
         margin: 8px auto 0;
-        background: #000;
+        background: linear-gradient(
+          to bottom,
+          #0F0B1A 0%,
+          #2A1E55 40%,
+          #332459 75%
+        );
         position: relative;
-        max-width: 760px;
+        max-width: 900px;
         width: 100%;
         padding: 12px 0 18px;
         box-sizing: border-box;
-        background-image: url("../../../Images/Hands.png");
-        background-size: 100% 100%;
-        background-repeat: no-repeat;
-        background-position: center top;
+        background-image:
+          url("../../../Images/Hands.png"),
+          linear-gradient(
+            to bottom,
+            #0F0B1A 0%,
+            #2A1E55 40%,
+            #332459 75%
+          );
+        background-size: contain, cover;
+        background-repeat: no-repeat, no-repeat;
+        background-position: center top, center;
       }
       .fan-legend-image {
       }
@@ -274,15 +388,128 @@
       }
       .chart-history {
         position: absolute;
-        top: 12px;
-        right: 12px;
-        background: rgba(0, 0, 0, 0.55);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        border-radius: 12px;
-        padding: 10px 12px;
-        max-height: 180px;
-        width: 200px;
+        top: -86px;
+        right: 0;
+        background: #2f3136;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 14px;
+        padding: 12px 14px;
+        max-height: 220px;
+        width: 360px;
+        overflow-y: visible;
+        box-shadow:
+          0 14px 30px rgba(0, 0, 0, 0.45),
+          inset 0 1px 2px rgba(255, 255, 255, 0.15);
+        color: #fff5c7;
+        border-top-color: rgba(255, 255, 255, 0.6);
+        border-left-color: rgba(255, 255, 255, 0.45);
+        border-bottom-color: rgba(0, 0, 0, 0.45);
+        border-right-color: rgba(0, 0, 0, 0.3);
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+      }
+      .history-months {
+        width: 150px;
+        max-height: 140px;
         overflow-y: auto;
+        padding-right: 4px;
+        border-right: 1px solid rgba(255, 255, 255, 0.18);
+      }
+      .history-months h5 {
+        margin: 0 0 6px;
+        font-size: 12px;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: #fff5c7;
+      }
+      .history-months-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: none;
+        flex-direction: column;
+        gap: 2px;
+        max-height: 120px;
+        overflow-y: auto;
+      }
+      .history-lists-row:hover .history-months-list,
+      .history-months:focus-within .history-months-list {
+        display: flex;
+      }
+      .history-months-list li {
+        margin: 0;
+        padding: 0;
+      }
+      .history-months-list button {
+        all: unset;
+        width: 100%;
+        padding: 2px 6px;
+        border-radius: 8px;
+        background: rgba(0, 0, 0, 0.25);
+        color: #fff5c7;
+        font-size: 11px;
+        letter-spacing: 0.03em;
+        line-height: 1.1;
+        cursor: pointer;
+        transition: background 0.2s ease, color 0.2s ease;
+      }
+      .history-months-list button:hover,
+      .history-months-list button:focus-visible {
+        background: rgba(102, 255, 153, 0.12);
+        color: #e8ffe8;
+      }
+      .history-months-list button.active {
+        background: rgba(102, 255, 153, 0.25);
+        color: #fff;
+      }
+      .history-list-column {
+        flex: 1;
+        max-height: 24px;
+        overflow: hidden;
+        min-width: 200px;
+        min-height: 0;
+        padding: 0;
+        transition: max-height 0.2s ease, padding 0.2s ease;
+      }
+      .history-list-column.expanded {
+        max-height: 220px;
+        overflow-y: auto;
+        padding: 4px 0;
+      }
+      .history-month {
+        margin-bottom: 6px;
+      }
+      .history-month-header {
+        display: flex;
+        justify-content: flex-start;
+        gap: 6px;
+        align-items: center;
+        margin: 0 0 4px;
+      }
+      .history-month-header button {
+        all: unset;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        cursor: pointer;
+        color: #fff5c7;
+      }
+      .history-month-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        font-size: 11px;
+      }
+      .history-month-list.hidden {
+        display: none;
+      }
+      .history-lists-row {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        width: 100%;
       }
       .chart-history h4 {
         margin: 0 0 6px;
@@ -292,6 +519,12 @@
         text-transform: uppercase;
         cursor: pointer;
       }
+      .chart-history-status {
+        font-size: 11px;
+        opacity: 0.7;
+        letter-spacing: 0.05em;
+        margin-bottom: 4px;
+      }
       .chart-history ul {
         list-style: none;
         margin: 0;
@@ -300,9 +533,22 @@
         color: #f4f6ff;
         line-height: 1.4;
       }
-      .chart-history ul a {
-        color: #9fd8ff;
-        text-decoration: none;
+      .chart-history ul button {
+        all: unset;
+        width: 100%;
+        text-align: left;
+        cursor: pointer;
+        color: #33ccff;
+        font-size: 11px;
+        letter-spacing: 0.04em;
+      }
+      .chart-history ul button:hover,
+      .chart-history ul button:focus-visible {
+        text-decoration: underline;
+      }
+      .chart-history ul button.active {
+        color: #66ff99;
+        font-weight: 600;
       }
       .chart-history ul.hidden {
         display: none;
@@ -333,17 +579,20 @@
       <div class="header-row">
         <div id="Company">Lockout Music Studios  Oceanside</div>
         <div id="Logo"class="logo-placeholder">
-          <img src="../../../Images/LO_Logo.png" alt="Logo" />
+          <img src="../../../Images/Hands.png" alt="Logo" />
         </div>
+      </div>
+      <div class="timestamp-row">
+        <div id="dashboard-timestamp" class="date-display">Wednesday Dec 17 2025 02:31:20 AM</div>
       </div>
       <div id="Cards" class="card-grid">
         
-        <div class="metric-card">
+        <div class="metric-card" data-metric="timestamp">
           <div class="label">Timestamp</div>
           <div class="value">Tuesday Nov 25 2025 8:11 PM</div>
         </div>
         
-        <div class="metric-card">
+        <div class="metric-card" data-metric="type">
           <div class="label">Type</div>
           <div class="value">System</div>
         </div>
@@ -363,7 +612,7 @@
           <div class="value">Off</div>
         </div>
         
-        <div class="metric-card" data-metric="fan">
+        <div class="metric-card fan-state-o" data-metric="fan">
           <div class="label">Fan Setting</div>
           <div class="value">On</div>
         </div>
@@ -388,6 +637,16 @@
           <div class="value">57</div>
         </div>
         
+        <div class="metric-card">
+          <div class="label">Condenser State</div>
+          <div class="value">On</div>
+        </div>
+        
+        <div class="metric-card" data-metric="condenser-minutes">
+          <div class="label">Condenser Minutes Past Hour</div>
+          <div class="value">500</div>
+        </div>
+        
       </div>
       <div class="hands-logo-slot" aria-hidden="true">
         <div class="hands-logo-top"></div>
@@ -396,6 +655,12 @@
       <div id="history" class="history-panel">
 
       <button id="toggle-history">Show History Chart</button>
+      <div class="condenser-runtime">
+        <div class="label">Total condenser runtime</div>
+        <div class="value">500 min</div>
+        <div class="cost-label">Estimated condenser cost</div>
+        <div class="cost-value cost-red">$25.00</div>
+      </div>
 
       <div id="chartcontrols" class="chart-controls">
           <button type="button" class="chart-control" data-mode="setpoint">Set Point</button>
@@ -405,6 +670,7 @@
           <button type="button" class="chart-control" data-mode="fan">Fan Mode</button>
           <button type="button" class="chart-control active" data-mode="both">Combined</button>
           <span>&nbsp;</span>
+          <button type="button" class="chart-control" id="autoplay-toggle">Auto-play: On</button>
         </div>
         <div class="chart-wrap">
           <div>
@@ -412,6 +678,7 @@
           <canvas id="history-chart"></canvas>
           <div class="chart-history" id="chart-history">
             <h4 id="chart-history-toggle">Chart History</h4>
+            <div id="chart-history-status" class="chart-history-status"></div>
             <ul id="chart-history-list" class="hidden"></ul>
           </div>
         </div>
@@ -420,820 +687,1646 @@
       </div>
     </div>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-      const dashboardData = {"headers": ["Timestamp", "Type", "Current Temperature", "Cooling Set Point", "Climate Setting", "Fan Setting", "Equipment Status", "Studio", "Request Expires (local time)", "Outside Temp"], "latestRow": ["Tuesday Nov 25 2025 8:11 PM", "System", "95", "80", "Off", "On", "Cooling", "11", "8:54 PM", "NN57.0 | Mostly Cloudy"], "history": [{"label": "Sunday Nov 23     1:56 PM", "value": 70.0}, {"label": "Sunday Nov 23     2:02 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:46 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:59 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:03 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:06 PM", "value": 75.0}, {"label": "Sunday Nov 23     11:20 PM", "value": 75.0}, {"label": "Tuesday Nov 25     7:59 PM", "value": 72.0}, {"label": "Tuesday Nov 25     8:01 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:04 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:11 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:46 PM", "value": 74.0}, {"label": "Friday Nov 21     6:51 PM", "value": 74.0}, {"label": "Sunday Nov 23     1:56 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:02 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:46 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:59 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:03 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:06 PM", "value": 75.0}, {"label": "Sunday Nov 23     11:20 PM", "value": 74.0}, {"label": "Tuesday Nov 25     7:59 PM", "value": 72.0}, {"label": "Tuesday Nov 25     8:01 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:04 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:11 PM", "value": 80.0}], "chartLabels": ["Sunday Nov 23     1:56 PM", "Sunday Nov 23     2:02 PM", "Sunday Nov 23     2:46 PM", "Sunday Nov 23     2:59 PM", "Sunday Nov 23     3:03 PM", "Sunday Nov 23     3:06 PM", "Sunday Nov 23     11:20 PM", "Tuesday Nov 25     7:59 PM", "Tuesday Nov 25     8:01 PM", "Tuesday Nov 25     8:04 PM", "Tuesday Nov 25     8:11 PM", "Tuesday Nov 25     8:46 PM", "Friday Nov 21     6:51 PM", "Sunday Nov 23     1:56 PM", "Sunday Nov 23     2:02 PM", "Sunday Nov 23     2:46 PM", "Sunday Nov 23     2:59 PM", "Sunday Nov 23     3:03 PM", "Sunday Nov 23     3:06 PM", "Sunday Nov 23     11:20 PM", "Tuesday Nov 25     7:59 PM", "Tuesday Nov 25     8:01 PM", "Tuesday Nov 25     8:04 PM", "Tuesday Nov 25     8:11 PM"], "setpoint": [70.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 72.0, 74.0, 74.0, 74.0, 74.0, 74.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 74.0, 72.0, 74.0, 74.0, 80.0], "actual": [45.0, 71.0, 72.0, 73.0, 74.0, 75.0, 75.0, 75.0, 75.0, 73.0, 72.0, 71.0, 70.0, 68.0, 65.0, 61.0, 64.0, 63.0, 65.0, 65.0, 70.0, 88.0, 90.0, 95.0], "setpointLabel": "Set Point", "actualLabel": "Current Temperature", "fan": ["A", "A", "O", "O", "O", "O", "O", "C", "C", "C", "C", "A", "A", "A", "A", "A", "A", "A", "A", "A", "C", "C", "C", "O"], "fanLegend": ["Auto", "Circulate", "On"], "outside": [55.0, 65.0, 65.0, 65.0, 62.0, 59.0, 57.0, 53.0, 52.0, 50.0, 49.0, 49.0, 48.0, 48.0, 47.0, 46.0, 46.0, 47.0, 48.0, 54.0, 58.0, 61.0, 63.0, 57.0], "outsideLabel": "Outside Temp", "outsideFlags": ["S", "S", "P", "O", "R", "R", "P", "P", "O", "O", "P", "P", "P", "P", "O", "P", "P", "P", "P", "P", "P", "S", "S", "N"], "outsideFlagDayChars": ["5", "6", "6", "6", "6", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "4", "5", "5", "6", "6", "N"], "cooling": [0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1], "coolingLegend": ["Idle", "Cooling"], "coolingLabel": "Equipment Status", "latestActual": 95.0, "latestSetpoint": 80.0, "latestOutside": 57.0, "latestOutsideRaw": "NN57.0 | Mostly Cloudy", "latestOutsideDaylight": false, "latestOutsideFlagDayChar": "N", "latestFan": "O", "latestCooling": 1, "generatedTimestamp": "Wednesday Dec 17 2025 02:29:13 AM", "generatedDateSlug": "2025-12-17", "archiveDates": [{"slug": "2025-12-17", "label": "Dec 17, 2025"}, {"slug": "2025-12-16", "label": "Dec 16, 2025"}, {"slug": "2025-12-15", "label": "Dec 15, 2025"}, {"slug": "2025-12-14", "label": "Dec 14, 2025"}, {"slug": "2025-12-13", "label": "Dec 13, 2025"}, {"slug": "2025-12-12", "label": "Dec 12, 2025"}, {"slug": "2025-12-07", "label": "Dec 07, 2025"}, {"slug": "2025-12-06", "label": "Dec 06, 2025"}, {"slug": "2025-12-05", "label": "Dec 05, 2025"}, {"slug": "2025-12-04", "label": "Dec 04, 2025"}, {"slug": "2025-12-03", "label": "Dec 03, 2025"}, {"slug": "2025-12-02", "label": "Dec 02, 2025"}]};
-      const archiveDates = dashboardData.archiveDates || [];
-      const archiveBasePath = "chart%20hist/";
-      const chartHistoryList = document.getElementById("chart-history-list");
-      const chartHistoryToggle = document.getElementById("chart-history-toggle");
-      if (chartHistoryList) {
-        archiveDates.forEach((entry) => {
-          const label = entry.label || entry.slug || "Unknown";
-          const slug = entry.slug;
-          const item = document.createElement("li");
-          const link = document.createElement("a");
-          link.textContent = label;
-          if (slug) {
-            link.href = `${archiveBasePath}${slug}.html`;
-            link.target = "_blank";
-            link.rel = "noopener noreferrer";
-          } else {
-            link.href = "#";
-          }
-          item.appendChild(link);
-          chartHistoryList.appendChild(item);
-        });
+    <script id="dashboard-data-inline" type="application/json">
+{"headers": ["Timestamp", "Type", "Current Temperature", "Cooling Set Point", "Climate Setting", "Fan Setting", "Equipment Status", "Studio", "Request Expires (local time)", "Outside Temp", "Condenser State", "Condenser Minutes"], "latestRow": ["Tuesday Nov 25 2025 8:11 PM", "System", "95", "80", "Off", "On", "Cooling", "11", "8:54 PM", "NN57.0 | Mostly Cloudy", "On", "500"], "history": [{"label": "Sunday Nov 23     1:56 PM", "value": 70.0}, {"label": "Sunday Nov 23     2:02 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:46 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:59 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:03 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:06 PM", "value": 75.0}, {"label": "Sunday Nov 23     11:20 PM", "value": 75.0}, {"label": "Tuesday Nov 25     7:59 PM", "value": 72.0}, {"label": "Tuesday Nov 25     8:01 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:04 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:11 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:46 PM", "value": 74.0}, {"label": "Friday Nov 21     6:51 PM", "value": 74.0}, {"label": "Sunday Nov 23     1:56 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:02 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:46 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:59 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:03 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:06 PM", "value": 75.0}, {"label": "Sunday Nov 23     11:20 PM", "value": 74.0}, {"label": "Tuesday Nov 25     7:59 PM", "value": 72.0}, {"label": "Tuesday Nov 25     8:01 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:04 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:11 PM", "value": 80.0}], "chartLabels": ["Sunday Nov 23     1:56 PM", "Sunday Nov 23     2:02 PM", "Sunday Nov 23     2:46 PM", "Sunday Nov 23     2:59 PM", "Sunday Nov 23     3:03 PM", "Sunday Nov 23     3:06 PM", "Sunday Nov 23     11:20 PM", "Tuesday Nov 25     7:59 PM", "Tuesday Nov 25     8:01 PM", "Tuesday Nov 25     8:04 PM", "Tuesday Nov 25     8:11 PM", "Tuesday Nov 25     8:46 PM", "Friday Nov 21     6:51 PM", "Sunday Nov 23     1:56 PM", "Sunday Nov 23     2:02 PM", "Sunday Nov 23     2:46 PM", "Sunday Nov 23     2:59 PM", "Sunday Nov 23     3:03 PM", "Sunday Nov 23     3:06 PM", "Sunday Nov 23     11:20 PM", "Tuesday Nov 25     7:59 PM", "Tuesday Nov 25     8:01 PM", "Tuesday Nov 25     8:04 PM", "Tuesday Nov 25     8:11 PM"], "setpoint": [70.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 72.0, 74.0, 74.0, 74.0, 74.0, 74.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 74.0, 72.0, 74.0, 74.0, 80.0], "actual": [45.0, 71.0, 72.0, 73.0, 74.0, 75.0, 75.0, 75.0, 75.0, 73.0, 72.0, 71.0, 70.0, 68.0, 65.0, 61.0, 64.0, 63.0, 65.0, 65.0, 70.0, 88.0, 90.0, 95.0], "setpointLabel": "Set Point", "actualLabel": "Current Temperature", "fan": ["A", "A", "O", "O", "O", "O", "O", "C", "C", "C", "C", "A", "A", "A", "A", "A", "A", "A", "A", "A", "C", "C", "C", "O"], "fanLegend": ["Auto", "Circulate", "On"], "outside": [55.0, 65.0, 65.0, 65.0, 62.0, 59.0, 57.0, 53.0, 52.0, 50.0, 49.0, 49.0, 48.0, 48.0, 47.0, 46.0, 46.0, 47.0, 48.0, 54.0, 58.0, 61.0, 63.0, 57.0], "outsideLabel": "Outside Temp", "outsideFlags": ["S", "S", "P", "O", "R", "R", "P", "P", "O", "O", "P", "P", "P", "P", "O", "P", "P", "P", "P", "P", "P", "S", "S", "N"], "outsideFlagDayChars": ["5", "6", "6", "6", "6", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "4", "5", "5", "6", "6", "N"], "cooling": [0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1], "coolingLegend": ["Idle", "Cooling"], "coolingLabel": "Equipment Status", "condenserMinutes": [null, null, 0.0, 0.0, 0.0, null, null, null, null, 0.0, null, 0.0, null, 0.0, null, 0.0, null, 0.0, null, 0.0, null, 0.0, null, 500.0], "totalCondenserMinutes": "500", "totalCondenserMinutesValue": 500.0, "totalCondenserCost": "$25.00", "totalCondenserCostValue": 25.0, "condenserCostPerMinute": 0.05, "latestActual": 95.0, "latestSetpoint": 80.0, "latestOutside": 57.0, "latestOutsideRaw": "NN57.0 | Mostly Cloudy", "latestOutsideDaylight": false, "latestOutsideFlagDayChar": "N", "latestFan": "O", "latestCooling": 1, "generatedTimestamp": "Wednesday Dec 17 2025 02:31:20 AM", "generatedDateSlug": "2025-12-17", "archiveDates": [{"slug": "2025-12-17", "label": "Dec 17, 2025"}, {"slug": "2025-12-16", "label": "Dec 16, 2025"}, {"slug": "2025-12-15", "label": "Dec 15, 2025"}, {"slug": "2025-12-14", "label": "Dec 14, 2025"}, {"slug": "2025-12-13", "label": "Dec 13, 2025"}, {"slug": "2025-12-12", "label": "Dec 12, 2025"}, {"slug": "2025-12-07", "label": "Dec 07, 2025"}, {"slug": "2025-12-06", "label": "Dec 06, 2025"}, {"slug": "2025-12-05", "label": "Dec 05, 2025"}, {"slug": "2025-12-04", "label": "Dec 04, 2025"}, {"slug": "2025-12-03", "label": "Dec 03, 2025"}, {"slug": "2025-12-02", "label": "Dec 02, 2025"}, {"slug": "2025-11-30", "label": "Nov 30, 2025"}, {"slug": "2025-11-29", "label": "Nov 29, 2025"}], "archivePath": "chart hist"}
+    </script>
+    <script id="dashboard-client" data-archive-path="chart hist">
+(() => {
+  //  Bootstrap: log once and capture the embedded JSON payload.
+  console.log("Starting Javascript")
+  const dataEl = document.getElementById("dashboard-data-inline");
+  const parseInlineData = () => {
+    if (!dataEl) {
+      return null;
+    }
+    try {
+      return JSON.parse(dataEl.textContent || "");
+    } catch (warning) {
+      console.warn("Failed to parse inline dashboard data; falling back to fetch.", warning);
+      return null;
+    }
+  };
+
+  let dashboardData = parseInlineData() || {};
+  let currentArchiveSlug = dashboardData.generatedDateSlug || "";
+  const scriptEl = document.getElementById("dashboard-client");
+  const archivePathRaw = scriptEl?.dataset.archivePath || "chart hist";
+  const archivePathHref = encodeURI(archivePathRaw);
+  const buildArchiveJsonUrl = (slug) =>
+    slug ? `${archivePathHref}/${slug}.json?v=${Date.now()}` : null;
+  const logEl = document.getElementById("js-log");
+  // Logging helper that writes to the console and the hidden dashboard log area.
+  const logMessage = (message, level = "log") => {
+    if (logEl) {
+      logEl.style.display = "block";
+      logEl.textContent += `${message}\n`;
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+    console[level](message);
+  };
+
+  const chartHistory = document.getElementById("chart-history");
+  const chartHistoryList = document.getElementById("chart-history-list");
+  const chartHistoryToggle = document.getElementById("chart-history-toggle");
+  const chartHistoryStatus = document.getElementById("chart-history-status");
+  const chartArea = document.getElementById("history");
+  const autoplayToggle = document.getElementById("autoplay-toggle");
+  const AUTOPLAY_IDLE_MS = 60_000;
+  const AUTOPLAY_TARGET_MS = 30_000; // target duration for a full autoplay cycle
+  const AUTOPLAY_MIN_STEP_MS = 400; // fastest we'll cycle points
+  const AUTOPLAY_SEQUENCE = [
+    { modes: ["setpoint"] },
+    { modes: ["actual"] },
+    { modes: ["outside"] },
+    { modes: ["cooling"] },
+    { modes: ["fan"] },
+    { pauseMs: 10_000 }, // show hands/logo for 10s with chart hidden
+    { modes: ["actual", "outside"] },           // options 2 + 3
+    { modes: ["actual", "outside", "cooling"] }, // then add option 4
+  ];
+  let autoplayEnabled = true;
+  let autoplayTimer = null;
+  let autoplayIdleTimer = null;
+  let autoplayIndex = 0;
+  let autoplaySegmentIndex = 0;
+  let autoplayStepMs = 3_000;
+  let savedModesBeforeAutoplay = null;
+  let chartHistoryMonthPicker = null;
+  let chartHistoryMonthList = null;
+  let chartHistoryListsRow = null;
+  let chartHistoryListColumn = null;
+  let chartHistoryHoverBound = false;
+  let chartHistoryListHoverBound = false;
+  const showHistoryFiles = () => {
+    chartHistoryList.classList.remove("hidden");
+    if (chartHistoryListColumn) {
+      chartHistoryListColumn.classList.add("expanded");
+    }
+  };
+  const hideHistoryFiles = () => {
+    chartHistoryList.classList.add("hidden");
+    if (chartHistoryListColumn) {
+      chartHistoryListColumn.classList.remove("expanded");
+    }
+  };
+  let currentMonthKey =
+    (dashboardData.generatedDateSlug || "").slice(0, 7) || "";
+  // Reference chart controls, canvas, and state flags used throughout the script.
+  const archiveLabelMap = new Map();
+  const chartControlButtons = document.querySelectorAll(".chart-control");
+  const canvas = document.getElementById("history-chart");
+  const ctx = canvas ? canvas.getContext("2d") : null;
+  const toggleHistoryBtn = document.getElementById("toggle-history");
+  const handsLogoTop = document.querySelector(".hands-logo-top");
+  const timestampDisplay = document.getElementById("dashboard-timestamp");
+  let chart = null;
+  let cardsInitialized = false;
+
+  const getDashboardData = () => dashboardData || {};
+  const getDashboardValue = (key, fallback) => getDashboardData()[key] || fallback;
+  // Quick accessor helpers so downstream logic can stay declarative.
+  const getChartLabels = () => getDashboardValue("chartLabels", []);
+  const getSetpointSeries = () => getDashboardValue("setpoint", []);
+  const getActualSeries = () => getDashboardValue("actual", []);
+  const getOutsideSeries = () => getDashboardValue("outside", []);
+  const getFanSeries = () => getDashboardValue("fan", []);
+  const getCoolingSeries = () => getDashboardValue("cooling", []);
+  const getOutsideFlags = () => getDashboardValue("outsideFlags", []);
+  const getOutsideFlagDayChars = () => getDashboardValue("outsideFlagDayChars", []);
+  const getSetpointLabel = () => getDashboardData().setpointLabel || "Target Temperature";
+  const getActualLabel = () => getDashboardData().actualLabel || "Building Temperature";
+  const getOutsideLabel = () => getDashboardData().outsideLabel || "Outside Temp";
+  const getCoolingLabel = () => getDashboardData().coolingLabel || "Cooling Status";
+  const getFanLegend = () => getDashboardValue("fanLegend", ["On", "Circulate", "Auto"]);
+  const getCoolingLegend = () => getDashboardValue("coolingLegend", ["Idle", "Cooling"]);
+  const getCondenserMinutes = () => getDashboardValue("condenserMinutes", []);
+
+  const fanStateLabels = {
+    A: "Auto",
+    C: "Circulate",
+    O: "On",
+  };
+  const fanStateToNumeric = {
+    A: 0,
+    C: 1,
+    O: 2,
+  };
+  const normalizeFanState = (value) => {
+    if (typeof value === "string") {
+      return value.trim().toUpperCase();
+    }
+    if (typeof value === "number" && Number.isFinite(value)) {
+      if (value === 1) {
+        return "C";
       }
-      if (chartHistoryToggle && chartHistoryList) {
-        chartHistoryToggle.addEventListener("click", () => {
-          chartHistoryList.classList.toggle("hidden");
-        });
+      if (value === 2) {
+        return "O";
       }
-      const chartLabels = dashboardData.chartLabels || [];
-      const setpointSeries = dashboardData.setpoint || [];
-      const actualSeries = dashboardData.actual || [];
-      const outsideSeries = dashboardData.outside || [];
-      const fanSeries = dashboardData.fan || [];
-      const coolingSeries = dashboardData.cooling || [];
-      const outsideFlags = dashboardData.outsideFlags || [];
-      const outsideFlagDayChars = dashboardData.outsideFlagDayChars || [];
-      const setpointLabel = dashboardData.setpointLabel || "Target Temperature";
-      const actualLabel = dashboardData.actualLabel || "Building Temperature";
-      const outsideLabel = dashboardData.outsideLabel || "Outside Temp";
-      const coolingLabel = dashboardData.coolingLabel || "Cooling Status";
-      const fanLegend = dashboardData.fanLegend || ["On", "Circulate", "Auto"];
-      const coolingLegend = dashboardData.coolingLegend || ["Idle", "Cooling"];
-      const fanStateLabels = {
-        A: "Auto",
-        C: "Circulate",
-        O: "On",
-      };
-      const fanStateToNumeric = {
-        A: 0,
-        C: 1,
-        O: 2,
-      };
-      const normalizeFanState = (value) => {
-        if (typeof value === "string") {
-          return value.trim().toUpperCase();
-        }
-        if (typeof value === "number" && Number.isFinite(value)) {
-          if (value === 1) {
-            return "C";
-          }
-          if (value === 2) {
-            return "O";
-          }
-        }
-        return "A";
-      };
-      const fanSeriesNumeric = fanSeries.map(
-        (value) => fanStateToNumeric[normalizeFanState(value)] ?? 0
-      );
-      const fanLabelForValue = (value) => {
-        const normalized = normalizeFanState(value);
-        return fanStateLabels[normalized] || String(value);
-      };
-      const chartControlButtons = document.querySelectorAll(".chart-control");
-      const canvas = document.getElementById("history-chart");
-      const ctx = canvas.getContext("2d");
-      const toggleHistoryBtn = document.getElementById("toggle-history");
-      const handsLogoTop = document.querySelector(".hands-logo-top");
-      let chart;
-      const gradientColorFor = (value) => {
-        if (typeof value !== "number" || Number.isNaN(value)) {
-          return "#999";
-        }
-        const ratio = Math.max(0, Math.min((value - 45) / 55, 1));
-        const start = [50, 130, 255];
-        const end = [255, 40, 40];
-        const rgb = start.map((component, idx) =>
-          Math.round(component + (end[idx] - component) * ratio)
-        );
-        return `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
-      };
-      const colorForPoint = (value) => gradientColorFor(value ?? 50);
-      const gradientColorForOutside = (value) => {
-        const numeric = typeof value === "number" ? value : parseFloat(value);
-        const clamped = Number.isNaN(numeric) ? 50 : Math.max(45, Math.min(numeric, 100));
-        const ratio = Math.max(0, Math.min((clamped - 45) / 55, 1));
-        const start = [0, 0, 0];
-        const end = [255, 214, 0];
-        const rgb = start.map((component, idx) =>
-          Math.round(component + (end[idx] - component) * ratio)
-        );
-        return `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
-      };
-      const findLastNumber = (arr) => {
-        if (!arr) {
-          return undefined;
-        }
-        for (let i = arr.length - 1; i >= 0; i -= 1) {
-          const value = arr[i];
-          if (typeof value === "number" && !Number.isNaN(value)) {
-            return value;
-          }
-        }
-        return undefined;
-      };
-      const getContrastColor = (color) => {
-        const match = color && color.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
-        if (!match) {
-          return "#f5f7ff";
-        }
-        const [, r, g, b] = match;
-        const brightness = (Number(r) * 299 + Number(g) * 587 + Number(b) * 114) / 1000;
-        return brightness > 186 ? "#000" : "#fff";
-      };
-      const applyCardColor = (card, color, forcedTextColor = null, setBackground = true) => {
-        if (!card || !color) {
+    }
+    return "A";
+  };
+  const fanLabelForValue = (value) => {
+    const normalized = normalizeFanState(value);
+    return fanStateLabels[normalized] || String(value);
+  };
+  const findLastNumber = (arr) => {
+    if (!arr) {
+      return undefined;
+    }
+    for (let idx = arr.length - 1; idx >= 0; idx -= 1) {
+      const value = arr[idx];
+      if (typeof value === "number" && !Number.isNaN(value)) {
+        return value;
+      }
+    }
+    return undefined;
+  };
+  const getFanSeriesNumeric = () =>
+    getFanSeries().map((value) => fanStateToNumeric[normalizeFanState(value)] ?? 0);
+  const getLatestActualValue = () =>
+    getDashboardData().latestActual ?? findLastNumber(getActualSeries()) ?? 50;
+  const getLatestSetpointValue = () =>
+    getDashboardData().latestSetpoint ?? findLastNumber(getSetpointSeries()) ?? 50;
+  const getLatestOutsideValue = () =>
+    getDashboardData().latestOutside ?? findLastNumber(getOutsideSeries()) ?? 50;
+  const getLatestOutsideRaw = () => (getDashboardData().latestOutsideRaw || "").trim().toUpperCase();
+  const getOutsideFlag = () => {
+    const raw = getLatestOutsideRaw();
+    return raw ? raw.charAt(0) : "";
+  };
+  const getOutsideFlagDayChar = () => {
+    const raw = getLatestOutsideRaw();
+    return raw && raw.length > 1 ? raw.charAt(1) : "D";
+  };
+  const getOutsideDaylight = () =>
+    typeof getDashboardData().latestOutsideDaylight === "boolean"
+      ? getDashboardData().latestOutsideDaylight
+      : getOutsideFlagDayChar() !== "N";
+  const getLatestFanRaw = () => getDashboardData().latestFan;
+  const getLatestFanValue = () =>
+    fanStateToNumeric[normalizeFanState(getLatestFanRaw())] ??
+    findLastNumber(getFanSeriesNumeric()) ??
+    0;
+  const getLatestCoolingValue = () =>
+    getDashboardData().latestCooling ?? findLastNumber(getCoolingSeries()) ?? 0;
+  const getLatestCondenserState = () =>
+    (getDashboardData().latestCondenserState || "").trim();
+  const formatMinutesValue = (value) => {
+    if (value === null || value === undefined || Number.isNaN(Number(value))) {
+      return null;
+    }
+    const numeric = Number(value);
+    if (Number.isInteger(numeric)) {
+      return `${numeric} min`;
+    }
+    return `${numeric.toFixed(1)} min`;
+  };
+  const gradientColorFor = (value) => {
+    if (typeof value !== "number" || Number.isNaN(value)) {
+      return "#999";
+    }
+    const ratio = Math.max(0, Math.min((value - 45) / 55, 1));
+    const start = [50, 130, 255];
+    const end = [255, 40, 40];
+    const rgb = start.map((component, idx) =>
+      Math.round(component + (end[idx] - component) * ratio)
+    );
+    return `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
+  };
+  const colorForPoint = (value) => gradientColorFor(value ?? 50);
+  const gradientColorForOutside = (value) => {
+    const numeric = typeof value === "number" ? value : parseFloat(value);
+    const clamped = Number.isNaN(numeric) ? 50 : Math.max(45, Math.min(numeric, 100));
+    const ratio = Math.max(0, Math.min((clamped - 45) / 55, 1));
+    const start = [0, 0, 0];
+    const end = [255, 214, 0];
+    const rgb = start.map((component, idx) =>
+      Math.round(component + (end[idx] - component) * ratio)
+    );
+    return `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
+  };
+  const getContrastColor = (color) => {
+    const match = color && color.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+    if (!match) {
+      return "#f5f7ff";
+    }
+    const [, r, g, b] = match;
+    const brightness = (Number(r) * 299 + Number(g) * 587 + Number(b) * 114) / 1000;
+    return brightness > 186 ? "#000" : "#fff";
+  };
+  const applyCardColor = (card, color, forcedTextColor = null, setBackground = true) => {
+    if (!card || !color) {
+      return;
+    }
+    if (setBackground) {
+      card.style.background = color;
+      card.style.borderColor = color;
+    } else {
+      card.style.background = "transparent";
+      card.style.borderColor = "transparent";
+    }
+    const textColor = forcedTextColor || getContrastColor(color);
+    card.style.color = textColor;
+    const labelEl = card.querySelector(".label");
+    if (labelEl) {
+      labelEl.style.color = textColor;
+    }
+    const valueEl = card.querySelector(".value");
+    if (valueEl) {
+      valueEl.style.color = textColor;
+    }
+  };
+  const setCardValue = (card, text) => {
+    if (!card) {
+      return;
+    }
+    const valueEl = card.querySelector(".value");
+    if (valueEl) {
+      valueEl.textContent = text;
+    }
+  };
+  const formatTemperatureValue = (value) => {
+    if (value === null || value === undefined || Number.isNaN(Number(value))) {
+      return "";
+    }
+    const numeric = Number(value);
+    if (Number.isInteger(numeric)) {
+      return String(Math.round(numeric));
+    }
+    return numeric.toFixed(1);
+  };
+  const formatOutsideDisplay = (value) => {
+    if (value === null || value === undefined || Number.isNaN(Number(value))) {
+      return "";
+    }
+    const numeric = Number(value);
+    if (Number.isInteger(numeric)) {
+      return String(Math.round(numeric));
+    }
+    return numeric.toFixed(1);
+  };
+
+  const TOOLTIP_TEXT_COLOR = "#ffffff";
+  const TOOLTIP_BADGE_FALLBACK = "#fff5c7";
+  const outsideFlagColors = {
+    S: "#ffd000",
+    P: "#ffb347",
+    O: "#b4b4b4",
+    R: "#5da9f7",
+    N: "#0b1b3a",
+  };
+  const weatherGraphicPaths = {
+    S: "../../../Images/sunny.png",
+    "P-day": "../../../Images/PartlySunny.png",
+    "P-night": "../../../Images/Night.png",
+    "O-day": "../../../Images/cloudy.png",
+    "O-night": "../../../Images/cloudynight.png",
+    "R-day": "../../../Images/RainyDay.png",
+    "R-night": "../../../Images/RainyNight.png",
+    N: "../../../Images/clearnight.png",
+  };
+  const weatherGraphicImages = {};
+  Object.entries(weatherGraphicPaths).forEach(([key, src]) => {
+    const img = new Image();
+    img.src = src;
+    weatherGraphicImages[key] = img;
+  });
+  const getWeatherGraphicKey = (flag, dayChar) => {
+    const normalizedFlag = (flag || "").toUpperCase();
+    const normalizedDayChar = (dayChar || "D").toUpperCase();
+    const isNight = normalizedDayChar === "N" || normalizedDayChar === "M";
+    const isDay = !isNight;
+    if (normalizedFlag === "P") {
+      return isDay ? "P-day" : "P-night";
+    }
+    if (normalizedFlag === "O") {
+      return isDay ? "O-day" : "O-night";
+    }
+    if (normalizedFlag === "R") {
+      return isDay ? "R-day" : "R-night";
+    }
+    if (normalizedFlag === "N") {
+      return "N";
+    }
+    return "S";
+  };
+
+  const fanStyleMap = {
+    auto: {
+      background: "#b4b4b4",
+      border: "#8c8c8c",
+      text: "#1a1a1a",
+    },
+    circulate: {
+      background: "#e8d6ae",
+      border: "#c47f00",
+      text: "#000000",
+    },
+    on: {
+      background: "#059c15",
+      border: "#03660d",
+      text: "#ffffff",
+    },
+  };
+  const fanStateMap = {
+    0: "auto",
+    1: "circulate",
+    2: "on",
+  };
+  // Apply themed styles specifically for the fan card so it matches the legend.
+  const applyFanCardStyle = (card, fanValue) => {
+    if (!card) {
+      return;
+    }
+    const state = fanStateMap[fanValue] || "auto";
+    const style = fanStyleMap[state];
+    if (!style) {
+      return;
+    }
+    card.style.background = style.background;
+    card.style.borderColor = style.border;
+    card.style.color = style.text;
+    const labelEl = card.querySelector(".label");
+    if (labelEl) {
+      labelEl.style.color = style.text;
+    }
+    const valueEl = card.querySelector(".value");
+    if (valueEl) {
+      valueEl.style.color = style.text;
+    }
+  };
+
+  const coolingStyleMap = {
+    idle: {
+      background: "#93a5c9 30%",
+      border: "#b0b4ba",
+      text: "#1a1a1a",
+    },
+    cooling: {
+      background: "#059c15",
+      border: "#03660d",
+      text: "#ffffff",
+    },
+  };
+  const coolingStateMap = {
+    0: "idle",
+    1: "cooling",
+  };
+  // Same for cooling card; ensures Idle vs Cooling gets different colors.
+  const applyCoolingCardStyle = (card, coolingValue) => {
+    if (!card) {
+      return;
+    }
+    const state = coolingStateMap[coolingValue] || "idle";
+    const style = coolingStyleMap[state];
+    if (!style) {
+      return;
+    }
+    card.style.background = style.background;
+    card.style.borderColor = style.border;
+    card.style.color = style.text;
+    const labelEl = card.querySelector(".label");
+    if (labelEl) {
+      labelEl.style.color = style.text;
+    }
+    const valueEl = card.querySelector(".value");
+    if (valueEl) {
+      valueEl.style.color = style.text;
+    }
+  };
+  // Mirror the condenser card colors to match cooling card palette when running.
+  const applyCondenserCardStyle = (card, stateValue) => {
+    if (!card) {
+      return;
+    }
+    const text = (stateValue || "").trim().toLowerCase();
+    const isOn = text.includes("on");
+    const style = isOn ? coolingStyleMap.cooling : coolingStyleMap.idle;
+    console.log("[condenser card] state:", stateValue, "isOn:", isOn, "style:", style);
+    card.style.background = style.background;
+    card.style.borderColor = style.border;
+    card.style.color = style.text;
+    const labelEl = card.querySelector(".label");
+    if (labelEl) {
+      labelEl.style.color = style.text;
+    }
+    const valueEl = card.querySelector(".value");
+    if (valueEl) {
+      valueEl.style.color = style.text;
+    }
+  };
+
+  const gradientColorForCooling = (value) => {
+    const ratio = Math.max(0, Math.min(value ?? 0, 1));
+    const start = [211, 211, 211];
+    const end = [0, 128, 64];
+    const rgb = start.map((component, idx) =>
+      Math.round(component + (end[idx] - component) * ratio)
+    );
+    return `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
+  };
+  const buildSegmentGradient = (ctxSegment, startValue, endValue) => {
+    const start = startValue ?? endValue ?? 50;
+    const end = endValue ?? startValue ?? 50;
+    if (!ctxSegment || !ctxSegment.chart || !ctxSegment.chart.ctx || !ctxSegment.p0 || !ctxSegment.p1) {
+      return colorForPoint(end);
+    }
+    const gradient = ctxSegment.chart.ctx.createLinearGradient(
+      ctxSegment.p0.x,
+      ctxSegment.p0.y,
+      ctxSegment.p1.x,
+      ctxSegment.p1.y
+    );
+    gradient.addColorStop(0, colorForPoint(start));
+    gradient.addColorStop(1, colorForPoint(end));
+    return gradient;
+  };
+  const segmentColor = (ctxSegment) => {
+    const startValue = ctxSegment.p0?.parsed.y ?? ctxSegment.parsed.y ?? 50;
+    const endValue = ctxSegment.p1?.parsed.y ?? ctxSegment.parsed.y ?? startValue;
+    return buildSegmentGradient(ctxSegment, startValue, endValue);
+  };
+  const buildCoolingGradient = (ctxSegment, startValue, endValue) => {
+    const start = startValue ?? endValue ?? 0;
+    const end = endValue ?? startValue ?? start;
+    if (!ctxSegment || !ctxSegment.chart || !ctxSegment.chart.ctx || !ctxSegment.p0 || !ctxSegment.p1) {
+      return gradientColorForCooling(end);
+    }
+    const gradient = ctxSegment.chart.ctx.createLinearGradient(
+      ctxSegment.p0.x,
+      ctxSegment.p0.y,
+      ctxSegment.p1.x,
+      ctxSegment.p1.y
+    );
+    gradient.addColorStop(0, gradientColorForCooling(start));
+    gradient.addColorStop(1, gradientColorForCooling(end));
+    return gradient;
+  };
+  const coolingSegmentColor = (ctxSegment) => {
+    const startValue = ctxSegment.p0?.parsed.y ?? ctxSegment.parsed.y ?? 0;
+    const endValue = ctxSegment.p1?.parsed.y ?? ctxSegment.parsed.y ?? startValue;
+    return buildCoolingGradient(ctxSegment, startValue, endValue);
+  };
+  const fanColorMap = {
+    auto: "#b4b4b4",
+    circulate: "#a86c59",
+    on: "#00ff7f",
+  };
+  const fanColorForValue = (value) => {
+    const normalized = normalizeFanState(value);
+    if (normalized === "C") {
+      return fanColorMap.circulate;
+    }
+    if (normalized === "O") {
+      return fanColorMap.on;
+    }
+    return fanColorMap.auto;
+  };
+  const buildFanGradient = (ctxSegment, startValue, endValue) => {
+    if (!ctxSegment || !ctxSegment.chart || !ctxSegment.chart.ctx || !ctxSegment.p0 || !ctxSegment.p1) {
+      return fanColorForValue(endValue);
+    }
+    const gradient = ctxSegment.chart.ctx.createLinearGradient(
+      ctxSegment.p0.x,
+      ctxSegment.p0.y,
+      ctxSegment.p1.x,
+      ctxSegment.p1.y
+    );
+    gradient.addColorStop(0, fanColorForValue(startValue));
+    gradient.addColorStop(1, fanColorForValue(endValue));
+    return gradient;
+  };
+  const fanSegmentColor = (ctxSegment) => {
+    const startValue =
+      ctxSegment.p0?.parsed?.y ??
+      ctxSegment.p0?.parsed ??
+      ctxSegment.parsed?.y ??
+      ctxSegment.parsed ??
+      0;
+    const endValue =
+      ctxSegment.p1?.parsed?.y ??
+      ctxSegment.p1?.parsed ??
+      ctxSegment.parsed?.y ??
+      ctxSegment.parsed ??
+      startValue;
+    if (fanColorForValue(startValue) === fanColorForValue(endValue)) {
+      return fanColorForValue(endValue);
+    }
+    return buildFanGradient(ctxSegment, startValue, endValue);
+  };
+  const fanSegmentDash = (ctxSegment) => {
+    const value =
+      ctxSegment.p1?.parsed?.y ??
+      ctxSegment.p1?.parsed ??
+      ctxSegment.p0?.parsed?.y ??
+      ctxSegment.p0?.parsed ??
+      ctxSegment.parsed?.y ??
+      ctxSegment.parsed ??
+      0;
+    const numeric = fanStateToNumeric[normalizeFanState(value)] ?? 0;
+    return numeric >= 2 ? [] : [4, 4];
+  };
+
+  const legendSwatchColors = {
+    setpoint: "#c5a7ff",
+    actual: "#4b4078",
+    outside: "#bfd0dd",
+    cooling: "#9dcfb2",
+    fan: "#bfa887",
+  };
+  const datasetTooltipColorMap = new Map();
+
+  const getTooltipRawValue = (context) =>
+    context?.parsed?.y ??
+    context?.parsed ??
+    context?.raw ??
+    context?.dataset?.data?.[context.dataIndex];
+
+  const getMonthKeyFromSlug = (slug) => {
+    if (!slug) {
+      return "";
+    }
+    if (slug.includes("-")) {
+      const parts = slug.split("-");
+      if (parts.length >= 2) {
+        return `${parts[0]}-${parts[1]}`;
+      }
+    }
+    return "";
+  };
+  const getMonthKeyFromLabel = (label) => {
+    if (!label) {
+      return "";
+    }
+    const parsed = new Date(label);
+    if (!Number.isNaN(parsed)) {
+      return `${parsed.getFullYear()}-${String(parsed.getMonth() + 1).padStart(2, "0")}`;
+    }
+    return "";
+  };
+  const getMonthLabel = (key) => {
+    if (!key || !key.includes("-")) {
+      return "History";
+    }
+    const [year, month] = key.split("-");
+    const date = new Date(Number(year), Number(month) - 1, 1);
+    return date.toLocaleString("default", { month: "long", year: "numeric" });
+  };
+
+  const formatTooltipValue = (rawValue) => {
+    if (rawValue === null || rawValue === undefined) {
+      return "Unknown";
+    }
+    const numericValue = Number(rawValue);
+    if (!Number.isNaN(numericValue)) {
+      if (Number.isInteger(numericValue)) {
+        return String(Math.round(numericValue));
+      }
+      return numericValue.toFixed(1);
+    }
+    return String(rawValue).trim();
+  };
+
+  const tooltipBadgeColor = (context) => {
+    const defaultColor = TOOLTIP_BADGE_FALLBACK;
+    const datasetIndex = context?.datasetIndex ?? -1;
+    const dataset = context?.dataset || {};
+    const candidateColor =
+      datasetTooltipColorMap.get(datasetIndex) ??
+      dataset.legendColor ??
+      dataset.borderColor ??
+      dataset.backgroundColor ??
+      dataset.pointBackgroundColor;
+    const color =
+      candidateColor && candidateColor !== "transparent"
+        ? candidateColor
+        : defaultColor;
+    return { borderColor: color, backgroundColor: color };
+  };
+  const tooltipTextColor = () => TOOLTIP_TEXT_COLOR;
+
+  const tooltipTopCenterPositioner = function () {
+    const chartArea = this.chart.chartArea || {};
+    const center =
+      typeof chartArea.left === "number" && typeof chartArea.right === "number"
+        ? Math.round((chartArea.left + chartArea.right) / 2)
+        : Math.round(this.chart.width / 2);
+    const top = typeof chartArea.top === "number" ? chartArea.top : 0;
+    const inch = 96; // approximate pixel for 1 inch
+    const extraShift = Math.round(inch * 0.75);
+    const verticalOffset = Math.round(inch * 1.5); // 1.5 inches above
+    // Shift left by roughly 1 inch versus the prior placement.
+    return { x: center + extraShift, y: top + 18 - verticalOffset };
+  };
+
+  if (Chart?.Tooltip && Chart.Tooltip.positioners) {
+    Chart.Tooltip.positioners.customTopCenter = tooltipTopCenterPositioner;
+  }
+
+  const outsideWeatherIconPlugin = {
+    id: "outsideWeatherIcon",
+    afterDatasetsDraw: (chartInstance) => {
+      const datasetIndex = 2;
+      const meta = chartInstance.getDatasetMeta(datasetIndex);
+      if (!meta || meta.hidden) {
+        return;
+      }
+      if (!meta.data.length) {
+        return;
+      }
+      const ctxChart = chartInstance.ctx;
+      const flags = getOutsideFlags();
+      const flagDays = getOutsideFlagDayChars();
+      meta.data.forEach((point, idx) => {
+        const flag = flags[idx];
+        if (!flag || flagDays.length <= idx) {
           return;
         }
-        if (setBackground) {
-          card.style.background = color;
-          card.style.borderColor = color;
-        } else {
-          card.style.background = "transparent";
-          card.style.borderColor = "transparent";
+        const dayChar = flagDays[idx];
+        const key = getWeatherGraphicKey(flag, dayChar);
+        const img = weatherGraphicImages[key];
+        if (!img || !img.complete) {
+          return;
         }
-        const textColor = forcedTextColor || getContrastColor(color);
-        card.style.color = textColor;
-        const labelEl = card.querySelector(".label");
-        if (labelEl) {
-          labelEl.style.color = textColor;
-        }
-        const valueEl = card.querySelector(".value");
-        if (valueEl) {
-          valueEl.style.color = textColor;
-        }
-      };
-      const latestActualValue = dashboardData.latestActual ?? findLastNumber(actualSeries) ?? 50;
-      const latestSetpointValue = dashboardData.latestSetpoint ?? findLastNumber(setpointSeries) ?? 50;
-      const latestOutsideValue = dashboardData.latestOutside ?? findLastNumber(outsideSeries) ?? 50;
-      const outsideFlagRaw = (dashboardData.latestOutsideRaw || "").trim().toUpperCase();
-      const outsideFlag = outsideFlagRaw ? outsideFlagRaw[0] : "";
-      const outsideFlagDayChar = outsideFlagRaw && outsideFlagRaw.length > 1 ? outsideFlagRaw[1] : "D";
-      const outsideDaylight =
-        typeof dashboardData.latestOutsideDaylight === "boolean"
-          ? dashboardData.latestOutsideDaylight
-          : outsideFlagDayChar !== "N";
-      const outsideFlagColors = {
-        "S": "#ffd000",
-        "P": "#ffb347",
-        "O": "#b4b4b4",
-        "R": "#5da9f7",
-        "N": "#0b1b3a",
-      };
-      const weatherGraphicPaths = {
-        "S": "../../../Images/sunny.png",
-        "P-day": "../../../Images/PartlySunny.png",
-        "P-night": "../../../Images/Night.png",
-        "O-day": "../../../Images/cloudy.png",
-        "O-night": "../../../Images/cloudynight.png",
-        "R-day": "../../../Images/RainyDay.png",
-        "R-night": "../../../Images/RainyNight.png",
-        "N": "../../../Images/clearnight.png",
-      };
-      const outsideFlagColor = outsideFlagColors[outsideFlag] || null;
-      const weatherGraphicImages = {};
-      Object.entries(weatherGraphicPaths).forEach(([key, src]) => {
-        const img = new Image();
-        img.src = src;
-        weatherGraphicImages[key] = img;
+        const chartHeight = chartInstance.height || 1;
+        const size = Math.min(32, Math.max(24, Math.round((chartHeight / 420) * 30)));
+        ctxChart.save();
+        ctxChart.globalAlpha = 0.9;
+        ctxChart.translate(point.x, point.y);
+        ctxChart.beginPath();
+        ctxChart.arc(0, 0, size / 2, 0, Math.PI * 2);
+        ctxChart.clip();
+        const gradient = ctxChart.createRadialGradient(0, 0, size * 0.05, 0, 0, size / 2);
+        gradient.addColorStop(0, "rgba(255,255,255,0.9)");
+        gradient.addColorStop(1, "rgba(255,255,255,0.0)");
+        ctxChart.fillStyle = gradient;
+        ctxChart.fillRect(-size / 2, -size / 2, size, size);
+        ctxChart.globalAlpha = 1;
+        ctxChart.drawImage(img, -size / 2, -size / 2, size, size);
+        ctxChart.restore();
       });
-      const getWeatherGraphicKey = (flag, dayChar) => {
-        const normalizedFlag = (flag || "").toUpperCase();
-        const normalizedDayChar = (dayChar || "D").toUpperCase();
-        const isNight = normalizedDayChar === "N" || normalizedDayChar === "M";
-        const isDay = !isNight;
-        if (normalizedFlag === "P") {
-          return isDay ? "P-day" : "P-night";
-        }
-        if (normalizedFlag === "O") {
-          return isDay ? "O-day" : "O-night";
-        }
-        if (normalizedFlag === "R") {
-          return isDay ? "R-day" : "R-night";
-        }
-        if (normalizedFlag === "N") {
-          return "N";
-        }
-        return "S";
-      };
-      const actualCard = document.querySelector('.metric-card[data-metric="actual"]');
-      applyCardColor(actualCard, colorForPoint(latestActualValue));
-      applyCardColor(
-        document.querySelector('.metric-card[data-metric="setpoint"]'),
-        colorForPoint(latestSetpointValue)
-      );
-      const outsideCard = document.querySelector('.metric-card[data-metric="outside"]');
-      applyCardColor(
-        outsideCard,
-        outsideFlagColor || gradientColorForOutside(latestOutsideValue),
-        outsideFlag === "N" ? "#fff" : null,
-        outsideFlag === "S"
-      );
-      if (outsideCard) {
-        let graphic = outsideCard.querySelector(".sunny-graphic");
-        if (!graphic) {
-          graphic = document.createElement("div");
-          graphic.className = "sunny-graphic";
-          outsideCard.appendChild(graphic);
-        }
-        let pathKey = outsideFlag;
-        if (outsideFlag === "P") {
-          pathKey = outsideDaylight ? "P-day" : "P-night";
-        } else if (outsideFlag === "O") {
-          pathKey = outsideDaylight ? "O-day" : "O-night";
-        } else if (outsideFlag === "R") {
-          pathKey = outsideDaylight ? "R-day" : "R-night";
-        } else if (outsideFlag === "N") {
-          pathKey = "N";
-        }
-        const path = weatherGraphicPaths[pathKey];
-        if (path) {
-          graphic.style.backgroundImage = `url("${path}")`;
-          outsideCard.classList.add("sunny-image");
-        } else {
-          graphic.style.backgroundImage = "";
-          outsideCard.classList.remove("sunny-image");
-        }
-      }
-      const fanStyleMap = {
-        auto: {
-          background: "#b4b4b4",
-          border: "#8c8c8c",
-          text: "#1a1a1a",
-        },
-        circulate: {
-          background: "radial-gradient(circle at 50% 40%, #ffd54f 0%, #f0a500 40%, #c2923a 100%)",
-          border: "#c47f00",
-          text: "#2d1e00",
-        },
-        on: {
-          background: "#059c15",
-          border: "#03660d",
-          text: "#ffffff",
-        },
-      };
-      const fanStateMap = {
-        0: "auto",
-        1: "circulate",
-        2: "on",
-      };
-      const applyFanCardStyle = (card, fanValue) => {
-        if (!card) {
-          return;
-        }
-        const state = fanStateMap[fanValue] || "auto";
-        const style = fanStyleMap[state];
-        if (!style) {
-          return;
-        }
-        card.style.background = style.background;
-        card.style.borderColor = style.border;
-        card.style.color = style.text;
-        const labelEl = card.querySelector(".label");
-        if (labelEl) {
-          labelEl.style.color = style.text;
-        }
-        const valueEl = card.querySelector(".value");
-        if (valueEl) {
-          valueEl.style.color = style.text;
-        }
-      };
-      const latestFanRaw = dashboardData.latestFan;
-      const latestFanValue =
-        fanStateToNumeric[normalizeFanState(latestFanRaw)] ??
-        findLastNumber(fanSeriesNumeric) ??
-        0;
-      applyFanCardStyle(document.querySelector('.metric-card[data-metric="fan"]'), latestFanValue);
-      const coolingStyleMap = {
-        idle: {
-          background: "#e0e2e5",
-          border: "#b0b4ba",
-          text: "#1a1a1a",
-        },
-        cooling: {
-          background: "#059c15",
-          border: "#03660d",
-          text: "#ffffff",
-        },
-      };
-      const coolingStateMap = {
-        0: "idle",
-        1: "cooling",
-      };
-      const applyCoolingCardStyle = (card, coolingValue) => {
-        if (!card) {
-          return;
-        }
-        const state = coolingStateMap[coolingValue] || "idle";
-        const style = coolingStyleMap[state];
-        if (!style) {
-          return;
-        }
-        card.style.background = style.background;
-        card.style.borderColor = style.border;
-        card.style.color = style.text;
-        const labelEl = card.querySelector(".label");
-        if (labelEl) {
-          labelEl.style.color = style.text;
-        }
-        const valueEl = card.querySelector(".value");
-        if (valueEl) {
-          valueEl.style.color = style.text;
-        }
-      };
-      const latestCoolingValue = dashboardData.latestCooling ?? findLastNumber(coolingSeries) ?? 0;
-      applyCoolingCardStyle(
-        document.querySelector('.metric-card[data-metric="cooling"]'),
-        latestCoolingValue
-      );
-      const gradientColorForCooling = (value) => {
-        const ratio = Math.max(0, Math.min(value ?? 0, 1));
-        const start = [211, 211, 211];
-        const end = [0, 128, 64];
-        const rgb = start.map((component, idx) =>
-          Math.round(component + (end[idx] - component) * ratio)
-        );
-        return `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
-      };
-      const buildSegmentGradient = (ctx, startValue, endValue) => {
-        const start = startValue ?? endValue ?? 50;
-        const end = endValue ?? startValue ?? 50;
-        if (!ctx || !ctx.chart || !ctx.chart.ctx || !ctx.p0 || !ctx.p1) {
-          return colorForPoint(end);
-        }
-        const gradient = ctx.chart.ctx.createLinearGradient(
-          ctx.p0.x,
-          ctx.p0.y,
-          ctx.p1.x,
-          ctx.p1.y
-        );
-        gradient.addColorStop(0, colorForPoint(start));
-        gradient.addColorStop(1, colorForPoint(end));
-        return gradient;
-      };
-      const segmentColor = (ctx) => {
-        const startValue = ctx.p0?.parsed.y ?? ctx.parsed.y ?? 50;
-        const endValue = ctx.p1?.parsed.y ?? ctx.parsed.y ?? startValue;
-        return buildSegmentGradient(ctx, startValue, endValue);
-      };
-      const buildCoolingGradient = (ctx, startValue, endValue) => {
-        const start = startValue ?? endValue ?? 0;
-        const end = endValue ?? startValue ?? start;
-        if (!ctx || !ctx.chart || !ctx.chart.ctx || !ctx.p0 || !ctx.p1) {
-          return gradientColorForCooling(end);
-        }
-        const gradient = ctx.chart.ctx.createLinearGradient(
-          ctx.p0.x,
-          ctx.p0.y,
-          ctx.p1.x,
-          ctx.p1.y
-        );
-        gradient.addColorStop(0, gradientColorForCooling(start));
-        gradient.addColorStop(1, gradientColorForCooling(end));
-        return gradient;
-      };
-      const coolingSegmentColor = (ctx) => {
-        const startValue = ctx.p0?.parsed.y ?? ctx.parsed.y ?? 0;
-        const endValue = ctx.p1?.parsed.y ?? ctx.parsed.y ?? startValue;
-        return buildCoolingGradient(ctx, startValue, endValue);
-      };
-      const fanColorMap = {
-        auto: "#b4b4b4",
-        circulate: "#a86c59",
-        on: "#00ff7f",
-      };
-      const fanColorForValue = (value) => {
-        const normalized = normalizeFanState(value);
-        if (normalized === "C") {
-          return fanColorMap.circulate;
-        }
-        if (normalized === "O") {
-          return fanColorMap.on;
-        }
-        return fanColorMap.auto;
-      };
-      const buildFanGradient = (ctx, startValue, endValue) => {
-        if (!ctx || !ctx.chart || !ctx.chart.ctx || !ctx.p0 || !ctx.p1) {
-          return fanColorForValue(endValue);
-        }
-        const gradient = ctx.chart.ctx.createLinearGradient(
-          ctx.p0.x,
-          ctx.p0.y,
-          ctx.p1.x,
-          ctx.p1.y
-        );
-        gradient.addColorStop(0, fanColorForValue(startValue));
-        gradient.addColorStop(1, fanColorForValue(endValue));
-        return gradient;
-      };
-      const fanSegmentColor = (ctx) => {
-        const startValue =
-          ctx.p0?.parsed?.y ??
-          ctx.p0?.parsed ??
-          ctx.parsed?.y ??
-          ctx.parsed ??
-          0;
-        const endValue =
-          ctx.p1?.parsed?.y ??
-          ctx.p1?.parsed ??
-          ctx.parsed?.y ??
-          ctx.parsed ??
-          startValue;
-        if (fanColorForValue(startValue) === fanColorForValue(endValue)) {
-          return fanColorForValue(endValue);
-        }
-        return buildFanGradient(ctx, startValue, endValue);
-      };
-      const fanSegmentDash = (ctx) => {
-        const value =
-          ctx.p1?.parsed?.y ??
-          ctx.p1?.parsed ??
-          ctx.p0?.parsed?.y ??
-          ctx.p0?.parsed ??
-          ctx.parsed?.y ??
-          ctx.parsed ??
-          0;
-        const numeric = fanStateToNumeric[normalizeFanState(value)] ?? 0;
-        return numeric >= 2 ? [] : [4, 4];
-      };
-      
-      function updateLegendImage() {
-        const log = (msg) => {
-          const logEl = document.getElementById("js-log");
-          if (logEl) {
-            logEl.textContent += msg + "\n";
-            logEl.scrollTop = logEl.scrollHeight;
-          } else {
-            console.log(msg);
-          }
-        };
-        if (!chart || !chart.legend) {
-          return;
-        }
-        const srcCanvas = chart.canvas;
-        const legendBox = chart.legend;
-        
-        let { left, top, width, height } = legendBox;
-        log(`legendBox raw: left=${left}, top=${top}, width=${width}, height=${height}`);
-        try {
-          height -= 275;
-          width -= 20;
-        } catch (error) {
-          log(`height adjustment error: ${error}`);
-        }
-        log(`legendBox adjusted: left=${left}, top=${top}, width=${width}, height=${height}`);
-        if (!width || !height) {
-          return;
-        }
-        const legendCanvas = document.createElement("canvas");
-        log("creating legend canvas");
-        legendCanvas.width = width;
-        legendCanvas.height = height;
-        const legendCtx = legendCanvas.getContext("2d");
-        legendCtx.drawImage(
-          srcCanvas,
-          left,
-          top,
-          width,
-          height,
-          0,
-          0,
-          width,
-          height
-        );
-        const dataUrl = legendCanvas.toDataURL("image/png");
-        const legendImg = document.getElementById("legend-image");
-        if (legendImg && dataUrl) {
-          legendImg.src = dataUrl;
+    },
+  };
 
-        }
-        return dataUrl;
-      }
-      const outsideWeatherIconPlugin = {
-        id: "outsideWeatherIcon",
-        afterDatasetsDraw: (chartInstance) => {
-          const datasetIndex = 2;
-          const meta = chartInstance.getDatasetMeta(datasetIndex);
-          if (!meta || meta.hidden) {
-            return;
-          }
-          if (!enabledModes.has("outside")) {
-            return;
-          }
-          const ctxChart = chartInstance.ctx;
-          meta.data.forEach((point, index) => {
-            const flag = outsideFlags[index];
-            if (!flag) {
-              return;
-            }
-            const dayChar = outsideFlagDayChars[index];
-            const key = getWeatherGraphicKey(flag, dayChar);
-            const img = weatherGraphicImages[key];
-            if (!img || !img.complete) {
-              return;
-            }
-            const size = Math.min(32, Math.max(24, Math.round((chartInstance.height / 420) * 30)));
-            const x = point.x - size / 2;
-            const y = point.y - size / 2;
-            ctxChart.save();
-            ctxChart.globalAlpha = 0.9;
-            ctxChart.translate(point.x, point.y);
-            ctxChart.beginPath();
-            ctxChart.arc(0, 0, size / 2, 0, Math.PI * 2);
-            ctxChart.clip();
-            const gradient = ctxChart.createRadialGradient(0, 0, size * 0.05, 0, 0, size / 2);
-            gradient.addColorStop(0, "rgba(255,255,255,0.9)");
-            gradient.addColorStop(1, "rgba(255,255,255,0.0)");
-            ctxChart.fillStyle = gradient;
-            ctxChart.fillRect(-size / 2, -size / 2, size, size);
-            ctxChart.globalAlpha = 1;
-            ctxChart.drawImage(img, -size / 2, -size / 2, size, size);
-            ctxChart.restore();
-          });
-        },
-      };
+  const destroyChart = () => {
+    if (!chart) {
+      return;
+    }
+    try {
+      chart.destroy();
+    } catch (err) {
+      console.warn("Unable to destroy existing chart", err);
+    } finally {
+      chart = null;
+    }
+  };
+  const updateLegendImage = () => {
+    if (!chart || !chart.legend) {
+      return;
+    }
+    const legendBox = chart.legend;
+    let { left, top, width, height } = legendBox;
+    if (!width || !height) {
+      return;
+    }
+    try {
+      height -= 275;
+      width -= 20;
+    } catch (error) {
+      console.warn("Legend box adjustment error:", error);
+    }
+    if (!width || !height) {
+      return;
+    }
+    const legendCanvas = document.createElement("canvas");
+    legendCanvas.width = width;
+    legendCanvas.height = height;
+    const legendCtx = legendCanvas.getContext("2d");
+    if (!legendCtx) {
+      return;
+    }
+    legendCtx.drawImage(
+      chart.canvas,
+      left,
+      top,
+      width,
+      height,
+      0,
+      0,
+      width,
+      height
+    );
+    const dataUrl = legendCanvas.toDataURL("image/png");
+    const legendImg = document.getElementById("legend-image");
+    if (legendImg && dataUrl) {
+      legendImg.src = dataUrl;
+    }
+  };
 
-      const createChart = () => {
-        if (chart) {
-          return;
-        }
-        canvas.style.display = "block";
-        chart = new Chart(ctx, {
-          type: "line",
-          data: {
-            labels: chartLabels,
-            datasets: [
-              {
-                label: setpointLabel,
-                data: setpointSeries,
-                segment: {
-                  borderColor: segmentColor,
-                },
-                backgroundColor: "rgba(102,255,153,0.2)",
-                spanGaps: true,
-              },
-              {
-                label: actualLabel,
-                data: actualSeries,
-                segment: {
-                  borderColor: segmentColor,
-                },
-                backgroundColor: "rgba(125,164,255,0.2)",
-                spanGaps: true,
-              },
-              {
-                label: outsideLabel,
-                data: outsideSeries,
-                showLine: false,
-                borderColor: "rgba(0,0,0,0)",
-                pointRadius: 0,
-                spanGaps: true,
-              },
-              {
-                label: coolingLabel,
-                data: coolingSeries,
-                segment: {
-                  borderColor: coolingSegmentColor,
-                },
-                backgroundColor: "rgba(255,107,107,0.2)",
-                yAxisID: "cooling",
-                spanGaps: true,
-                pointRadius: 0,
-              },
-              {
-                label: "Fan Mode",
-                data: fanSeriesNumeric,
-                segment: {
-                  borderColor: fanSegmentColor,
-                },
-                backgroundColor: "rgba(255,165,0,0.3)",
-                yAxisID: "fan",
-                spanGaps: true,
-                pointRadius: 0,
-              },
-            ],
+  // Create the history chart with five datasets and custom scale/tooltip behavior.
+  const createChart = () => {
+    if (chart || !ctx) {
+      return;
+    }
+    canvas.style.display = "block";
+    const dataset = {
+      labels: getChartLabels(),
+      datasets: [
+        {
+          label: getSetpointLabel(),
+          data: getSetpointSeries(),
+          segment: {
+            borderColor: segmentColor,
           },
-          plugins: [outsideWeatherIconPlugin],
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            layout: {
-                padding: {
-                    right: 0
-                }
+          backgroundColor: "rgba(102,255,153,0.2)",
+          borderColor: legendSwatchColors.setpoint,
+          pointBackgroundColor: legendSwatchColors.setpoint,
+          pointBorderColor: legendSwatchColors.setpoint,
+          legendColor: legendSwatchColors.setpoint,
+          pointRadius: 0,
+          pointHoverRadius: 4,
+          pointBorderWidth: 2,
+          spanGaps: true,
+        },
+        {
+          label: getActualLabel(),
+          data: getActualSeries(),
+          segment: {
+            borderColor: segmentColor,
+          },
+          backgroundColor: "rgba(125,164,255,0.2)",
+          borderColor: legendSwatchColors.actual,
+          pointBackgroundColor: () => legendSwatchColors.actual,
+          pointBorderColor: () => legendSwatchColors.actual,
+          legendColor: legendSwatchColors.actual,
+          pointRadius: 0,
+          pointHoverRadius: 6,
+          pointBorderWidth: 2,
+          spanGaps: true,
+        },
+        {
+          label: getOutsideLabel(),
+          data: getOutsideSeries(),
+          showLine: false,
+          pointRadius: 0,
+          borderColor: legendSwatchColors.outside,
+          pointBackgroundColor: legendSwatchColors.outside,
+          pointBorderColor: legendSwatchColors.outside,
+          legendColor: legendSwatchColors.outside,
+          spanGaps: true,
+        },
+        {
+          label: getCoolingLabel(),
+          data: getCoolingSeries(),
+          segment: {
+            borderColor: coolingSegmentColor,
+          },
+          backgroundColor: "rgba(255,107,107,0.2)",
+          yAxisID: "cooling",
+          borderColor: legendSwatchColors.cooling,
+          pointBackgroundColor: legendSwatchColors.cooling,
+          pointBorderColor: legendSwatchColors.cooling,
+          legendColor: legendSwatchColors.cooling,
+          spanGaps: true,
+          pointRadius: 0,
+        },
+        {
+          label: "Fan Mode",
+          data: getFanSeriesNumeric(),
+          segment: {
+            borderColor: fanSegmentColor,
+          },
+          backgroundColor: "rgba(255,165,0,0.3)",
+          yAxisID: "fan",
+          borderColor: legendSwatchColors.fan,
+          pointBackgroundColor: legendSwatchColors.fan,
+          pointBorderColor: legendSwatchColors.fan,
+          legendColor: legendSwatchColors.fan,
+          spanGaps: true,
+          pointRadius: 0,
+        },
+      ],
+    };
+    datasetTooltipColorMap.clear();
+    datasetTooltipColorMap.set(0, legendSwatchColors.setpoint);
+    datasetTooltipColorMap.set(1, legendSwatchColors.actual);
+    datasetTooltipColorMap.set(2, legendSwatchColors.outside);
+    datasetTooltipColorMap.set(3, legendSwatchColors.cooling);
+    datasetTooltipColorMap.set(4, legendSwatchColors.fan);
+    chart = new Chart(ctx, {
+      type: "line",
+      data: dataset,
+      plugins: [outsideWeatherIconPlugin],
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: {
+          padding: {
+            right: 0,
+          },
+        },
+        animation: {
+          duration: 1400,
+          easing: "easeOutQuart",
+          onComplete: () => {
+            reapplyVisibility();
+            if (chart) {
+              chart.update("none");
+            }
+          },
+        },
+        animations: {
+          tension: {
+            duration: 1000,
+            easing: "easeOutBounce",
+            from: 1,
+            to: 0,
+            loop: false,
+          },
+          y: {
+            easing: "easeInOutElastic",
+            duration: 800,
+          },
+        },
+        scales: {
+          y: {
+            beginAtZero: false,
+            min: 45,
+            max: 100,
+            ticks: {
+              color: (ctxValue) => colorForPoint(ctxValue.tick.value),
             },
-                
-            
-            animation: false,
-            scales: {
-
-                y: {
-                beginAtZero: false,
-                min: 45,
-                max: 100,
-                ticks: {
-                  color: (ctx) => colorForPoint(ctx.tick.value),
-                },
-                grid: {
-                  color: "rgba(255,255,255,0.1)",
-                },
-              },
-              fan: {
-                type: "linear",
-                position: "right",
-                min: -1,
-                max: 2,
-                ticks: {
-                  stepSize: 1,
-                  callback: (value) => fanLabelForValue(value) || "",
-                  color: (ctx) => {
-                    const tickValue = ctx.tick?.value ?? ctx.parsed ?? null;
-                    return fanColorForValue(tickValue);
-                  },
-                },
-                grid: {
-                  drawOnChartArea: false,
-                  color: "rgba(255,255,255,0.08)",
-                },
-              },
-                cooling: {
-                type: "linear",
-                position: "right",
-                offset: false,
-                min: -1,
-                max: 2,
-                ticks: {
-                  stepSize: 1,
-                  callback: (value) => coolingLegend[Math.round(value)] || "",
-                  color: (ctx) => {
-                    const numeric = Number(ctx.tick.value);
-                    return Number.isNaN(numeric) || numeric <= 0 ? "#ffd000" : "#32d15c";
-                  },
-                },
-                grid: {
-                  drawOnChartArea: true,
-                  color: "rgba(50,209,92,0.15)",
-                },
-              },
-              x: {
-                ticks: {
-                  color: "#f4f6ff",
-                  maxRotation: 0,
-                  minRotation: 90,
-                  padding: 8,
-                },
-                grid: {
-                  color: "rgba(255,255,255,0.08)",
-                },
+            grid: {
+              color: "rgba(255,255,255,0.1)",
+            },
+          },
+          fan: {
+            type: "linear",
+            position: "right",
+            min: -1,
+            max: 2,
+            ticks: {
+              stepSize: 1,
+              callback: (value) => getFanLegend()[Math.round(value)] || "",
+              color: (ctxValue) => {
+                const tickValue = ctxValue.tick?.value ?? ctxValue.parsed ?? null;
+                return fanColorForValue(tickValue);
               },
             },
-            plugins: {
-            legend: {
-
-                        position: "left",
+            grid: {
+              drawOnChartArea: false,
+              color: "rgba(255,255,255,0.08)",
+            },
+          },
+          cooling: {
+            type: "linear",
+            position: "right",
+            offset: false,
+            min: -1,
+            max: 2,
+            ticks: {
+              stepSize: 1,
+              callback: (value) => getCoolingLegend()[Math.round(value)] || "",
+              color: (ctxValue) => {
+                const numeric = Number(ctxValue.tick.value);
+                return Number.isNaN(numeric) || numeric <= 0 ? "#ffd000" : "#32d15c";
+              },
+            },
+            grid: {
+              drawOnChartArea: true,
+              color: "rgba(50,209,92,0.15)",
+            },
+          },
+          x: {
+            ticks: {
+              color: "#f4f6ff",
+              maxRotation: 0,
+              minRotation: 90,
+              padding: 8,
+            },
+            grid: {
+              color: "rgba(255,255,255,0.08)",
+            },
+          },
+        },
+        interaction: {
+          mode: "nearest",
+          intersect: false,
+          axis: "x",
+          includeInvisible: true,
+        },
+        plugins: {
+          legend: {
+            position: "left",
             align: "start",
-                labels: {
-                  color: "#f4f6ff",
-                  usePontStyle: false,
-                  boxWidth: 10,
-              //    filter: ((legendItem) => legendItem.text !== coolingLabel),  
-                },
-              },
-              tooltip: {
-                callbacks: {
-                  label: (context) => {
-                    const label = context.dataset.label || "";
-                    if (context.dataset.yAxisID === "fan") {
-                      const value = context.parsed?.y ?? context.parsed;
-                    return `${label}: ${fanLabelForValue(value) || "Unknown"}`;
-                    }
-                    if (context.dataset.yAxisID === "cooling") {
-                      const value = context.parsed.y;
-                      return `${label}: ${coolingLegend[Math.round(value)] || "Unknown"}`;
-                    }
-                    return `${label}: ${context.parsed.y ?? context.parsed}`;
-                  },
-                },
-              },
+            labels: {
+              color: "#f4f6ff",
+              usePointStyle: false,
+              boxWidth: 10,
             },
           },
-        });
-        updateLegendImage();
-        chart.options.plugins.legend.display = false;
-        chart.update();
-      };
+          tooltip: {
+            callbacks: {
+              label: (context) => {
+                const label = context.dataset.label || "";
+                const seriesIndex = context.dataIndex;
+                const minutes = getCondenserMinutes()[seriesIndex];
+                const minuteLabel = formatMinutesValue(minutes);
+                const rawValue = getTooltipRawValue(context);
+                if (context.dataset.yAxisID === "fan") {
+                  return `${label}: ${fanLabelForValue(rawValue) || "Unknown"}`;
+                }
+                if (context.dataset.yAxisID === "cooling") {
+                  const numeric = Number(rawValue);
+                  const value = Number.isNaN(numeric) ? 0 : numeric;
+                  const statusLine = `${label}: ${getCoolingLegend()[Math.round(value)] || "Unknown"}`;
+                  if (minuteLabel) {
+                    return [statusLine, `     Runtime: ${minuteLabel}`];
+                  }
+                  return statusLine;
+                }
+                const formattedValue = formatTooltipValue(rawValue);
+                return `${label}: ${formattedValue}`;
+              },
+            },
+            displayColors: true,
+            labelColor: tooltipBadgeColor,
+            labelTextColor: tooltipTextColor,
+            titleColor: tooltipTextColor,
+            bodyColor: tooltipTextColor,
+            position: "customTopCenter",
+            yAlign: "top",
+            xAlign: "center",
+            caretSize: 0,
+          },
+        },
+      },
+    });
+    updateLegendImage();
+  };
 
-      const datasetIndexByMode = {
-        setpoint: 0,
-        actual: 1,
-        outside: 2,
-        cooling: 3,
-        fan: 4,
-      };
-      const enabledModes = new Set(Object.keys(datasetIndexByMode));
-      const updateAxesVisibility = () => {
-        const showTemp =
-          enabledModes.has("setpoint") ||
-          enabledModes.has("actual") ||
-          enabledModes.has("outside");
-        const showFan = enabledModes.has("fan");
-        const showCooling = enabledModes.has("cooling");
-        chart.options.scales.y.display = showTemp;
-        chart.options.scales.y.ticks.display = showTemp;
-        chart.options.scales.fan.display = showFan;
-        chart.options.scales.cooling.display = showCooling;
-        chart.options.scales.fan.ticks.display = showFan;
-        chart.options.scales.cooling.ticks.display = showCooling;
-      };
-      const updateButtonStates = () => {
-        const allModesEnabled = Object.keys(datasetIndexByMode).every((m) => enabledModes.has(m));
-        chartControlButtons.forEach((btn) => {
-          const mode = btn.dataset.mode;
-          if (mode === "both") {
-            btn.classList.toggle("active", allModesEnabled);
-          } else {
-            btn.classList.toggle("active", enabledModes.has(mode));
-          }
-        });
-      };
-      const updateChartVisibility = () => {
-        if (!chart) {
-          return;
-        }
-        Object.entries(datasetIndexByMode).forEach(([mode, idx]) => {
-          chart.data.datasets[idx].hidden = !enabledModes.has(mode);
-        });
-      };
-      const toggleMode = (mode) => {
-        if (mode === "both") {
-          const allEnabled = Object.keys(datasetIndexByMode).every((m) => enabledModes.has(m));
-          if (allEnabled) {
-            enabledModes.clear();
-          } else {
-            Object.keys(datasetIndexByMode).forEach((m) => enabledModes.add(m));
-          }
-        } else if (mode) {
-          if (enabledModes.has(mode)) {
-            enabledModes.delete(mode);
-          } else {
-            enabledModes.add(mode);
-          }
-        }
-        if (!chart) {
-          createChart();
-        }
-        if (canvas.style.display === "none" || !canvas.style.display) {
-          showChart();
-        }
-        updateChartVisibility();
-        updateAxesVisibility();
-        updateButtonStates();
-        if (chart) {
-          chart.update();
-        }
-      };
+  // Re-render all front-panel cards when the data changes (actual, fan, condenser, etc.).
+  const updateMetricCards = () => {
+    const actualValue = getLatestActualValue();
+    const setpointValue = getLatestSetpointValue();
+    const outsideValue = getLatestOutsideValue();
+    const outsideFlag = getOutsideFlag();
+    const outsideDaylight = getOutsideDaylight();
+    const outsideFlagColor = outsideFlagColors[outsideFlag] || null;
+    const outsideCard = document.querySelector('.metric-card[data-metric="outside"]');
+    const outsideText = formatOutsideDisplay(outsideValue);
+    setCardValue(outsideCard, outsideText);
+    applyCardColor(
+      outsideCard,
+      outsideFlagColor || gradientColorForOutside(outsideValue),
+      outsideFlag === "N" ? "#fff" : null,
+      outsideFlag === "S"
+    );
+    if (outsideCard) {
+      let graphic = outsideCard.querySelector(".sunny-graphic");
+      if (!graphic) {
+        graphic = document.createElement("div");
+        graphic.className = "sunny-graphic";
+        outsideCard.appendChild(graphic);
+      }
+      let pathKey = outsideFlag;
+      if (outsideFlag === "P") {
+        pathKey = outsideDaylight ? "P-day" : "P-night";
+      } else if (outsideFlag === "O") {
+        pathKey = outsideDaylight ? "O-day" : "O-night";
+      } else if (outsideFlag === "R") {
+        pathKey = outsideDaylight ? "R-day" : "R-night";
+      } else if (outsideFlag === "N") {
+        pathKey = "N";
+      }
+      const path = weatherGraphicPaths[pathKey];
+      if (path) {
+        graphic.style.backgroundImage = `url("${path}")`;
+        outsideCard.classList.add("sunny-image");
+      } else {
+        graphic.style.backgroundImage = "";
+        outsideCard.classList.remove("sunny-image");
+      }
+    }
+    const actualCard = document.querySelector('.metric-card[data-metric="actual"]');
+    setCardValue(actualCard, formatTemperatureValue(actualValue));
+    const actualNumeric = Number(actualValue);
+    const actualCardColor = Number.isFinite(actualNumeric)
+      ? colorForPoint(actualNumeric)
+      : legendSwatchColors.actual;
+    applyCardColor(actualCard, actualCardColor);
+    const setpointCard = document.querySelector('.metric-card[data-metric="setpoint"]');
+    setCardValue(setpointCard, formatTemperatureValue(setpointValue));
+    applyCardColor(setpointCard, colorForPoint(setpointValue));
 
-      const showChart = () => {
-        if (!chart) {
-          createChart();
+    const fanCard = document.querySelector('.metric-card[data-metric="fan"]');
+    const fanLabelRaw = getLatestFanRaw();
+    const fanNorm = normalizeFanState(fanLabelRaw);
+    const fanText = fanStateLabels[fanNorm] || (fanLabelRaw ? String(fanLabelRaw).trim() : "Auto");
+    setCardValue(fanCard, fanText);
+    applyFanCardStyle(fanCard, getLatestFanValue());
+
+    const coolingCard = document.querySelector('.metric-card[data-metric="cooling"]');
+    setCardValue(coolingCard, getCoolingLegend()[Math.round(getLatestCoolingValue())] || "Idle");
+    applyCoolingCardStyle(coolingCard, getLatestCoolingValue());
+    const condenserCard = document.querySelector('.metric-card[data-metric="condenser-state"]');
+    const condenserStateValue = getLatestCondenserState();
+    if (condenserCard) {
+      setCardValue(condenserCard, condenserStateValue || "Unknown");
+      applyCondenserCardStyle(condenserCard, condenserStateValue);
+    }
+  };
+
+  const datasetIndexByMode = {
+    setpoint: 0,
+    actual: 1,
+    outside: 2,
+    cooling: 3,
+    fan: 4,
+  };
+  const enabledModes = new Set(Object.keys(datasetIndexByMode));
+  const updateAxesVisibility = () => {
+    if (!chart) {
+      return;
+    }
+    const showTemp =
+      enabledModes.has("setpoint") ||
+      enabledModes.has("actual") ||
+      enabledModes.has("outside");
+    const showFan = enabledModes.has("fan");
+    const showCooling = enabledModes.has("cooling");
+    chart.options.scales.y.display = showTemp;
+    chart.options.scales.y.ticks.display = showTemp;
+    chart.options.scales.fan.display = showFan;
+    chart.options.scales.cooling.display = showCooling;
+    chart.options.scales.fan.ticks.display = showFan;
+    chart.options.scales.cooling.ticks.display = showCooling;
+  };
+  const updateButtonStates = () => {
+    if (!chartControlButtons) {
+      return;
+    }
+    const allModesEnabled = Object.keys(datasetIndexByMode).every((mode) =>
+      enabledModes.has(mode)
+    );
+    chartControlButtons.forEach((btn) => {
+      const mode = btn.dataset.mode;
+      if (mode === "both") {
+        btn.classList.toggle("active", allModesEnabled);
+      } else {
+        btn.classList.toggle("active", enabledModes.has(mode));
+      }
+    });
+  };
+  const updateChartVisibility = () => {
+    if (!chart) {
+      return;
+    }
+    Object.entries(datasetIndexByMode).forEach(([mode, idx]) => {
+      const dataset = chart.data.datasets[idx];
+      if (!dataset) {
+        return;
+      }
+      const nextHidden = !enabledModes.has(mode);
+      dataset.hidden = nextHidden;
+      const meta = chart.getDatasetMeta(idx);
+      if (meta) {
+        meta.hidden = nextHidden;
+      }
+    });
+  };
+
+  // Force a repaint of dataset segments by temporarily enabling all modes.
+  const reapplyVisibility = () => {
+    if (!chart) {
+      return;
+    }
+    const currentModes = new Set(enabledModes);
+    Object.keys(datasetIndexByMode).forEach((m) => enabledModes.add(m));
+    updateChartVisibility();
+    updateAxesVisibility();
+    chart.update();
+    enabledModes.clear();
+    currentModes.forEach((m) => enabledModes.add(m));
+    updateChartVisibility();
+    updateAxesVisibility();
+    updateButtonStates();
+    chart.update();
+  };
+
+  const setModeSet = (modes, animate = false) => {
+    enabledModes.clear();
+    modes.forEach((m) => enabledModes.add(m));
+    updateChartVisibility();
+    updateAxesVisibility();
+    updateButtonStates();
+    if (chart) {
+      chart.update(animate ? undefined : "none");
+    }
+  };
+  const toggleMode = (mode) => {
+    if (mode === "both") {
+      const allEnabled = Object.keys(datasetIndexByMode).every((m) =>
+        enabledModes.has(m)
+      );
+      if (allEnabled) {
+        enabledModes.clear();
+      } else {
+        Object.keys(datasetIndexByMode).forEach((m) => enabledModes.add(m));
+      }
+    } else if (mode) {
+      if (enabledModes.has(mode)) {
+        enabledModes.delete(mode);
+      } else {
+        enabledModes.add(mode);
+      }
+    }
+    if (!chart) {
+      createChart();
+    }
+    updateChartVisibility();
+    updateAxesVisibility();
+    updateButtonStates();
+    if (chart) {
+      chart.update();
+    }
+  };
+
+  const showChart = () => {
+    if (!chart) {
+      createChart();
+    }
+    updateChartVisibility();
+    updateAxesVisibility();
+    updateButtonStates();
+    if (canvas) {
+      canvas.style.display = "block";
+    }
+    if (toggleHistoryBtn) {
+      toggleHistoryBtn.textContent = "Hide History Chart";
+      toggleHistoryBtn.classList.add("history-visible");
+    }
+    if (handsLogoTop) {
+      handsLogoTop.classList.remove("hidden");
+    }
+    scheduleAutoplay();
+  };
+
+  const hideChart = () => {
+    if (canvas) {
+      canvas.style.display = "none";
+    }
+    if (toggleHistoryBtn) {
+      toggleHistoryBtn.textContent = "Show History Chart";
+      toggleHistoryBtn.classList.remove("history-visible");
+    }
+    if (handsLogoTop) {
+      handsLogoTop.classList.add("hidden");
+    }
+    stopAutoplay();
+  };
+
+  const stopAutoplay = (preserveModes = false) => {
+    if (autoplayTimer) {
+      clearInterval(autoplayTimer);
+      autoplayTimer = null;
+    }
+    if (autoplayIdleTimer) {
+      clearTimeout(autoplayIdleTimer);
+      autoplayIdleTimer = null;
+    }
+    if (chart) {
+      chart.setActiveElements([]);
+      chart.tooltip.setActiveElements([]);
+      chart.update("none");
+    }
+    if (!preserveModes && savedModesBeforeAutoplay) {
+      setModeSet(Array.from(savedModesBeforeAutoplay));
+    }
+    if (!preserveModes) {
+      savedModesBeforeAutoplay = null;
+      autoplaySegmentIndex = 0;
+    }
+  };
+
+  const highlightPoint = (index) => {
+    if (!chart || !chart.data || !chart.data.labels) {
+      return;
+    }
+    const pointIndex = index % chart.data.labels.length;
+    const active = [];
+    chart.data.datasets.forEach((ds, datasetIndex) => {
+      const meta = chart.getDatasetMeta(datasetIndex);
+      const visible = ds && meta && !ds.hidden && !meta.hidden;
+      if (visible) {
+        active.push({ datasetIndex, index: pointIndex });
+      }
+    });
+    chart.setActiveElements(active);
+    chart.tooltip.setActiveElements(active);
+    chart.update("none");
+  };
+
+  const startAutoplay = (immediate = false) => {
+    if (!autoplayEnabled || !chart || !chart.data || !chart.data.labels?.length) {
+      return;
+    }
+    if (!savedModesBeforeAutoplay) {
+      savedModesBeforeAutoplay = new Set(enabledModes);
+    }
+    if (autoplayTimer) {
+      clearInterval(autoplayTimer);
+    }
+    const labelsLen = chart.data.labels.length || 1;
+    const activeSegmentsCount = AUTOPLAY_SEQUENCE.filter((seg) => seg.modes)?.length || 1;
+    const totalSteps = labelsLen * activeSegmentsCount;
+    autoplayStepMs = Math.max(
+      AUTOPLAY_MIN_STEP_MS,
+      Math.round(AUTOPLAY_TARGET_MS / totalSteps)
+    );
+    const applyCurrentSegment = () => {
+      const segment = AUTOPLAY_SEQUENCE[autoplaySegmentIndex % AUTOPLAY_SEQUENCE.length];
+      if (!segment) {
+        return;
+      }
+      if (segment.pauseMs) {
+        if (autoplayTimer) {
+          clearInterval(autoplayTimer);
+          autoplayTimer = null;
         }
-        updateChartVisibility();
-        updateAxesVisibility();
-        updateButtonStates();
-        canvas.style.display = "block";
-        toggleHistoryBtn.textContent = "Hide History Chart";
-        toggleHistoryBtn.classList.add("history-visible");
+        hideChart();
         if (handsLogoTop) {
           handsLogoTop.classList.remove("hidden");
         }
-      };
-
-      const hideChart = () => {
-        canvas.style.display = "none";
-        toggleHistoryBtn.textContent = "Show History Chart";
-        toggleHistoryBtn.classList.remove("history-visible");
-        if (handsLogoTop) {
-          handsLogoTop.classList.add("hidden");
-        }
-      };
-
-      chartControlButtons.forEach((button) => {
-        button.addEventListener("click", () => toggleMode(button.dataset.mode));
-      });
-
-      toggleHistoryBtn.addEventListener("click", () => {
-        if (canvas.style.display === "none" || !canvas.style.display) {
+        setTimeout(() => {
+          // Move to next segment after pause
+          autoplaySegmentIndex = (autoplaySegmentIndex + 1) % AUTOPLAY_SEQUENCE.length;
           showChart();
+          setModeSet(AUTOPLAY_SEQUENCE[autoplaySegmentIndex % AUTOPLAY_SEQUENCE.length].modes || [], true);
+          autoplayIndex = 0;
+          startAutoplay(true);
+        }, segment.pauseMs);
+        return false;
+      }
+      setModeSet(segment.modes || [], true);
+      return true;
+    };
+
+    autoplayIndex = 0;
+    const ready = applyCurrentSegment();
+    if (!ready) {
+      return;
+    }
+    if (immediate) {
+      highlightPoint(autoplayIndex);
+    }
+    autoplayTimer = setInterval(() => {
+      autoplayIndex = (autoplayIndex + 1) % chart.data.labels.length;
+      if (autoplayIndex === 0) {
+        autoplaySegmentIndex = (autoplaySegmentIndex + 1) % AUTOPLAY_SEQUENCE.length;
+        const readyNext = applyCurrentSegment();
+        if (!readyNext) {
+          return;
+        }
+      }
+      highlightPoint(autoplayIndex);
+    }, autoplayStepMs);
+  };
+
+  const scheduleAutoplay = () => {
+    if (!autoplayEnabled) {
+      return;
+    }
+    if (autoplayIdleTimer) {
+      clearTimeout(autoplayIdleTimer);
+    }
+    autoplayIdleTimer = setTimeout(() => {
+      startAutoplay(true);
+    }, AUTOPLAY_IDLE_MS);
+  };
+
+  const markInteraction = () => {
+    stopAutoplay(true);
+    scheduleAutoplay();
+  };
+
+  const ensureAutoplayScheduled = () => {
+    if (!autoplayEnabled) {
+      return;
+    }
+    if (!autoplayTimer && !autoplayIdleTimer) {
+      scheduleAutoplay();
+    }
+  };
+
+  function loadDashboardData(slug) {
+    if (!slug) {
+      logMessage("Missing archive slug.", "warn");
+      return;
+    }
+    const url = buildArchiveJsonUrl(slug);
+    if (!url) {
+      logMessage(`Unable to build URL for slug ${slug}`, "warn");
+      return;
+    }
+    fetch(url, { cache: "no-store" })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`Status ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        applyDashboardData(data, slug);
+      })
+      .catch((error) => {
+        logMessage(`Failed to load archive ${slug}: ${error}`, "error");
+      });
+  }
+
+  const setActiveArchiveItem = (slug) => {
+    if (!chartHistoryList) {
+      return;
+    }
+    chartHistoryList.querySelectorAll("button").forEach((btn) => {
+      btn.classList.toggle("active", slug && btn.dataset.slug === slug);
+    });
+  };
+
+  const closeHistoryList = () => {
+    if (chartHistoryList) {
+      chartHistoryList.classList.add("hidden");
+    }
+    if (chartHistoryToggle && chartHistoryToggle.classList.contains("history-visible")) {
+      chartHistoryToggle.classList.remove("history-visible");
+    }
+  };
+
+  const toggleHistoryList = () => {
+    if (!chartHistoryList) {
+      return;
+    }
+    chartHistoryList.classList.toggle("hidden");
+    if (chartHistoryToggle) {
+      const visible = !chartHistoryList.classList.contains("hidden");
+      chartHistoryToggle.classList.toggle("history-visible", visible);
+    }
+  };
+
+  const updateHistoryStatus = (slug) => {
+    if (!chartHistoryStatus) {
+      return;
+    }
+    const label = slug ? archiveLabelMap.get(slug) : null;
+    chartHistoryStatus.textContent = label
+      ? `History: ${label}`
+      : "History: current data";
+  };
+
+  const updateTimestampDisplay = (text) => {
+    if (!timestampDisplay) {
+      return;
+    }
+    timestampDisplay.textContent = text || "History";
+  };
+
+  function renderArchiveList() {
+    if (!chartHistoryList) {
+      return;
+    }
+    hideHistoryFiles();
+    const archiveDates = getArchiveDates();
+    chartHistoryList.innerHTML = "";
+    archiveLabelMap.clear();
+    const monthGroups = new Map();
+    const monthLabels = new Map();
+    archiveDates.forEach((entry) => {
+      const label = entry.label || entry.slug || "Unknown";
+      const slug = entry.slug || "";
+      if (slug) {
+        archiveLabelMap.set(slug, label);
+      }
+      const monthKey = getMonthKeyFromSlug(slug) || getMonthKeyFromLabel(label);
+      const monthLabel = getMonthLabel(monthKey);
+      if (!monthGroups.has(monthKey)) {
+        monthGroups.set(monthKey, []);
+        monthLabels.set(monthKey, monthLabel);
+      }
+      monthGroups.get(monthKey).push({ label, slug });
+    });
+
+    // Ensure month picker + row exists.
+    if (chartHistory && !chartHistoryListsRow) {
+      chartHistoryListsRow = document.createElement("div");
+      chartHistoryListsRow.className = "history-lists-row";
+      chartHistoryMonthPicker = document.createElement("div");
+      chartHistoryMonthPicker.className = "history-months";
+      const monthHeader = document.createElement("h5");
+      monthHeader.textContent = "Months";
+      chartHistoryMonthList = document.createElement("ul");
+      chartHistoryMonthList.className = "history-months-list";
+      chartHistoryMonthList.id = "chart-history-months";
+      chartHistoryMonthPicker.appendChild(monthHeader);
+      chartHistoryMonthPicker.appendChild(chartHistoryMonthList);
+      chartHistoryListColumn = document.createElement("div");
+      chartHistoryListColumn.className = "history-list-column";
+      chartHistoryListColumn.appendChild(chartHistoryList);
+      chartHistoryListsRow.appendChild(chartHistoryMonthPicker);
+      chartHistoryListsRow.appendChild(chartHistoryListColumn);
+      chartHistory.appendChild(chartHistoryListsRow);
+      chartHistoryListsRow.addEventListener("mouseenter", showHistoryFiles);
+      chartHistoryListsRow.addEventListener("mouseleave", hideHistoryFiles);
+      if (!chartHistoryHoverBound) {
+        chartHistory.addEventListener("mouseleave", hideHistoryFiles);
+        chartHistoryHoverBound = true;
+      }
+      if (!chartHistoryListHoverBound) {
+        chartHistoryListColumn.addEventListener("mouseenter", showHistoryFiles);
+        chartHistoryListColumn.addEventListener("mouseleave", hideHistoryFiles);
+        chartHistoryListHoverBound = true;
+      }
+    }
+
+    // Render month picker
+    const monthListEl = chartHistoryMonthList;
+    const monthKeys = Array.from(monthGroups.keys()).sort().reverse();
+    const limitedMonthKeys = monthKeys.slice(0, 12);
+    if (monthListEl) {
+      monthListEl.innerHTML = "";
+      limitedMonthKeys.forEach((key) => {
+        const item = document.createElement("li");
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = monthLabels.get(key) || key || "History";
+        button.dataset.month = key;
+        if (key === currentMonthKey) {
+          button.classList.add("active");
+        }
+        button.addEventListener("click", () => {
+          currentMonthKey = key;
+          renderArchiveList();
+          hideHistoryFiles();
+        });
+        item.appendChild(button);
+        monthListEl.appendChild(item);
+      });
+    }
+
+    // Render entries for the current month only.
+    if (!currentMonthKey && archiveDates.length) {
+      const firstEntry = archiveDates[0];
+      currentMonthKey =
+        getMonthKeyFromSlug(firstEntry.slug) ||
+        getMonthKeyFromLabel(firstEntry.label) ||
+        "";
+    }
+    if (currentMonthKey && !limitedMonthKeys.includes(currentMonthKey)) {
+      currentMonthKey = limitedMonthKeys[0] || currentMonthKey;
+    }
+    chartHistoryList.innerHTML = "";
+    limitedMonthKeys.forEach((monthKey) => {
+      const entries = monthGroups.get(monthKey);
+      if (!entries || monthKey !== currentMonthKey) {
+        return;
+      }
+      const monthItem = document.createElement("li");
+      monthItem.className = "history-month";
+      const header = document.createElement("div");
+      header.className = "history-month-header";
+      const monthButton = document.createElement("button");
+      monthButton.type = "button";
+      monthButton.textContent = monthLabels.get(monthKey) || "History";
+      const list = document.createElement("ul");
+      list.className = "history-month-list";
+      entries.forEach((entry) => {
+        const entryItem = document.createElement("li");
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = entry.label;
+        button.dataset.slug = entry.slug;
+        button.addEventListener("click", (event) => {
+          event.preventDefault();
+          if (entry.slug) {
+            updateHistoryStatus(entry.slug);
+            currentArchiveSlug = entry.slug;
+            loadDashboardData(entry.slug);
+          }
+          hideHistoryFiles();
+          closeHistoryList();
+        });
+        entryItem.appendChild(button);
+        list.appendChild(entryItem);
+      });
+      monthButton.addEventListener("click", () => {
+        list.classList.toggle("hidden");
+      });
+      header.appendChild(monthButton);
+      monthItem.appendChild(header);
+      monthItem.appendChild(list);
+      chartHistoryList.appendChild(monthItem);
+    });
+    setActiveArchiveItem(currentArchiveSlug);
+  }
+
+  function applyDashboardData(data, slugHint = null) {
+    if (!data) {
+      return;
+    }
+    dashboardData = data;
+    currentArchiveSlug = slugHint || data.generatedDateSlug || currentArchiveSlug;
+    const isArchiveLoad = Boolean(slugHint);
+    renderArchiveList();
+    updateHistoryStatus(currentArchiveSlug);
+    const timestampText =
+      dashboardData.generatedTimestamp ||
+      (currentArchiveSlug ? archiveLabelMap.get(currentArchiveSlug) : null) ||
+      "History: current data";
+    updateTimestampDisplay(timestampText);
+    destroyChart();
+    createChart();
+    if (!isArchiveLoad || !cardsInitialized) {
+      updateMetricCards();
+      cardsInitialized = true;
+    }
+    if (chart) {
+      chart.options.plugins.legend.display = false;
+      chart.update();
+    }
+    reapplyVisibility();
+    showChart();
+  }
+
+  function getArchiveDates() {
+    return getDashboardValue("archiveDates", []);
+  }
+
+  const updateAutoplayToggle = () => {
+    if (!autoplayToggle) {
+      return;
+    }
+    autoplayToggle.classList.toggle("active", autoplayEnabled);
+    autoplayToggle.classList.toggle("off", !autoplayEnabled);
+    autoplayToggle.textContent = autoplayEnabled ? "Auto-play: On" : "Auto-play: Off";
+  };
+
+  const bindAutoplayInteractions = () => {
+    const interactiveEls = [
+      chartArea,
+      canvas,
+      toggleHistoryBtn,
+      chartHistory,
+      ...Array.from(chartControlButtons || []),
+    ].filter(Boolean);
+    const events = ["mousemove", "touchstart", "click"];
+    interactiveEls.forEach((el) => {
+      events.forEach((evt) => {
+        el.addEventListener(evt, markInteraction);
+      });
+    });
+    if (autoplayToggle) {
+      autoplayToggle.addEventListener("click", () => {
+        autoplayEnabled = !autoplayEnabled;
+        stopAutoplay();
+        updateAutoplayToggle();
+        if (autoplayEnabled) {
+          startAutoplay(true);
         } else {
-          hideChart();
+          ensureAutoplayScheduled();
         }
       });
+    }
+  };
 
-      showChart();
+  if (chartControlButtons) {
+    chartControlButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        toggleMode(button.dataset.mode);
+      });
+    });
+  }
+
+  if (toggleHistoryBtn) {
+    toggleHistoryBtn.addEventListener("click", () => {
+      if (!canvas || canvas.style.display === "none") {
+        showChart();
+      } else {
+        hideChart();
+      }
+    });
+  }
+
+  if (chartHistoryToggle && chartHistoryList) {
+    chartHistoryToggle.addEventListener("click", () => {
+      toggleHistoryList();
+    });
+  }
+
+  applyDashboardData(dashboardData);
+  bindAutoplayInteractions();
+  updateAutoplayToggle();
+  ensureAutoplayScheduled();
+})();
+
     </script>
     
 
