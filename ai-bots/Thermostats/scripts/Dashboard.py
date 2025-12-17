@@ -1013,6 +1013,9 @@ line-height: 1;
         background-position: center;
         background-size: contain;
       }}
+      .metric-card[data-metric="outside"] .sunny-graphic {{
+        background-position: 50% center;
+      }}
       .history-panel {{
         margin-top: 8px;
         background: rgba(255,255,255,0.02);
