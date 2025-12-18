@@ -1069,6 +1069,20 @@ def build_dashboard_html(
         outside_series.append(_extract_clamped(outside_idx, row))
     cooling_series = [_cooling_value(row) for row in history_rows]
     climate_setting_series = [_climate_setting_value(row) for row in history_rows]
+    type_series = [str(row[type_idx]).strip() if type_idx is not None and type_idx < len(row) else "" for row in history_rows]
+    studio_series = []
+    request_expires_series = []
+    studio_idx = _find_index(("studio",))
+    request_expires_idx = _find_index(("request expires", "expires"))
+    for row in history_rows:
+        studio_series.append(
+            str(row[studio_idx]).strip() if studio_idx is not None and studio_idx < len(row) else ""
+        )
+        request_expires_series.append(
+            str(row[request_expires_idx]).strip()
+            if request_expires_idx is not None and request_expires_idx < len(row)
+            else ""
+        )
     cooling_label = (
         headers[cooling_idx]
         if cooling_idx is not None and len(headers) > cooling_idx
@@ -1078,6 +1092,13 @@ def build_dashboard_html(
         headers[climate_setting_idx]
         if climate_setting_idx is not None and len(headers) > climate_setting_idx
         else "Climate Setting"
+    )
+    type_label = headers[type_idx] if type_idx is not None and len(headers) > type_idx else "Type"
+    studio_label = headers[studio_idx] if studio_idx is not None and len(headers) > studio_idx else "Studio"
+    request_expires_label = (
+        headers[request_expires_idx]
+        if request_expires_idx is not None and len(headers) > request_expires_idx
+        else "Request Expires (local time)"
     )
     condenser_idx = _find_index(("condenser minutes", "condenser runtime"))
     condenser_minutes_series = []
@@ -1191,6 +1212,12 @@ def build_dashboard_html(
         "coolingLabel": cooling_label,
         "climateSetting": climate_setting_series,
         "climateSettingLabel": climate_setting_label,
+        "typeSeries": type_series,
+        "typeLabel": type_label,
+        "studioSeries": studio_series,
+        "studioLabel": studio_label,
+        "requestExpiresLocalSeries": request_expires_series,
+        "requestExpiresLocalLabel": request_expires_label,
         "condenserMinutes": condenser_minutes_series,
         "totalCondenserMinutes": total_condenser_display,
         "totalCondenserMinutesValue": total_condenser_minutes_value,
@@ -1597,10 +1624,6 @@ line-height: 1;
         background-repeat: no-repeat;
         transition: background 0.3s ease, color 0.3s ease;
       }}
-      /* Keep the toggle in the layout (spacing preserved) but hide it visually. */
-      #toggle-history {{
-        visibility: hidden;
-      }}
       #toggle-history.history-visible {{
         background: #063016;
         color: #dceadf;
@@ -1611,144 +1634,103 @@ line-height: 1;
         transform: scale(0.98);
       }}
       #chartcontrols {{
-        width: auto;
-        max-width: 380px;
-
         display: flex;
-        flex-wrap: wrap;
-        align-items: center;
+        flex-direction: column;
+        align-items: stretch;
         justify-content: flex-start;
-        align-content: flex-start;
         gap: 8px;
-        padding: 4px 8px;
-        margin: 0;
-        margin-top: -65px;
-        margin-right: 160px;
+        padding: 10px;
+        margin-top: 0;
+        margin-bottom: 0;
         font-size: 14px;
         color: #f4f6ff;
         height: auto;
-        border: none;
-        border-radius: 0;
-      }}
-      .chart-top-row {{
-        max-width: 900px;
         width: 100%;
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 14px;
-        margin-top: 20px;
-        margin-bottom: 18px;
-        border: 1px solid rgba(255, 255, 255, 0.18);
-      }}
-      .usage-slot {{
-        flex: 0 0 260px;
-        width: 260px;
-        min-width: 260px;
-        height: 230px;
-        margin-top: -75px;
-        border: 2px solid rgba(255, 179, 71, 0.85);
-        border-radius: 12px;
-        background: rgba(0, 0, 0, 0.12);
-        padding: 10px 12px;
-        color: #fff5c7;
-        font-size: 12px;
-        opacity: 0.9;
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-      }}
-      .usage-slot .title {{
-        font-size: 12px;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-        margin-bottom: 6px;
-        opacity: 0.9;
-      }}
-      .usage-slot .hint {{
-        opacity: 0.75;
-        font-size: 11px;
-      }}
-      .usage-controls {{
-        display: flex;
-        gap: 6px;
-        margin-bottom: 14px;
-      }}
-      .usage-control {{
-        border: 1px solid rgba(255, 255, 255, 0.16);
-        background: rgba(0, 0, 0, 0.22);
-        color: #fff5c7;
-        padding: 4px 8px;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 11px;
-      }}
-      .usage-control.active {{
-        border-color: rgba(255, 179, 71, 0.9);
-        color: #ffb347;
-      }}
-      .usage-canvas {{
-        flex: 1;
-        min-height: 0;
-        position: relative;
-      }}
-      .usage-stats {{
-        position: absolute;
-        top: -60px;
-        right: 6px;
-        display: grid;
-        grid-template-columns: auto auto;
-        gap: 2px 10px;
-        padding: 2px 8px;
-        border-radius: 10px;
-        border: 1px solid rgba(255, 255, 255, 0.14);
-        background: rgba(0, 0, 0, 0.35);
-        color: #fff5c7;
-        font-size: 9px;
-        line-height: 1.05;
-        pointer-events: none;
-      }}
-      .usage-stats .k {{
-        opacity: 0.75;
-      }}
-      .usage-stats .v {{
-        color: #ffb347;
-        font-weight: 600;
-        text-align: right;
-        min-width: 58px;
-      }}
-      #usage-slot-chart {{
-        width: 100% !important;
-        height: 100% !important;
-      }}
-      @media (max-width: 980px) {{
-        .chart-top-row {{
-          flex-direction: column;
-        }}
-        #chartcontrols {{
-          max-width: none;
-          justify-content: center;
-        }}
-        .usage-slot {{
-          min-width: 0;
-          width: 100%;
-          height: auto;
-        }}
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 14px;
+        background: rgba(0, 0, 0, 0.18);
       }}
       .chart-control {{
         border: 1px solid #1a1a20;
         background: #0d0d12;
         color: #6f7176;
-        padding: 5px 10px;
+        padding: 6px 12px;
         border-radius: 8px;
         cursor: pointer;
         transition: background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+      }}
+      .chart-controls .chart-control {{
+        width: 100%;
+        justify-content: center;
       }}
       .chart-control.active {{
         background: #0d0d12;
         color: #66ff99;
         border-color: #1a1a20;
         box-shadow: none;
+      }}
+      .chart-layout {{
+        display: flex;
+        gap: 14px;
+        align-items: flex-start;
+      }}
+      .chart-sidebar {{
+        width: 240px;
+        min-width: 240px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }}
+      .chart-main {{
+        flex: 1;
+        min-width: 0;
+        position: relative;
+      }}
+      #selection-indicator {{
+        display: block;
+        margin-left: 0 !important;
+        margin-top: 2px;
+      }}
+      #selection-help {{
+        display: inline-block;
+        margin-left: 0 !important;
+      }}
+      #hour-picker {{
+        width: 100%;
+        max-width: none !important;
+      }}
+      .usage-mini {{
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 14px;
+        background: rgba(0, 0, 0, 0.18);
+        padding: 10px;
+        color: #fff5c7;
+      }}
+      .usage-mini h5 {{
+        margin: 0 0 8px;
+        font-size: 12px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: #fff5c7;
+      }}
+      .usage-mini .placeholder {{
+        height: 140px;
+        border-radius: 10px;
+        border: 1px dashed rgba(255, 245, 199, 0.35);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        opacity: 0.8;
+      }}
+      @media (max-width: 980px) {{
+        .chart-layout {{
+          flex-direction: column;
+        }}
+        .chart-sidebar {{
+          width: 100%;
+          min-width: 0;
+        }}
       }}
       #autoplay-toggle {{
         color: #66ff99;
@@ -1850,8 +1832,8 @@ line-height: 1;
       }}
       .chart-history {{
         position: absolute;
-        top: -106px;
-        right: 100px;
+        top: -86px;
+        right: 0;
         background: #2f3136;
         border: 1px solid rgba(255, 255, 255, 0.2);
         border-radius: 14px;
@@ -1884,6 +1866,10 @@ line-height: 1;
         letter-spacing: 0.05em;
         text-transform: uppercase;
         color: #fff5c7;
+        background: #0b3d2e;
+        border: 1px solid rgba(255, 245, 199, 0.25);
+        border-radius: 10px;
+        padding: 6px 10px;
       }}
       .history-months-list {{
         list-style: none;
@@ -1980,6 +1966,11 @@ line-height: 1;
         font-weight: 600;
         text-transform: uppercase;
         cursor: pointer;
+        color: #fff5c7;
+        background: #0b3d2e;
+        border: 1px solid rgba(255, 245, 199, 0.35);
+        border-radius: 10px;
+        padding: 6px 10px;
       }}
       .chart-history-status {{
         font-size: 11px;
@@ -2064,45 +2055,35 @@ line-height: 1;
         <div class="cost-value {condenser_cost_class}">{total_condenser_cost_display or "$0.00"}</div>
       </div>
 
-      <div class="chart-top-row">
-        <div class="usage-slot" id="usage-slot">
-          <div class="title">Usage Chart</div>
-          <div class="usage-controls" role="group" aria-label="Usage Range">
-            <button type="button" class="usage-control active" data-range="7d">7d</button>
-            <button type="button" class="usage-control" data-range="30d">30d</button>
-            <button type="button" class="usage-control" data-range="month">Month</button>
-          </div>
-          <div class="usage-canvas">
-            <div class="usage-stats" id="usage-slot-stats" aria-hidden="true">
-              <div class="k">Total</div><div class="v" id="usage-stat-total">—</div>
-              <div class="k">Avg</div><div class="v" id="usage-stat-avg">—</div>
-              <div class="k">Max</div><div class="v" id="usage-stat-max">—</div>
-              <div class="k">Cost</div><div class="v" id="usage-stat-cost">—</div>
-            </div>
-            <canvas id="usage-slot-chart"></canvas>
-          </div>
-        </div>
-        <div id="chartcontrols" class="chart-controls">
+      <div class="chart-layout">
+        <div class="chart-sidebar">
+          <div id="chartcontrols" class="chart-controls">
             <button type="button" class="chart-control" data-mode="setpoint">Set Point</button>
             <button type="button" class="chart-control" data-mode="actual">Building Temp</button>
             <button type="button" class="chart-control" data-mode="outside">Outside Temp</button>
             <button type="button" class="chart-control" data-mode="cooling">AC Status</button>
             <button type="button" class="chart-control" data-mode="fan">Fan Mode</button>
             <button type="button" class="chart-control active" data-mode="both">Combined</button>
-            <span>&nbsp;</span>
             <button type="button" class="chart-control" id="autoplay-toggle">Auto-play: On</button>
           </div>
-      </div>
-        <div class="chart-wrap">
-          <div>
-          </div>
-          <canvas id="history-chart"></canvas>
-          <div class="chart-history" id="chart-history">
-            <h4 id="chart-history-toggle">Chart History</h4>
-            <div id="chart-history-status" class="chart-history-status"></div>
-            <ul id="chart-history-list" class="hidden"></ul>
+          <div class="usage-mini" id="usage-mini">
+            <h5>Usage</h5>
+            <div class="placeholder">Usage history chart (next)</div>
           </div>
         </div>
+        <div class="chart-main">
+          <div class="chart-wrap">
+            <div>
+            </div>
+            <canvas id="history-chart"></canvas>
+            <div class="chart-history" id="chart-history">
+              <h4 id="chart-history-toggle">Chart History</h4>
+              <div id="chart-history-status" class="chart-history-status"></div>
+              <ul id="chart-history-list" class="hidden"></ul>
+            </div>
+          </div>
+        </div>
+      </div>
         <div class="note">Data source: Google Sheet (last updated when this page was generated).</div>
         <pre id="js-log"></pre>
       </div>
@@ -2223,6 +2204,123 @@ def run_projected_range(start: date, end: date, *, weather_source: str = "auto")
     return summaries
 
 
+def _parse_time_from_label(label: str) -> tuple[int, int]:
+    """
+    Best-effort extract hour/minute from a chart label.
+
+    Supports labels like:
+    - "Tue 12/18 04 PM"
+    - "Sunday Nov 23     1:56 PM"
+    """
+    text = str(label or "").strip()
+    if not text:
+        return 0, 0
+    # Try HH:MM AM/PM
+    match = re.search(r"(\d{1,2})\s*:\s*(\d{2})\s*(AM|PM)\b", text, flags=re.IGNORECASE)
+    if match:
+        hh = int(match.group(1))
+        mm = int(match.group(2))
+        ap = match.group(3).upper()
+        hh = (hh % 12) + (12 if ap == "PM" else 0)
+        return hh % 24, mm % 60
+    # Try HH AM/PM
+    match = re.search(r"(\d{1,2})\s*(AM|PM)\b", text, flags=re.IGNORECASE)
+    if match:
+        hh = int(match.group(1))
+        ap = match.group(2).upper()
+        hh = (hh % 12) + (12 if ap == "PM" else 0)
+        return hh % 24, 0
+    return 0, 0
+
+
+def _format_local_time_12h(hour24: int, minute: int) -> str:
+    hour24 = int(hour24) % 24
+    minute = int(minute) % 60
+    ap = "AM" if hour24 < 12 else "PM"
+    hour12 = hour24 % 12
+    if hour12 == 0:
+        hour12 = 12
+    return f"{hour12}:{minute:02d} {ap}"
+
+
+def inject_demo_requests_into_archive(*, archive_dir: Path = ARCHIVE_DIR, per_file: int = 5) -> dict:
+    """
+    For every archive JSON, inject a handful of request entries so Studio/Expires visibly work on hover.
+
+    This is a demo/UX utility for projected datasets and historical archives.
+    """
+    updated = 0
+    skipped = 0
+    errors = 0
+
+    per_file = max(1, int(per_file))
+    if not archive_dir.exists():
+        raise FileNotFoundError(f"Archive dir not found: {archive_dir}")
+
+    for path in sorted(archive_dir.glob("*.json")):
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except Exception:
+            errors += 1
+            continue
+
+        labels = payload.get("chartLabels")
+        if not isinstance(labels, list) or not labels:
+            skipped += 1
+            continue
+        length = len(labels)
+
+        def _ensure_series(key: str, default_value):
+            series = payload.get(key)
+            if not isinstance(series, list) or len(series) != length:
+                payload[key] = [default_value for _ in range(length)]
+            return payload[key]
+
+        type_series = _ensure_series("typeSeries", "System")
+        studio_series = _ensure_series("studioSeries", "")
+        expires_series = _ensure_series("requestExpiresLocalSeries", "")
+
+        # Pick indices spaced across the day (avoid always clustering at start/end).
+        indices = []
+        for i in range(per_file):
+            idx = int(round((i + 1) * length / (per_file + 1)))
+            idx = max(0, min(length - 1, idx))
+            indices.append(idx)
+        # Deduplicate while preserving order.
+        seen = set()
+        indices = [i for i in indices if not (i in seen or seen.add(i))]
+
+        # Vary studios/zones/minutes per file deterministically by filename stem.
+        seed = sum(ord(ch) for ch in path.stem) % 997
+        studios = [11, 7, 3, 15, 9, 2, 18]
+        zones = [1, 2, 3, 4]
+        minutes_list = [30, 40, 45, 50, 60]
+
+        for j, idx in enumerate(indices):
+            studio = studios[(seed + j) % len(studios)]
+            zone = zones[(seed + 2 * j) % len(zones)]
+            minutes = minutes_list[(seed + 3 * j) % len(minutes_list)]
+            type_series[idx] = f"request (studio {studio}, zone{zone}, {minutes}m)"
+            studio_series[idx] = str(studio)
+            base_h, base_m = _parse_time_from_label(str(labels[idx]))
+            total_minutes = base_h * 60 + base_m + int(minutes)
+            expires_h = (total_minutes // 60) % 24
+            expires_m = total_minutes % 60
+            expires_series[idx] = _format_local_time_12h(expires_h, expires_m)
+
+        payload["typeSeries"] = type_series
+        payload["studioSeries"] = studio_series
+        payload["requestExpiresLocalSeries"] = expires_series
+
+        try:
+            path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+            updated += 1
+        except Exception:
+            errors += 1
+
+    return {"updated": updated, "skipped": skipped, "errors": errors}
+
+
 def main(argv: Optional[List[str]] = None) -> None:
     parser = argparse.ArgumentParser(description="Thermostat dashboard generator")
     parser.add_argument(
@@ -2242,7 +2340,28 @@ def main(argv: Optional[List[str]] = None) -> None:
         default="auto",
         help="Outside temperature source for projection generation (default: auto).",
     )
+    parser.add_argument(
+        "--inject-demo-requests",
+        action="store_true",
+        help="Inject demo request entries (Type/Studio/Expires) into every archive JSON file.",
+    )
+    parser.add_argument(
+        "--inject-demo-count",
+        type=int,
+        default=5,
+        help="How many demo request entries to inject per file (default: 5).",
+    )
     args = parser.parse_args(argv)
+
+    if args.inject_demo_requests:
+        result = inject_demo_requests_into_archive(per_file=args.inject_demo_count)
+        logger.info(
+            "Injected demo requests into archive JSONs: updated=%s skipped=%s errors=%s",
+            result["updated"],
+            result["skipped"],
+            result["errors"],
+        )
+        return
 
     if args.project_date or args.project_range:
         if args.project_date and args.project_range:

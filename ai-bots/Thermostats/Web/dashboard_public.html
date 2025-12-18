@@ -301,6 +301,10 @@ line-height: 1;
         background-repeat: no-repeat;
         transition: background 0.3s ease, color 0.3s ease;
       }
+      /* Keep the toggle in the layout (spacing preserved) but hide it visually. */
+      #toggle-history {
+        visibility: hidden;
+      }
       #toggle-history.history-visible {
         background: #063016;
         color: #dceadf;
@@ -311,118 +315,144 @@ line-height: 1;
         transform: scale(0.98);
       }
       #chartcontrols {
+        width: auto;
+        max-width: 380px;
+
         display: flex;
-        flex-direction: column;
-        align-items: stretch;
+        flex-wrap: wrap;
+        align-items: center;
         justify-content: flex-start;
+        align-content: flex-start;
         gap: 8px;
-        padding: 10px;
-        margin-top: 0;
-        margin-bottom: 0;
+        padding: 4px 8px;
+        margin: 0;
+        margin-top: -65px;
+        margin-right: 160px;
         font-size: 14px;
         color: #f4f6ff;
         height: auto;
+        border: none;
+        border-radius: 0;
+      }
+      .chart-top-row {
+        max-width: 900px;
         width: 100%;
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        border-radius: 14px;
-        background: rgba(0, 0, 0, 0.18);
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 14px;
+        margin-top: 20px;
+        margin-bottom: 18px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+      }
+      .usage-slot {
+        flex: 0 0 260px;
+        width: 260px;
+        min-width: 260px;
+        height: 230px;
+        margin-top: -75px;
+        border: 2px solid rgba(255, 179, 71, 0.85);
+        border-radius: 12px;
+        background: rgba(0, 0, 0, 0.12);
+        padding: 10px 12px;
+        color: #fff5c7;
+        font-size: 12px;
+        opacity: 0.9;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+      .usage-slot .title {
+        font-size: 12px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+        opacity: 0.9;
+      }
+      .usage-slot .hint {
+        opacity: 0.75;
+        font-size: 11px;
+      }
+      .usage-controls {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 14px;
+      }
+      .usage-control {
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        background: rgba(0, 0, 0, 0.22);
+        color: #fff5c7;
+        padding: 4px 8px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 11px;
+      }
+      .usage-control.active {
+        border-color: rgba(255, 179, 71, 0.9);
+        color: #ffb347;
+      }
+      .usage-canvas {
+        flex: 1;
+        min-height: 0;
+        position: relative;
+      }
+      .usage-stats {
+        position: absolute;
+        top: -60px;
+        right: 6px;
+        display: grid;
+        grid-template-columns: auto auto;
+        gap: 2px 10px;
+        padding: 2px 8px;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        background: rgba(0, 0, 0, 0.35);
+        color: #fff5c7;
+        font-size: 9px;
+        line-height: 1.05;
+        pointer-events: none;
+      }
+      .usage-stats .k {
+        opacity: 0.75;
+      }
+      .usage-stats .v {
+        color: #ffb347;
+        font-weight: 600;
+        text-align: right;
+        min-width: 58px;
+      }
+      #usage-slot-chart {
+        width: 100% !important;
+        height: 100% !important;
+      }
+      @media (max-width: 980px) {
+        .chart-top-row {
+          flex-direction: column;
+        }
+        #chartcontrols {
+          max-width: none;
+          justify-content: center;
+        }
+        .usage-slot {
+          min-width: 0;
+          width: 100%;
+          height: auto;
+        }
       }
       .chart-control {
         border: 1px solid #1a1a20;
         background: #0d0d12;
         color: #6f7176;
-        padding: 6px 12px;
+        padding: 5px 10px;
         border-radius: 8px;
         cursor: pointer;
         transition: background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
-      }
-      .chart-controls .chart-control {
-        width: 100%;
-        justify-content: center;
-      }
-      .chart-controls.usage-view .chart-control[data-mode],
-      .chart-controls.usage-view #autoplay-toggle {
-        opacity: 0.35;
-        pointer-events: none;
-      }
-      .chart-controls.usage-view #selection-indicator,
-      .chart-controls.usage-view #selection-help,
-      .chart-controls.usage-view #hour-picker,
-      .chart-controls.usage-view #clear-pin {
-        display: none !important;
       }
       .chart-control.active {
         background: #0d0d12;
         color: #66ff99;
         border-color: #1a1a20;
         box-shadow: none;
-      }
-      .chart-layout {
-        display: flex;
-        gap: 14px;
-        align-items: flex-start;
-      }
-      .chart-sidebar {
-        width: 240px;
-        min-width: 240px;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-      }
-      .chart-main {
-        flex: 1;
-        min-width: 0;
-        position: relative;
-      }
-      #selection-indicator {
-        display: block;
-        margin-left: 0 !important;
-        margin-top: 2px;
-      }
-      #selection-help {
-        display: inline-block;
-        margin-left: 0 !important;
-      }
-      #hour-picker {
-        width: 100%;
-        max-width: none !important;
-      }
-      .usage-mini {
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        border-radius: 14px;
-        background: rgba(0, 0, 0, 0.18);
-        padding: 10px;
-        color: #fff5c7;
-      }
-      .usage-mini.usage-active {
-        border-color: rgba(255, 179, 71, 0.9);
-        box-shadow: 0 0 0 2px rgba(255, 179, 71, 0.18);
-      }
-      .usage-mini h5 {
-        margin: 0 0 8px;
-        font-size: 12px;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-        color: #fff5c7;
-      }
-      .usage-mini .placeholder {
-        height: 140px;
-        border-radius: 10px;
-        border: 1px dashed rgba(255, 245, 199, 0.35);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 12px;
-        opacity: 0.8;
-      }
-      @media (max-width: 980px) {
-        .chart-layout {
-          flex-direction: column;
-        }
-        .chart-sidebar {
-          width: 100%;
-          min-width: 0;
-        }
       }
       #autoplay-toggle {
         color: #66ff99;
@@ -524,8 +554,8 @@ line-height: 1;
       }
       .chart-history {
         position: absolute;
-        top: -86px;
-        right: 0;
+        top: -106px;
+        right: 100px;
         background: #2f3136;
         border: 1px solid rgba(255, 255, 255, 0.2);
         border-radius: 14px;
@@ -558,10 +588,6 @@ line-height: 1;
         letter-spacing: 0.05em;
         text-transform: uppercase;
         color: #fff5c7;
-        background: #0b3d2e;
-        border: 1px solid rgba(255, 245, 199, 0.25);
-        border-radius: 10px;
-        padding: 6px 10px;
       }
       .history-months-list {
         list-style: none;
@@ -658,11 +684,6 @@ line-height: 1;
         font-weight: 600;
         text-transform: uppercase;
         cursor: pointer;
-        color: #fff5c7;
-        background: #0b3d2e;
-        border: 1px solid rgba(255, 245, 199, 0.35);
-        border-radius: 10px;
-        padding: 6px 10px;
       }
       .chart-history-status {
         font-size: 11px;
@@ -728,7 +749,7 @@ line-height: 1;
         </div>
       </div>
       <div class="timestamp-row">
-        <div id="dashboard-timestamp" class="date-display">Thursday Dec 18 2025 04:16:15 AM</div>
+        <div id="dashboard-timestamp" class="date-display">Thursday Dec 18 2025 06:20:24 AM</div>
       </div>
       <div id="Cards" class="card-grid frame2">
         
@@ -807,42 +828,52 @@ line-height: 1;
         <div class="cost-value cost-red">$25.00</div>
       </div>
 
-      <div class="chart-layout">
-        <div class="chart-sidebar">
-          <div id="chartcontrols" class="chart-controls">
+      <div class="chart-top-row">
+        <div class="usage-slot" id="usage-slot">
+          <div class="title">Usage Chart</div>
+          <div class="usage-controls" role="group" aria-label="Usage Range">
+            <button type="button" class="usage-control active" data-range="7d">7d</button>
+            <button type="button" class="usage-control" data-range="30d">30d</button>
+            <button type="button" class="usage-control" data-range="month">Month</button>
+          </div>
+          <div class="usage-canvas">
+            <div class="usage-stats" id="usage-slot-stats" aria-hidden="true">
+              <div class="k">Total</div><div class="v" id="usage-stat-total">—</div>
+              <div class="k">Avg</div><div class="v" id="usage-stat-avg">—</div>
+              <div class="k">Max</div><div class="v" id="usage-stat-max">—</div>
+              <div class="k">Cost</div><div class="v" id="usage-stat-cost">—</div>
+            </div>
+            <canvas id="usage-slot-chart"></canvas>
+          </div>
+        </div>
+        <div id="chartcontrols" class="chart-controls">
             <button type="button" class="chart-control" data-mode="setpoint">Set Point</button>
             <button type="button" class="chart-control" data-mode="actual">Building Temp</button>
             <button type="button" class="chart-control" data-mode="outside">Outside Temp</button>
             <button type="button" class="chart-control" data-mode="cooling">AC Status</button>
             <button type="button" class="chart-control" data-mode="fan">Fan Mode</button>
             <button type="button" class="chart-control active" data-mode="both">Combined</button>
+            <span>&nbsp;</span>
             <button type="button" class="chart-control" id="autoplay-toggle">Auto-play: On</button>
           </div>
-          <div class="usage-mini" id="usage-mini">
-            <h5>Usage</h5>
-            <div class="placeholder">Usage history chart (next)</div>
-          </div>
-        </div>
-        <div class="chart-main">
-          <div class="chart-wrap">
-            <div>
-            </div>
-            <canvas id="history-chart"></canvas>
-            <div class="chart-history" id="chart-history">
-              <h4 id="chart-history-toggle">Chart History</h4>
-              <div id="chart-history-status" class="chart-history-status"></div>
-              <ul id="chart-history-list" class="hidden"></ul>
-            </div>
-          </div>
-        </div>
       </div>
+        <div class="chart-wrap">
+          <div>
+          </div>
+          <canvas id="history-chart"></canvas>
+          <div class="chart-history" id="chart-history">
+            <h4 id="chart-history-toggle">Chart History</h4>
+            <div id="chart-history-status" class="chart-history-status"></div>
+            <ul id="chart-history-list" class="hidden"></ul>
+          </div>
+        </div>
         <div class="note">Data source: Google Sheet (last updated when this page was generated).</div>
         <pre id="js-log"></pre>
       </div>
     </div>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script id="dashboard-data-inline" type="application/json">
-{"headers": ["Timestamp", "Type", "Current Temperature", "Cooling Set Point", "Climate Setting", "Fan Setting", "Equipment Status", "Studio", "Request Expires (local time)", "Outside Temp", "Condenser State", "Condenser Minutes"], "latestRow": ["Tuesday Nov 25 2025 8:11 PM", "System", "95", "80", "Cool", "On", "Cooling", " ", "8:54 PM", "NN57.0 | Mostly Cloudy", "On", "500"], "history": [{"label": "Sunday Nov 23     1:56 PM", "value": 70.0}, {"label": "Sunday Nov 23     2:02 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:46 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:59 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:03 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:06 PM", "value": 75.0}, {"label": "Sunday Nov 23     11:20 PM", "value": 75.0}, {"label": "Tuesday Nov 25     7:59 PM", "value": 72.0}, {"label": "Tuesday Nov 25     8:01 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:04 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:11 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:46 PM", "value": 74.0}, {"label": "Friday Nov 21     6:51 PM", "value": 74.0}, {"label": "Sunday Nov 23     1:56 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:02 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:46 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:59 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:03 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:06 PM", "value": 75.0}, {"label": "Sunday Nov 23     11:20 PM", "value": 74.0}, {"label": "Tuesday Nov 25     7:59 PM", "value": 72.0}, {"label": "Tuesday Nov 25     8:01 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:04 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:11 PM", "value": 80.0}], "chartLabels": ["Sunday Nov 23     1:56 PM", "Sunday Nov 23     2:02 PM", "Sunday Nov 23     2:46 PM", "Sunday Nov 23     2:59 PM", "Sunday Nov 23     3:03 PM", "Sunday Nov 23     3:06 PM", "Sunday Nov 23     11:20 PM", "Tuesday Nov 25     7:59 PM", "Tuesday Nov 25     8:01 PM", "Tuesday Nov 25     8:04 PM", "Tuesday Nov 25     8:11 PM", "Tuesday Nov 25     8:46 PM", "Friday Nov 21     6:51 PM", "Sunday Nov 23     1:56 PM", "Sunday Nov 23     2:02 PM", "Sunday Nov 23     2:46 PM", "Sunday Nov 23     2:59 PM", "Sunday Nov 23     3:03 PM", "Sunday Nov 23     3:06 PM", "Sunday Nov 23     11:20 PM", "Tuesday Nov 25     7:59 PM", "Tuesday Nov 25     8:01 PM", "Tuesday Nov 25     8:04 PM", "Tuesday Nov 25     8:11 PM"], "setpoint": [70.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 72.0, 74.0, 74.0, 74.0, 74.0, 74.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 74.0, 72.0, 74.0, 74.0, 80.0], "actual": [45.0, 71.0, 72.0, 73.0, 74.0, 75.0, 75.0, 75.0, 75.0, 73.0, 72.0, 71.0, 70.0, 68.0, 65.0, 61.0, 64.0, 63.0, 65.0, 65.0, 70.0, 88.0, 90.0, 95.0], "setpointLabel": "Set Point", "actualLabel": "Current Temperature", "fan": ["A", "A", "O", "O", "O", "O", "O", "C", "C", "C", "C", "A", "A", "A", "A", "A", "A", "A", "A", "A", "C", "C", "C", "O"], "fanLegend": ["Auto", "Circulate", "On"], "outside": [55.0, 65.0, 65.0, 65.0, 62.0, 59.0, 57.0, 53.0, 52.0, 50.0, 49.0, 49.0, 48.0, 48.0, 47.0, 46.0, 46.0, 47.0, 48.0, 54.0, 58.0, 61.0, 63.0, 57.0], "outsideLabel": "Outside Temp", "outsideFlags": ["S", "S", "P", "O", "R", "R", "P", "P", "O", "O", "P", "P", "P", "P", "O", "P", "P", "P", "P", "P", "P", "S", "S", "N"], "outsideFlagDayChars": ["5", "6", "6", "6", "6", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "4", "5", "5", "6", "6", "N"], "cooling": [0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1], "coolingLegend": ["Idle", "Cooling"], "coolingLabel": "Equipment Status", "climateSetting": ["Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool"], "climateSettingLabel": "Climate Setting", "typeSeries": ["system", "system", "system", "system", "system", "system", "request (studio 5, zone2, 40m)", "request (60m)", "request (60m)", "request (studio 11, zone3, 50m)", "request (studio 11, zone3, 50m)", "request (60m)", "request (studio 20, zone2, 15m)", "system", "system", "system", "system", "system", "system", "request (studio 5, zone2, 40m)", "request (60m)", "request (60m)", "request (studio 11, zone3, 50m)", "System"], "typeLabel": "Type", "studioSeries": ["", "", "", "", "", "", "5", "", "", "11", "11", "", "20", "", "", "", "", "", "", "5", "", "", "11", ""], "studioLabel": "Studio", "requestExpiresLocalSeries": ["", "", "", "", "", "", "12:00 AM", "8:59 PM", "8:59 PM", "8:54 PM", "8:54 PM", "9:46 PM", "7:06 PM", "", "", "", "", "", "", "12:00 AM", "8:59 PM", "8:59 PM", "8:54 PM", "8:54 PM"], "requestExpiresLocalLabel": "Request Expires (local time)", "condenserMinutes": [null, null, 0.0, 0.0, 0.0, null, null, null, null, 0.0, null, 0.0, null, 0.0, null, 0.0, null, 0.0, null, 0.0, null, 0.0, null, 500.0], "totalCondenserMinutes": "500", "totalCondenserMinutesValue": 500.0, "totalCondenserCost": "$25.00", "totalCondenserCostValue": 25.0, "condenserCostPerMinute": 0.05, "latestActual": 95.0, "latestSetpoint": 80.0, "latestOutside": 57.0, "latestOutsideRaw": "NN57.0 | Mostly Cloudy", "latestOutsideDaylight": false, "latestOutsideFlagDayChar": "N", "latestFan": "O", "latestCooling": 1, "latestCondenserState": "On", "generatedTimestamp": "Thursday Dec 18 2025 04:16:15 AM", "generatedDateSlug": "2025-12-18", "archiveDates": [{"slug": "2025-12-18", "label": "Dec 18, 2025"}, {"slug": "2025-12-17", "label": "Dec 17, 2025"}, {"slug": "2025-12-16", "label": "Dec 16, 2025"}, {"slug": "2025-12-15", "label": "Dec 15, 2025"}, {"slug": "2025-12-14", "label": "Dec 14, 2025"}, {"slug": "2025-12-13", "label": "Dec 13, 2025"}, {"slug": "2025-12-12", "label": "Dec 12, 2025"}, {"slug": "2025-12-11", "label": "Dec 11, 2025"}, {"slug": "2025-12-10", "label": "Dec 10, 2025"}, {"slug": "2025-12-09", "label": "Dec 09, 2025"}, {"slug": "2025-12-08", "label": "Dec 08, 2025"}, {"slug": "2025-12-07", "label": "Dec 07, 2025"}, {"slug": "2025-12-06", "label": "Dec 06, 2025"}, {"slug": "2025-12-05", "label": "Dec 05, 2025"}, {"slug": "2025-12-04", "label": "Dec 04, 2025"}, {"slug": "2025-12-03", "label": "Dec 03, 2025"}, {"slug": "2025-12-02", "label": "Dec 02, 2025"}, {"slug": "2025-12-01", "label": "Dec 01, 2025"}, {"slug": "2025-11-30", "label": "Nov 30, 2025"}, {"slug": "2025-11-29", "label": "Nov 29, 2025"}, {"slug": "2025-11-28", "label": "Nov 28, 2025"}, {"slug": "2025-11-27", "label": "Nov 27, 2025"}, {"slug": "2025-11-26", "label": "Nov 26, 2025"}, {"slug": "2025-11-25", "label": "Nov 25, 2025"}, {"slug": "2025-11-24", "label": "Nov 24, 2025"}, {"slug": "2025-11-23", "label": "Nov 23, 2025"}, {"slug": "2025-11-22", "label": "Nov 22, 2025"}, {"slug": "2025-11-21", "label": "Nov 21, 2025"}, {"slug": "2025-11-20", "label": "Nov 20, 2025"}, {"slug": "2025-11-19", "label": "Nov 19, 2025"}, {"slug": "2025-11-18", "label": "Nov 18, 2025"}, {"slug": "2025-11-17", "label": "Nov 17, 2025"}, {"slug": "2025-11-16", "label": "Nov 16, 2025"}, {"slug": "2025-11-15", "label": "Nov 15, 2025"}, {"slug": "2025-11-14", "label": "Nov 14, 2025"}, {"slug": "2025-11-13", "label": "Nov 13, 2025"}, {"slug": "2025-11-12", "label": "Nov 12, 2025"}, {"slug": "2025-11-11", "label": "Nov 11, 2025"}, {"slug": "2025-11-10", "label": "Nov 10, 2025"}, {"slug": "2025-11-09", "label": "Nov 09, 2025"}, {"slug": "2025-11-08", "label": "Nov 08, 2025"}, {"slug": "2025-11-07", "label": "Nov 07, 2025"}, {"slug": "2025-11-06", "label": "Nov 06, 2025"}, {"slug": "2025-11-05", "label": "Nov 05, 2025"}, {"slug": "2025-11-04", "label": "Nov 04, 2025"}, {"slug": "2025-11-03", "label": "Nov 03, 2025"}, {"slug": "2025-11-02", "label": "Nov 02, 2025"}, {"slug": "2025-11-01", "label": "Nov 01, 2025"}, {"slug": "2025-10-31", "label": "Oct 31, 2025"}, {"slug": "2025-10-30", "label": "Oct 30, 2025"}, {"slug": "2025-10-29", "label": "Oct 29, 2025"}, {"slug": "2025-10-28", "label": "Oct 28, 2025"}, {"slug": "2025-10-27", "label": "Oct 27, 2025"}, {"slug": "2025-10-26", "label": "Oct 26, 2025"}, {"slug": "2025-10-25", "label": "Oct 25, 2025"}, {"slug": "2025-10-24", "label": "Oct 24, 2025"}, {"slug": "2025-10-23", "label": "Oct 23, 2025"}, {"slug": "2025-10-22", "label": "Oct 22, 2025"}, {"slug": "2025-10-21", "label": "Oct 21, 2025"}, {"slug": "2025-10-20", "label": "Oct 20, 2025"}, {"slug": "2025-10-19", "label": "Oct 19, 2025"}, {"slug": "2025-10-18", "label": "Oct 18, 2025"}, {"slug": "2025-10-17", "label": "Oct 17, 2025"}, {"slug": "2025-10-16", "label": "Oct 16, 2025"}, {"slug": "2025-10-15", "label": "Oct 15, 2025"}, {"slug": "2025-10-14", "label": "Oct 14, 2025"}, {"slug": "2025-10-13", "label": "Oct 13, 2025"}, {"slug": "2025-10-12", "label": "Oct 12, 2025"}, {"slug": "2025-10-11", "label": "Oct 11, 2025"}, {"slug": "2025-10-10", "label": "Oct 10, 2025"}, {"slug": "2025-10-09", "label": "Oct 09, 2025"}, {"slug": "2025-10-08", "label": "Oct 08, 2025"}, {"slug": "2025-10-07", "label": "Oct 07, 2025"}, {"slug": "2025-10-06", "label": "Oct 06, 2025"}, {"slug": "2025-10-05", "label": "Oct 05, 2025"}, {"slug": "2025-10-04", "label": "Oct 04, 2025"}, {"slug": "2025-10-03", "label": "Oct 03, 2025"}, {"slug": "2025-10-02", "label": "Oct 02, 2025"}, {"slug": "2025-10-01", "label": "Oct 01, 2025"}, {"slug": "2025-09-30", "label": "Sep 30, 2025"}, {"slug": "2025-09-29", "label": "Sep 29, 2025"}, {"slug": "2025-09-28", "label": "Sep 28, 2025"}, {"slug": "2025-09-27", "label": "Sep 27, 2025"}, {"slug": "2025-09-26", "label": "Sep 26, 2025"}, {"slug": "2025-09-25", "label": "Sep 25, 2025"}, {"slug": "2025-09-24", "label": "Sep 24, 2025"}, {"slug": "2025-09-23", "label": "Sep 23, 2025"}, {"slug": "2025-09-22", "label": "Sep 22, 2025"}, {"slug": "2025-09-21", "label": "Sep 21, 2025"}, {"slug": "2025-09-20", "label": "Sep 20, 2025"}, {"slug": "2025-09-19", "label": "Sep 19, 2025"}, {"slug": "2025-09-18", "label": "Sep 18, 2025"}, {"slug": "2025-09-17", "label": "Sep 17, 2025"}, {"slug": "2025-09-16", "label": "Sep 16, 2025"}, {"slug": "2025-09-15", "label": "Sep 15, 2025"}, {"slug": "2025-09-14", "label": "Sep 14, 2025"}, {"slug": "2025-09-13", "label": "Sep 13, 2025"}, {"slug": "2025-09-12", "label": "Sep 12, 2025"}, {"slug": "2025-09-11", "label": "Sep 11, 2025"}, {"slug": "2025-09-10", "label": "Sep 10, 2025"}, {"slug": "2025-09-09", "label": "Sep 09, 2025"}, {"slug": "2025-09-08", "label": "Sep 08, 2025"}, {"slug": "2025-09-07", "label": "Sep 07, 2025"}, {"slug": "2025-09-06", "label": "Sep 06, 2025"}, {"slug": "2025-09-05", "label": "Sep 05, 2025"}, {"slug": "2025-09-04", "label": "Sep 04, 2025"}, {"slug": "2025-09-03", "label": "Sep 03, 2025"}, {"slug": "2025-09-02", "label": "Sep 02, 2025"}, {"slug": "2025-09-01", "label": "Sep 01, 2025"}, {"slug": "2025-08-31", "label": "Aug 31, 2025"}, {"slug": "2025-08-30", "label": "Aug 30, 2025"}, {"slug": "2025-08-29", "label": "Aug 29, 2025"}, {"slug": "2025-08-28", "label": "Aug 28, 2025"}, {"slug": "2025-08-27", "label": "Aug 27, 2025"}, {"slug": "2025-08-26", "label": "Aug 26, 2025"}, {"slug": "2025-08-25", "label": "Aug 25, 2025"}, {"slug": "2025-08-24", "label": "Aug 24, 2025"}, {"slug": "2025-08-23", "label": "Aug 23, 2025"}, {"slug": "2025-08-22", "label": "Aug 22, 2025"}, {"slug": "2025-08-21", "label": "Aug 21, 2025"}, {"slug": "2025-08-20", "label": "Aug 20, 2025"}, {"slug": "2025-08-19", "label": "Aug 19, 2025"}, {"slug": "2025-08-18", "label": "Aug 18, 2025"}, {"slug": "2025-08-17", "label": "Aug 17, 2025"}, {"slug": "2025-08-16", "label": "Aug 16, 2025"}, {"slug": "2025-08-15", "label": "Aug 15, 2025"}, {"slug": "2025-08-14", "label": "Aug 14, 2025"}, {"slug": "2025-08-13", "label": "Aug 13, 2025"}, {"slug": "2025-08-12", "label": "Aug 12, 2025"}, {"slug": "2025-08-11", "label": "Aug 11, 2025"}, {"slug": "2025-08-10", "label": "Aug 10, 2025"}, {"slug": "2025-08-09", "label": "Aug 09, 2025"}, {"slug": "2025-08-08", "label": "Aug 08, 2025"}, {"slug": "2025-08-07", "label": "Aug 07, 2025"}, {"slug": "2025-08-06", "label": "Aug 06, 2025"}, {"slug": "2025-08-05", "label": "Aug 05, 2025"}, {"slug": "2025-08-04", "label": "Aug 04, 2025"}, {"slug": "2025-08-03", "label": "Aug 03, 2025"}, {"slug": "2025-08-02", "label": "Aug 02, 2025"}, {"slug": "2025-08-01", "label": "Aug 01, 2025"}], "archivePath": "chart hist"}
+{"headers": ["Timestamp", "Type", "Current Temperature", "Cooling Set Point", "Climate Setting", "Fan Setting", "Equipment Status", "Studio", "Request Expires (local time)", "Outside Temp", "Condenser State", "Condenser Minutes"], "latestRow": ["Tuesday Nov 25 2025 8:11 PM", "System", "95", "80", "Cool", "On", "Cooling", " ", "8:54 PM", "NN57.0 | Mostly Cloudy", "On", "500"], "history": [{"label": "Sunday Nov 23     1:56 PM", "value": 70.0}, {"label": "Sunday Nov 23     2:02 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:46 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:59 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:03 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:06 PM", "value": 75.0}, {"label": "Sunday Nov 23     11:20 PM", "value": 75.0}, {"label": "Tuesday Nov 25     7:59 PM", "value": 72.0}, {"label": "Tuesday Nov 25     8:01 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:04 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:11 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:46 PM", "value": 74.0}, {"label": "Friday Nov 21     6:51 PM", "value": 74.0}, {"label": "Sunday Nov 23     1:56 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:02 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:46 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:59 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:03 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:06 PM", "value": 75.0}, {"label": "Sunday Nov 23     11:20 PM", "value": 74.0}, {"label": "Tuesday Nov 25     7:59 PM", "value": 72.0}, {"label": "Tuesday Nov 25     8:01 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:04 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:11 PM", "value": 80.0}], "chartLabels": ["Sunday Nov 23     1:56 PM", "Sunday Nov 23     2:02 PM", "Sunday Nov 23     2:46 PM", "Sunday Nov 23     2:59 PM", "Sunday Nov 23     3:03 PM", "Sunday Nov 23     3:06 PM", "Sunday Nov 23     11:20 PM", "Tuesday Nov 25     7:59 PM", "Tuesday Nov 25     8:01 PM", "Tuesday Nov 25     8:04 PM", "Tuesday Nov 25     8:11 PM", "Tuesday Nov 25     8:46 PM", "Friday Nov 21     6:51 PM", "Sunday Nov 23     1:56 PM", "Sunday Nov 23     2:02 PM", "Sunday Nov 23     2:46 PM", "Sunday Nov 23     2:59 PM", "Sunday Nov 23     3:03 PM", "Sunday Nov 23     3:06 PM", "Sunday Nov 23     11:20 PM", "Tuesday Nov 25     7:59 PM", "Tuesday Nov 25     8:01 PM", "Tuesday Nov 25     8:04 PM", "Tuesday Nov 25     8:11 PM"], "setpoint": [70.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 72.0, 74.0, 74.0, 74.0, 74.0, 74.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 74.0, 72.0, 74.0, 74.0, 80.0], "actual": [45.0, 71.0, 72.0, 73.0, 74.0, 75.0, 75.0, 75.0, 75.0, 73.0, 72.0, 71.0, 70.0, 68.0, 65.0, 61.0, 64.0, 63.0, 65.0, 65.0, 70.0, 88.0, 90.0, 95.0], "setpointLabel": "Set Point", "actualLabel": "Current Temperature", "fan": ["A", "A", "O", "O", "O", "O", "O", "C", "C", "C", "C", "A", "A", "A", "A", "A", "A", "A", "A", "A", "C", "C", "C", "O"], "fanLegend": ["Auto", "Circulate", "On"], "outside": [55.0, 65.0, 65.0, 65.0, 62.0, 59.0, 57.0, 53.0, 52.0, 50.0, 49.0, 49.0, 48.0, 48.0, 47.0, 46.0, 46.0, 47.0, 48.0, 54.0, 58.0, 61.0, 63.0, 57.0], "outsideLabel": "Outside Temp", "outsideFlags": ["S", "S", "P", "O", "R", "R", "P", "P", "O", "O", "P", "P", "P", "P", "O", "P", "P", "P", "P", "P", "P", "S", "S", "N"], "outsideFlagDayChars": ["5", "6", "6", "6", "6", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "4", "5", "5", "6", "6", "N"], "cooling": [0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1], "coolingLegend": ["Idle", "Cooling"], "coolingLabel": "Equipment Status", "climateSetting": ["Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool"], "climateSettingLabel": "Climate Setting", "condenserMinutes": [null, null, 0.0, 0.0, 0.0, null, null, null, null, 0.0, null, 0.0, null, 0.0, null, 0.0, null, 0.0, null, 0.0, null, 0.0, null, 500.0], "totalCondenserMinutes": "500", "totalCondenserMinutesValue": 500.0, "totalCondenserCost": "$25.00", "totalCondenserCostValue": 25.0, "condenserCostPerMinute": 0.05, "latestActual": 95.0, "latestSetpoint": 80.0, "latestOutside": 57.0, "latestOutsideRaw": "NN57.0 | Mostly Cloudy", "latestOutsideDaylight": false, "latestOutsideFlagDayChar": "N", "latestFan": "O", "latestCooling": 1, "latestCondenserState": "On", "generatedTimestamp": "Thursday Dec 18 2025 06:20:24 AM", "generatedDateSlug": "2025-12-18", "archiveDates": [{"slug": "2025-12-18", "label": "Dec 18, 2025"}, {"slug": "2025-12-17", "label": "Dec 17, 2025"}, {"slug": "2025-12-16", "label": "Dec 16, 2025"}, {"slug": "2025-12-15", "label": "Dec 15, 2025"}, {"slug": "2025-12-14", "label": "Dec 14, 2025"}, {"slug": "2025-12-13", "label": "Dec 13, 2025"}, {"slug": "2025-12-12", "label": "Dec 12, 2025"}, {"slug": "2025-12-11", "label": "Dec 11, 2025"}, {"slug": "2025-12-10", "label": "Dec 10, 2025"}, {"slug": "2025-12-09", "label": "Dec 09, 2025"}, {"slug": "2025-12-08", "label": "Dec 08, 2025"}, {"slug": "2025-12-07", "label": "Dec 07, 2025"}, {"slug": "2025-12-06", "label": "Dec 06, 2025"}, {"slug": "2025-12-05", "label": "Dec 05, 2025"}, {"slug": "2025-12-04", "label": "Dec 04, 2025"}, {"slug": "2025-12-03", "label": "Dec 03, 2025"}, {"slug": "2025-12-02", "label": "Dec 02, 2025"}, {"slug": "2025-12-01", "label": "Dec 01, 2025"}, {"slug": "2025-11-30", "label": "Nov 30, 2025"}, {"slug": "2025-11-29", "label": "Nov 29, 2025"}, {"slug": "2025-11-28", "label": "Nov 28, 2025"}, {"slug": "2025-11-27", "label": "Nov 27, 2025"}, {"slug": "2025-11-26", "label": "Nov 26, 2025"}, {"slug": "2025-11-25", "label": "Nov 25, 2025"}, {"slug": "2025-11-24", "label": "Nov 24, 2025"}, {"slug": "2025-11-23", "label": "Nov 23, 2025"}, {"slug": "2025-11-22", "label": "Nov 22, 2025"}, {"slug": "2025-11-21", "label": "Nov 21, 2025"}, {"slug": "2025-11-20", "label": "Nov 20, 2025"}, {"slug": "2025-11-19", "label": "Nov 19, 2025"}, {"slug": "2025-11-18", "label": "Nov 18, 2025"}, {"slug": "2025-11-17", "label": "Nov 17, 2025"}, {"slug": "2025-11-16", "label": "Nov 16, 2025"}, {"slug": "2025-11-15", "label": "Nov 15, 2025"}, {"slug": "2025-11-14", "label": "Nov 14, 2025"}, {"slug": "2025-11-13", "label": "Nov 13, 2025"}, {"slug": "2025-11-12", "label": "Nov 12, 2025"}, {"slug": "2025-11-11", "label": "Nov 11, 2025"}, {"slug": "2025-11-10", "label": "Nov 10, 2025"}, {"slug": "2025-11-09", "label": "Nov 09, 2025"}, {"slug": "2025-11-08", "label": "Nov 08, 2025"}, {"slug": "2025-11-07", "label": "Nov 07, 2025"}, {"slug": "2025-11-06", "label": "Nov 06, 2025"}, {"slug": "2025-11-05", "label": "Nov 05, 2025"}, {"slug": "2025-11-04", "label": "Nov 04, 2025"}, {"slug": "2025-11-03", "label": "Nov 03, 2025"}, {"slug": "2025-11-02", "label": "Nov 02, 2025"}, {"slug": "2025-11-01", "label": "Nov 01, 2025"}, {"slug": "2025-10-31", "label": "Oct 31, 2025"}, {"slug": "2025-10-30", "label": "Oct 30, 2025"}, {"slug": "2025-10-29", "label": "Oct 29, 2025"}, {"slug": "2025-10-28", "label": "Oct 28, 2025"}, {"slug": "2025-10-27", "label": "Oct 27, 2025"}, {"slug": "2025-10-26", "label": "Oct 26, 2025"}, {"slug": "2025-10-25", "label": "Oct 25, 2025"}, {"slug": "2025-10-24", "label": "Oct 24, 2025"}, {"slug": "2025-10-23", "label": "Oct 23, 2025"}, {"slug": "2025-10-22", "label": "Oct 22, 2025"}, {"slug": "2025-10-21", "label": "Oct 21, 2025"}, {"slug": "2025-10-20", "label": "Oct 20, 2025"}, {"slug": "2025-10-19", "label": "Oct 19, 2025"}, {"slug": "2025-10-18", "label": "Oct 18, 2025"}, {"slug": "2025-10-17", "label": "Oct 17, 2025"}, {"slug": "2025-10-16", "label": "Oct 16, 2025"}, {"slug": "2025-10-15", "label": "Oct 15, 2025"}, {"slug": "2025-10-14", "label": "Oct 14, 2025"}, {"slug": "2025-10-13", "label": "Oct 13, 2025"}, {"slug": "2025-10-12", "label": "Oct 12, 2025"}, {"slug": "2025-10-11", "label": "Oct 11, 2025"}, {"slug": "2025-10-10", "label": "Oct 10, 2025"}, {"slug": "2025-10-09", "label": "Oct 09, 2025"}, {"slug": "2025-10-08", "label": "Oct 08, 2025"}, {"slug": "2025-10-07", "label": "Oct 07, 2025"}, {"slug": "2025-10-06", "label": "Oct 06, 2025"}, {"slug": "2025-10-05", "label": "Oct 05, 2025"}, {"slug": "2025-10-04", "label": "Oct 04, 2025"}, {"slug": "2025-10-03", "label": "Oct 03, 2025"}, {"slug": "2025-10-02", "label": "Oct 02, 2025"}, {"slug": "2025-10-01", "label": "Oct 01, 2025"}, {"slug": "2025-09-30", "label": "Sep 30, 2025"}, {"slug": "2025-09-29", "label": "Sep 29, 2025"}, {"slug": "2025-09-28", "label": "Sep 28, 2025"}, {"slug": "2025-09-27", "label": "Sep 27, 2025"}, {"slug": "2025-09-26", "label": "Sep 26, 2025"}, {"slug": "2025-09-25", "label": "Sep 25, 2025"}, {"slug": "2025-09-24", "label": "Sep 24, 2025"}, {"slug": "2025-09-23", "label": "Sep 23, 2025"}, {"slug": "2025-09-22", "label": "Sep 22, 2025"}, {"slug": "2025-09-21", "label": "Sep 21, 2025"}, {"slug": "2025-09-20", "label": "Sep 20, 2025"}, {"slug": "2025-09-19", "label": "Sep 19, 2025"}, {"slug": "2025-09-18", "label": "Sep 18, 2025"}, {"slug": "2025-09-17", "label": "Sep 17, 2025"}, {"slug": "2025-09-16", "label": "Sep 16, 2025"}, {"slug": "2025-09-15", "label": "Sep 15, 2025"}, {"slug": "2025-09-14", "label": "Sep 14, 2025"}, {"slug": "2025-09-13", "label": "Sep 13, 2025"}, {"slug": "2025-09-12", "label": "Sep 12, 2025"}, {"slug": "2025-09-11", "label": "Sep 11, 2025"}, {"slug": "2025-09-10", "label": "Sep 10, 2025"}, {"slug": "2025-09-09", "label": "Sep 09, 2025"}, {"slug": "2025-09-08", "label": "Sep 08, 2025"}, {"slug": "2025-09-07", "label": "Sep 07, 2025"}, {"slug": "2025-09-06", "label": "Sep 06, 2025"}, {"slug": "2025-09-05", "label": "Sep 05, 2025"}, {"slug": "2025-09-04", "label": "Sep 04, 2025"}, {"slug": "2025-09-03", "label": "Sep 03, 2025"}, {"slug": "2025-09-02", "label": "Sep 02, 2025"}, {"slug": "2025-09-01", "label": "Sep 01, 2025"}, {"slug": "2025-08-31", "label": "Aug 31, 2025"}, {"slug": "2025-08-30", "label": "Aug 30, 2025"}, {"slug": "2025-08-29", "label": "Aug 29, 2025"}, {"slug": "2025-08-28", "label": "Aug 28, 2025"}, {"slug": "2025-08-27", "label": "Aug 27, 2025"}, {"slug": "2025-08-26", "label": "Aug 26, 2025"}, {"slug": "2025-08-25", "label": "Aug 25, 2025"}, {"slug": "2025-08-24", "label": "Aug 24, 2025"}, {"slug": "2025-08-23", "label": "Aug 23, 2025"}, {"slug": "2025-08-22", "label": "Aug 22, 2025"}, {"slug": "2025-08-21", "label": "Aug 21, 2025"}, {"slug": "2025-08-20", "label": "Aug 20, 2025"}, {"slug": "2025-08-19", "label": "Aug 19, 2025"}, {"slug": "2025-08-18", "label": "Aug 18, 2025"}, {"slug": "2025-08-17", "label": "Aug 17, 2025"}, {"slug": "2025-08-16", "label": "Aug 16, 2025"}, {"slug": "2025-08-15", "label": "Aug 15, 2025"}, {"slug": "2025-08-14", "label": "Aug 14, 2025"}, {"slug": "2025-08-13", "label": "Aug 13, 2025"}, {"slug": "2025-08-12", "label": "Aug 12, 2025"}, {"slug": "2025-08-11", "label": "Aug 11, 2025"}, {"slug": "2025-08-10", "label": "Aug 10, 2025"}, {"slug": "2025-08-09", "label": "Aug 09, 2025"}, {"slug": "2025-08-08", "label": "Aug 08, 2025"}, {"slug": "2025-08-07", "label": "Aug 07, 2025"}, {"slug": "2025-08-06", "label": "Aug 06, 2025"}, {"slug": "2025-08-05", "label": "Aug 05, 2025"}, {"slug": "2025-08-04", "label": "Aug 04, 2025"}, {"slug": "2025-08-03", "label": "Aug 03, 2025"}, {"slug": "2025-08-02", "label": "Aug 02, 2025"}, {"slug": "2025-08-01", "label": "Aug 01, 2025"}], "archivePath": "chart hist"}
     </script>
     <script id="dashboard-client" data-archive-path="chart hist">
 (() => {
@@ -912,11 +943,6 @@ line-height: 1;
   let chartHistoryHoverBound = false;
   let chartHistoryListHoverBound = false;
   let chartPointPickerBound = false;
-  let usageChart = null;
-  let usageMainChart = null;
-  let usageMode = "daily"; // "daily" | "usage"
-  let usageRange = "7d"; // "7d" | "30d" | "month"
-  let usageUiBound = false;
   const showHistoryFiles = () => {
     chartHistoryList.classList.remove("hidden");
     if (chartHistoryListColumn) {
@@ -939,13 +965,18 @@ line-height: 1;
   const toggleHistoryBtn = document.getElementById("toggle-history");
   const handsLogoTop = document.querySelector(".hands-logo-top");
   const timestampDisplay = document.getElementById("dashboard-timestamp");
+  const usageSlotCanvas = document.getElementById("usage-slot-chart");
+  const usageSlotCtx = usageSlotCanvas ? usageSlotCanvas.getContext("2d") : null;
   let chart = null;
+  let usageSlotChart = null;
   let cardsInitialized = false;
   let hoverPointIndex = null;
   let pinnedPointIndex = null;
   let selectionIndicatorEl = null;
   let clearPinButtonEl = null;
   let hourPickerEl = null;
+  let usageSlotBound = false;
+  let usageRangeKey = "7d"; // 7d | 30d | month
 
   const STORAGE_KEY = "thermostatDashboard.ui.v1";
   let savedUiState = null;
@@ -969,6 +1000,254 @@ line-height: 1;
   const getTypeSeries = () => getDashboardValue("typeSeries", []);
   const getStudioSeries = () => getDashboardValue("studioSeries", []);
   const getRequestExpiresSeries = () => getDashboardValue("requestExpiresLocalSeries", []);
+
+  const usageSummaryCache = new Map(); // slug -> { runtimeMinutes }
+
+  const parseSlugDateUtc = (slug) => {
+    if (!slug || typeof slug !== "string") {
+      return null;
+    }
+    const m = slug.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!m) {
+      return null;
+    }
+    const y = Number(m[1]);
+    const mo = Number(m[2]) - 1;
+    const d = Number(m[3]);
+    if (!Number.isFinite(y) || !Number.isFinite(mo) || !Number.isFinite(d)) {
+      return null;
+    }
+    return new Date(Date.UTC(y, mo, d, 0, 0, 0));
+  };
+
+  const formatSlugShort = (slug) => {
+    const d = parseSlugDateUtc(slug);
+    if (!d) {
+      return String(slug || "");
+    }
+    const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
+    const dd = String(d.getUTCDate()).padStart(2, "0");
+    return `${mm}/${dd}`;
+  };
+
+  const getAvailableArchiveSlugs = () => {
+    const dates = getArchiveDates();
+    if (!Array.isArray(dates)) {
+      return [];
+    }
+    return dates.map((d) => d?.slug).filter(Boolean);
+  };
+
+  const buildUsageRangeSlugs = (rangeKey) => {
+    const endSlug = currentArchiveSlug || dashboardData.generatedDateSlug || "";
+    const end = parseSlugDateUtc(endSlug) || new Date();
+    const available = new Set(getAvailableArchiveSlugs());
+    const slugs = [];
+
+    if (rangeKey === "month") {
+      const targetMonth = end.getUTCMonth();
+      const targetYear = end.getUTCFullYear();
+      getAvailableArchiveSlugs().forEach((slug) => {
+        const d = parseSlugDateUtc(slug);
+        if (!d) {
+          return;
+        }
+        if (d.getUTCFullYear() === targetYear && d.getUTCMonth() === targetMonth) {
+          slugs.push(slug);
+        }
+      });
+      return slugs.sort();
+    }
+
+    const days = rangeKey === "30d" ? 30 : 7;
+    for (let i = days - 1; i >= 0; i -= 1) {
+      const d = new Date(end.getTime());
+      d.setUTCDate(d.getUTCDate() - i);
+      const slug = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
+      if (available.has(slug)) {
+        slugs.push(slug);
+      }
+    }
+    return slugs;
+  };
+
+  const computeRuntimeMinutesFromPayload = (payload) => {
+    const perHour = payload?.condenserMinutes;
+    if (Array.isArray(perHour)) {
+      return perHour.reduce(
+        (acc, v) => acc + (Number.isFinite(Number(v)) ? Number(v) : 0),
+        0
+      );
+    }
+    if (Number.isFinite(Number(payload?.totalCondenserMinutesValue))) {
+      return Number(payload.totalCondenserMinutesValue);
+    }
+    return 0;
+  };
+
+  const fetchUsageSummaryForDay = async (slug) => {
+    if (!slug) {
+      return null;
+    }
+    if (usageSummaryCache.has(slug)) {
+      return usageSummaryCache.get(slug);
+    }
+    const url = buildArchiveJsonUrl(slug);
+    if (!url) {
+      return null;
+    }
+    try {
+      const resp = await fetch(url, { cache: "no-store" });
+      if (!resp.ok) {
+        return null;
+      }
+      const payload = await resp.json();
+      const runtimeMinutes = computeRuntimeMinutesFromPayload(payload);
+      const costPerMinute = Number(payload?.condenserCostPerMinute) || 0.05;
+      const cost = runtimeMinutes * costPerMinute;
+      const summary = { runtimeMinutes, cost };
+      usageSummaryCache.set(slug, summary);
+      return summary;
+    } catch (err) {
+      return null;
+    }
+  };
+
+  const destroyUsageSlotChart = () => {
+    if (!usageSlotChart) {
+      return;
+    }
+    try {
+      usageSlotChart.destroy();
+    } catch (err) {
+      // ignore
+    } finally {
+      usageSlotChart = null;
+    }
+  };
+
+  const renderUsageSlotChart = async () => {
+    if (!usageSlotCtx || typeof Chart === "undefined") {
+      return;
+    }
+
+    const slugs = buildUsageRangeSlugs(usageRangeKey);
+    const rows = await Promise.all(
+      slugs.map(async (slug) => ({ slug, summary: await fetchUsageSummaryForDay(slug) }))
+    );
+    const filtered = rows.filter((r) => r.summary && Number.isFinite(Number(r.summary.runtimeMinutes)));
+
+    const labels = filtered.map((r) => formatSlugShort(r.slug));
+    const minutes = filtered.map((r) => Number(r.summary.runtimeMinutes) || 0);
+
+    const totalMinutes = minutes.reduce((a, b) => a + b, 0);
+    const avgMinutes = minutes.length ? totalMinutes / minutes.length : 0;
+    let maxIdx = -1;
+    let maxVal = -1;
+    minutes.forEach((v, i) => {
+      if (v > maxVal) {
+        maxVal = v;
+        maxIdx = i;
+      }
+    });
+    const totalCost = filtered.reduce((acc, r) => acc + (Number(r.summary.cost) || 0), 0);
+
+    const setStat = (id, text) => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.textContent = text;
+      }
+    };
+    setStat("usage-stat-total", `${Math.round(totalMinutes)}m`);
+    setStat("usage-stat-avg", `${Math.round(avgMinutes)}m`);
+    setStat(
+      "usage-stat-max",
+      maxIdx >= 0 ? `${formatSlugShort(filtered[maxIdx].slug)} ${Math.round(maxVal)}m` : "—"
+    );
+    setStat("usage-stat-cost", `$${totalCost.toFixed(2)}`);
+
+    destroyUsageSlotChart();
+    usageSlotChart = new Chart(usageSlotCtx, {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [
+          {
+            data: minutes,
+            backgroundColor: "rgba(255,179,71,0.35)",
+            borderColor: "rgba(255,179,71,0.9)",
+            borderWidth: 1,
+            borderRadius: 6,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              title: (items) => {
+                const idx = items?.[0]?.dataIndex ?? null;
+                if (idx === null) return "";
+                return filtered[idx]?.slug || "";
+              },
+              label: (ctxBar) => `Runtime: ${Math.round(Number(ctxBar.raw) || 0)} min`,
+            },
+          },
+        },
+        scales: {
+          x: {
+            ticks: { color: "rgba(244,246,255,0.6)", maxRotation: 0, minRotation: 0 },
+            grid: { display: false },
+          },
+          y: {
+            ticks: { color: "rgba(244,246,255,0.6)" },
+            grid: { color: "rgba(255,255,255,0.08)" },
+            beginAtZero: true,
+          },
+        },
+        onClick: (evt, elements) => {
+          if (!elements || !elements.length) {
+            return;
+          }
+          const idx = elements[0].index;
+          const slug = filtered[idx]?.slug;
+          if (slug) {
+            loadDashboardData(slug);
+          }
+        },
+      },
+    });
+  };
+
+  const bindUsageSlotControls = () => {
+    if (usageSlotBound) {
+      return;
+    }
+    const slot = document.getElementById("usage-slot");
+    if (!slot) {
+      return;
+    }
+    const buttons = Array.from(slot.querySelectorAll(".usage-control"));
+    if (!buttons.length) {
+      return;
+    }
+    usageSlotBound = true;
+    buttons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const range = btn.dataset.range;
+        if (!range || !["7d", "30d", "month"].includes(range)) {
+          return;
+        }
+        usageRangeKey = range;
+        buttons.forEach((b) => b.classList.toggle("active", b.dataset.range === range));
+        renderUsageSlotChart();
+      });
+    });
+  };
   const getLatestRowValueByHeader = (predicate) => {
     const headers = getDashboardData().headers;
     const row = getDashboardData().latestRow;
@@ -2066,9 +2345,6 @@ line-height: 1;
     };
 
     canvas.addEventListener("mousemove", (event) => {
-      if (usageMode === "usage") {
-        return;
-      }
       if (pinnedPointIndex !== null) {
         return;
       }
@@ -2083,9 +2359,6 @@ line-height: 1;
     });
 
     canvas.addEventListener("mouseleave", () => {
-      if (usageMode === "usage") {
-        return;
-      }
       if (pinnedPointIndex !== null) {
         return;
       }
@@ -2096,9 +2369,6 @@ line-height: 1;
     });
 
     canvas.addEventListener("click", (event) => {
-      if (usageMode === "usage") {
-        return;
-      }
       const idx = pickIndexFromEvent(event);
       if (idx === null) {
         setSelectedPoint(null, null, true);
@@ -2151,431 +2421,6 @@ line-height: 1;
         }
         setSelectedPoint(chosenIdx, chosenIdx, true);
       });
-    }
-  };
-
-  const parseSlugDate = (slug) => {
-    if (!slug || typeof slug !== "string") {
-      return null;
-    }
-    const m = slug.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    if (!m) {
-      return null;
-    }
-    const year = Number(m[1]);
-    const month = Number(m[2]);
-    const day = Number(m[3]);
-    if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) {
-      return null;
-    }
-    return new Date(Date.UTC(year, month - 1, day, 0, 0, 0));
-  };
-
-  const formatSlugShort = (slug) => {
-    const d = parseSlugDate(slug);
-    if (!d) {
-      return String(slug || "");
-    }
-    const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
-    const dd = String(d.getUTCDate()).padStart(2, "0");
-    return `${mm}/${dd}`;
-  };
-
-  const getAvailableSlugs = () => {
-    const dates = getArchiveDates();
-    if (!Array.isArray(dates)) {
-      return [];
-    }
-    return dates.map((d) => d?.slug).filter(Boolean);
-  };
-
-  const buildRangeSlugs = (rangeKey) => {
-    const endSlug = currentArchiveSlug || dashboardData.generatedDateSlug || "";
-    const end = parseSlugDate(endSlug) || new Date();
-    const available = new Set(getAvailableSlugs());
-    const slugs = [];
-
-    if (rangeKey === "month") {
-      const targetMonth = end.getUTCMonth();
-      const targetYear = end.getUTCFullYear();
-      getAvailableSlugs().forEach((slug) => {
-        const d = parseSlugDate(slug);
-        if (!d) {
-          return;
-        }
-        if (d.getUTCFullYear() === targetYear && d.getUTCMonth() === targetMonth) {
-          slugs.push(slug);
-        }
-      });
-      return slugs.sort();
-    }
-
-    const days = rangeKey === "30d" ? 30 : 7;
-    for (let i = days - 1; i >= 0; i -= 1) {
-      const d = new Date(end.getTime());
-      d.setUTCDate(d.getUTCDate() - i);
-      const slug = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
-      if (available.has(slug)) {
-        slugs.push(slug);
-      }
-    }
-    return slugs;
-  };
-
-  const usageCache = new Map(); // slug -> { runtimeMinutes, cost }
-
-  const computeUsageFromPayload = (payload) => {
-    const perHour = payload?.condenserMinutes;
-    let runtimeMinutes = 0;
-    if (Array.isArray(perHour)) {
-      runtimeMinutes = perHour.reduce(
-        (acc, v) => acc + (Number.isFinite(Number(v)) ? Number(v) : 0),
-        0
-      );
-    } else if (Number.isFinite(Number(payload?.totalCondenserMinutesValue))) {
-      runtimeMinutes = Number(payload.totalCondenserMinutesValue);
-    }
-    const costPerMinute = Number(payload?.condenserCostPerMinute) || 0.05;
-    const cost = runtimeMinutes * costPerMinute;
-    return { runtimeMinutes, cost };
-  };
-
-  const fetchUsageSummary = async (slug) => {
-    if (!slug) {
-      return null;
-    }
-    if (usageCache.has(slug)) {
-      return usageCache.get(slug);
-    }
-    const url = buildArchiveJsonUrl(slug);
-    if (!url) {
-      return null;
-    }
-    const resp = await fetch(url, { cache: "no-store" });
-    if (!resp.ok) {
-      return null;
-    }
-    const payload = await resp.json();
-    const summary = computeUsageFromPayload(payload);
-    usageCache.set(slug, summary);
-    return summary;
-  };
-
-  const destroyUsageChart = () => {
-    if (!usageChart) {
-      return;
-    }
-    try {
-      usageChart.destroy();
-    } catch (err) {
-      // ignore
-    } finally {
-      usageChart = null;
-    }
-  };
-
-  const destroyUsageMainChart = () => {
-    if (!usageMainChart) {
-      return;
-    }
-    try {
-      usageMainChart.destroy();
-    } catch (err) {
-      // ignore
-    } finally {
-      usageMainChart = null;
-    }
-  };
-
-  const renderUsageChart = async () => {
-    const root = document.getElementById("usage-mini");
-    if (!root) {
-      return;
-    }
-    const canvasUsage = root.querySelector("#usage-mini-chart");
-    const ctxUsage = canvasUsage ? canvasUsage.getContext("2d") : null;
-    if (!ctxUsage || !Chart) {
-      return;
-    }
-
-    const slugs = buildRangeSlugs(usageRange);
-    const rows = await Promise.all(
-      slugs.map(async (slug) => ({ slug, summary: await fetchUsageSummary(slug) }))
-    );
-    const filtered = rows.filter((r) => r.summary && Number.isFinite(Number(r.summary.runtimeMinutes)));
-
-    const labels = filtered.map((r) => formatSlugShort(r.slug));
-    const minutes = filtered.map((r) => Number(r.summary.runtimeMinutes) || 0);
-
-    const total = minutes.reduce((a, b) => a + b, 0);
-    const avg = minutes.length ? total / minutes.length : 0;
-    let maxIdx = -1;
-    let maxVal = -1;
-    minutes.forEach((v, i) => {
-      if (v > maxVal) {
-        maxVal = v;
-        maxIdx = i;
-      }
-    });
-    const maxSlug = maxIdx >= 0 ? filtered[maxIdx].slug : "";
-    const totalCost = filtered.reduce((acc, r) => acc + (Number(r.summary.cost) || 0), 0);
-
-    const setText = (id, text) => {
-      const el = root.querySelector(`#${id}`);
-      if (el) {
-        el.textContent = text;
-      }
-    };
-    setText("usage-total", `${Math.round(total)} min`);
-    setText("usage-cost", `$${totalCost.toFixed(2)}`);
-    setText("usage-avg", `${Math.round(avg)} min/day`);
-    setText("usage-max", maxSlug ? `${formatSlugShort(maxSlug)} (${Math.round(maxVal)}m)` : "—");
-
-    destroyUsageChart();
-    usageChart = new Chart(ctxUsage, {
-      type: "bar",
-      data: {
-        labels,
-        datasets: [
-          {
-            label: "Condenser Runtime (min)",
-            data: minutes,
-            backgroundColor: "rgba(255,179,71,0.45)",
-            borderColor: "rgba(255,179,71,0.9)",
-            borderWidth: 1,
-            borderRadius: 6,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        animation: false,
-        scales: {
-          x: {
-            ticks: { color: "rgba(244,246,255,0.6)", maxRotation: 0, minRotation: 0 },
-            grid: { display: false },
-          },
-          y: {
-            ticks: { color: "rgba(244,246,255,0.6)" },
-            grid: { color: "rgba(255,255,255,0.08)" },
-            beginAtZero: true,
-          },
-        },
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              title: (items) => {
-                const idx = items?.[0]?.dataIndex ?? null;
-                if (idx === null) return "";
-                const slug = filtered[idx]?.slug;
-                return slug || "";
-              },
-              label: (ctxBar) => `Runtime: ${Math.round(Number(ctxBar.raw) || 0)} min`,
-            },
-          },
-        },
-        onClick: (evt, elements) => {
-          if (!elements || !elements.length) {
-            return;
-          }
-          const idx = elements[0].index;
-          const slug = filtered[idx]?.slug;
-          if (slug) {
-            loadDashboardData(slug);
-          }
-        },
-      },
-    });
-  };
-
-  const renderUsageMainChart = async () => {
-    if (!canvas || !ctx || !Chart) {
-      return;
-    }
-
-    const slugs = buildRangeSlugs(usageRange);
-    const rows = await Promise.all(
-      slugs.map(async (slug) => ({ slug, summary: await fetchUsageSummary(slug) }))
-    );
-    const filtered = rows.filter((r) => r.summary && Number.isFinite(Number(r.summary.runtimeMinutes)));
-
-    const labels = filtered.map((r) => formatSlugShort(r.slug));
-    const minutes = filtered.map((r) => Number(r.summary.runtimeMinutes) || 0);
-
-    destroyUsageMainChart();
-    usageMainChart = new Chart(ctx, {
-      type: "bar",
-      data: {
-        labels,
-        datasets: [
-          {
-            label: "Daily Condenser Runtime (min)",
-            data: minutes,
-            backgroundColor: "rgba(255,179,71,0.35)",
-            borderColor: "rgba(255,179,71,0.9)",
-            borderWidth: 1,
-            borderRadius: 8,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        animation: false,
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              title: (items) => {
-                const idx = items?.[0]?.dataIndex ?? null;
-                if (idx === null) return "";
-                const slug = filtered[idx]?.slug;
-                return slug || "";
-              },
-              label: (ctxBar) => `Runtime: ${Math.round(Number(ctxBar.raw) || 0)} min`,
-            },
-          },
-        },
-        scales: {
-          x: {
-            ticks: { color: "rgba(244,246,255,0.6)", maxRotation: 0, minRotation: 0 },
-            grid: { display: false },
-          },
-          y: {
-            ticks: { color: "rgba(244,246,255,0.6)" },
-            grid: { color: "rgba(255,255,255,0.08)" },
-            beginAtZero: true,
-          },
-        },
-        onClick: (evt, elements) => {
-          if (!elements || !elements.length) {
-            return;
-          }
-          const idx = elements[0].index;
-          const slug = filtered[idx]?.slug;
-          if (slug) {
-            setUsageMode("daily");
-            loadDashboardData(slug);
-          }
-        },
-      },
-    });
-  };
-
-  const applyUsageModeUi = () => {
-    const root = document.getElementById("usage-mini");
-    if (!root) {
-      return;
-    }
-    root.classList.toggle("usage-active", usageMode === "usage");
-    const btnDaily = root.querySelector("#usage-mode-daily");
-    const btnUsage = root.querySelector("#usage-mode-usage");
-    if (btnDaily) btnDaily.classList.toggle("active", usageMode === "daily");
-    if (btnUsage) btnUsage.classList.toggle("active", usageMode === "usage");
-
-    const controls = document.getElementById("chartcontrols");
-    if (controls) {
-      controls.classList.toggle("usage-view", usageMode === "usage");
-    }
-  };
-
-  const setUsageMode = (mode) => {
-    if (mode !== "daily" && mode !== "usage") {
-      return;
-    }
-    if (usageMode === mode) {
-      return;
-    }
-    usageMode = mode;
-    saveUiState();
-    applyUsageModeUi();
-
-    if (usageMode === "usage") {
-      // Switch main canvas to usage view.
-      destroyChart();
-      renderUsageMainChart();
-      renderUsageChart();
-      showChart();
-      return;
-    }
-
-    // Back to daily view.
-    destroyUsageMainChart();
-    destroyChart();
-    createChart();
-    updateMetricCards();
-    reapplyVisibility();
-    showChart();
-  };
-
-  const ensureUsageUi = () => {
-    if (usageUiBound) {
-      return;
-    }
-    const root = document.getElementById("usage-mini");
-    if (!root) {
-      return;
-    }
-    usageUiBound = true;
-
-    root.innerHTML = `
-      <h5>Usage</h5>
-      <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px;">
-        <button type="button" class="chart-control active" id="usage-mode-daily">Daily</button>
-        <button type="button" class="chart-control" id="usage-mode-usage">Usage</button>
-      </div>
-      <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px;">
-        <button type="button" class="chart-control active" id="usage-range-7d">Last 7</button>
-        <button type="button" class="chart-control" id="usage-range-30d">Last 30</button>
-        <button type="button" class="chart-control" id="usage-range-month">Month</button>
-      </div>
-      <div style="height:160px;">
-        <canvas id="usage-mini-chart"></canvas>
-      </div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; font-size:12px;">
-        <div><div style="opacity:.7; font-size:11px;">Total</div><div id="usage-total">—</div></div>
-        <div><div style="opacity:.7; font-size:11px;">Cost</div><div id="usage-cost">—</div></div>
-        <div><div style="opacity:.7; font-size:11px;">Avg/Day</div><div id="usage-avg">—</div></div>
-        <div><div style="opacity:.7; font-size:11px;">Max Day</div><div id="usage-max">—</div></div>
-      </div>
-      <div style="margin-top:8px; opacity:.7; font-size:11px;">Click a bar to load that day.</div>
-    `;
-
-    const btn7 = root.querySelector("#usage-range-7d");
-    const btn30 = root.querySelector("#usage-range-30d");
-    const btnM = root.querySelector("#usage-range-month");
-    const btnDaily = root.querySelector("#usage-mode-daily");
-    const btnUsage = root.querySelector("#usage-mode-usage");
-    const setRange = (range) => {
-      usageRange = range;
-      if (btn7) btn7.classList.toggle("active", range === "7d");
-      if (btn30) btn30.classList.toggle("active", range === "30d");
-      if (btnM) btnM.classList.toggle("active", range === "month");
-      saveUiState();
-      renderUsageChart();
-      if (usageMode === "usage") {
-        renderUsageMainChart();
-      }
-    };
-    if (btn7) btn7.addEventListener("click", () => setRange("7d"));
-    if (btn30) btn30.addEventListener("click", () => setRange("30d"));
-    if (btnM) btnM.addEventListener("click", () => setRange("month"));
-    if (btnDaily) btnDaily.addEventListener("click", () => setUsageMode("daily"));
-    if (btnUsage) btnUsage.addEventListener("click", () => setUsageMode("usage"));
-
-    const state = loadUiState();
-    if (state && typeof state === "object" && ["7d", "30d", "month"].includes(state.usageRange)) {
-      usageRange = state.usageRange;
-    }
-    if (state && typeof state === "object" && ["daily", "usage"].includes(state.usageMode)) {
-      usageMode = state.usageMode;
-    }
-    applyUsageModeUi();
-    setRange(usageRange);
-    if (usageMode === "usage") {
-      renderUsageMainChart();
     }
   };
 
@@ -2816,23 +2661,6 @@ line-height: 1;
   };
 
   const showChart = () => {
-    if (usageMode === "usage") {
-      if (!usageMainChart) {
-        renderUsageMainChart();
-      }
-      if (canvas) {
-        canvas.style.display = "block";
-      }
-      if (toggleHistoryBtn) {
-        toggleHistoryBtn.textContent = "Hide History Chart";
-        toggleHistoryBtn.classList.add("history-visible");
-      }
-      if (handsLogoTop) {
-        handsLogoTop.classList.remove("hidden");
-      }
-      stopAutoplay();
-      return;
-    }
     if (!chart) {
       createChart();
     }
@@ -3233,8 +3061,6 @@ line-height: 1;
         pinnedIndex: pinned,
         pinnedHour,
         modes,
-        usageMode,
-        usageRange,
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
     } catch (err) {
@@ -3679,23 +3505,17 @@ line-height: 1;
     updateHistoryStatus(currentArchiveSlug);
     updateTimestampFromSelection();
     updateSelectionIndicator();
-    ensureUsageUi();
-    destroyUsageMainChart();
+    bindUsageSlotControls();
+    renderUsageSlotChart();
     destroyChart();
-    if (usageMode === "usage") {
-      renderUsageMainChart();
-    } else {
-      createChart();
-    }
+    createChart();
     updateMetricCards();
     cardsInitialized = true;
     if (chart) {
       chart.options.plugins.legend.display = false;
       chart.update();
     }
-    if (usageMode !== "usage") {
-      reapplyVisibility();
-    }
+    reapplyVisibility();
     showChart();
   }
 

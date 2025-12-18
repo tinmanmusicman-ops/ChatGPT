@@ -65,11 +65,6 @@
   let chartHistoryHoverBound = false;
   let chartHistoryListHoverBound = false;
   let chartPointPickerBound = false;
-  let usageChart = null;
-  let usageMainChart = null;
-  let usageMode = "daily"; // "daily" | "usage"
-  let usageRange = "7d"; // "7d" | "30d" | "month"
-  let usageUiBound = false;
   const showHistoryFiles = () => {
     chartHistoryList.classList.remove("hidden");
     if (chartHistoryListColumn) {
@@ -92,13 +87,18 @@
   const toggleHistoryBtn = document.getElementById("toggle-history");
   const handsLogoTop = document.querySelector(".hands-logo-top");
   const timestampDisplay = document.getElementById("dashboard-timestamp");
+  const usageSlotCanvas = document.getElementById("usage-slot-chart");
+  const usageSlotCtx = usageSlotCanvas ? usageSlotCanvas.getContext("2d") : null;
   let chart = null;
+  let usageSlotChart = null;
   let cardsInitialized = false;
   let hoverPointIndex = null;
   let pinnedPointIndex = null;
   let selectionIndicatorEl = null;
   let clearPinButtonEl = null;
   let hourPickerEl = null;
+  let usageSlotBound = false;
+  let usageRangeKey = "7d"; // 7d | 30d | month
 
   const STORAGE_KEY = "thermostatDashboard.ui.v1";
   let savedUiState = null;
@@ -122,6 +122,254 @@
   const getTypeSeries = () => getDashboardValue("typeSeries", []);
   const getStudioSeries = () => getDashboardValue("studioSeries", []);
   const getRequestExpiresSeries = () => getDashboardValue("requestExpiresLocalSeries", []);
+
+  const usageSummaryCache = new Map(); // slug -> { runtimeMinutes }
+
+  const parseSlugDateUtc = (slug) => {
+    if (!slug || typeof slug !== "string") {
+      return null;
+    }
+    const m = slug.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!m) {
+      return null;
+    }
+    const y = Number(m[1]);
+    const mo = Number(m[2]) - 1;
+    const d = Number(m[3]);
+    if (!Number.isFinite(y) || !Number.isFinite(mo) || !Number.isFinite(d)) {
+      return null;
+    }
+    return new Date(Date.UTC(y, mo, d, 0, 0, 0));
+  };
+
+  const formatSlugShort = (slug) => {
+    const d = parseSlugDateUtc(slug);
+    if (!d) {
+      return String(slug || "");
+    }
+    const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
+    const dd = String(d.getUTCDate()).padStart(2, "0");
+    return `${mm}/${dd}`;
+  };
+
+  const getAvailableArchiveSlugs = () => {
+    const dates = getArchiveDates();
+    if (!Array.isArray(dates)) {
+      return [];
+    }
+    return dates.map((d) => d?.slug).filter(Boolean);
+  };
+
+  const buildUsageRangeSlugs = (rangeKey) => {
+    const endSlug = currentArchiveSlug || dashboardData.generatedDateSlug || "";
+    const end = parseSlugDateUtc(endSlug) || new Date();
+    const available = new Set(getAvailableArchiveSlugs());
+    const slugs = [];
+
+    if (rangeKey === "month") {
+      const targetMonth = end.getUTCMonth();
+      const targetYear = end.getUTCFullYear();
+      getAvailableArchiveSlugs().forEach((slug) => {
+        const d = parseSlugDateUtc(slug);
+        if (!d) {
+          return;
+        }
+        if (d.getUTCFullYear() === targetYear && d.getUTCMonth() === targetMonth) {
+          slugs.push(slug);
+        }
+      });
+      return slugs.sort();
+    }
+
+    const days = rangeKey === "30d" ? 30 : 7;
+    for (let i = days - 1; i >= 0; i -= 1) {
+      const d = new Date(end.getTime());
+      d.setUTCDate(d.getUTCDate() - i);
+      const slug = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
+      if (available.has(slug)) {
+        slugs.push(slug);
+      }
+    }
+    return slugs;
+  };
+
+  const computeRuntimeMinutesFromPayload = (payload) => {
+    const perHour = payload?.condenserMinutes;
+    if (Array.isArray(perHour)) {
+      return perHour.reduce(
+        (acc, v) => acc + (Number.isFinite(Number(v)) ? Number(v) : 0),
+        0
+      );
+    }
+    if (Number.isFinite(Number(payload?.totalCondenserMinutesValue))) {
+      return Number(payload.totalCondenserMinutesValue);
+    }
+    return 0;
+  };
+
+  const fetchUsageSummaryForDay = async (slug) => {
+    if (!slug) {
+      return null;
+    }
+    if (usageSummaryCache.has(slug)) {
+      return usageSummaryCache.get(slug);
+    }
+    const url = buildArchiveJsonUrl(slug);
+    if (!url) {
+      return null;
+    }
+    try {
+      const resp = await fetch(url, { cache: "no-store" });
+      if (!resp.ok) {
+        return null;
+      }
+      const payload = await resp.json();
+      const runtimeMinutes = computeRuntimeMinutesFromPayload(payload);
+      const costPerMinute = Number(payload?.condenserCostPerMinute) || 0.05;
+      const cost = runtimeMinutes * costPerMinute;
+      const summary = { runtimeMinutes, cost };
+      usageSummaryCache.set(slug, summary);
+      return summary;
+    } catch (err) {
+      return null;
+    }
+  };
+
+  const destroyUsageSlotChart = () => {
+    if (!usageSlotChart) {
+      return;
+    }
+    try {
+      usageSlotChart.destroy();
+    } catch (err) {
+      // ignore
+    } finally {
+      usageSlotChart = null;
+    }
+  };
+
+  const renderUsageSlotChart = async () => {
+    if (!usageSlotCtx || typeof Chart === "undefined") {
+      return;
+    }
+
+    const slugs = buildUsageRangeSlugs(usageRangeKey);
+    const rows = await Promise.all(
+      slugs.map(async (slug) => ({ slug, summary: await fetchUsageSummaryForDay(slug) }))
+    );
+    const filtered = rows.filter((r) => r.summary && Number.isFinite(Number(r.summary.runtimeMinutes)));
+
+    const labels = filtered.map((r) => formatSlugShort(r.slug));
+    const minutes = filtered.map((r) => Number(r.summary.runtimeMinutes) || 0);
+
+    const totalMinutes = minutes.reduce((a, b) => a + b, 0);
+    const avgMinutes = minutes.length ? totalMinutes / minutes.length : 0;
+    let maxIdx = -1;
+    let maxVal = -1;
+    minutes.forEach((v, i) => {
+      if (v > maxVal) {
+        maxVal = v;
+        maxIdx = i;
+      }
+    });
+    const totalCost = filtered.reduce((acc, r) => acc + (Number(r.summary.cost) || 0), 0);
+
+    const setStat = (id, text) => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.textContent = text;
+      }
+    };
+    setStat("usage-stat-total", `${Math.round(totalMinutes)}m`);
+    setStat("usage-stat-avg", `${Math.round(avgMinutes)}m`);
+    setStat(
+      "usage-stat-max",
+      maxIdx >= 0 ? `${formatSlugShort(filtered[maxIdx].slug)} ${Math.round(maxVal)}m` : "—"
+    );
+    setStat("usage-stat-cost", `$${totalCost.toFixed(2)}`);
+
+    destroyUsageSlotChart();
+    usageSlotChart = new Chart(usageSlotCtx, {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [
+          {
+            data: minutes,
+            backgroundColor: "rgba(255,179,71,0.35)",
+            borderColor: "rgba(255,179,71,0.9)",
+            borderWidth: 1,
+            borderRadius: 6,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              title: (items) => {
+                const idx = items?.[0]?.dataIndex ?? null;
+                if (idx === null) return "";
+                return filtered[idx]?.slug || "";
+              },
+              label: (ctxBar) => `Runtime: ${Math.round(Number(ctxBar.raw) || 0)} min`,
+            },
+          },
+        },
+        scales: {
+          x: {
+            ticks: { color: "rgba(244,246,255,0.6)", maxRotation: 0, minRotation: 0 },
+            grid: { display: false },
+          },
+          y: {
+            ticks: { color: "rgba(244,246,255,0.6)" },
+            grid: { color: "rgba(255,255,255,0.08)" },
+            beginAtZero: true,
+          },
+        },
+        onClick: (evt, elements) => {
+          if (!elements || !elements.length) {
+            return;
+          }
+          const idx = elements[0].index;
+          const slug = filtered[idx]?.slug;
+          if (slug) {
+            loadDashboardData(slug);
+          }
+        },
+      },
+    });
+  };
+
+  const bindUsageSlotControls = () => {
+    if (usageSlotBound) {
+      return;
+    }
+    const slot = document.getElementById("usage-slot");
+    if (!slot) {
+      return;
+    }
+    const buttons = Array.from(slot.querySelectorAll(".usage-control"));
+    if (!buttons.length) {
+      return;
+    }
+    usageSlotBound = true;
+    buttons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const range = btn.dataset.range;
+        if (!range || !["7d", "30d", "month"].includes(range)) {
+          return;
+        }
+        usageRangeKey = range;
+        buttons.forEach((b) => b.classList.toggle("active", b.dataset.range === range));
+        renderUsageSlotChart();
+      });
+    });
+  };
   const getLatestRowValueByHeader = (predicate) => {
     const headers = getDashboardData().headers;
     const row = getDashboardData().latestRow;
@@ -1219,9 +1467,6 @@
     };
 
     canvas.addEventListener("mousemove", (event) => {
-      if (usageMode === "usage") {
-        return;
-      }
       if (pinnedPointIndex !== null) {
         return;
       }
@@ -1236,9 +1481,6 @@
     });
 
     canvas.addEventListener("mouseleave", () => {
-      if (usageMode === "usage") {
-        return;
-      }
       if (pinnedPointIndex !== null) {
         return;
       }
@@ -1249,9 +1491,6 @@
     });
 
     canvas.addEventListener("click", (event) => {
-      if (usageMode === "usage") {
-        return;
-      }
       const idx = pickIndexFromEvent(event);
       if (idx === null) {
         setSelectedPoint(null, null, true);
@@ -1304,431 +1543,6 @@
         }
         setSelectedPoint(chosenIdx, chosenIdx, true);
       });
-    }
-  };
-
-  const parseSlugDate = (slug) => {
-    if (!slug || typeof slug !== "string") {
-      return null;
-    }
-    const m = slug.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    if (!m) {
-      return null;
-    }
-    const year = Number(m[1]);
-    const month = Number(m[2]);
-    const day = Number(m[3]);
-    if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) {
-      return null;
-    }
-    return new Date(Date.UTC(year, month - 1, day, 0, 0, 0));
-  };
-
-  const formatSlugShort = (slug) => {
-    const d = parseSlugDate(slug);
-    if (!d) {
-      return String(slug || "");
-    }
-    const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
-    const dd = String(d.getUTCDate()).padStart(2, "0");
-    return `${mm}/${dd}`;
-  };
-
-  const getAvailableSlugs = () => {
-    const dates = getArchiveDates();
-    if (!Array.isArray(dates)) {
-      return [];
-    }
-    return dates.map((d) => d?.slug).filter(Boolean);
-  };
-
-  const buildRangeSlugs = (rangeKey) => {
-    const endSlug = currentArchiveSlug || dashboardData.generatedDateSlug || "";
-    const end = parseSlugDate(endSlug) || new Date();
-    const available = new Set(getAvailableSlugs());
-    const slugs = [];
-
-    if (rangeKey === "month") {
-      const targetMonth = end.getUTCMonth();
-      const targetYear = end.getUTCFullYear();
-      getAvailableSlugs().forEach((slug) => {
-        const d = parseSlugDate(slug);
-        if (!d) {
-          return;
-        }
-        if (d.getUTCFullYear() === targetYear && d.getUTCMonth() === targetMonth) {
-          slugs.push(slug);
-        }
-      });
-      return slugs.sort();
-    }
-
-    const days = rangeKey === "30d" ? 30 : 7;
-    for (let i = days - 1; i >= 0; i -= 1) {
-      const d = new Date(end.getTime());
-      d.setUTCDate(d.getUTCDate() - i);
-      const slug = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
-      if (available.has(slug)) {
-        slugs.push(slug);
-      }
-    }
-    return slugs;
-  };
-
-  const usageCache = new Map(); // slug -> { runtimeMinutes, cost }
-
-  const computeUsageFromPayload = (payload) => {
-    const perHour = payload?.condenserMinutes;
-    let runtimeMinutes = 0;
-    if (Array.isArray(perHour)) {
-      runtimeMinutes = perHour.reduce(
-        (acc, v) => acc + (Number.isFinite(Number(v)) ? Number(v) : 0),
-        0
-      );
-    } else if (Number.isFinite(Number(payload?.totalCondenserMinutesValue))) {
-      runtimeMinutes = Number(payload.totalCondenserMinutesValue);
-    }
-    const costPerMinute = Number(payload?.condenserCostPerMinute) || 0.05;
-    const cost = runtimeMinutes * costPerMinute;
-    return { runtimeMinutes, cost };
-  };
-
-  const fetchUsageSummary = async (slug) => {
-    if (!slug) {
-      return null;
-    }
-    if (usageCache.has(slug)) {
-      return usageCache.get(slug);
-    }
-    const url = buildArchiveJsonUrl(slug);
-    if (!url) {
-      return null;
-    }
-    const resp = await fetch(url, { cache: "no-store" });
-    if (!resp.ok) {
-      return null;
-    }
-    const payload = await resp.json();
-    const summary = computeUsageFromPayload(payload);
-    usageCache.set(slug, summary);
-    return summary;
-  };
-
-  const destroyUsageChart = () => {
-    if (!usageChart) {
-      return;
-    }
-    try {
-      usageChart.destroy();
-    } catch (err) {
-      // ignore
-    } finally {
-      usageChart = null;
-    }
-  };
-
-  const destroyUsageMainChart = () => {
-    if (!usageMainChart) {
-      return;
-    }
-    try {
-      usageMainChart.destroy();
-    } catch (err) {
-      // ignore
-    } finally {
-      usageMainChart = null;
-    }
-  };
-
-  const renderUsageChart = async () => {
-    const root = document.getElementById("usage-mini");
-    if (!root) {
-      return;
-    }
-    const canvasUsage = root.querySelector("#usage-mini-chart");
-    const ctxUsage = canvasUsage ? canvasUsage.getContext("2d") : null;
-    if (!ctxUsage || !Chart) {
-      return;
-    }
-
-    const slugs = buildRangeSlugs(usageRange);
-    const rows = await Promise.all(
-      slugs.map(async (slug) => ({ slug, summary: await fetchUsageSummary(slug) }))
-    );
-    const filtered = rows.filter((r) => r.summary && Number.isFinite(Number(r.summary.runtimeMinutes)));
-
-    const labels = filtered.map((r) => formatSlugShort(r.slug));
-    const minutes = filtered.map((r) => Number(r.summary.runtimeMinutes) || 0);
-
-    const total = minutes.reduce((a, b) => a + b, 0);
-    const avg = minutes.length ? total / minutes.length : 0;
-    let maxIdx = -1;
-    let maxVal = -1;
-    minutes.forEach((v, i) => {
-      if (v > maxVal) {
-        maxVal = v;
-        maxIdx = i;
-      }
-    });
-    const maxSlug = maxIdx >= 0 ? filtered[maxIdx].slug : "";
-    const totalCost = filtered.reduce((acc, r) => acc + (Number(r.summary.cost) || 0), 0);
-
-    const setText = (id, text) => {
-      const el = root.querySelector(`#${id}`);
-      if (el) {
-        el.textContent = text;
-      }
-    };
-    setText("usage-total", `${Math.round(total)} min`);
-    setText("usage-cost", `$${totalCost.toFixed(2)}`);
-    setText("usage-avg", `${Math.round(avg)} min/day`);
-    setText("usage-max", maxSlug ? `${formatSlugShort(maxSlug)} (${Math.round(maxVal)}m)` : "—");
-
-    destroyUsageChart();
-    usageChart = new Chart(ctxUsage, {
-      type: "bar",
-      data: {
-        labels,
-        datasets: [
-          {
-            label: "Condenser Runtime (min)",
-            data: minutes,
-            backgroundColor: "rgba(255,179,71,0.45)",
-            borderColor: "rgba(255,179,71,0.9)",
-            borderWidth: 1,
-            borderRadius: 6,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        animation: false,
-        scales: {
-          x: {
-            ticks: { color: "rgba(244,246,255,0.6)", maxRotation: 0, minRotation: 0 },
-            grid: { display: false },
-          },
-          y: {
-            ticks: { color: "rgba(244,246,255,0.6)" },
-            grid: { color: "rgba(255,255,255,0.08)" },
-            beginAtZero: true,
-          },
-        },
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              title: (items) => {
-                const idx = items?.[0]?.dataIndex ?? null;
-                if (idx === null) return "";
-                const slug = filtered[idx]?.slug;
-                return slug || "";
-              },
-              label: (ctxBar) => `Runtime: ${Math.round(Number(ctxBar.raw) || 0)} min`,
-            },
-          },
-        },
-        onClick: (evt, elements) => {
-          if (!elements || !elements.length) {
-            return;
-          }
-          const idx = elements[0].index;
-          const slug = filtered[idx]?.slug;
-          if (slug) {
-            loadDashboardData(slug);
-          }
-        },
-      },
-    });
-  };
-
-  const renderUsageMainChart = async () => {
-    if (!canvas || !ctx || !Chart) {
-      return;
-    }
-
-    const slugs = buildRangeSlugs(usageRange);
-    const rows = await Promise.all(
-      slugs.map(async (slug) => ({ slug, summary: await fetchUsageSummary(slug) }))
-    );
-    const filtered = rows.filter((r) => r.summary && Number.isFinite(Number(r.summary.runtimeMinutes)));
-
-    const labels = filtered.map((r) => formatSlugShort(r.slug));
-    const minutes = filtered.map((r) => Number(r.summary.runtimeMinutes) || 0);
-
-    destroyUsageMainChart();
-    usageMainChart = new Chart(ctx, {
-      type: "bar",
-      data: {
-        labels,
-        datasets: [
-          {
-            label: "Daily Condenser Runtime (min)",
-            data: minutes,
-            backgroundColor: "rgba(255,179,71,0.35)",
-            borderColor: "rgba(255,179,71,0.9)",
-            borderWidth: 1,
-            borderRadius: 8,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        animation: false,
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              title: (items) => {
-                const idx = items?.[0]?.dataIndex ?? null;
-                if (idx === null) return "";
-                const slug = filtered[idx]?.slug;
-                return slug || "";
-              },
-              label: (ctxBar) => `Runtime: ${Math.round(Number(ctxBar.raw) || 0)} min`,
-            },
-          },
-        },
-        scales: {
-          x: {
-            ticks: { color: "rgba(244,246,255,0.6)", maxRotation: 0, minRotation: 0 },
-            grid: { display: false },
-          },
-          y: {
-            ticks: { color: "rgba(244,246,255,0.6)" },
-            grid: { color: "rgba(255,255,255,0.08)" },
-            beginAtZero: true,
-          },
-        },
-        onClick: (evt, elements) => {
-          if (!elements || !elements.length) {
-            return;
-          }
-          const idx = elements[0].index;
-          const slug = filtered[idx]?.slug;
-          if (slug) {
-            setUsageMode("daily");
-            loadDashboardData(slug);
-          }
-        },
-      },
-    });
-  };
-
-  const applyUsageModeUi = () => {
-    const root = document.getElementById("usage-mini");
-    if (!root) {
-      return;
-    }
-    root.classList.toggle("usage-active", usageMode === "usage");
-    const btnDaily = root.querySelector("#usage-mode-daily");
-    const btnUsage = root.querySelector("#usage-mode-usage");
-    if (btnDaily) btnDaily.classList.toggle("active", usageMode === "daily");
-    if (btnUsage) btnUsage.classList.toggle("active", usageMode === "usage");
-
-    const controls = document.getElementById("chartcontrols");
-    if (controls) {
-      controls.classList.toggle("usage-view", usageMode === "usage");
-    }
-  };
-
-  const setUsageMode = (mode) => {
-    if (mode !== "daily" && mode !== "usage") {
-      return;
-    }
-    if (usageMode === mode) {
-      return;
-    }
-    usageMode = mode;
-    saveUiState();
-    applyUsageModeUi();
-
-    if (usageMode === "usage") {
-      // Switch main canvas to usage view.
-      destroyChart();
-      renderUsageMainChart();
-      renderUsageChart();
-      showChart();
-      return;
-    }
-
-    // Back to daily view.
-    destroyUsageMainChart();
-    destroyChart();
-    createChart();
-    updateMetricCards();
-    reapplyVisibility();
-    showChart();
-  };
-
-  const ensureUsageUi = () => {
-    if (usageUiBound) {
-      return;
-    }
-    const root = document.getElementById("usage-mini");
-    if (!root) {
-      return;
-    }
-    usageUiBound = true;
-
-    root.innerHTML = `
-      <h5>Usage</h5>
-      <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px;">
-        <button type="button" class="chart-control active" id="usage-mode-daily">Daily</button>
-        <button type="button" class="chart-control" id="usage-mode-usage">Usage</button>
-      </div>
-      <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px;">
-        <button type="button" class="chart-control active" id="usage-range-7d">Last 7</button>
-        <button type="button" class="chart-control" id="usage-range-30d">Last 30</button>
-        <button type="button" class="chart-control" id="usage-range-month">Month</button>
-      </div>
-      <div style="height:160px;">
-        <canvas id="usage-mini-chart"></canvas>
-      </div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; font-size:12px;">
-        <div><div style="opacity:.7; font-size:11px;">Total</div><div id="usage-total">—</div></div>
-        <div><div style="opacity:.7; font-size:11px;">Cost</div><div id="usage-cost">—</div></div>
-        <div><div style="opacity:.7; font-size:11px;">Avg/Day</div><div id="usage-avg">—</div></div>
-        <div><div style="opacity:.7; font-size:11px;">Max Day</div><div id="usage-max">—</div></div>
-      </div>
-      <div style="margin-top:8px; opacity:.7; font-size:11px;">Click a bar to load that day.</div>
-    `;
-
-    const btn7 = root.querySelector("#usage-range-7d");
-    const btn30 = root.querySelector("#usage-range-30d");
-    const btnM = root.querySelector("#usage-range-month");
-    const btnDaily = root.querySelector("#usage-mode-daily");
-    const btnUsage = root.querySelector("#usage-mode-usage");
-    const setRange = (range) => {
-      usageRange = range;
-      if (btn7) btn7.classList.toggle("active", range === "7d");
-      if (btn30) btn30.classList.toggle("active", range === "30d");
-      if (btnM) btnM.classList.toggle("active", range === "month");
-      saveUiState();
-      renderUsageChart();
-      if (usageMode === "usage") {
-        renderUsageMainChart();
-      }
-    };
-    if (btn7) btn7.addEventListener("click", () => setRange("7d"));
-    if (btn30) btn30.addEventListener("click", () => setRange("30d"));
-    if (btnM) btnM.addEventListener("click", () => setRange("month"));
-    if (btnDaily) btnDaily.addEventListener("click", () => setUsageMode("daily"));
-    if (btnUsage) btnUsage.addEventListener("click", () => setUsageMode("usage"));
-
-    const state = loadUiState();
-    if (state && typeof state === "object" && ["7d", "30d", "month"].includes(state.usageRange)) {
-      usageRange = state.usageRange;
-    }
-    if (state && typeof state === "object" && ["daily", "usage"].includes(state.usageMode)) {
-      usageMode = state.usageMode;
-    }
-    applyUsageModeUi();
-    setRange(usageRange);
-    if (usageMode === "usage") {
-      renderUsageMainChart();
     }
   };
 
@@ -1969,23 +1783,6 @@
   };
 
   const showChart = () => {
-    if (usageMode === "usage") {
-      if (!usageMainChart) {
-        renderUsageMainChart();
-      }
-      if (canvas) {
-        canvas.style.display = "block";
-      }
-      if (toggleHistoryBtn) {
-        toggleHistoryBtn.textContent = "Hide History Chart";
-        toggleHistoryBtn.classList.add("history-visible");
-      }
-      if (handsLogoTop) {
-        handsLogoTop.classList.remove("hidden");
-      }
-      stopAutoplay();
-      return;
-    }
     if (!chart) {
       createChart();
     }
@@ -2386,8 +2183,6 @@
         pinnedIndex: pinned,
         pinnedHour,
         modes,
-        usageMode,
-        usageRange,
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
     } catch (err) {
@@ -2832,23 +2627,17 @@
     updateHistoryStatus(currentArchiveSlug);
     updateTimestampFromSelection();
     updateSelectionIndicator();
-    ensureUsageUi();
-    destroyUsageMainChart();
+    bindUsageSlotControls();
+    renderUsageSlotChart();
     destroyChart();
-    if (usageMode === "usage") {
-      renderUsageMainChart();
-    } else {
-      createChart();
-    }
+    createChart();
     updateMetricCards();
     cardsInitialized = true;
     if (chart) {
       chart.options.plugins.legend.display = false;
       chart.update();
     }
-    if (usageMode !== "usage") {
-      reapplyVisibility();
-    }
+    reapplyVisibility();
     showChart();
   }
 
