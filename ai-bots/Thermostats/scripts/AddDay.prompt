@@ -1,0 +1,255 @@
+Stinky, generate a complete projected indoor temperature and HVAC runtime dataset for the thermostat dashboard starting from ONLY a date input.
+
+Target Date is 10/20/2025
+
+IMPORTANT:
+- If a dataset already exists for the target date, overwrite its values.
+- If NO dataset exists for the target date, CREATE a new dataset FROM SCRATCH using the existing dashboard schema.
+- There must be no dependency on preexisting indoor temperature data.
+
+The chart is HOURLY. All logic operates at HOURLY resolution.
+
+--------------------------------------------------
+
+
+--------------------------------------------------
+DATASET RULES
+- Use the same JSON schema, keys, and structure required by the dashboard.
+- Populate all required arrays (temperature, setpoint, condenser status, runtime).
+- Filenames and structure must match what the dashboard expects.
+
+--------------------------------------------------
+PHASE 1 — GENERATE NORMAL BUILDING TEMPERATURE (NO HVAC, NO POLICY)
+
+Generate an HOURLY indoor temperature baseline representing expected building behavior with no air conditioning.
+
+
+Use these fixed values for Fan if input target date is between 08/01 and 08/30:
+- 12:00 AM to 6:00 AM  → C
+- 6:00 AM to 1:00 PM  → O
+- 1:00 PM to 7:00 PM  → A
+- 7:00 PM to 11:00 PM  → O
+
+Use these fixed values for Fan if input target date is between 09/01 and 09/30:
+- 12:00 AM to 6:00 AM  → O
+- 6:00 AM to 1:00 PM  → C
+- 1:00 PM to 7:00 PM  → A
+- 7:00 PM to 11:00 PM  → O
+
+Use these fixed values for Fan if input target date is between 10/01 and 10/30:
+- 12:00 AM to 6:00 AM  → O
+- 6:00 AM to 1:00 PM  → C
+- 1:00 PM to 7:00 PM  → A
+- 7:00 PM to 11:00 PM  → O
+
+Use these fixed values for Fan if input target date is between 11/01 and 11/30:
+- 12:00 AM to 6:00 AM  → A
+- 6:00 AM to 1:00 PM  → A
+- 1:00 PM to 7:00 PM  → A
+- 7:00 PM to 11:00 PM  → O
+
+Use these fixed values for Fan if input target date is between 12/01 and 12/30:
+- 12:00 AM to 6:00 AM  → A
+- 6:00 AM to 1:00 PM  → A
+- 1:00 PM to 7:00 PM  → O
+- 7:00 PM to 11:00 PM  → C
+
+
+
+
+
+Use these fixed anchor points if input target date is between 08/01 and 08/30:
+
+If day is full sun:
+- 6:00 AM  → 65°F
+- 1:00 PM  → 73°F
+- 4:00 PM  → 75°F
+- 5:00 PM  → 77°F
+- 7:00 PM  → 80°F
+- 11:00 PM → 70°F
+- 5:00 AM  → 65°F
+Else
+- 6:00 AM  → 65°F
+- 1:00 PM  → 73°F
+- 4:00 PM  → 74°F
+- 5:00 PM  → 75°F
+- 7:00 PM  → 76°F
+- 11:00 PM → 70°F
+- 5:00 AM  → 65°F
+
+Use these fixed anchor points if input target date is between 09/01 and 09/30:
+
+If day is full sun:
+- 6:00 AM  → 70°F
+- 1:00 PM  → 77°F
+- 4:00 PM  → 78°F
+- 5:00 PM  → 80°F
+- 7:00 PM  → 77°F
+- 11:00 PM → 70°F
+- 5:00 AM  → 65°F
+Else:
+- 6:00 AM  → 70°F
+- 1:00 PM  → 73°F
+- 4:00 PM  → 75°F
+- 5:00 PM  → 76°F
+- 7:00 PM  → 75°F
+- 11:00 PM → 70°F
+- 5:00 AM  → 65°F
+
+Use these fixed anchor points if input target date is between 10/01 and 10/30:
+
+If day is full sun:
+- 6:00 AM  → 70°F
+- 1:00 PM  → 76°F
+- 4:00 PM  → 77°F
+- 5:00 PM  → 79°F
+- 7:00 PM  → 80°F
+- 11:00 PM → 70°F
+- 5:00 AM  → 68°F
+Else:
+- 6:00 AM  → 65°F
+- 1:00 PM  → 70°F
+- 4:00 PM  → 72°F
+- 5:00 PM  → 73°F
+- 7:00 PM  → 74°F
+- 11:00 PM → 70°F
+- 5:00 AM  → 68°F
+
+
+Use these fixed anchor points if input target date is between 11/01 and 11/30:
+
+If day is full sun:
+- 6:00 AM  → 65°F
+- 1:00 PM  → 70°F
+- 4:00 PM  → 75°F
+- 5:00 PM  → 77°F
+- 7:00 PM  → 77°F
+- 11:00 PM → 68°F
+- 5:00 AM  → 65°F
+Else:
+- 6:00 AM  → 65°F
+- 1:00 PM  → 70°F
+- 4:00 PM  → 70°F
+- 5:00 PM  → 72°F
+- 7:00 PM  → 73°F
+- 11:00 PM → 68°F
+- 5:00 AM  → 65°F
+
+
+
+Use these fixed anchor points if input target date is after 12/1 and before 12/31:
+
+If day is full sun:
+- 6:00 AM  → 65°F
+- 1:00 PM  → 70°F
+- 4:00 PM  → 73°F
+- 5:00 PM  → 75°F
+- 7:00 PM  → 73°F
+- 11:00 PM → 70°F
+- 5:00 AM  → 65°F
+Else
+- 6:00 AM  → 62°F
+- 1:00 PM  → 68°F
+- 4:00 PM  → 69°F
+- 5:00 PM  → 70°F
+- 7:00 PM  → 68°F
+- 11:00 PM → 65°F
+- 5:00 AM  → 63°F
+
+
+
+
+Rules:
+- Linearly interpolate hour-to-hour between anchors.
+- This series represents NORMAL building temperature with NO HVAC.
+- Write this series as normal_temp[t].
+
+--------------------------------------------------
+PHASE 2 — DEFINE SETPOINT (FACILITY POLICY)
+
+Create an HOURLY setpoint schedule setpoint[t]:
+
+Use these fixed anchor points if input target date is after 8/1 and before 10/30:
+
+- Default setpoint = 80°F
+- Occupied setpoint = 75°F from 1:00 PM through 6:00 PM
+- Occupied setpoint = 78°F from 6:00 PM through 11:00 PM
+
+Use these fixed anchor points if input target date is after 11/1 and before 12/31:
+
+- Default setpoint = 75°F
+- Occupied setpoint = 72°F from 1:00 PM through 5:00 PM
+- Occupied setpoint = 75°F from 6:00 PM through 11:00 PM
+
+
+Outside the occupied window, revert to 75°F.
+
+--------------------------------------------------
+PHASE 3 — DETERMINE COOLING STRENGTH (DAY CONDITIONS)
+
+Select ONE cooling strength for the day:
+
+- Hot / full sun      → 60 minutes per 1°F  → 1°F drop per hour
+- Moderate / mixed    → 30 minutes per 1°F  → 2°F drop per hour
+- Cool / rainy        → 15 minutes per 1°F  → 4°F drop per hour
+
+Set hourly_drop accordingly.
+
+--------------------------------------------------
+PHASE 4 — APPLY HOURLY HVAC CONTROL (ITERATIVE AND LOGICAL)
+
+Initialize:
+- adjusted_temp[t] = normal_temp[t]
+- condenser_on[t] = false
+
+Process each hour t in chronological order:
+
+1) If adjusted_temp[t] > setpoint[t]:
+   - condenser_on[t] = true
+   - adjusted_temp[t+1] = normal_temp[t+1] − hourly_drop
+   - adjusted_temp[t+1] = max(adjusted_temp[t+1], setpoint[t+1])
+
+2) If adjusted_temp[t] ≤ setpoint[t]:
+   - condenser_on[t] = false
+   - adjusted_temp[t+1] = normal_temp[t+1]
+
+Rules:
+- Cooling MUST repeat hour-to-hour while temperature remains above setpoint.
+- Baseline MUST NOT override control while out of policy.
+- Once adjusted_temp falls to or below setpoint, cooling stops and baseline resumes.
+
+--------------------------------------------------
+PHASE 5 — HVAC RUNTIME (PER-HOUR VS TOTAL)
+
+PER-HOUR RUNTIME (CHART FIELD):
+- runtime_this_hour[t] = 40 if condenser_on[t] == true else 0
+- Valid values: 0 or 40 only.
+
+CUMULATIVE RUNTIME (SUMMARY FIELD):
+- total_runtime_minutes = sum(runtime_this_hour[0..t])
+
+IMPORTANT:
+- Write per-hour runtime ONLY to the chart-bound runtime field.
+- Write cumulative runtime ONLY to the summary runtime field.
+- Never mix these two concepts.
+
+--------------------------------------------------
+PHASE 6 — WRITE DATASET
+
+- Chart temperature = adjusted_temp[t]
+- Write setpoint[t]
+- Write condenser_on[t]
+- Write per-hour runtime
+- Write cumulative runtime (if required by schema)
+- Ensure all arrays align hour-to-hour
+
+--------------------------------------------------
+OUTPUT (BRIEF)
+
+Return:
+- Target date
+- Whether dataset was created from scratch or overwritten
+- Setpoint schedule used
+- Hour(s) condenser ran
+- Hourly cooling drop applied
+- Total projected HVAC runtime minutes

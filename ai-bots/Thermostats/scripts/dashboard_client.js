@@ -64,6 +64,12 @@
   let chartHistoryListColumn = null;
   let chartHistoryHoverBound = false;
   let chartHistoryListHoverBound = false;
+  let chartPointPickerBound = false;
+  let usageChart = null;
+  let usageMainChart = null;
+  let usageMode = "daily"; // "daily" | "usage"
+  let usageRange = "7d"; // "7d" | "30d" | "month"
+  let usageUiBound = false;
   const showHistoryFiles = () => {
     chartHistoryList.classList.remove("hidden");
     if (chartHistoryListColumn) {
@@ -88,6 +94,14 @@
   const timestampDisplay = document.getElementById("dashboard-timestamp");
   let chart = null;
   let cardsInitialized = false;
+  let hoverPointIndex = null;
+  let pinnedPointIndex = null;
+  let selectionIndicatorEl = null;
+  let clearPinButtonEl = null;
+  let hourPickerEl = null;
+
+  const STORAGE_KEY = "thermostatDashboard.ui.v1";
+  let savedUiState = null;
 
   const getDashboardData = () => dashboardData || {};
   const getDashboardValue = (key, fallback) => getDashboardData()[key] || fallback;
@@ -104,9 +118,94 @@
   const getActualLabel = () => getDashboardData().actualLabel || "Building Temperature";
   const getOutsideLabel = () => getDashboardData().outsideLabel || "Outside Temp";
   const getCoolingLabel = () => getDashboardData().coolingLabel || "Cooling Status";
+  const getClimateSettingSeries = () => getDashboardValue("climateSetting", []);
+  const getTypeSeries = () => getDashboardValue("typeSeries", []);
+  const getStudioSeries = () => getDashboardValue("studioSeries", []);
+  const getRequestExpiresSeries = () => getDashboardValue("requestExpiresLocalSeries", []);
+  const getLatestRowValueByHeader = (predicate) => {
+    const headers = getDashboardData().headers;
+    const row = getDashboardData().latestRow;
+    if (!Array.isArray(headers) || !Array.isArray(row)) {
+      return null;
+    }
+    for (let i = 0; i < headers.length; i += 1) {
+      const header = headers[i];
+      if (!header) {
+        continue;
+      }
+      if (predicate(String(header))) {
+        return i < row.length ? row[i] : null;
+      }
+    }
+    return null;
+  };
+
+  const setCardValueByLabel = (labelText, value) => {
+    const cards = document.querySelectorAll(".metric-card");
+    if (!cards) {
+      return;
+    }
+    const target = String(labelText || "").trim().toLowerCase();
+    if (!target) {
+      return;
+    }
+    cards.forEach((card) => {
+      const labelEl = card.querySelector(".label");
+      if (!labelEl) {
+        return;
+      }
+      const label = String(labelEl.textContent || "").trim().toLowerCase();
+      if (!label) {
+        return;
+      }
+      if (label === target) {
+        setCardValue(card, value);
+      }
+    });
+  };
+
+  const updateRequestMetadataCards = () => {
+    const idx = getSelectedIndex();
+    const typeSeriesValue = valueAt(getTypeSeries(), idx, null);
+    const typeValue =
+      typeSeriesValue !== null && typeSeriesValue !== undefined && String(typeSeriesValue).trim() !== ""
+        ? typeSeriesValue
+        : getLatestRowValueByHeader((h) => h.toLowerCase() === "type");
+    if (typeValue !== null && typeValue !== undefined) {
+      const typeCard = document.querySelector('.metric-card[data-metric="type"]');
+      if (typeCard) {
+        setCardValue(typeCard, String(typeValue).trim() || "—");
+      } else {
+        setCardValueByLabel("Type", String(typeValue).trim() || "—");
+      }
+    }
+
+    const studioSeriesValue = valueAt(getStudioSeries(), idx, null);
+    const studioValue =
+      studioSeriesValue !== null && studioSeriesValue !== undefined
+        ? studioSeriesValue
+        : getLatestRowValueByHeader((h) => h.toLowerCase().includes("studio"));
+    if (studioValue !== null && studioValue !== undefined) {
+      setCardValueByLabel("Studio", String(studioValue).trim() || "—");
+    }
+
+    const expiresSeriesValue = valueAt(getRequestExpiresSeries(), idx, null);
+    const expiresValue =
+      expiresSeriesValue !== null && expiresSeriesValue !== undefined
+        ? expiresSeriesValue
+        : getLatestRowValueByHeader((h) => h.toLowerCase().includes("request expires"));
+    if (expiresValue !== null && expiresValue !== undefined) {
+      setCardValueByLabel("Request Expires (local time)", String(expiresValue).trim() || "—");
+    }
+  };
   const getFanLegend = () => getDashboardValue("fanLegend", ["On", "Circulate", "Auto"]);
   const getCoolingLegend = () => getDashboardValue("coolingLegend", ["Idle", "Cooling"]);
   const getCondenserMinutes = () => getDashboardValue("condenserMinutes", []);
+  const getTotalCondenserMinutesValue = () => getDashboardValue("totalCondenserMinutesValue", null);
+  const getTotalCondenserMinutesDisplay = () => getDashboardValue("totalCondenserMinutes", "");
+  const getTotalCondenserCostValue = () => getDashboardValue("totalCondenserCostValue", null);
+  const getTotalCondenserCostDisplay = () => getDashboardValue("totalCondenserCost", "");
+  const getCondenserCostPerMinute = () => getDashboardValue("condenserCostPerMinute", 0.05);
 
   const fanStateLabels = {
     A: "Auto",
@@ -178,6 +277,62 @@
     getDashboardData().latestCooling ?? findLastNumber(getCoolingSeries()) ?? 0;
   const getLatestCondenserState = () =>
     (getDashboardData().latestCondenserState || "").trim();
+
+  const clampIndex = (idx, length) => {
+    if (idx === null || idx === undefined) {
+      return null;
+    }
+    const numeric = Number(idx);
+    if (!Number.isFinite(numeric)) {
+      return null;
+    }
+    const intIdx = Math.floor(numeric);
+    if (!Number.isFinite(length) || length <= 0) {
+      return null;
+    }
+    if (intIdx < 0 || intIdx >= length) {
+      return null;
+    }
+    return intIdx;
+  };
+
+  const getDefaultSelectedIndex = () => {
+    const labels = getChartLabels();
+    if (Array.isArray(labels) && labels.length) {
+      return labels.length - 1;
+    }
+    const actual = getActualSeries();
+    if (Array.isArray(actual) && actual.length) {
+      return actual.length - 1;
+    }
+    return 0;
+  };
+
+  const getSelectedIndex = () => {
+    const labels = getChartLabels();
+    const length = Array.isArray(labels) ? labels.length : 0;
+    const pinned = clampIndex(pinnedPointIndex, length);
+    if (pinned !== null) {
+      return pinned;
+    }
+    const hovered = clampIndex(hoverPointIndex, length);
+    if (hovered !== null) {
+      return hovered;
+    }
+    return getDefaultSelectedIndex();
+  };
+
+  const valueAt = (arr, idx, fallback = undefined) => {
+    if (!Array.isArray(arr)) {
+      return fallback;
+    }
+    const clamped = clampIndex(idx, arr.length);
+    if (clamped === null) {
+      return fallback;
+    }
+    const value = arr[clamped];
+    return value === undefined ? fallback : value;
+  };
   const formatMinutesValue = (value) => {
     if (value === null || value === undefined || Number.isNaN(Number(value))) {
       return null;
@@ -273,7 +428,7 @@
     return numeric.toFixed(1);
   };
 
-  const TOOLTIP_TEXT_COLOR = "#ffffff";
+  const TOOLTIP_TEXT_COLOR = "rgba(255,255,255,0.5)";
   const TOOLTIP_BADGE_FALLBACK = "#fff5c7";
   const outsideFlagColors = {
     S: "#ffd000",
@@ -541,6 +696,7 @@
     cooling: "#9dcfb2",
     fan: "#bfa887",
   };
+  const actualPointColor = "#ffd166";
   const datasetTooltipColorMap = new Map();
 
   const getTooltipRawValue = (context) =>
@@ -736,6 +892,54 @@
       return;
     }
     canvas.style.display = "block";
+
+    const selectionMarkerPlugin = {
+      id: "selectionMarker",
+      afterDatasetsDraw: (chartInstance) => {
+        const labels = getChartLabels();
+        const length = Array.isArray(labels) ? labels.length : 0;
+        const pinned = clampIndex(pinnedPointIndex, length);
+        const hovered = clampIndex(hoverPointIndex, length);
+        const idx = pinned !== null ? pinned : hovered;
+        if (idx === null) {
+          return;
+        }
+
+        const meta = chartInstance.getDatasetMeta(1); // actual temp dataset
+        const point = meta?.data?.[idx];
+        if (!point) {
+          return;
+        }
+
+        const { top, bottom } = chartInstance.chartArea || {};
+        if (typeof top !== "number" || typeof bottom !== "number") {
+          return;
+        }
+
+        const ctxChart = chartInstance.ctx;
+        const isPinned = pinned !== null;
+        const stroke = isPinned ? "rgba(255,179,71,0.95)" : "rgba(255,179,71,0.45)";
+        const width = isPinned ? 2 : 1;
+        const radius = isPinned ? 6 : 4;
+
+        ctxChart.save();
+        ctxChart.beginPath();
+        ctxChart.lineWidth = width;
+        ctxChart.strokeStyle = stroke;
+        ctxChart.moveTo(point.x, top);
+        ctxChart.lineTo(point.x, bottom);
+        ctxChart.stroke();
+
+        ctxChart.beginPath();
+        ctxChart.fillStyle = stroke;
+        ctxChart.arc(point.x, point.y, radius, 0, Math.PI * 2);
+        ctxChart.fill();
+        ctxChart.lineWidth = 2;
+        ctxChart.strokeStyle = "#000";
+        ctxChart.stroke();
+        ctxChart.restore();
+      },
+    };
     const dataset = {
       labels: getChartLabels(),
       datasets: [
@@ -763,8 +967,10 @@
           },
           backgroundColor: "rgba(125,164,255,0.2)",
           borderColor: legendSwatchColors.actual,
-          pointBackgroundColor: () => legendSwatchColors.actual,
-          pointBorderColor: () => legendSwatchColors.actual,
+          pointBackgroundColor: actualPointColor,
+          pointBorderColor: actualPointColor,
+          pointHoverBackgroundColor: actualPointColor,
+          pointHoverBorderColor: actualPointColor,
           legendColor: legendSwatchColors.actual,
           pointRadius: 0,
           pointHoverRadius: 6,
@@ -823,7 +1029,7 @@
     chart = new Chart(ctx, {
       type: "line",
       data: dataset,
-      plugins: [outsideWeatherIconPlugin],
+      plugins: [outsideWeatherIconPlugin, selectionMarkerPlugin],
       options: {
         responsive: true,
         maintainAspectRatio: false,
@@ -906,7 +1112,8 @@
           },
           x: {
             ticks: {
-              color: "#f4f6ff",
+              // Lower label opacity for the X-axis coordinates (more subtle than the lines).
+              color: "rgba(244,246,255,0.4)",
               maxRotation: 0,
               minRotation: 90,
               padding: 8,
@@ -970,15 +1177,586 @@
       },
     });
     updateLegendImage();
+    bindChartPointPicker();
+  };
+
+  const setSelectedPoint = (nextHoverIdx, nextPinnedIdx = null, persist = false) => {
+    hoverPointIndex = nextHoverIdx;
+    pinnedPointIndex = nextPinnedIdx;
+    updateMetricCards();
+    updateTimestampFromSelection();
+    updateSelectionIndicator();
+    if (persist) {
+      saveUiState();
+    }
+  };
+
+  const bindChartPointPicker = () => {
+    if (chartPointPickerBound || !canvas) {
+      return;
+    }
+    chartPointPickerBound = true;
+
+    const pickIndexFromEvent = (event) => {
+      if (!chart) {
+        return null;
+      }
+      try {
+        const points = chart.getElementsAtEventForMode(
+          event,
+          "nearest",
+          { intersect: false },
+          true
+        );
+        if (!points || points.length === 0) {
+          return null;
+        }
+        const idx = points[0]?.index;
+        return Number.isFinite(Number(idx)) ? Number(idx) : null;
+      } catch (err) {
+        return null;
+      }
+    };
+
+    canvas.addEventListener("mousemove", (event) => {
+      if (usageMode === "usage") {
+        return;
+      }
+      if (pinnedPointIndex !== null) {
+        return;
+      }
+      const idx = pickIndexFromEvent(event);
+      if (idx === null) {
+        return;
+      }
+      if (hoverPointIndex === idx) {
+        return;
+      }
+      setSelectedPoint(idx, null, false);
+    });
+
+    canvas.addEventListener("mouseleave", () => {
+      if (usageMode === "usage") {
+        return;
+      }
+      if (pinnedPointIndex !== null) {
+        return;
+      }
+      if (hoverPointIndex === null) {
+        return;
+      }
+      setSelectedPoint(null, null, false);
+    });
+
+    canvas.addEventListener("click", (event) => {
+      if (usageMode === "usage") {
+        return;
+      }
+      const idx = pickIndexFromEvent(event);
+      if (idx === null) {
+        setSelectedPoint(null, null, true);
+        return;
+      }
+      if (pinnedPointIndex === idx) {
+        setSelectedPoint(idx, null, true);
+      } else {
+        setSelectedPoint(idx, idx, true);
+      }
+    });
+
+    ensureSelectionUi();
+    if (clearPinButtonEl) {
+      clearPinButtonEl.addEventListener("click", () => {
+        setSelectedPoint(null, null, true);
+      });
+    }
+
+    if (hourPickerEl) {
+      hourPickerEl.addEventListener("change", () => {
+        const raw = String(hourPickerEl.value || "").trim();
+        if (!raw) {
+          setSelectedPoint(null, null, true);
+          hourPickerEl.style.color = "#ffb347";
+          return;
+        }
+        if (!raw.startsWith("H")) {
+          return;
+        }
+        const hour24 = Number(raw.slice(1));
+        if (!Number.isFinite(hour24)) {
+          return;
+        }
+        hourPickerEl.style.color = "#f4f6ff";
+        const labels = getChartLabels();
+        if (!Array.isArray(labels) || labels.length === 0) {
+          return;
+        }
+        let chosenIdx = null;
+        for (let i = 0; i < labels.length; i += 1) {
+          const h = roundedUpHour24FromLabel(labels[i]);
+          if (h === hour24) {
+            chosenIdx = i; // keep last match
+          }
+        }
+        if (chosenIdx === null) {
+          setSelectedPoint(null, null, true);
+          return;
+        }
+        setSelectedPoint(chosenIdx, chosenIdx, true);
+      });
+    }
+  };
+
+  const parseSlugDate = (slug) => {
+    if (!slug || typeof slug !== "string") {
+      return null;
+    }
+    const m = slug.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!m) {
+      return null;
+    }
+    const year = Number(m[1]);
+    const month = Number(m[2]);
+    const day = Number(m[3]);
+    if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) {
+      return null;
+    }
+    return new Date(Date.UTC(year, month - 1, day, 0, 0, 0));
+  };
+
+  const formatSlugShort = (slug) => {
+    const d = parseSlugDate(slug);
+    if (!d) {
+      return String(slug || "");
+    }
+    const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
+    const dd = String(d.getUTCDate()).padStart(2, "0");
+    return `${mm}/${dd}`;
+  };
+
+  const getAvailableSlugs = () => {
+    const dates = getArchiveDates();
+    if (!Array.isArray(dates)) {
+      return [];
+    }
+    return dates.map((d) => d?.slug).filter(Boolean);
+  };
+
+  const buildRangeSlugs = (rangeKey) => {
+    const endSlug = currentArchiveSlug || dashboardData.generatedDateSlug || "";
+    const end = parseSlugDate(endSlug) || new Date();
+    const available = new Set(getAvailableSlugs());
+    const slugs = [];
+
+    if (rangeKey === "month") {
+      const targetMonth = end.getUTCMonth();
+      const targetYear = end.getUTCFullYear();
+      getAvailableSlugs().forEach((slug) => {
+        const d = parseSlugDate(slug);
+        if (!d) {
+          return;
+        }
+        if (d.getUTCFullYear() === targetYear && d.getUTCMonth() === targetMonth) {
+          slugs.push(slug);
+        }
+      });
+      return slugs.sort();
+    }
+
+    const days = rangeKey === "30d" ? 30 : 7;
+    for (let i = days - 1; i >= 0; i -= 1) {
+      const d = new Date(end.getTime());
+      d.setUTCDate(d.getUTCDate() - i);
+      const slug = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
+      if (available.has(slug)) {
+        slugs.push(slug);
+      }
+    }
+    return slugs;
+  };
+
+  const usageCache = new Map(); // slug -> { runtimeMinutes, cost }
+
+  const computeUsageFromPayload = (payload) => {
+    const perHour = payload?.condenserMinutes;
+    let runtimeMinutes = 0;
+    if (Array.isArray(perHour)) {
+      runtimeMinutes = perHour.reduce(
+        (acc, v) => acc + (Number.isFinite(Number(v)) ? Number(v) : 0),
+        0
+      );
+    } else if (Number.isFinite(Number(payload?.totalCondenserMinutesValue))) {
+      runtimeMinutes = Number(payload.totalCondenserMinutesValue);
+    }
+    const costPerMinute = Number(payload?.condenserCostPerMinute) || 0.05;
+    const cost = runtimeMinutes * costPerMinute;
+    return { runtimeMinutes, cost };
+  };
+
+  const fetchUsageSummary = async (slug) => {
+    if (!slug) {
+      return null;
+    }
+    if (usageCache.has(slug)) {
+      return usageCache.get(slug);
+    }
+    const url = buildArchiveJsonUrl(slug);
+    if (!url) {
+      return null;
+    }
+    const resp = await fetch(url, { cache: "no-store" });
+    if (!resp.ok) {
+      return null;
+    }
+    const payload = await resp.json();
+    const summary = computeUsageFromPayload(payload);
+    usageCache.set(slug, summary);
+    return summary;
+  };
+
+  const destroyUsageChart = () => {
+    if (!usageChart) {
+      return;
+    }
+    try {
+      usageChart.destroy();
+    } catch (err) {
+      // ignore
+    } finally {
+      usageChart = null;
+    }
+  };
+
+  const destroyUsageMainChart = () => {
+    if (!usageMainChart) {
+      return;
+    }
+    try {
+      usageMainChart.destroy();
+    } catch (err) {
+      // ignore
+    } finally {
+      usageMainChart = null;
+    }
+  };
+
+  const renderUsageChart = async () => {
+    const root = document.getElementById("usage-mini");
+    if (!root) {
+      return;
+    }
+    const canvasUsage = root.querySelector("#usage-mini-chart");
+    const ctxUsage = canvasUsage ? canvasUsage.getContext("2d") : null;
+    if (!ctxUsage || !Chart) {
+      return;
+    }
+
+    const slugs = buildRangeSlugs(usageRange);
+    const rows = await Promise.all(
+      slugs.map(async (slug) => ({ slug, summary: await fetchUsageSummary(slug) }))
+    );
+    const filtered = rows.filter((r) => r.summary && Number.isFinite(Number(r.summary.runtimeMinutes)));
+
+    const labels = filtered.map((r) => formatSlugShort(r.slug));
+    const minutes = filtered.map((r) => Number(r.summary.runtimeMinutes) || 0);
+
+    const total = minutes.reduce((a, b) => a + b, 0);
+    const avg = minutes.length ? total / minutes.length : 0;
+    let maxIdx = -1;
+    let maxVal = -1;
+    minutes.forEach((v, i) => {
+      if (v > maxVal) {
+        maxVal = v;
+        maxIdx = i;
+      }
+    });
+    const maxSlug = maxIdx >= 0 ? filtered[maxIdx].slug : "";
+    const totalCost = filtered.reduce((acc, r) => acc + (Number(r.summary.cost) || 0), 0);
+
+    const setText = (id, text) => {
+      const el = root.querySelector(`#${id}`);
+      if (el) {
+        el.textContent = text;
+      }
+    };
+    setText("usage-total", `${Math.round(total)} min`);
+    setText("usage-cost", `$${totalCost.toFixed(2)}`);
+    setText("usage-avg", `${Math.round(avg)} min/day`);
+    setText("usage-max", maxSlug ? `${formatSlugShort(maxSlug)} (${Math.round(maxVal)}m)` : "—");
+
+    destroyUsageChart();
+    usageChart = new Chart(ctxUsage, {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [
+          {
+            label: "Condenser Runtime (min)",
+            data: minutes,
+            backgroundColor: "rgba(255,179,71,0.45)",
+            borderColor: "rgba(255,179,71,0.9)",
+            borderWidth: 1,
+            borderRadius: 6,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false,
+        scales: {
+          x: {
+            ticks: { color: "rgba(244,246,255,0.6)", maxRotation: 0, minRotation: 0 },
+            grid: { display: false },
+          },
+          y: {
+            ticks: { color: "rgba(244,246,255,0.6)" },
+            grid: { color: "rgba(255,255,255,0.08)" },
+            beginAtZero: true,
+          },
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              title: (items) => {
+                const idx = items?.[0]?.dataIndex ?? null;
+                if (idx === null) return "";
+                const slug = filtered[idx]?.slug;
+                return slug || "";
+              },
+              label: (ctxBar) => `Runtime: ${Math.round(Number(ctxBar.raw) || 0)} min`,
+            },
+          },
+        },
+        onClick: (evt, elements) => {
+          if (!elements || !elements.length) {
+            return;
+          }
+          const idx = elements[0].index;
+          const slug = filtered[idx]?.slug;
+          if (slug) {
+            loadDashboardData(slug);
+          }
+        },
+      },
+    });
+  };
+
+  const renderUsageMainChart = async () => {
+    if (!canvas || !ctx || !Chart) {
+      return;
+    }
+
+    const slugs = buildRangeSlugs(usageRange);
+    const rows = await Promise.all(
+      slugs.map(async (slug) => ({ slug, summary: await fetchUsageSummary(slug) }))
+    );
+    const filtered = rows.filter((r) => r.summary && Number.isFinite(Number(r.summary.runtimeMinutes)));
+
+    const labels = filtered.map((r) => formatSlugShort(r.slug));
+    const minutes = filtered.map((r) => Number(r.summary.runtimeMinutes) || 0);
+
+    destroyUsageMainChart();
+    usageMainChart = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [
+          {
+            label: "Daily Condenser Runtime (min)",
+            data: minutes,
+            backgroundColor: "rgba(255,179,71,0.35)",
+            borderColor: "rgba(255,179,71,0.9)",
+            borderWidth: 1,
+            borderRadius: 8,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              title: (items) => {
+                const idx = items?.[0]?.dataIndex ?? null;
+                if (idx === null) return "";
+                const slug = filtered[idx]?.slug;
+                return slug || "";
+              },
+              label: (ctxBar) => `Runtime: ${Math.round(Number(ctxBar.raw) || 0)} min`,
+            },
+          },
+        },
+        scales: {
+          x: {
+            ticks: { color: "rgba(244,246,255,0.6)", maxRotation: 0, minRotation: 0 },
+            grid: { display: false },
+          },
+          y: {
+            ticks: { color: "rgba(244,246,255,0.6)" },
+            grid: { color: "rgba(255,255,255,0.08)" },
+            beginAtZero: true,
+          },
+        },
+        onClick: (evt, elements) => {
+          if (!elements || !elements.length) {
+            return;
+          }
+          const idx = elements[0].index;
+          const slug = filtered[idx]?.slug;
+          if (slug) {
+            setUsageMode("daily");
+            loadDashboardData(slug);
+          }
+        },
+      },
+    });
+  };
+
+  const applyUsageModeUi = () => {
+    const root = document.getElementById("usage-mini");
+    if (!root) {
+      return;
+    }
+    root.classList.toggle("usage-active", usageMode === "usage");
+    const btnDaily = root.querySelector("#usage-mode-daily");
+    const btnUsage = root.querySelector("#usage-mode-usage");
+    if (btnDaily) btnDaily.classList.toggle("active", usageMode === "daily");
+    if (btnUsage) btnUsage.classList.toggle("active", usageMode === "usage");
+
+    const controls = document.getElementById("chartcontrols");
+    if (controls) {
+      controls.classList.toggle("usage-view", usageMode === "usage");
+    }
+  };
+
+  const setUsageMode = (mode) => {
+    if (mode !== "daily" && mode !== "usage") {
+      return;
+    }
+    if (usageMode === mode) {
+      return;
+    }
+    usageMode = mode;
+    saveUiState();
+    applyUsageModeUi();
+
+    if (usageMode === "usage") {
+      // Switch main canvas to usage view.
+      destroyChart();
+      renderUsageMainChart();
+      renderUsageChart();
+      showChart();
+      return;
+    }
+
+    // Back to daily view.
+    destroyUsageMainChart();
+    destroyChart();
+    createChart();
+    updateMetricCards();
+    reapplyVisibility();
+    showChart();
+  };
+
+  const ensureUsageUi = () => {
+    if (usageUiBound) {
+      return;
+    }
+    const root = document.getElementById("usage-mini");
+    if (!root) {
+      return;
+    }
+    usageUiBound = true;
+
+    root.innerHTML = `
+      <h5>Usage</h5>
+      <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px;">
+        <button type="button" class="chart-control active" id="usage-mode-daily">Daily</button>
+        <button type="button" class="chart-control" id="usage-mode-usage">Usage</button>
+      </div>
+      <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px;">
+        <button type="button" class="chart-control active" id="usage-range-7d">Last 7</button>
+        <button type="button" class="chart-control" id="usage-range-30d">Last 30</button>
+        <button type="button" class="chart-control" id="usage-range-month">Month</button>
+      </div>
+      <div style="height:160px;">
+        <canvas id="usage-mini-chart"></canvas>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; font-size:12px;">
+        <div><div style="opacity:.7; font-size:11px;">Total</div><div id="usage-total">—</div></div>
+        <div><div style="opacity:.7; font-size:11px;">Cost</div><div id="usage-cost">—</div></div>
+        <div><div style="opacity:.7; font-size:11px;">Avg/Day</div><div id="usage-avg">—</div></div>
+        <div><div style="opacity:.7; font-size:11px;">Max Day</div><div id="usage-max">—</div></div>
+      </div>
+      <div style="margin-top:8px; opacity:.7; font-size:11px;">Click a bar to load that day.</div>
+    `;
+
+    const btn7 = root.querySelector("#usage-range-7d");
+    const btn30 = root.querySelector("#usage-range-30d");
+    const btnM = root.querySelector("#usage-range-month");
+    const btnDaily = root.querySelector("#usage-mode-daily");
+    const btnUsage = root.querySelector("#usage-mode-usage");
+    const setRange = (range) => {
+      usageRange = range;
+      if (btn7) btn7.classList.toggle("active", range === "7d");
+      if (btn30) btn30.classList.toggle("active", range === "30d");
+      if (btnM) btnM.classList.toggle("active", range === "month");
+      saveUiState();
+      renderUsageChart();
+      if (usageMode === "usage") {
+        renderUsageMainChart();
+      }
+    };
+    if (btn7) btn7.addEventListener("click", () => setRange("7d"));
+    if (btn30) btn30.addEventListener("click", () => setRange("30d"));
+    if (btnM) btnM.addEventListener("click", () => setRange("month"));
+    if (btnDaily) btnDaily.addEventListener("click", () => setUsageMode("daily"));
+    if (btnUsage) btnUsage.addEventListener("click", () => setUsageMode("usage"));
+
+    const state = loadUiState();
+    if (state && typeof state === "object" && ["7d", "30d", "month"].includes(state.usageRange)) {
+      usageRange = state.usageRange;
+    }
+    if (state && typeof state === "object" && ["daily", "usage"].includes(state.usageMode)) {
+      usageMode = state.usageMode;
+    }
+    applyUsageModeUi();
+    setRange(usageRange);
+    if (usageMode === "usage") {
+      renderUsageMainChart();
+    }
   };
 
   // Re-render all front-panel cards when the data changes (actual, fan, condenser, etc.).
   const updateMetricCards = () => {
-    const actualValue = getLatestActualValue();
-    const setpointValue = getLatestSetpointValue();
-    const outsideValue = getLatestOutsideValue();
-    const outsideFlag = getOutsideFlag();
-    const outsideDaylight = getOutsideDaylight();
+    const idx = getSelectedIndex();
+    updateRequestMetadataCards();
+    const timestampCard = document.querySelector('.metric-card[data-metric="timestamp"]');
+    if (timestampCard) {
+      const label = valueAt(getChartLabels(), idx, null);
+      if (label) {
+        setCardValue(timestampCard, String(label));
+      }
+    }
+    const climateSettingCard = document.querySelector('.metric-card[data-metric="climate-setting"]');
+    if (climateSettingCard) {
+      // The facility is always configured for cooling only.
+      setCardValue(climateSettingCard, "Cool");
+    }
+    const actualValue = valueAt(getActualSeries(), idx, getLatestActualValue());
+    const setpointValue = valueAt(getSetpointSeries(), idx, getLatestSetpointValue());
+    const outsideValue = valueAt(getOutsideSeries(), idx, getLatestOutsideValue());
+    const outsideFlag = valueAt(getOutsideFlags(), idx, getOutsideFlag());
+    const outsideDayChar = valueAt(getOutsideFlagDayChars(), idx, getOutsideFlagDayChar());
+    const outsideDaylight =
+      typeof outsideDayChar === "string"
+        ? outsideDayChar.trim().toUpperCase() !== "N"
+        : getOutsideDaylight();
     const outsideFlagColor = outsideFlagColors[outsideFlag] || null;
     const outsideCard = document.querySelector('.metric-card[data-metric="outside"]');
     const outsideText = formatOutsideDisplay(outsideValue);
@@ -1024,24 +1802,38 @@
     applyCardColor(actualCard, actualCardColor);
     const setpointCard = document.querySelector('.metric-card[data-metric="setpoint"]');
     setCardValue(setpointCard, formatTemperatureValue(setpointValue));
-    applyCardColor(setpointCard, colorForPoint(setpointValue));
+    // Match the setpoint line color in the chart for visual consistency.
+    applyCardColor(setpointCard, legendSwatchColors.setpoint, "#000");
 
     const fanCard = document.querySelector('.metric-card[data-metric="fan"]');
-    const fanLabelRaw = getLatestFanRaw();
+    const fanLabelRaw = valueAt(getFanSeries(), idx, getLatestFanRaw());
     const fanNorm = normalizeFanState(fanLabelRaw);
     const fanText = fanStateLabels[fanNorm] || (fanLabelRaw ? String(fanLabelRaw).trim() : "Auto");
     setCardValue(fanCard, fanText);
-    applyFanCardStyle(fanCard, getLatestFanValue());
+    applyFanCardStyle(fanCard, fanStateToNumeric[fanNorm] ?? getLatestFanValue());
 
     const coolingCard = document.querySelector('.metric-card[data-metric="cooling"]');
-    setCardValue(coolingCard, getCoolingLegend()[Math.round(getLatestCoolingValue())] || "Idle");
-    applyCoolingCardStyle(coolingCard, getLatestCoolingValue());
+    const coolingValue = valueAt(getCoolingSeries(), idx, getLatestCoolingValue());
+    setCardValue(coolingCard, getCoolingLegend()[Math.round(coolingValue)] || "Idle");
+    applyCoolingCardStyle(coolingCard, coolingValue);
     const condenserCard = document.querySelector('.metric-card[data-metric="condenser-state"]');
-    const condenserStateValue = getLatestCondenserState();
+    const condenserMinutesSeries = getCondenserMinutes();
+    const minutesThisHour = valueAt(condenserMinutesSeries, idx, null);
+    const condenserStateValue =
+      Number(minutesThisHour) > 0 || Number(coolingValue) > 0
+        ? "On"
+        : "Off";
     if (condenserCard) {
       setCardValue(condenserCard, condenserStateValue || "Unknown");
       applyCondenserCardStyle(condenserCard, condenserStateValue);
     }
+
+    const condenserMinutesCard = document.querySelector('.metric-card[data-metric="condenser-minutes"]');
+    if (condenserMinutesCard) {
+      const minutesLabel = formatMinutesValue(minutesThisHour);
+      setCardValue(condenserMinutesCard, minutesLabel || "0 min");
+    }
+    updateCondenserRuntimeSummary();
   };
 
   const datasetIndexByMode = {
@@ -1131,6 +1923,22 @@
       chart.update(animate ? undefined : "none");
     }
   };
+
+  const applySavedModes = () => {
+    savedUiState = savedUiState || loadUiState();
+    const rawModes = savedUiState?.modes;
+    if (!Array.isArray(rawModes) || rawModes.length === 0) {
+      return;
+    }
+    const allowed = new Set(Object.keys(datasetIndexByMode));
+    const filtered = rawModes.filter((m) => allowed.has(m));
+    if (filtered.length === 0) {
+      return;
+    }
+    setModeSet(filtered, false);
+  };
+
+  applySavedModes();
   const toggleMode = (mode) => {
     if (mode === "both") {
       const allEnabled = Object.keys(datasetIndexByMode).every((m) =>
@@ -1157,9 +1965,27 @@
     if (chart) {
       chart.update();
     }
+    saveUiState();
   };
 
   const showChart = () => {
+    if (usageMode === "usage") {
+      if (!usageMainChart) {
+        renderUsageMainChart();
+      }
+      if (canvas) {
+        canvas.style.display = "block";
+      }
+      if (toggleHistoryBtn) {
+        toggleHistoryBtn.textContent = "Hide History Chart";
+        toggleHistoryBtn.classList.add("history-visible");
+      }
+      if (handsLogoTop) {
+        handsLogoTop.classList.remove("hidden");
+      }
+      stopAutoplay();
+      return;
+    }
     if (!chart) {
       createChart();
     }
@@ -1339,7 +2165,9 @@
     fetch(url, { cache: "no-store" })
       .then((response) => {
         if (!response.ok) {
-          throw new Error(`Status ${response.status}`);
+          const err = new Error(`Status ${response.status}`);
+          err.status = response.status;
+          throw err;
         }
         return response.json();
       })
@@ -1347,6 +2175,11 @@
         applyDashboardData(data, slug);
       })
       .catch((error) => {
+        if (Number(error?.status) === 404 && dashboardData?.archiveDates) {
+          archiveExistenceCache.set(slug, false);
+          dashboardData.archiveDates = dashboardData.archiveDates.filter((entry) => entry?.slug !== slug);
+          renderArchiveList();
+        }
         logMessage(`Failed to load archive ${slug}: ${error}`, "error");
       });
   }
@@ -1395,6 +2228,432 @@
       return;
     }
     timestampDisplay.textContent = text || "History";
+  };
+
+  const updateTimestampFromSelection = () => {
+    const labels = getChartLabels();
+    const length = Array.isArray(labels) ? labels.length : 0;
+    const hasPinned = clampIndex(pinnedPointIndex, length) !== null;
+    const hasHover = clampIndex(hoverPointIndex, length) !== null;
+    if (hasPinned || hasHover) {
+      const idx = getSelectedIndex();
+      const label = valueAt(labels, idx, null);
+      if (label) {
+        updateTimestampDisplay(String(label));
+        return;
+      }
+    }
+    const fallback =
+      dashboardData.generatedTimestamp ||
+      (currentArchiveSlug ? archiveLabelMap.get(currentArchiveSlug) : null) ||
+      "History: current data";
+    updateTimestampDisplay(fallback);
+  };
+
+  const formatHourLabel = (label) => {
+    const text = String(label || "").trim();
+    if (!text) {
+      return "";
+    }
+    // Prefer explicit 12-hour timestamps.
+    let match = text.match(/(\d{1,2})\s*:\s*(\d{2})\s*(AM|PM)\b/i);
+    if (match) {
+      const hh = Number(match[1]);
+      const mm = match[2];
+      const ap = match[3].toUpperCase();
+      return `${hh}:${mm} ${ap}`;
+    }
+    match = text.match(/(\d{1,2})\s*(AM|PM)\b/i);
+    if (match) {
+      return `${Number(match[1])} ${match[2].toUpperCase()}`;
+    }
+
+    // Handle 24-hour timestamps like "2025-12-18 23:00" (or similar) by converting to 12-hour.
+    match = text.match(/\b(\d{1,2})\s*:\s*(\d{2})\b/);
+    if (match) {
+      const hour24 = Number(match[1]);
+      const minute = match[2];
+      if (Number.isFinite(hour24) && hour24 >= 0 && hour24 <= 23) {
+        const ap = hour24 < 12 ? "AM" : "PM";
+        let hour12 = hour24 % 12;
+        if (hour12 === 0) {
+          hour12 = 12;
+        }
+        return `${hour12}:${minute} ${ap}`;
+      }
+    }
+    return text;
+  };
+
+  const parseLabelTime = (label) => {
+    const text = String(label || "").trim();
+    if (!text) {
+      return null;
+    }
+    let match = text.match(/(\d{1,2})\s*:\s*(\d{2})\s*(AM|PM)\b/i);
+    if (match) {
+      const hour12 = Number(match[1]);
+      const minute = Number(match[2]);
+      const ap = match[3].toUpperCase();
+      if (!Number.isFinite(hour12) || hour12 < 1 || hour12 > 12) {
+        return null;
+      }
+      if (!Number.isFinite(minute) || minute < 0 || minute > 59) {
+        return null;
+      }
+      const hour24 = (hour12 % 12) + (ap === "PM" ? 12 : 0);
+      return { hour24, minute };
+    }
+
+    match = text.match(/\b(\d{1,2})\s*:\s*(\d{2})\b/);
+    if (match) {
+      const hour24 = Number(match[1]);
+      const minute = Number(match[2]);
+      if (!Number.isFinite(hour24) || hour24 < 0 || hour24 > 23) {
+        return null;
+      }
+      if (!Number.isFinite(minute) || minute < 0 || minute > 59) {
+        return null;
+      }
+      return { hour24, minute };
+    }
+
+    match = text.match(/(\d{1,2})\s*(AM|PM)\b/i);
+    if (match) {
+      const hour12 = Number(match[1]);
+      const ap = match[2].toUpperCase();
+      if (!Number.isFinite(hour12) || hour12 < 1 || hour12 > 12) {
+        return null;
+      }
+      const hour24 = (hour12 % 12) + (ap === "PM" ? 12 : 0);
+      return { hour24, minute: 0 };
+    }
+    return null;
+  };
+
+  const formatHourOnly = (hour24) => {
+    const h = Number(hour24);
+    if (!Number.isFinite(h)) {
+      return "";
+    }
+    const ap = h < 12 ? "AM" : "PM";
+    let hour12 = h % 12;
+    if (hour12 === 0) {
+      hour12 = 12;
+    }
+    return `${hour12} ${ap}`;
+  };
+
+  const roundedUpHour24FromLabel = (label) => {
+    const parsed = parseLabelTime(label);
+    if (!parsed) {
+      return null;
+    }
+    const { hour24, minute } = parsed;
+    if (!Number.isFinite(hour24) || !Number.isFinite(minute)) {
+      return null;
+    }
+    // Round up to the hour for display/selection; clamp within the same day.
+    if (minute > 0) {
+      return Math.min(hour24 + 1, 23);
+    }
+    return hour24;
+  };
+
+  function loadUiState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) {
+        return null;
+      }
+      const parsed = JSON.parse(raw);
+      return parsed && typeof parsed === "object" ? parsed : null;
+    } catch (err) {
+      return null;
+    }
+  }
+
+  function saveUiState() {
+    try {
+      const labels = getChartLabels();
+      const length = Array.isArray(labels) ? labels.length : 0;
+      const pinned = clampIndex(pinnedPointIndex, length);
+      const pinnedLabel = pinned !== null ? valueAt(labels, pinned, "") : "";
+      const pinnedHour24 = pinnedLabel ? roundedUpHour24FromLabel(pinnedLabel) : null;
+      const pinnedHour = pinnedHour24 === null ? "" : formatHourOnly(pinnedHour24);
+      const modes = Array.from(enabledModes || []);
+      const payload = {
+        pinnedIndex: pinned,
+        pinnedHour,
+        modes,
+        usageMode,
+        usageRange,
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    } catch (err) {
+      // ignore storage failures
+    }
+  }
+
+  const ensureSelectionUi = () => {
+    const controls = document.getElementById("chartcontrols");
+    if (!controls) {
+      return;
+    }
+
+    if (!selectionIndicatorEl) {
+      selectionIndicatorEl = document.createElement("span");
+      selectionIndicatorEl.id = "selection-indicator";
+      selectionIndicatorEl.style.marginLeft = "10px";
+      selectionIndicatorEl.style.fontSize = "14px";
+      selectionIndicatorEl.style.opacity = "0.9";
+      selectionIndicatorEl.style.userSelect = "none";
+      selectionIndicatorEl.textContent = "";
+      selectionIndicatorEl.title = "Hover the chart to preview a reading. Click to pin. Use Clear Pin or select Latest to reset.";
+      controls.appendChild(selectionIndicatorEl);
+
+      const help = document.createElement("span");
+      help.id = "selection-help";
+      help.textContent = "ⓘ";
+      help.style.marginLeft = "6px";
+      help.style.color = "#66ff99";
+      help.style.cursor = "help";
+      help.title = "Orange label = selected reading (hover or pinned). Click a point to pin; click again to unpin.";
+      controls.appendChild(help);
+    }
+
+    if (!clearPinButtonEl) {
+      clearPinButtonEl = document.createElement("button");
+      clearPinButtonEl.id = "clear-pin";
+      clearPinButtonEl.type = "button";
+      clearPinButtonEl.className = "chart-control";
+      clearPinButtonEl.textContent = "Clear Pin";
+      clearPinButtonEl.style.marginLeft = "10px";
+      clearPinButtonEl.style.display = "none";
+      controls.appendChild(clearPinButtonEl);
+    }
+
+    if (!hourPickerEl) {
+      hourPickerEl = document.createElement("select");
+      hourPickerEl.id = "hour-picker";
+      hourPickerEl.style.marginLeft = "10px";
+      hourPickerEl.style.borderRadius = "8px";
+      hourPickerEl.style.padding = "6px 10px";
+      hourPickerEl.style.border = "1px solid #1a1a20";
+      hourPickerEl.style.background = "#0d0d12";
+      hourPickerEl.style.color = "#f4f6ff";
+      hourPickerEl.style.maxWidth = "220px";
+      hourPickerEl.title = "Pick a specific reading to pin.";
+      controls.appendChild(hourPickerEl);
+    }
+  };
+
+  const syncHourPickerOptions = () => {
+    ensureSelectionUi();
+    if (!hourPickerEl) {
+      return;
+    }
+    const labels = getChartLabels();
+    if (!Array.isArray(labels) || labels.length === 0) {
+      hourPickerEl.innerHTML = "";
+      const opt = document.createElement("option");
+      opt.value = "";
+      opt.textContent = "Latest";
+      hourPickerEl.appendChild(opt);
+      hourPickerEl.disabled = true;
+      return;
+    }
+
+    hourPickerEl.disabled = false;
+    hourPickerEl.innerHTML = "";
+    const latestOpt = document.createElement("option");
+    latestOpt.value = "";
+    const lastLabel = labels[labels.length - 1];
+    const lastHour24 = roundedUpHour24FromLabel(lastLabel);
+    const lastHourText = lastHour24 === null ? "" : formatHourOnly(lastHour24);
+    latestOpt.textContent = lastHourText ? `Latest (${lastHourText})` : "Latest";
+    hourPickerEl.appendChild(latestOpt);
+
+    const byHour = new Map();
+    labels.forEach((label, idx) => {
+      const hour24 = roundedUpHour24FromLabel(label);
+      if (hour24 === null) {
+        return;
+      }
+      // Keep the latest point in that rounded-up hour.
+      byHour.set(hour24, idx);
+    });
+
+    for (let hour24 = 0; hour24 <= 23; hour24 += 1) {
+      const opt = document.createElement("option");
+      opt.value = `H${hour24}`;
+      opt.textContent = formatHourOnly(hour24);
+      if (!byHour.has(hour24)) {
+        opt.disabled = true;
+      }
+      hourPickerEl.appendChild(opt);
+    }
+
+    const selectedPinned = clampIndex(pinnedPointIndex, labels.length);
+    if (selectedPinned !== null) {
+      const hour24 = roundedUpHour24FromLabel(labels[selectedPinned]);
+      hourPickerEl.value = hour24 === null ? "" : `H${hour24}`;
+    } else {
+      hourPickerEl.value = "";
+    }
+
+    // Make the "Latest" selection match the orange selection accents.
+    hourPickerEl.style.color = hourPickerEl.value === "" ? "#ffb347" : "#f4f6ff";
+  };
+
+  const updateSelectionIndicator = () => {
+    ensureSelectionUi();
+    if (!selectionIndicatorEl) {
+      return;
+    }
+
+    const labels = getChartLabels();
+    const length = Array.isArray(labels) ? labels.length : 0;
+    const pinned = clampIndex(pinnedPointIndex, length);
+    const hovered = clampIndex(hoverPointIndex, length);
+
+    if (clearPinButtonEl) {
+      clearPinButtonEl.style.display = pinned !== null ? "inline-flex" : "none";
+      clearPinButtonEl.disabled = pinned === null;
+      clearPinButtonEl.classList.toggle("active", pinned !== null);
+    }
+
+    if (pinned !== null) {
+      const label = valueAt(labels, pinned, "");
+      selectionIndicatorEl.textContent = `Pinned: ${formatHourLabel(label)}`;
+      selectionIndicatorEl.style.color = "#ffb347";
+      return;
+    }
+    if (hovered !== null) {
+      const label = valueAt(labels, hovered, "");
+      selectionIndicatorEl.textContent = `Hover: ${formatHourLabel(label)}`;
+      selectionIndicatorEl.style.color = "#ffb347";
+      return;
+    }
+    selectionIndicatorEl.textContent = "";
+    selectionIndicatorEl.style.color = "";
+    syncHourPickerOptions();
+  };
+
+  const updateCondenserRuntimeSummary = () => {
+    const panel = document.querySelector(".condenser-runtime");
+    if (!panel) {
+      return;
+    }
+    const valueEl = panel.querySelector(".value");
+    const costEl = panel.querySelector(".cost-value");
+
+    const perHour = getCondenserMinutes();
+    const computedMinutes = Array.isArray(perHour)
+      ? perHour.reduce((acc, v) => acc + (Number.isFinite(Number(v)) ? Number(v) : 0), 0)
+      : 0;
+    const storedMinutesValueRaw = getTotalCondenserMinutesValue();
+    const storedMinutesValue = Number(storedMinutesValueRaw);
+    const minutesValue = Number.isFinite(storedMinutesValue) ? storedMinutesValue : computedMinutes;
+
+    const storedMinutesDisplay = String(getTotalCondenserMinutesDisplay() || "").trim();
+    const minutesDisplay =
+      storedMinutesDisplay ||
+      (Number.isFinite(minutesValue) ? String(Math.round(minutesValue)) : "0");
+
+    if (valueEl) {
+      valueEl.textContent = `${minutesDisplay} min`;
+    }
+
+    const storedCostDisplay = String(getTotalCondenserCostDisplay() || "").trim();
+    const storedCostValueRaw = getTotalCondenserCostValue();
+    const storedCostValue = Number(storedCostValueRaw);
+    const costPerMinute = Number(getCondenserCostPerMinute()) || 0.05;
+    const costValue = Number.isFinite(storedCostValue) ? storedCostValue : minutesValue * costPerMinute;
+    const costDisplay = storedCostDisplay || `$${costValue.toFixed(2)}`;
+
+    if (costEl) {
+      costEl.textContent = costDisplay;
+      costEl.classList.remove("cost-ok", "cost-warm", "cost-hot", "cost-red");
+      if (costValue < 5) {
+        costEl.classList.add("cost-ok");
+      } else if (costValue < 10) {
+        costEl.classList.add("cost-warm");
+      } else if (costValue < 15) {
+        costEl.classList.add("cost-hot");
+      } else {
+        costEl.classList.add("cost-red");
+      }
+    }
+  };
+
+  const archiveExistenceCache = new Map();
+  let archiveExistenceValidationRunning = false;
+
+  const fetchArchiveExists = async (slug) => {
+    if (!slug) {
+      return false;
+    }
+    if (archiveExistenceCache.has(slug)) {
+      return archiveExistenceCache.get(slug);
+    }
+    const url = buildArchiveJsonUrl(slug);
+    if (!url) {
+      archiveExistenceCache.set(slug, false);
+      return false;
+    }
+    try {
+      // Prefer HEAD, fall back to GET if not supported.
+      const headResp = await fetch(url, { method: "HEAD", cache: "no-store" });
+      if (headResp.ok) {
+        archiveExistenceCache.set(slug, true);
+        return true;
+      }
+      if (headResp.status !== 405 && headResp.status !== 404) {
+        // For non-OK responses that aren't "method not allowed" or "not found",
+        // fall back to GET to confirm.
+      }
+    } catch (err) {
+      // If HEAD fails (file:// or CORS issues), try GET.
+    }
+    try {
+      const getResp = await fetch(url, { cache: "no-store" });
+      const ok = Boolean(getResp && getResp.ok);
+      archiveExistenceCache.set(slug, ok);
+      return ok;
+    } catch (err) {
+      // Unknown network state: do not remove the entry, but mark as "unknown".
+      // Returning true prevents the UI from hiding the date when we can't verify.
+      archiveExistenceCache.set(slug, true);
+      return true;
+    }
+  };
+
+  const pruneMissingArchives = async () => {
+    if (archiveExistenceValidationRunning || !dashboardData) {
+      return;
+    }
+    const archiveDates = getArchiveDates();
+    if (!Array.isArray(archiveDates) || archiveDates.length === 0) {
+      return;
+    }
+    const slugs = archiveDates.map((e) => e?.slug).filter(Boolean);
+    if (slugs.length === 0) {
+      return;
+    }
+    archiveExistenceValidationRunning = true;
+    try {
+      const results = await Promise.all(slugs.map((slug) => fetchArchiveExists(slug)));
+      const existsSet = new Set(slugs.filter((slug, idx) => results[idx]));
+      const filtered = archiveDates.filter((entry) => !entry?.slug || existsSet.has(entry.slug));
+      if (filtered.length !== archiveDates.length) {
+        // Mutate in-memory data only; next render will no longer show missing entries.
+        dashboardData.archiveDates = filtered;
+        renderArchiveList();
+      }
+    } finally {
+      archiveExistenceValidationRunning = false;
+    }
   };
 
   function renderArchiveList() {
@@ -1533,6 +2792,10 @@
       chartHistoryList.appendChild(monthItem);
     });
     setActiveArchiveItem(currentArchiveSlug);
+
+    // Ensure the history list reflects actual files on disk/server.
+    // This prevents stale entries when a JSON file is deleted but still present in archiveDates.
+    pruneMissingArchives();
   }
 
   function applyDashboardData(data, slugHint = null) {
@@ -1541,25 +2804,51 @@
     }
     dashboardData = data;
     currentArchiveSlug = slugHint || data.generatedDateSlug || currentArchiveSlug;
+    const labels = getChartLabels();
+    const length = Array.isArray(labels) ? labels.length : 0;
+    // Restore pinned selection from localStorage when available (prefer matching hour label).
+    savedUiState = savedUiState || loadUiState();
+    if (savedUiState && typeof savedUiState === "object") {
+      const desiredHour = String(savedUiState.pinnedHour || "").trim().toLowerCase();
+      if (desiredHour) {
+        const matchIdx = labels.findIndex((lbl) => {
+          const hour24 = roundedUpHour24FromLabel(lbl);
+          if (hour24 === null) {
+            return false;
+          }
+          return formatHourOnly(hour24).trim().toLowerCase() === desiredHour;
+        });
+        if (matchIdx >= 0) {
+          pinnedPointIndex = matchIdx;
+        }
+      } else if (savedUiState.pinnedIndex !== null && savedUiState.pinnedIndex !== undefined) {
+        pinnedPointIndex = savedUiState.pinnedIndex;
+      }
+    }
+    pinnedPointIndex = clampIndex(pinnedPointIndex, length);
+    hoverPointIndex = pinnedPointIndex;
     const isArchiveLoad = Boolean(slugHint);
     renderArchiveList();
     updateHistoryStatus(currentArchiveSlug);
-    const timestampText =
-      dashboardData.generatedTimestamp ||
-      (currentArchiveSlug ? archiveLabelMap.get(currentArchiveSlug) : null) ||
-      "History: current data";
-    updateTimestampDisplay(timestampText);
+    updateTimestampFromSelection();
+    updateSelectionIndicator();
+    ensureUsageUi();
+    destroyUsageMainChart();
     destroyChart();
-    createChart();
-    if (!isArchiveLoad || !cardsInitialized) {
-      updateMetricCards();
-      cardsInitialized = true;
+    if (usageMode === "usage") {
+      renderUsageMainChart();
+    } else {
+      createChart();
     }
+    updateMetricCards();
+    cardsInitialized = true;
     if (chart) {
       chart.options.plugins.legend.display = false;
       chart.update();
     }
-    reapplyVisibility();
+    if (usageMode !== "usage") {
+      reapplyVisibility();
+    }
     showChart();
   }
 

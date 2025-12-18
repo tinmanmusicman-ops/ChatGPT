@@ -1,5 +1,6 @@
 from  __future__ import annotations
 
+import argparse
 import subprocess
 from pathlib import Path
 from typing import Iterable, List, Optional, Tuple
@@ -10,7 +11,10 @@ import math
 import mimetypes
 import re
 import shutil
-from datetime import datetime
+import urllib.parse
+import urllib.request
+from datetime import datetime, date, timedelta
+from zoneinfo import ZoneInfo
 
 from google.auth.transport.requests import Request
 from google.auth.exceptions import RefreshError
@@ -94,6 +98,9 @@ GLOBAL_CONFIG_PATH = AI_BOTS_ROOT / "shared" / "Global.json"
 TOKEN_PATH = AI_BOTS_ROOT / "shared" / "Tokens.json"
 TEMP_DIR = AI_BOTS_ROOT / "Temp"
 DRIVE_FOLDER_NAME = "Thermostat Dashboards"
+OPEN_METEO_ARCHIVE_URL = "https://archive-api.open-meteo.com/v1/archive"
+OPEN_METEO_FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
+WEATHER_CACHE_DIR = TEMP_DIR / "open_meteo_hourly_cache"
 
 
 def _load_shared_config() -> dict:
@@ -182,6 +189,11 @@ INLINE_CLIENT_SCRIPT = _normalize_flag(
     os.environ.get("INLINE_CLIENT_SCRIPT", inline_flag_cfg),
     default=INLINE_CLIENT_SCRIPT_DEFAULT,
 )
+TEST_MODE = _normalize_flag(
+    cfg_payload.get("test_mode", cfg_payload.get("testMode", cfg_payload.get("test", False))),
+    default=False,
+)
+logger.info("Dashboard test_mode=%s (disables git autopush)", TEST_MODE)
 
 HISTORY_WINDOW = 24
 CHART_METRIC_INDEX = 1  # Fallback index; overridden to "Current Temperature" if present
@@ -192,6 +204,505 @@ def _load_credentials() -> Credentials:
     logger.info("Loaded service account credentials from %s", GLOBAL_CONFIG_PATH)
     creds = service_account.Credentials.from_service_account_info(info, scopes=SCOPES)
     return creds
+
+
+def _parse_date_only(value: str) -> date:
+    text = (value or "").strip()
+    if not text:
+        raise ValueError("Empty date value")
+    for fmt in ("%Y-%m-%d", "%m/%d/%Y", "%m-%d-%Y", "%Y/%m/%d"):
+        try:
+            return datetime.strptime(text, fmt).date()
+        except ValueError:
+            continue
+    raise ValueError(f"Unsupported date format: {value!r} (use YYYY-MM-DD)")
+
+
+def _daterange_inclusive(start: date, end: date) -> Iterable[date]:
+    if end < start:
+        raise ValueError(f"End date {end} is before start date {start}")
+    current = start
+    while current <= end:
+        yield current
+        current += timedelta(days=1)
+
+
+def _day_condition(target: date) -> str:
+    """
+    Deterministic day condition from date only (no external/weather dependencies).
+
+    Returns: "full_sun", "mixed", or "rainy".
+    """
+    seed = int(target.strftime("%Y%m%d"))
+    bucket = seed % 10
+    if bucket <= 4:
+        return "full_sun"
+    if bucket <= 7:
+        return "mixed"
+    return "rainy"
+
+
+def _fan_mode_for_hour(target: date, hour: int) -> str:
+    if not (0 <= hour <= 23):
+        raise ValueError(f"Hour out of range: {hour}")
+
+    mmdd = (target.month, target.day)
+    if (target.month == 8 and 1 <= target.day <= 30):
+        schedule = ((0, 5, "C"), (6, 12, "O"), (13, 18, "A"), (19, 23, "O"))
+    elif (target.month == 9 and 1 <= target.day <= 30):
+        schedule = ((0, 5, "O"), (6, 12, "C"), (13, 18, "A"), (19, 23, "O"))
+    elif (target.month == 10 and 1 <= target.day <= 30):
+        schedule = ((0, 5, "O"), (6, 12, "C"), (13, 18, "A"), (19, 23, "O"))
+    elif (target.month == 11 and 1 <= target.day <= 30):
+        schedule = ((0, 18, "A"), (19, 23, "O"))
+    elif (target.month == 12 and 1 <= target.day <= 30):
+        schedule = ((0, 12, "A"), (13, 18, "O"), (19, 23, "C"))
+    else:
+        schedule = ((0, 23, "A"),)
+
+    for start_hour, end_hour, mode in schedule:
+        if start_hour <= hour <= end_hour:
+            return mode
+    return "A"
+
+
+def _baseline_anchor_temps(target: date, *, full_sun: bool) -> dict[int, float]:
+    if target.month == 8 and 1 <= target.day <= 30:
+        if full_sun:
+            return {5: 65, 6: 65, 13: 73, 16: 75, 17: 77, 19: 80, 23: 70}
+        return {5: 65, 6: 65, 13: 73, 16: 74, 17: 75, 19: 76, 23: 70}
+    if target.month == 9 and 1 <= target.day <= 30:
+        if full_sun:
+            return {5: 65, 6: 70, 13: 77, 16: 78, 17: 80, 19: 77, 23: 70}
+        return {5: 65, 6: 70, 13: 73, 16: 75, 17: 76, 19: 75, 23: 70}
+    if target.month == 10 and 1 <= target.day <= 30:
+        if full_sun:
+            return {5: 68, 6: 70, 13: 76, 16: 77, 17: 79, 19: 80, 23: 70}
+        return {5: 68, 6: 65, 13: 70, 16: 72, 17: 73, 19: 74, 23: 70}
+    if target.month == 11 and 1 <= target.day <= 30:
+        if full_sun:
+            return {5: 65, 6: 65, 13: 70, 16: 75, 17: 77, 19: 77, 23: 68}
+        return {5: 65, 6: 65, 13: 70, 16: 70, 17: 72, 19: 73, 23: 68}
+    if target.month == 12 and 1 <= target.day <= 30:
+        if full_sun:
+            return {5: 65, 6: 65, 13: 70, 16: 73, 17: 75, 19: 73, 23: 70}
+        return {5: 63, 6: 62, 13: 68, 16: 69, 17: 70, 19: 68, 23: 65}
+    # Fallback: mild daily swing.
+    return {5: 68, 6: 68, 13: 72, 16: 74, 17: 74, 19: 72, 23: 70}
+
+
+def _interpolate_hourly_from_anchors(anchors: dict[int, float]) -> List[float]:
+    # Expected anchors include 23 and 5 to bridge midnight (wrap).
+    if 23 not in anchors or 5 not in anchors:
+        raise ValueError("Anchors must include 23 and 5 for midnight wrap interpolation")
+
+    # Build extended anchor timeline: 0..29 (where 29 represents next-day 5:00 AM).
+    anchor_points: List[Tuple[int, float]] = sorted((h, float(v)) for h, v in anchors.items())
+    anchor_points.append((29, float(anchors[5])))
+
+    def _interp(x: int) -> float:
+        for idx in range(len(anchor_points) - 1):
+            x0, y0 = anchor_points[idx]
+            x1, y1 = anchor_points[idx + 1]
+            if x0 <= x <= x1:
+                if x1 == x0:
+                    return y0
+                ratio = (x - x0) / (x1 - x0)
+                return y0 + (y1 - y0) * ratio
+        return float(anchor_points[-1][1])
+
+    hourly: List[float] = []
+    for hour in range(24):
+        x = hour + 24 if hour < 5 else hour
+        hourly.append(_interp(x))
+    return hourly
+
+
+def _setpoint_for_hour(target: date, hour: int) -> float:
+    # Summer-ish policy: Aug 1 through Oct 30 (inclusive).
+    if (target.month == 8 and target.day >= 1) or target.month in (9, 10):
+        default = 80.0
+        if hour in (13, 14, 15, 16, 17):
+            return 75.0
+        if hour in (18, 19, 20, 21, 22, 23):
+            return 78.0
+        return default
+
+    # Winter-ish policy: Nov 1 through Dec 31.
+    if target.month in (11, 12):
+        default = 75.0
+        if hour in (13, 14, 15, 16, 17):
+            return 72.0
+        if hour in (18, 19, 20, 21, 22, 23):
+            return 75.0
+        return default
+
+    return 75.0
+
+
+def _hourly_drop_for_condition(condition: str) -> float:
+    if condition == "full_sun":
+        return 1.0
+    if condition == "mixed":
+        return 2.0
+    return 4.0
+
+
+def _daylight_char_for_hour(hour: int) -> str:
+    return "D" if 6 <= hour <= 18 else "N"
+
+
+def _open_meteo_flag(code: int, is_day_flag: int) -> str:
+    rain_codes = {51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82, 95, 96, 99}
+    partly_codes = {1, 2, 3}
+    overcast_codes = {45, 48}
+    is_day = bool(int(is_day_flag))
+    if int(code) == 0:
+        return "S" if is_day else "N"
+    if int(code) in partly_codes:
+        return "P"
+    if int(code) in overcast_codes:
+        return "O"
+    if int(code) in rain_codes:
+        return "R"
+    if 71 <= int(code) <= 77:
+        return "O"
+    return "O"
+
+
+def _open_meteo_day_char(is_day_flag: int) -> str:
+    return "D" if int(is_day_flag) == 1 else "N"
+
+
+def _fmt_open_meteo_outside_raw(flag: str, dayc: str, temp_f: float) -> str:
+    if float(temp_f).is_integer():
+        t = str(int(round(float(temp_f))))
+    else:
+        t = f"{float(temp_f):.1f}"
+    return f"{flag}{dayc}{t} | Open-Meteo"
+
+
+def _http_get_json(url: str, params: dict) -> dict:
+    full_url = url + "?" + urllib.parse.urlencode(params)
+    req = urllib.request.Request(full_url, headers={"User-Agent": "thermostat-dashboard"})
+    with urllib.request.urlopen(req, timeout=60) as resp:
+        return json.load(resp)
+
+
+def _extract_open_meteo_day_hourly(payload: dict, target_day: date) -> tuple[List[float], List[int], List[int], List[float]]:
+    h = payload.get("hourly") or {}
+    times = h.get("time") or []
+    temps = h.get("temperature_2m") or []
+    codes = h.get("weather_code") or []
+    is_day = h.get("is_day") or []
+    precip = h.get("precipitation") or [0.0] * len(times)
+    if not (len(times) == len(temps) == len(codes) == len(is_day) == len(precip)):
+        raise RuntimeError("Open-Meteo returned mismatched hourly arrays.")
+
+    day_prefix = target_day.isoformat()
+    by_hour: dict[int, tuple[float, int, int, float]] = {}
+    for t, tf, code, dayflag, p in zip(times, temps, codes, is_day, precip):
+        if not isinstance(t, str) or not t.startswith(day_prefix):
+            continue
+        # Open-Meteo uses "YYYY-MM-DDTHH:MM"
+        try:
+            hour = int(t.split("T", 1)[1].split(":", 1)[0])
+        except Exception:
+            continue
+        if 0 <= hour <= 23:
+            by_hour[hour] = (float(tf), int(code), int(dayflag), float(p) if p is not None else 0.0)
+
+    missing = [h for h in range(24) if h not in by_hour]
+    if missing:
+        raise RuntimeError(f"Missing Open-Meteo hours for {target_day.isoformat()}: {missing}")
+
+    temps_out: List[float] = []
+    codes_out: List[int] = []
+    is_day_out: List[int] = []
+    precip_out: List[float] = []
+    for hour in range(24):
+        tf, code, dayflag, p = by_hour[hour]
+        temps_out.append(tf)
+        codes_out.append(code)
+        is_day_out.append(dayflag)
+        precip_out.append(p)
+    return temps_out, codes_out, is_day_out, precip_out
+
+
+def _fetch_open_meteo_hourly_for_day(target_day: date, tz: str, lat: float, lon: float) -> tuple[List[float], List[int], List[int], List[float]]:
+    WEATHER_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    cache_path = WEATHER_CACHE_DIR / f"{target_day.isoformat()}.json"
+    if cache_path.exists():
+        try:
+            cached = json.loads(cache_path.read_text(encoding="utf-8"))
+            return _extract_open_meteo_day_hourly(cached, target_day)
+        except Exception:
+            pass
+
+    params = {
+        "latitude": lat,
+        "longitude": lon,
+        "start_date": target_day.isoformat(),
+        "end_date": target_day.isoformat(),
+        "hourly": "temperature_2m,weather_code,is_day,precipitation",
+        "temperature_unit": "fahrenheit",
+        "timezone": tz or "auto",
+    }
+    payload: Optional[dict] = None
+    try:
+        payload = _http_get_json(OPEN_METEO_ARCHIVE_URL, params)
+    except Exception as exc:
+        logger.warning("Open-Meteo archive fetch failed for %s (%s); trying forecast endpoint", target_day, exc)
+        payload = _http_get_json(OPEN_METEO_FORECAST_URL, params)
+
+    try:
+        cache_path.write_text(json.dumps(payload), encoding="utf-8")
+    except Exception:
+        pass
+    return _extract_open_meteo_day_hourly(payload, target_day)
+
+
+def _classify_condition_from_weather(flags: List[str], precip: List[float]) -> str:
+    # Use the "working hours" window 10:00-16:00 inclusive for classification.
+    window = list(range(10, 17))
+    window_flags = [flags[i] for i in window if i < len(flags)]
+    window_precip = [precip[i] for i in window if i < len(precip)]
+    if any(f == "R" for f in window_flags) or any((p or 0.0) > 0.0 for p in window_precip):
+        return "rainy"
+    count_sunny = sum(1 for f in window_flags if f == "S")
+    count_cloudy = sum(1 for f in window_flags if f in ("P", "O"))
+    if count_sunny >= max(1, count_cloudy):
+        return "full_sun"
+    return "mixed"
+
+
+def build_projected_dashboard_payload(
+    target: date,
+    archive_dates: List[dict],
+    *,
+    weather_source: str = "auto",
+) -> tuple[dict, dict]:
+    """
+    Create a full dashboard payload JSON for the archive viewer, generated from date only.
+
+    Returns (payload, summary).
+    """
+    tz = cfg_payload.get("timezone") or GLOBAL_SHARED_CONFIG.get("timezone") or "auto"
+    lat = cfg_payload.get("weather_lat") or GLOBAL_SHARED_CONFIG.get("weather_lat")
+    lon = cfg_payload.get("weather_lon") or GLOBAL_SHARED_CONFIG.get("weather_lon")
+
+    use_real_weather = weather_source in ("auto", "open-meteo") and lat is not None and lon is not None
+
+    outside: List[float]
+    outside_flags: List[str]
+    outside_flag_day_chars: List[str]
+    precip: List[float]
+
+    condition = _day_condition(target)
+    if use_real_weather:
+        try:
+            temps_f, codes, is_day, precip = _fetch_open_meteo_hourly_for_day(target, tz, float(lat), float(lon))
+            outside = temps_f
+            outside_flags = [_open_meteo_flag(code, dayflag) for code, dayflag in zip(codes, is_day)]
+            outside_flag_day_chars = [_open_meteo_day_char(dayflag) for dayflag in is_day]
+            condition = _classify_condition_from_weather(outside_flags, precip)
+        except Exception as exc:
+            logger.warning("Falling back to synthetic outside temps for %s (%s)", target, exc)
+            use_real_weather = False
+
+    if not use_real_weather:
+        precip = [0.0] * 24
+        outside_offset = 0.0
+        if target.month in (8, 9):
+            outside_offset = 8.0
+        elif target.month == 10:
+            outside_offset = 5.0
+        elif target.month == 11:
+            outside_offset = 3.0
+        elif target.month == 12:
+            outside_offset = 2.0
+        full_sun_fallback = condition == "full_sun"
+        anchors_fallback = _baseline_anchor_temps(target, full_sun=full_sun_fallback)
+        normal_fallback = _interpolate_hourly_from_anchors(anchors_fallback)
+        outside = [max(30.0, min(105.0, t + outside_offset)) for t in normal_fallback]
+        flag = "S" if condition == "full_sun" else ("R" if condition == "rainy" else "P")
+        outside_flag_day_chars = [_daylight_char_for_hour(h) for h in range(24)]
+        outside_flags = [flag] * 24
+
+    full_sun = condition == "full_sun"
+    anchors = _baseline_anchor_temps(target, full_sun=full_sun)
+    normal_temp = _interpolate_hourly_from_anchors(anchors)
+    setpoint = [_setpoint_for_hour(target, hour) for hour in range(24)]
+
+    hourly_drop = _hourly_drop_for_condition(condition)
+
+    adjusted_temp: List[float] = [float(normal_temp[0])]
+    condenser_on: List[bool] = [False] * 24
+
+    for hour in range(24):
+        if adjusted_temp[hour] > setpoint[hour]:
+            condenser_on[hour] = True
+            if hour < 23:
+                cooled = float(normal_temp[hour + 1]) - hourly_drop
+                adjusted_temp.append(max(cooled, float(setpoint[hour + 1])))
+        else:
+            condenser_on[hour] = False
+            if hour < 23:
+                adjusted_temp.append(float(normal_temp[hour + 1]))
+
+    runtime_this_hour = [40 if on else 0 for on in condenser_on]
+    total_runtime_minutes = sum(runtime_this_hour)
+
+    latest_outside_raw = ""
+    if outside_flags and outside_flag_day_chars and outside:
+        if use_real_weather:
+            latest_outside_raw = _fmt_open_meteo_outside_raw(outside_flags[-1], outside_flag_day_chars[-1], outside[-1])
+        else:
+            latest_outside_raw = f"{outside_flags[-1]}{outside_flag_day_chars[-1]}"
+
+    fan_series = [_fan_mode_for_hour(target, hour) for hour in range(24)]
+    cooling_series = [1 if on else 0 for on in condenser_on]
+    climate_setting_series = ["Cool"] * 24
+
+    # Request metadata (simulated) - matches spreadsheet style:
+    # Type: "request (studio 11, zone3, 50m)"
+    # Studio: "11" (parsed from Type in real data, but we force it here)
+    # Request Expires (local time): "h:mm AM/PM" for that hour + 50 minutes
+    request_minutes = 50
+    request_studio = "11"
+    request_zone = "3"
+    type_series: List[str] = []
+    studio_series: List[str] = []
+    request_expires_series: List[str] = []
+    tz_name = str(cfg_payload.get("timezone") or GLOBAL_SHARED_CONFIG.get("timezone") or "America/Los_Angeles")
+    tzinfo = None
+    try:
+        tzinfo = ZoneInfo(tz_name)
+    except Exception:
+        tzinfo = None
+    for hour in range(24):
+        if condenser_on[hour]:
+            type_series.append(f"request (studio {request_studio}, zone{request_zone}, {request_minutes}m)")
+            studio_series.append(request_studio)
+            base_dt = datetime(target.year, target.month, target.day, hour, 0, 0)
+            if tzinfo is not None:
+                base_dt = base_dt.replace(tzinfo=tzinfo)
+            expires_dt = base_dt + timedelta(minutes=request_minutes)
+            time_text = expires_dt.strftime("%I:%M %p")
+            if time_text.startswith("0"):
+                time_text = time_text[1:]
+            request_expires_series.append(time_text)
+        else:
+            type_series.append("System")
+            studio_series.append("")
+            request_expires_series.append("")
+
+    # Display/summary values.
+    total_condenser_cost_value = float(total_runtime_minutes) * float(COST_PER_MINUTE)
+    total_condenser_minutes_display = str(int(total_runtime_minutes))
+    total_condenser_cost_display = f"${total_condenser_cost_value:.2f}"
+
+    slug = target.strftime("%Y-%m-%d")
+    generated_timestamp = (
+        f"Projected {target.strftime('%b %d, %Y')} ({'Open-Meteo' if use_real_weather else 'Synthetic outside'})"
+    )
+
+    # Match the live dashboard card schema as closely as possible so existing UI cards populate naturally.
+    headers = [
+        "Timestamp",
+        "Type",
+        "Building Temperature",
+        "Cooling Set Point",
+        "Climate Setting",
+        "Fan Setting",
+        "Equipment Status",
+        "Studio",
+        "Request Expires (local time)",
+        "Outside Temp",
+        "Condenser State",
+        "Condenser Minutes",
+    ]
+    latest_row = [
+        f"{slug} 23:00",
+        type_series[-1],
+        adjusted_temp[-1],
+        setpoint[-1],
+        climate_setting_series[-1],
+        fan_series[-1],
+        "Cooling" if cooling_series[-1] else "Idle",
+        studio_series[-1],
+        request_expires_series[-1],
+        outside[-1],
+        "On" if condenser_on[-1] else "Off",
+        runtime_this_hour[-1],
+    ]
+
+    FAN_LABELS = ["Auto", "Circulate", "On"]
+    COOLING_LABELS = ["Idle", "Cooling"]
+
+    chart_labels = [
+        datetime(target.year, target.month, target.day, hour).strftime("%a %m/%d %I %p")
+        for hour in range(24)
+    ]
+
+    payload = {
+        "headers": headers,
+        "latestRow": latest_row,
+        "history": [],
+        "chartLabels": chart_labels,
+        "setpoint": setpoint,
+        "actual": adjusted_temp,
+        "setpointLabel": "Set Point",
+        "actualLabel": "Building Temperature",
+        "fan": fan_series,
+        "fanLegend": FAN_LABELS,
+        "outside": outside,
+        "outsideLabel": "Outside Temp",
+        "outsideFlags": outside_flags,
+        "outsideFlagDayChars": outside_flag_day_chars,
+        "cooling": cooling_series,
+        "coolingLegend": COOLING_LABELS,
+        "coolingLabel": "Status",
+        "climateSetting": climate_setting_series,
+        "climateSettingLabel": "Climate Setting",
+        "typeSeries": type_series,
+        "studioSeries": studio_series,
+        "requestExpiresLocalSeries": request_expires_series,
+        "condenserMinutes": runtime_this_hour,
+        "totalCondenserMinutes": total_condenser_minutes_display,
+        "totalCondenserMinutesValue": float(total_runtime_minutes),
+        "totalCondenserCost": total_condenser_cost_display,
+        "totalCondenserCostValue": float(total_condenser_cost_value),
+        "condenserCostPerMinute": COST_PER_MINUTE,
+        "latestActual": adjusted_temp[-1],
+        "latestSetpoint": setpoint[-1],
+        "latestOutside": outside[-1],
+        "latestOutsideRaw": latest_outside_raw,
+        "latestOutsideDaylight": outside_flag_day_chars[-1] != "N",
+        "latestOutsideFlagDayChar": outside_flag_day_chars[-1],
+        "latestFan": fan_series[-1],
+        "latestCooling": cooling_series[-1],
+        "latestCondenserState": "On" if condenser_on[-1] else "Off",
+        "generatedTimestamp": generated_timestamp,
+        "generatedDateSlug": slug,
+        "archiveDates": archive_dates,
+        "archivePath": ARCHIVE_DIR_NAME,
+    }
+
+    hours_condenser_ran = [h for h, on in enumerate(condenser_on) if on]
+    summary = {
+        "targetDate": slug,
+        "datasetAction": "created_or_overwritten",
+        "setpointSchedule": {
+            "default": sorted(set(setpoint))[0] if setpoint else None,
+            "hours": setpoint,
+        },
+        "condenserHours": hours_condenser_ran,
+        "hourlyCoolingDropApplied": hourly_drop,
+        "totalProjectedHvacRuntimeMinutes": total_runtime_minutes,
+        "dayCondition": condition,
+    }
+    return payload, summary
 
 
 def get_sheets_service():
@@ -343,6 +854,9 @@ def push_dashboard_to_drive(html_path: Path, timestamp_suffix: Optional[str] = N
 
 def git_autopush(html_path: Path, extra_paths: Optional[List[Path]] = None) -> None:
     """Stage, commit, and push the generated dashboard copy."""
+    if TEST_MODE:
+        logger.info("Skipping git autopush because test_mode is enabled in config")
+        return
     if not GIT_TEST_FLAG:
         logger.info("Skipping git autopush because GitTestFlag is false")
         return
@@ -492,6 +1006,7 @@ def build_dashboard_html(
     cooling_idx = _find_index(
         ("equipment status", "equipment status", "status", "equipment", "cooling status")
     )
+    climate_setting_idx = _find_index(("climate setting", "climate", "mode"))
     condenser_state_idx = _find_index(
         ("condenser state", "compressor state", "condenser status", "compressor status")
     )
@@ -522,6 +1037,10 @@ def build_dashboard_html(
             return None
         return 1 if "cool" in val else 0
 
+    def _climate_setting_value(row: List[str]) -> Optional[str]:
+        # Force cooling-only display for the dashboard UI.
+        return "Cool"
+
     def _extract_clamped(idx: Optional[int], row: List[str]) -> Optional[float]:
         if idx is None or idx >= len(row):
             return None
@@ -549,10 +1068,37 @@ def build_dashboard_html(
         outside_flag_day_chars.append(day_char)
         outside_series.append(_extract_clamped(outside_idx, row))
     cooling_series = [_cooling_value(row) for row in history_rows]
+    climate_setting_series = [_climate_setting_value(row) for row in history_rows]
+    type_series = [str(row[type_idx]).strip() if type_idx is not None and type_idx < len(row) else "" for row in history_rows]
+    studio_series = []
+    request_expires_series = []
+    studio_idx = _find_index(("studio",))
+    request_expires_idx = _find_index(("request expires", "expires"))
+    for row in history_rows:
+        studio_series.append(
+            str(row[studio_idx]).strip() if studio_idx is not None and studio_idx < len(row) else ""
+        )
+        request_expires_series.append(
+            str(row[request_expires_idx]).strip()
+            if request_expires_idx is not None and request_expires_idx < len(row)
+            else ""
+        )
     cooling_label = (
         headers[cooling_idx]
         if cooling_idx is not None and len(headers) > cooling_idx
         else "Status"
+    )
+    climate_setting_label = (
+        headers[climate_setting_idx]
+        if climate_setting_idx is not None and len(headers) > climate_setting_idx
+        else "Climate Setting"
+    )
+    type_label = headers[type_idx] if type_idx is not None and len(headers) > type_idx else "Type"
+    studio_label = headers[studio_idx] if studio_idx is not None and len(headers) > studio_idx else "Studio"
+    request_expires_label = (
+        headers[request_expires_idx]
+        if request_expires_idx is not None and len(headers) > request_expires_idx
+        else "Request Expires (local time)"
     )
     condenser_idx = _find_index(("condenser minutes", "condenser runtime"))
     condenser_minutes_series = []
@@ -643,6 +1189,9 @@ def build_dashboard_html(
         if condenser_state_idx is not None and condenser_state_idx < len(latest_row)
         else ""
     )
+    # Force cooling-only climate setting for dashboard UI consistency.
+    if climate_setting_idx is not None and climate_setting_idx < len(latest_row):
+        latest_row[climate_setting_idx] = "Cool"
     dashboard_payload = {
         "headers": headers,
         "latestRow": latest_row,
@@ -661,6 +1210,14 @@ def build_dashboard_html(
         "cooling": cooling_series,
         "coolingLegend": COOLING_LABELS,
         "coolingLabel": cooling_label,
+        "climateSetting": climate_setting_series,
+        "climateSettingLabel": climate_setting_label,
+        "typeSeries": type_series,
+        "typeLabel": type_label,
+        "studioSeries": studio_series,
+        "studioLabel": studio_label,
+        "requestExpiresLocalSeries": request_expires_series,
+        "requestExpiresLocalLabel": request_expires_label,
         "condenserMinutes": condenser_minutes_series,
         "totalCondenserMinutes": total_condenser_display,
         "totalCondenserMinutesValue": total_condenser_minutes_value,
@@ -720,6 +1277,8 @@ def build_dashboard_html(
             metric_attr = ' data-metric="cooling"'
         elif idx == condenser_state_idx:
             metric_attr = ' data-metric="condenser-state"'
+        elif idx == climate_setting_idx:
+            metric_attr = ' data-metric="climate-setting"'
         elif idx == outside_idx:
             metric_attr = ' data-metric="outside"'
         elif idx == condenser_idx:
@@ -1075,18 +1634,21 @@ line-height: 1;
         transform: scale(0.98);
       }}
       #chartcontrols {{
-        width: 900px;
-
         display: flex;
-        align-items: center;
-        justify-content: center;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: flex-start;
         gap: 8px;
-        padding: 4px 8px;
-        margin-top: 20px;
-        margin-bottom: 48px;
+        padding: 10px;
+        margin-top: 0;
+        margin-bottom: 0;
         font-size: 14px;
         color: #f4f6ff;
-        height: 100px;
+        height: auto;
+        width: 100%;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 14px;
+        background: rgba(0, 0, 0, 0.18);
       }}
       .chart-control {{
         border: 1px solid #1a1a20;
@@ -1097,11 +1659,93 @@ line-height: 1;
         cursor: pointer;
         transition: background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
       }}
+      .chart-controls .chart-control {{
+        width: 100%;
+        justify-content: center;
+      }}
+      .chart-controls.usage-view .chart-control[data-mode],
+      .chart-controls.usage-view #autoplay-toggle {{
+        opacity: 0.35;
+        pointer-events: none;
+      }}
+      .chart-controls.usage-view #selection-indicator,
+      .chart-controls.usage-view #selection-help,
+      .chart-controls.usage-view #hour-picker,
+      .chart-controls.usage-view #clear-pin {{
+        display: none !important;
+      }}
       .chart-control.active {{
         background: #0d0d12;
         color: #66ff99;
         border-color: #1a1a20;
         box-shadow: none;
+      }}
+      .chart-layout {{
+        display: flex;
+        gap: 14px;
+        align-items: flex-start;
+      }}
+      .chart-sidebar {{
+        width: 240px;
+        min-width: 240px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }}
+      .chart-main {{
+        flex: 1;
+        min-width: 0;
+        position: relative;
+      }}
+      #selection-indicator {{
+        display: block;
+        margin-left: 0 !important;
+        margin-top: 2px;
+      }}
+      #selection-help {{
+        display: inline-block;
+        margin-left: 0 !important;
+      }}
+      #hour-picker {{
+        width: 100%;
+        max-width: none !important;
+      }}
+      .usage-mini {{
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 14px;
+        background: rgba(0, 0, 0, 0.18);
+        padding: 10px;
+        color: #fff5c7;
+      }}
+      .usage-mini.usage-active {{
+        border-color: rgba(255, 179, 71, 0.9);
+        box-shadow: 0 0 0 2px rgba(255, 179, 71, 0.18);
+      }}
+      .usage-mini h5 {{
+        margin: 0 0 8px;
+        font-size: 12px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: #fff5c7;
+      }}
+      .usage-mini .placeholder {{
+        height: 140px;
+        border-radius: 10px;
+        border: 1px dashed rgba(255, 245, 199, 0.35);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        opacity: 0.8;
+      }}
+      @media (max-width: 980px) {{
+        .chart-layout {{
+          flex-direction: column;
+        }}
+        .chart-sidebar {{
+          width: 100%;
+          min-width: 0;
+        }}
       }}
       #autoplay-toggle {{
         color: #66ff99;
@@ -1237,6 +1881,10 @@ line-height: 1;
         letter-spacing: 0.05em;
         text-transform: uppercase;
         color: #fff5c7;
+        background: #0b3d2e;
+        border: 1px solid rgba(255, 245, 199, 0.25);
+        border-radius: 10px;
+        padding: 6px 10px;
       }}
       .history-months-list {{
         list-style: none;
@@ -1333,6 +1981,11 @@ line-height: 1;
         font-weight: 600;
         text-transform: uppercase;
         cursor: pointer;
+        color: #fff5c7;
+        background: #0b3d2e;
+        border: 1px solid rgba(255, 245, 199, 0.35);
+        border-radius: 10px;
+        padding: 6px 10px;
       }}
       .chart-history-status {{
         font-size: 11px;
@@ -1417,26 +2070,35 @@ line-height: 1;
         <div class="cost-value {condenser_cost_class}">{total_condenser_cost_display or "$0.00"}</div>
       </div>
 
-      <div id="chartcontrols" class="chart-controls">
-          <button type="button" class="chart-control" data-mode="setpoint">Set Point</button>
-          <button type="button" class="chart-control" data-mode="actual">Building Temp</button>
-          <button type="button" class="chart-control" data-mode="outside">Outside Temp</button>
-          <button type="button" class="chart-control" data-mode="cooling">AC Status</button>
-          <button type="button" class="chart-control" data-mode="fan">Fan Mode</button>
-          <button type="button" class="chart-control active" data-mode="both">Combined</button>
-          <span>&nbsp;</span>
-          <button type="button" class="chart-control" id="autoplay-toggle">Auto-play: On</button>
-        </div>
-        <div class="chart-wrap">
-          <div>
+      <div class="chart-layout">
+        <div class="chart-sidebar">
+          <div id="chartcontrols" class="chart-controls">
+            <button type="button" class="chart-control" data-mode="setpoint">Set Point</button>
+            <button type="button" class="chart-control" data-mode="actual">Building Temp</button>
+            <button type="button" class="chart-control" data-mode="outside">Outside Temp</button>
+            <button type="button" class="chart-control" data-mode="cooling">AC Status</button>
+            <button type="button" class="chart-control" data-mode="fan">Fan Mode</button>
+            <button type="button" class="chart-control active" data-mode="both">Combined</button>
+            <button type="button" class="chart-control" id="autoplay-toggle">Auto-play: On</button>
           </div>
-          <canvas id="history-chart"></canvas>
-          <div class="chart-history" id="chart-history">
-            <h4 id="chart-history-toggle">Chart History</h4>
-            <div id="chart-history-status" class="chart-history-status"></div>
-            <ul id="chart-history-list" class="hidden"></ul>
+          <div class="usage-mini" id="usage-mini">
+            <h5>Usage</h5>
+            <div class="placeholder">Usage history chart (next)</div>
           </div>
         </div>
+        <div class="chart-main">
+          <div class="chart-wrap">
+            <div>
+            </div>
+            <canvas id="history-chart"></canvas>
+            <div class="chart-history" id="chart-history">
+              <h4 id="chart-history-toggle">Chart History</h4>
+              <div id="chart-history-status" class="chart-history-status"></div>
+              <ul id="chart-history-list" class="hidden"></ul>
+            </div>
+          </div>
+        </div>
+      </div>
         <div class="note">Data source: Google Sheet (last updated when this page was generated).</div>
         <pre id="js-log"></pre>
       </div>
@@ -1451,7 +2113,7 @@ line-height: 1;
     return generated_slug, dashboard_payload
 
 
-def main() -> None:
+def run_live_dashboard() -> None:
     headers, latest_row, history_rows = fetch_sheet_data()
     if not headers:
         raise SystemExit("Sheet returned no data; set GOOGLE_SHEET_ID and DATA_RANGE.")
@@ -1484,10 +2146,7 @@ def main() -> None:
         dashboard_data_path.write_text(json.dumps(dashboard_payload, indent=2), encoding="utf-8")
         # Automatically stage/commit/push the public HTML and archive copy so repo and remote stay in sync with each generation.
         dashboard_script_path = SCRIPT_DIR / "dashboard_client.js"
-        git_autopush(
-            public_copy,
-            extra_paths=[archive_target, dashboard_data_path, dashboard_script_path],
-        )
+        git_autopush(public_copy, extra_paths=[archive_target, dashboard_data_path, dashboard_script_path])
     except Exception as exc:
         logger.warning("Failed to write or push public copy %s (%s)", public_copy, exc)
     print(f"Dashboard generated at: {target_path.resolve()}")
@@ -1506,6 +2165,231 @@ def main() -> None:
             logger.info("Dashboard uploaded to Drive (file id %s); kept local copy at %s", file_id, target_path)
     except Exception as exc:
         logger.error("Failed to upload dashboard to Drive: %s", exc)
+
+
+def _format_archive_label(slug: str) -> str:
+    try:
+        parsed = datetime.strptime(slug, "%Y-%m-%d")
+        return parsed.strftime("%b %d, %Y")
+    except ValueError:
+        return slug
+
+
+def run_projected_range(start: date, end: date, *, weather_source: str = "auto") -> List[dict]:
+    """
+    Generate/overwrite archive JSON datasets for each day in [start, end].
+
+    Returns the per-day summaries printed during generation.
+    """
+    archive_dir = ARCHIVE_DIR
+    archive_dir.mkdir(parents=True, exist_ok=True)
+
+    # Build archive list = existing files + target range, so any loaded JSON can still show the full picker.
+    archive_slugs = set()
+    if archive_dir.exists():
+        for entry in archive_dir.glob("*.json"):
+            if entry.stem:
+                archive_slugs.add(entry.stem)
+    for day in _daterange_inclusive(start, end):
+        archive_slugs.add(day.strftime("%Y-%m-%d"))
+
+    archive_dates = [
+        {"slug": slug, "label": _format_archive_label(slug)}
+        for slug in sorted(archive_slugs, reverse=True)
+    ]
+
+    summaries: List[dict] = []
+    for day in _daterange_inclusive(start, end):
+        slug = day.strftime("%Y-%m-%d")
+        target_json = archive_dir / f"{slug}.json"
+        existed = target_json.exists()
+        payload, summary = build_projected_dashboard_payload(day, archive_dates, weather_source=weather_source)
+        summary["datasetAction"] = "overwritten" if existed else "created"
+        target_json.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+        summaries.append(summary)
+        logger.info(
+            "Projected dataset %s (%s): drop=%s°F/hr, runtime=%s min, condenser_hours=%s",
+            slug,
+            summary["datasetAction"],
+            summary["hourlyCoolingDropApplied"],
+            summary["totalProjectedHvacRuntimeMinutes"],
+            ",".join(str(h) for h in summary["condenserHours"]) or "-",
+        )
+
+    return summaries
+
+
+def _parse_time_from_label(label: str) -> tuple[int, int]:
+    """
+    Best-effort extract hour/minute from a chart label.
+
+    Supports labels like:
+    - "Tue 12/18 04 PM"
+    - "Sunday Nov 23     1:56 PM"
+    """
+    text = str(label or "").strip()
+    if not text:
+        return 0, 0
+    # Try HH:MM AM/PM
+    match = re.search(r"(\d{1,2})\s*:\s*(\d{2})\s*(AM|PM)\b", text, flags=re.IGNORECASE)
+    if match:
+        hh = int(match.group(1))
+        mm = int(match.group(2))
+        ap = match.group(3).upper()
+        hh = (hh % 12) + (12 if ap == "PM" else 0)
+        return hh % 24, mm % 60
+    # Try HH AM/PM
+    match = re.search(r"(\d{1,2})\s*(AM|PM)\b", text, flags=re.IGNORECASE)
+    if match:
+        hh = int(match.group(1))
+        ap = match.group(2).upper()
+        hh = (hh % 12) + (12 if ap == "PM" else 0)
+        return hh % 24, 0
+    return 0, 0
+
+
+def _format_local_time_12h(hour24: int, minute: int) -> str:
+    hour24 = int(hour24) % 24
+    minute = int(minute) % 60
+    ap = "AM" if hour24 < 12 else "PM"
+    hour12 = hour24 % 12
+    if hour12 == 0:
+        hour12 = 12
+    return f"{hour12}:{minute:02d} {ap}"
+
+
+def inject_demo_requests_into_archive(*, archive_dir: Path = ARCHIVE_DIR, per_file: int = 5) -> dict:
+    """
+    For every archive JSON, inject a handful of request entries so Studio/Expires visibly work on hover.
+
+    This is a demo/UX utility for projected datasets and historical archives.
+    """
+    updated = 0
+    skipped = 0
+    errors = 0
+
+    per_file = max(1, int(per_file))
+    if not archive_dir.exists():
+        raise FileNotFoundError(f"Archive dir not found: {archive_dir}")
+
+    for path in sorted(archive_dir.glob("*.json")):
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except Exception:
+            errors += 1
+            continue
+
+        labels = payload.get("chartLabels")
+        if not isinstance(labels, list) or not labels:
+            skipped += 1
+            continue
+        length = len(labels)
+
+        def _ensure_series(key: str, default_value):
+            series = payload.get(key)
+            if not isinstance(series, list) or len(series) != length:
+                payload[key] = [default_value for _ in range(length)]
+            return payload[key]
+
+        type_series = _ensure_series("typeSeries", "System")
+        studio_series = _ensure_series("studioSeries", "")
+        expires_series = _ensure_series("requestExpiresLocalSeries", "")
+
+        # Pick indices spaced across the day (avoid always clustering at start/end).
+        indices = []
+        for i in range(per_file):
+            idx = int(round((i + 1) * length / (per_file + 1)))
+            idx = max(0, min(length - 1, idx))
+            indices.append(idx)
+        # Deduplicate while preserving order.
+        seen = set()
+        indices = [i for i in indices if not (i in seen or seen.add(i))]
+
+        # Vary studios/zones/minutes per file deterministically by filename stem.
+        seed = sum(ord(ch) for ch in path.stem) % 997
+        studios = [11, 7, 3, 15, 9, 2, 18]
+        zones = [1, 2, 3, 4]
+        minutes_list = [30, 40, 45, 50, 60]
+
+        for j, idx in enumerate(indices):
+            studio = studios[(seed + j) % len(studios)]
+            zone = zones[(seed + 2 * j) % len(zones)]
+            minutes = minutes_list[(seed + 3 * j) % len(minutes_list)]
+            type_series[idx] = f"request (studio {studio}, zone{zone}, {minutes}m)"
+            studio_series[idx] = str(studio)
+            base_h, base_m = _parse_time_from_label(str(labels[idx]))
+            total_minutes = base_h * 60 + base_m + int(minutes)
+            expires_h = (total_minutes // 60) % 24
+            expires_m = total_minutes % 60
+            expires_series[idx] = _format_local_time_12h(expires_h, expires_m)
+
+        payload["typeSeries"] = type_series
+        payload["studioSeries"] = studio_series
+        payload["requestExpiresLocalSeries"] = expires_series
+
+        try:
+            path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+            updated += 1
+        except Exception:
+            errors += 1
+
+    return {"updated": updated, "skipped": skipped, "errors": errors}
+
+
+def main(argv: Optional[List[str]] = None) -> None:
+    parser = argparse.ArgumentParser(description="Thermostat dashboard generator")
+    parser.add_argument(
+        "--project-date",
+        metavar="YYYY-MM-DD",
+        help="Generate/overwrite a single projected archive JSON file for the given date.",
+    )
+    parser.add_argument(
+        "--project-range",
+        nargs=2,
+        metavar=("START", "END"),
+        help="Generate/overwrite projected archive JSON files for each day in the inclusive range.",
+    )
+    parser.add_argument(
+        "--weather",
+        choices=("auto", "synthetic", "open-meteo"),
+        default="auto",
+        help="Outside temperature source for projection generation (default: auto).",
+    )
+    parser.add_argument(
+        "--inject-demo-requests",
+        action="store_true",
+        help="Inject demo request entries (Type/Studio/Expires) into every archive JSON file.",
+    )
+    parser.add_argument(
+        "--inject-demo-count",
+        type=int,
+        default=5,
+        help="How many demo request entries to inject per file (default: 5).",
+    )
+    args = parser.parse_args(argv)
+
+    if args.inject_demo_requests:
+        result = inject_demo_requests_into_archive(per_file=args.inject_demo_count)
+        logger.info(
+            "Injected demo requests into archive JSONs: updated=%s skipped=%s errors=%s",
+            result["updated"],
+            result["skipped"],
+            result["errors"],
+        )
+        return
+
+    if args.project_date or args.project_range:
+        if args.project_date and args.project_range:
+            raise SystemExit("Use only one of --project-date or --project-range.")
+        if args.project_date:
+            target = _parse_date_only(args.project_date)
+            run_projected_range(target, target, weather_source=args.weather)
+            return
+        start_s, end_s = args.project_range
+        run_projected_range(_parse_date_only(start_s), _parse_date_only(end_s), weather_source=args.weather)
+        return
+
+    run_live_dashboard()
 
 
 if __name__ == "__main__":
