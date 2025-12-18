@@ -1332,6 +1332,9 @@ def build_dashboard_html(
         margin: 1px auto;
         padding: 40px;
         background: transparent;
+        border: 2px solid rgba(255, 255, 255, 0.18);
+        border-radius: 12px;
+        box-sizing: border-box;
       }}
       h1 {{
         margin: 0 0 16px;
@@ -1611,29 +1614,33 @@ line-height: 1;
         transform: scale(0.98);
       }}
       #chartcontrols {{
-        width: auto;
-        max-width: 380px;
-
+        width: 100%;
+        flex: 1 1 100%;
+        max-width: none;
         display: flex;
         flex-wrap: wrap;
         align-items: center;
-        justify-content: flex-start;
+        justify-content: space-between;
         align-content: flex-start;
         gap: 8px;
-        padding: 4px 8px;
+        padding: 6px;
         margin: 0;
-        margin-top: -65px;
-        margin-right: 160px;
+        margin-top: -115px;
+        margin-right: 0;
+        margin-left: 300px;
         font-size: 14px;
         color: #f4f6ff;
         height: auto;
-        border: none;
-        border-radius: 0;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 12px;
+        background: rgba(0, 0, 0, 0.18);
+        box-sizing: border-box;
       }}
       .chart-top-row {{
         max-width: 900px;
         width: 100%;
         display: flex;
+        flex-wrap: wrap;
         align-items: flex-start;
         justify-content: space-between;
         gap: 14px;
@@ -1673,6 +1680,10 @@ line-height: 1;
         display: flex;
         gap: 6px;
         margin-bottom: 14px;
+        padding: 6px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 12px;
+        background: rgba(0, 0, 0, 0.18);
       }}
       .usage-control {{
         border: 1px solid rgba(255, 255, 255, 0.16);
@@ -1727,7 +1738,11 @@ line-height: 1;
         }}
         #chartcontrols {{
           max-width: none;
+          width: 100%;
+          box-sizing: border-box;
           justify-content: center;
+          margin-right: 0;
+          margin-left: 0;
         }}
         .usage-slot {{
           min-width: 0;
@@ -1736,7 +1751,6 @@ line-height: 1;
         }}
       }}
       .chart-control {{
-        border: 1px solid #1a1a20;
         background: #0d0d12;
         color: #6f7176;
         padding: 5px 10px;
@@ -1757,9 +1771,11 @@ line-height: 1;
         color: #ff6666;
       }}
       .condenser-runtime {{
+        display: none;
+        margin-top: 65px;
         position: absolute;
         top: 24px;
-        right: 34px;
+        right: 4px;
         text-align: right;
         font-size: 12px;
         color: #b1ffce;
@@ -1850,8 +1866,8 @@ line-height: 1;
       }}
       .chart-history {{
         position: absolute;
-        top: -106px;
-        right: 100px;
+        top: -276px;
+        right: 25px;
         background: #2f3136;
         border: 1px solid rgba(255, 255, 255, 0.2);
         border-radius: 14px;
@@ -1868,11 +1884,13 @@ line-height: 1;
         border-bottom-color: rgba(0, 0, 0, 0.45);
         border-right-color: rgba(0, 0, 0, 0.3);
         display: flex;
+        flex-wrap: nowrap;
         gap: 12px;
         align-items: flex-start;
       }}
       .history-months {{
-        width: 150px;
+        flex: 0 0 125px;
+        width: 125px;
         max-height: 140px;
         overflow-y: auto;
         padding-right: 4px;
@@ -1884,6 +1902,7 @@ line-height: 1;
         letter-spacing: 0.05em;
         text-transform: uppercase;
         color: #fff5c7;
+        white-space: nowrap;
       }}
       .history-months-list {{
         list-style: none;
@@ -1915,6 +1934,9 @@ line-height: 1;
         line-height: 1.1;
         cursor: pointer;
         transition: background 0.2s ease, color 0.2s ease;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }}
       .history-months-list button:hover,
       .history-months-list button:focus-visible {{
@@ -1929,7 +1951,7 @@ line-height: 1;
         flex: 1;
         max-height: 24px;
         overflow: hidden;
-        min-width: 200px;
+        min-width: 0;
         min-height: 0;
         padding: 0;
         transition: max-height 0.2s ease, padding 0.2s ease;
@@ -1937,7 +1959,8 @@ line-height: 1;
       .history-list-column.expanded {{
         max-height: 220px;
         overflow-y: auto;
-        padding: 4px 0;
+        padding: 4px 14px 4px 0;
+        margin-right: 71px;
       }}
       .history-month {{
         margin-bottom: 6px;
@@ -1957,6 +1980,7 @@ line-height: 1;
         text-transform: uppercase;
         cursor: pointer;
         color: #fff5c7;
+        white-space: nowrap;
       }}
       .history-month-list {{
         list-style: none;
@@ -1969,6 +1993,7 @@ line-height: 1;
       }}
       .history-lists-row {{
         display: flex;
+        flex-wrap: nowrap;
         gap: 12px;
         align-items: flex-start;
         width: 100%;
@@ -2003,6 +2028,9 @@ line-height: 1;
         color: #33ccff;
         font-size: 11px;
         letter-spacing: 0.04em;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }}
       .chart-history ul button:hover,
       .chart-history ul button:focus-visible {{
