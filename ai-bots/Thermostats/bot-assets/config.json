@@ -22,7 +22,7 @@
   "inline_client_script": true,
   "temp_adjust": 0,
   "test": false,
-  "test_mode": false,
+  "test_mode": true,
   "thermostat_endpoint": "https://connect.getseam.com/v1/devices/get",
   "thermostat_id": "6c89f5f4-568b-44ff-b585-10132bd7e9e9",
   "timeout_seconds": 25,

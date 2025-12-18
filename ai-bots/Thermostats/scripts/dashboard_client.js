@@ -535,7 +535,7 @@
   };
 
   const legendSwatchColors = {
-    setpoint: "#c5a7ff",
+    setpoint: "#66b3ff",
     actual: "#4b4078",
     outside: "#bfd0dd",
     cooling: "#9dcfb2",
@@ -743,9 +743,9 @@
           label: getSetpointLabel(),
           data: getSetpointSeries(),
           segment: {
-            borderColor: segmentColor,
+            borderColor: legendSwatchColors.setpoint,
           },
-          backgroundColor: "rgba(102,255,153,0.2)",
+          backgroundColor: "rgba(102,179,255,0.18)",
           borderColor: legendSwatchColors.setpoint,
           pointBackgroundColor: legendSwatchColors.setpoint,
           pointBorderColor: legendSwatchColors.setpoint,
