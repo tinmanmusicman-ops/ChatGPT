@@ -98,7 +98,7 @@
   let clearPinButtonEl = null;
   let hourPickerEl = null;
   let usageSlotBound = false;
-  let usageRangeKey = "7d"; // 7d | 30d | month
+  let usageRangeKey = "7d"; // 7d | month | year
 
   const STORAGE_KEY = "thermostatDashboard.ui.v1";
   let savedUiState = null;
@@ -152,6 +152,21 @@
     return `${mm}/${dd}`;
   };
 
+  const MONTH_LABELS_SHORT = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+
   const getAvailableArchiveSlugs = () => {
     const dates = getArchiveDates();
     if (!Array.isArray(dates)) {
@@ -165,6 +180,20 @@
     const end = parseSlugDateUtc(endSlug) || new Date();
     const available = new Set(getAvailableArchiveSlugs());
     const slugs = [];
+
+    if (rangeKey === "year") {
+      const targetYear = end.getUTCFullYear();
+      getAvailableArchiveSlugs().forEach((slug) => {
+        const d = parseSlugDateUtc(slug);
+        if (!d) {
+          return;
+        }
+        if (d.getUTCFullYear() === targetYear) {
+          slugs.push(slug);
+        }
+      });
+      return slugs.sort();
+    }
 
     if (rangeKey === "month") {
       const targetMonth = end.getUTCMonth();
@@ -181,8 +210,7 @@
       return slugs.sort();
     }
 
-    const days = rangeKey === "30d" ? 30 : 7;
-    for (let i = days - 1; i >= 0; i -= 1) {
+    for (let i = 6; i >= 0; i -= 1) {
       const d = new Date(end.getTime());
       d.setUTCDate(d.getUTCDate() - i);
       const slug = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
@@ -259,20 +287,62 @@
     );
     const filtered = rows.filter((r) => r.summary && Number.isFinite(Number(r.summary.runtimeMinutes)));
 
-    const labels = filtered.map((r) => formatSlugShort(r.slug));
-    const minutes = filtered.map((r) => Number(r.summary.runtimeMinutes) || 0);
+    let labels = [];
+    let minutes = [];
+    let clickSlugs = [];
+    let tooltipTitles = [];
+    let costByIndex = [];
 
-    const totalMinutes = minutes.reduce((a, b) => a + b, 0);
-    const avgMinutes = minutes.length ? totalMinutes / minutes.length : 0;
+    if (usageRangeKey === "year") {
+      const endSlug = currentArchiveSlug || dashboardData.generatedDateSlug || "";
+      const end = parseSlugDateUtc(endSlug) || new Date();
+      const targetYear = end.getUTCFullYear();
+      const byMonth = new Map();
+
+      filtered.forEach((row) => {
+        const d = parseSlugDateUtc(row.slug);
+        if (!d || d.getUTCFullYear() !== targetYear) {
+          return;
+        }
+        const monthIdx = d.getUTCMonth();
+        const entry = byMonth.get(monthIdx) || { minutes: 0, cost: 0, lastSlug: row.slug };
+        entry.minutes += Number(row.summary.runtimeMinutes) || 0;
+        entry.cost += Number(row.summary.cost) || 0;
+        // Prefer the latest day slug for click-through.
+        if (String(row.slug) > String(entry.lastSlug)) {
+          entry.lastSlug = row.slug;
+        }
+        byMonth.set(monthIdx, entry);
+      });
+
+      labels = MONTH_LABELS_SHORT.slice();
+      minutes = labels.map((_, monthIdx) =>
+        byMonth.has(monthIdx) ? Math.round(byMonth.get(monthIdx).minutes) : null
+      );
+      costByIndex = labels.map((_, monthIdx) => (byMonth.has(monthIdx) ? byMonth.get(monthIdx).cost : 0));
+      clickSlugs = labels.map((_, monthIdx) => (byMonth.has(monthIdx) ? byMonth.get(monthIdx).lastSlug : ""));
+      tooltipTitles = labels.map((label) => `${label} ${targetYear}`);
+    } else {
+      labels = filtered.map((r) => formatSlugShort(r.slug));
+      minutes = filtered.map((r) => Number(r.summary.runtimeMinutes) || 0);
+      costByIndex = filtered.map((r) => Number(r.summary.cost) || 0);
+      clickSlugs = filtered.map((r) => r.slug || "");
+      tooltipTitles = filtered.map((r) => r.slug || "");
+    }
+
+    const definedMinutes = minutes.filter((v) => Number.isFinite(Number(v)));
+    const totalMinutes = definedMinutes.reduce((a, b) => a + Number(b), 0);
+    const avgMinutes = definedMinutes.length ? totalMinutes / definedMinutes.length : 0;
     let maxIdx = -1;
     let maxVal = -1;
-    minutes.forEach((v, i) => {
-      if (v > maxVal) {
+    minutes.forEach((value, index) => {
+      const v = Number(value);
+      if (Number.isFinite(v) && v > maxVal) {
         maxVal = v;
-        maxIdx = i;
+        maxIdx = index;
       }
     });
-    const totalCost = filtered.reduce((acc, r) => acc + (Number(r.summary.cost) || 0), 0);
+    const totalCost = costByIndex.reduce((acc, v) => acc + (Number(v) || 0), 0);
 
     const setStat = (id, text) => {
       const el = document.getElementById(id);
@@ -284,7 +354,7 @@
     setStat("usage-stat-avg", `${Math.round(avgMinutes)}m`);
     setStat(
       "usage-stat-max",
-      maxIdx >= 0 ? `${formatSlugShort(filtered[maxIdx].slug)} ${Math.round(maxVal)}m` : "—"
+      maxIdx >= 0 ? `${labels[maxIdx]} ${Math.round(maxVal)}m` : "—"
     );
     setStat("usage-stat-cost", `$${totalCost.toFixed(2)}`);
 
@@ -296,8 +366,8 @@
         datasets: [
           {
             data: minutes,
-            backgroundColor: "rgba(255,179,71,0.35)",
-            borderColor: "rgba(255,179,71,0.9)",
+            backgroundColor: "#ad5858",
+            borderColor: "#ad5858",
             borderWidth: 1,
             borderRadius: 6,
           },
@@ -314,7 +384,7 @@
               title: (items) => {
                 const idx = items?.[0]?.dataIndex ?? null;
                 if (idx === null) return "";
-                return filtered[idx]?.slug || "";
+                return tooltipTitles[idx] || "";
               },
               label: (ctxBar) => `Runtime: ${Math.round(Number(ctxBar.raw) || 0)} min`,
             },
@@ -336,7 +406,7 @@
             return;
           }
           const idx = elements[0].index;
-          const slug = filtered[idx]?.slug;
+          const slug = clickSlugs[idx] || "";
           if (slug) {
             loadDashboardData(slug);
           }
@@ -361,7 +431,7 @@
     buttons.forEach((btn) => {
       btn.addEventListener("click", () => {
         const range = btn.dataset.range;
-        if (!range || !["7d", "30d", "month"].includes(range)) {
+        if (!range || !["7d", "month", "year"].includes(range)) {
           return;
         }
         usageRangeKey = range;

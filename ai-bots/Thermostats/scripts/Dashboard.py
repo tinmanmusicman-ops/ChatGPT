@@ -1613,29 +1613,28 @@ line-height: 1;
       button:active {{
         transform: scale(0.98);
       }}
-      #chartcontrols {{
-        width: 100%;
-        flex: 1 1 100%;
-        max-width: none;
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: space-between;
-        align-content: flex-start;
-        gap: 8px;
-        padding: 6px;
-        margin: 0;
-        margin-top: -115px;
-        margin-right: 0;
-        margin-left: 300px;
-        font-size: 14px;
-        color: #f4f6ff;
-        height: auto;
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        border-radius: 12px;
-        background: rgba(0, 0, 0, 0.18);
-        box-sizing: border-box;
+      
+      .chart-controls {{
+        width: 100px;
       }}
+      
+      #chartcontrols {{
+       flex: 1;
+  max-width: 435px;   /* <-- THIS is the width control */
+  width: auto;
+  margin-top: 68px;
+  padding: 1px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  font-size: 13px;
+  color: #f4f6ff;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.18);
+  box-sizing: border-box;
+ }}
       .chart-top-row {{
         max-width: 900px;
         width: 100%;
@@ -1650,13 +1649,15 @@ line-height: 1;
       }}
       .usage-slot {{
         flex: 0 0 260px;
-        width: 260px;
+        width: 300px;
         min-width: 260px;
         height: 230px;
-        margin-top: -75px;
+        margin-top: -65px;
+        margin-left: 20px;
+ 
         border: 2px solid rgba(255, 179, 71, 0.85);
         border-radius: 12px;
-        background: rgba(0, 0, 0, 0.12);
+        background: linear-gradient(to bottom, #000000 0%, #1f1f26 100%);
         padding: 10px 12px;
         color: #fff5c7;
         font-size: 12px;
@@ -1678,10 +1679,10 @@ line-height: 1;
       }}
       .usage-controls {{
         display: flex;
-        gap: 6px;
+        gap: 1px;
         margin-bottom: 14px;
         padding: 6px;
-        border: 1px solid rgba(255, 255, 255, 0.18);
+    
         border-radius: 12px;
         background: rgba(0, 0, 0, 0.18);
       }}
@@ -1702,17 +1703,19 @@ line-height: 1;
         flex: 1;
         min-height: 0;
         position: relative;
+        display: flex;
+        align-items: center;
       }}
       .usage-stats {{
         position: absolute;
         top: -60px;
-        right: 6px;
+        right: 1px;
         display: grid;
         grid-template-columns: auto auto;
         gap: 2px 10px;
         padding: 2px 8px;
         border-radius: 10px;
-        border: 1px solid rgba(255, 255, 255, 0.14);
+        border: 1px solid rgba(255, 255, 255, 0.54);
         background: rgba(0, 0, 0, 0.35);
         color: #fff5c7;
         font-size: 9px;
@@ -1730,12 +1733,14 @@ line-height: 1;
       }}
       #usage-slot-chart {{
         width: 100% !important;
-        height: 100% !important;
+        height: 150px !important;
+        max-height: 100% !important;
       }}
       @media (max-width: 980px) {{
         .chart-top-row {{
           flex-direction: column;
         }}
+
         #chartcontrols {{
           max-width: none;
           width: 100%;
@@ -2096,9 +2101,9 @@ line-height: 1;
         <div class="usage-slot" id="usage-slot">
           <div class="title">Usage Chart</div>
           <div class="usage-controls" role="group" aria-label="Usage Range">
-            <button type="button" class="usage-control active" data-range="7d">7d</button>
-            <button type="button" class="usage-control" data-range="30d">30d</button>
+            <button type="button" class="usage-control active" data-range="7d">7 Day</button>
             <button type="button" class="usage-control" data-range="month">Month</button>
+            <button type="button" class="usage-control" data-range="year">Year</button>
           </div>
           <div class="usage-canvas">
             <div class="usage-stats" id="usage-slot-stats" aria-hidden="true">
