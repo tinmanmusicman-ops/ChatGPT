@@ -1680,6 +1680,7 @@ line-height: 1;
   box-sizing: border-box;
  }}
       .controls-transport-wrap {{
+        height: 250px;
         margin-top: -270px;
         margin-left: 300px;
         display: flex;
@@ -1687,9 +1688,10 @@ line-height: 1;
         align-items: flex-start;
       }}
       .transport-panel {{
+        height: 100px;
         flex: 0 0 260px;
         width: 260px;
-        margin-top: -40px;
+        margin-top: 50px;
         margin-left: 100px;
         padding: 6px;
         display: flex;
@@ -1700,6 +1702,7 @@ line-height: 1;
         border-radius: 12px;
         background: rgba(0, 0, 0, 0.0);
         box-sizing: border-box;
+        pointer-events: none;
       }}
       .transport-deck {{
         width: 200px;
@@ -1716,6 +1719,7 @@ line-height: 1;
         align-items: center;
         justify-content: center;
         gap: 6px;
+        pointer-events: auto;
       }}
       .transport-deck svg {{
         width: 100%;
@@ -1999,7 +2003,7 @@ line-height: 1;
       }}
       .chart-history {{
         position: absolute;
-        margin-top: 65px;
+        margin-top: 10px;
         top: -217px;
         right: 55px;
         background: #2f3136;

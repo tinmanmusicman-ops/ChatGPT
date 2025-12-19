@@ -406,6 +406,8 @@
     setStat("usage-stat-cost", `$${totalCost.toFixed(2)}`);
 
     destroyUsageSlotChart();
+    const monthTickStep =
+      usageRangeKey === "month" ? Math.max(1, Math.ceil(labels.length / 8)) : 1;
     usageSlotChart = new Chart(usageSlotCtx, {
       type: "bar",
       data: {
@@ -439,7 +441,25 @@
         },
         scales: {
           x: {
-            ticks: { color: "rgba(244,246,255,0.6)", maxRotation: 0, minRotation: 0 },
+            ticks: {
+              color: "rgba(244,246,255,0.6)",
+              maxRotation: usageRangeKey === "month" || usageRangeKey === "year" ? 90 : 0,
+              minRotation: usageRangeKey === "month" || usageRangeKey === "year" ? 90 : 0,
+              autoSkip: false,
+              callback(value, index) {
+                if (usageRangeKey !== "month") {
+                  return this.getLabelForValue(value);
+                }
+                const last = labels.length - 1;
+                if (index === 0 || index === last) {
+                  return this.getLabelForValue(value);
+                }
+                if (monthTickStep > 1 && index % monthTickStep !== 0) {
+                  return "";
+                }
+                return this.getLabelForValue(value);
+              },
+            },
             grid: { display: false },
           },
           y: {
@@ -1621,11 +1641,8 @@
     });
 
     ensureSelectionUi();
-    if (clearPinButtonEl) {
-      clearPinButtonEl.addEventListener("click", () => {
-        setSelectedPoint(null, null, true);
-      });
-    }
+    // Note: Clear Pin click binding happens in ensureSelectionUi() so it remains
+    // stable even if the chart picker is initialized before the button exists.
 
     if (hourPickerEl) {
       hourPickerEl.addEventListener("change", () => {
@@ -2308,7 +2325,9 @@
   }
 
   const ensureSelectionUi = () => {
-    const controls = document.getElementById("chartcontrols");
+    const controls =
+      document.getElementById("chartcontrols") ||
+      document.querySelector(".chart-controls");
     if (!controls) {
       return;
     }
@@ -2343,6 +2362,12 @@
       clearPinButtonEl.style.marginLeft = "10px";
       clearPinButtonEl.style.display = "none";
       appendControl(clearPinButtonEl);
+    }
+    if (clearPinButtonEl && clearPinButtonEl.dataset.boundClick !== "1") {
+      clearPinButtonEl.dataset.boundClick = "1";
+      clearPinButtonEl.addEventListener("click", () => {
+        setSelectedPoint(null, null, true);
+      });
     }
 
     if (!hourPickerEl) {
