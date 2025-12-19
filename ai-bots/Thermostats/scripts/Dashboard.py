@@ -15,6 +15,7 @@ import urllib.parse
 import urllib.request
 from datetime import datetime, date, timedelta
 from zoneinfo import ZoneInfo
+import random
 
 from google.auth.transport.requests import Request
 from google.auth.exceptions import RefreshError
@@ -499,6 +500,8 @@ def build_projected_dashboard_payload(
     simulate_requests: bool = False,
     request_every_days: int = 3,
     request_setpoint_delta_f: float = 2.0,
+    request_setpoint_deltas_f: Optional[List[float]] = None,
+    request_deltas_mode: str = "random",
 ) -> tuple[dict, dict]:
     """
     Create a full dashboard payload JSON for the archive viewer, generated from date only.
@@ -557,13 +560,21 @@ def build_projected_dashboard_payload(
     request_hours = set(range(15, 21))  # 3pm–8pm inclusive
     request_enabled = bool(simulate_requests) and int(request_every_days) > 0
     request_day = False
+    request_delta_for_day = float(request_setpoint_delta_f or 0.0)
     if request_enabled:
         seed = int(target.strftime("%Y%m%d"))
         request_day = (seed % int(request_every_days)) == 0
+        deltas = [float(v) for v in (request_setpoint_deltas_f or []) if float(v) > 0]
+        if deltas:
+            mode = str(request_deltas_mode or "random").strip().lower()
+            if mode == "cycle":
+                request_delta_for_day = deltas[seed % len(deltas)]
+            else:
+                # Deterministic "random" choice per day (stable across reruns).
+                request_delta_for_day = random.Random(seed).choice(deltas)
     if request_day and request_setpoint_delta_f:
-        delta = float(request_setpoint_delta_f)
         for hour in request_hours:
-            setpoint[hour] = max(60.0, float(setpoint[hour]) - delta)
+            setpoint[hour] = max(60.0, float(setpoint[hour]) - request_delta_for_day)
 
     hourly_drop = _hourly_drop_for_condition(condition)
 
@@ -2253,6 +2264,8 @@ def run_projected_range(
     simulate_requests: bool = False,
     request_every_days: int = 3,
     request_setpoint_delta_f: float = 2.0,
+    request_setpoint_deltas_f: Optional[List[float]] = None,
+    request_deltas_mode: str = "random",
 ) -> List[dict]:
     """
     Generate/overwrite archive JSON datasets for each day in [start, end].
@@ -2288,6 +2301,8 @@ def run_projected_range(
             simulate_requests=simulate_requests,
             request_every_days=request_every_days,
             request_setpoint_delta_f=request_setpoint_delta_f,
+            request_setpoint_deltas_f=request_setpoint_deltas_f,
+            request_deltas_mode=request_deltas_mode,
         )
         summary["datasetAction"] = "overwritten" if existed else "created"
         target_json.write_text(json.dumps(payload, indent=2), encoding="utf-8")
@@ -2340,7 +2355,25 @@ def main(argv: Optional[List[str]] = None) -> None:
         default=2.0,
         help="When --simulate-requests is set, lower setpoints by this many °F in the request window (default: 2).",
     )
+    parser.add_argument(
+        "--request-deltas",
+        type=str,
+        default="",
+        help="Optional comma-separated list of °F deltas to cycle through on request days (e.g. '1,2,3,5').",
+    )
+    parser.add_argument(
+        "--request-deltas-mode",
+        choices=("random", "cycle"),
+        default="random",
+        help="How to select a delta from --request-deltas on request days (default: random).",
+    )
     args = parser.parse_args(argv)
+    request_deltas: Optional[List[float]] = None
+    if args.request_deltas:
+        try:
+            request_deltas = [float(part.strip()) for part in str(args.request_deltas).split(",") if part.strip()]
+        except ValueError:
+            raise SystemExit("--request-deltas must be a comma-separated list of numbers, e.g. '1,2,3,5'")
 
     if args.project_date or args.project_range:
         if args.project_date and args.project_range:
@@ -2354,6 +2387,8 @@ def main(argv: Optional[List[str]] = None) -> None:
                 simulate_requests=bool(args.simulate_requests),
                 request_every_days=int(args.request_every_days),
                 request_setpoint_delta_f=float(args.request_delta),
+                request_setpoint_deltas_f=request_deltas,
+                request_deltas_mode=str(args.request_deltas_mode),
             )
             return
         start_s, end_s = args.project_range
@@ -2364,6 +2399,8 @@ def main(argv: Optional[List[str]] = None) -> None:
             simulate_requests=bool(args.simulate_requests),
             request_every_days=int(args.request_every_days),
             request_setpoint_delta_f=float(args.request_delta),
+            request_setpoint_deltas_f=request_deltas,
+            request_deltas_mode=str(args.request_deltas_mode),
         )
         return
 
