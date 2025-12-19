@@ -1382,7 +1382,7 @@ def build_dashboard_html(
       }}
       .layout {{
         display: grid;
-        grid-template-columns: minmax(640px, 1fr) minmax(740px, 1.2fr);
+        grid-template-columns: minmax(640px, 1fr) minmax(940px, 1.35fr);
         gap: 18px;
         align-items: start;
       }}
@@ -1396,6 +1396,9 @@ def build_dashboard_html(
         }}
         .container {{
           padding: 18px;
+        }}
+        .card-grid {{
+          margin-top: 0;
         }}
       }}
       h1 {{
@@ -1533,6 +1536,7 @@ line-height: 1;
         object-fit: contain;
       }}
       .card-grid {{
+        margin-top: 105px;
         padding: 18px 22px;
         border-radius: 12px;
         display: grid;
@@ -1741,9 +1745,9 @@ line-height: 1;
       
       #chartcontrols {{
        flex: 1;
-  max-width: 835px;   /* <-- THIS is the width control */
+  max-width: 795px;   /* <-- THIS is the width control */
   width: auto;
-  margin-top: -6px;
+  margin-top: 14px;
   padding: 1px;
   display: flex;
   flex-wrap: wrap;
@@ -1758,18 +1762,18 @@ line-height: 1;
  }}
       .controls-transport-wrap {{
         height: 250px;
-        margin-top: -270px;
-        margin-left: 300px;
+        margin-top: -310px;
+        margin-left: 260px;
         display: flex;
         flex-direction: column;
         align-items: flex-start;
       }}
       .transport-panel {{
-        height: 100px;
-        flex: 0 0 260px;
-        width: 260px;
+        height: 120px;
+        flex: 0 0 300px;
+        width: 300px;
         margin-top: 50px;
-        margin-left: 100px;
+        margin-left: 0;
         padding: 6px;
         display: flex;
         flex-direction: column;
@@ -1782,8 +1786,8 @@ line-height: 1;
         pointer-events: none;
       }}
       .transport-deck {{
-        width: 200px;
-        height: 60px;
+        width: 240px;
+        height: 72px;
         margin-top: -85px;
         border-radius: 14px;
         pointer-events: none;
@@ -2022,11 +2026,11 @@ line-height: 1;
         color: #ff6666;
       }}
       .condenser-runtime {{
-        display: none;
+        display: block;
         margin-top: 65px;
         position: absolute;
-        top: 24px;
-        right: 4px;
+        top: 99px;
+        right: 34px;
         text-align: right;
         font-size: 12px;
         color: #b1ffce;
@@ -2281,7 +2285,7 @@ line-height: 1;
       .chart-history {{
         position: absolute;
         margin-top: 10px;
-        top: -217px;
+        top: -202px;
         right: 55px;
         z-index: 5;
         background: #2f3136;
@@ -2610,13 +2614,15 @@ line-height: 1;
             <ul id="chart-history-list" class="hidden"></ul>
           </div>
         </div>
+        <img style="margin-top: -138px; width: 800px; height: 800px;" src="../../../Images/Legs2.png" alt="Logo" />
+
         <div class="note">Data source: Google Sheet (last updated when this page was generated).</div>
 
         <pre id="js-log"></pre>
           </div>
         </div>
       </div>
-    </div>
+    </div>  
     {script_block}
 
   </body>
