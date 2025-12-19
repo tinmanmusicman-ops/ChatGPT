@@ -97,6 +97,8 @@
   let selectionIndicatorEl = null;
   let clearPinButtonEl = null;
   let hourPickerEl = null;
+  let prevDayButtonEl = null;
+  let nextDayButtonEl = null;
   let usageSlotBound = false;
   let usageRangeKey = "year"; // 7d | month | year
 
@@ -173,6 +175,51 @@
       return [];
     }
     return dates.map((d) => d?.slug).filter(Boolean);
+  };
+
+  const getSortedArchiveSlugs = () => getAvailableArchiveSlugs().slice().sort();
+
+  const getCurrentArchiveIndex = (sortedSlugs) => {
+    const slugs = Array.isArray(sortedSlugs) ? sortedSlugs : getSortedArchiveSlugs();
+    if (!slugs.length) {
+      return -1;
+    }
+    const current = currentArchiveSlug || dashboardData.generatedDateSlug || "";
+    const idx = current ? slugs.indexOf(current) : -1;
+    return idx >= 0 ? idx : slugs.length - 1;
+  };
+
+  const syncArchiveNavButtons = () => {
+    if (!prevDayButtonEl || !nextDayButtonEl) {
+      return;
+    }
+    const slugs = getSortedArchiveSlugs();
+    const idx = getCurrentArchiveIndex(slugs);
+    const hasPrev = idx > 0;
+    const hasNext = idx >= 0 && idx < slugs.length - 1;
+    prevDayButtonEl.disabled = !hasPrev;
+    nextDayButtonEl.disabled = !hasNext;
+    prevDayButtonEl.style.opacity = hasPrev ? "1" : "0.5";
+    nextDayButtonEl.style.opacity = hasNext ? "1" : "0.5";
+  };
+
+  const navigateArchiveByDays = (delta) => {
+    const slugs = getSortedArchiveSlugs();
+    const idx = getCurrentArchiveIndex(slugs);
+    if (idx < 0) {
+      return;
+    }
+    const nextIdx = idx + Number(delta || 0);
+    if (nextIdx < 0 || nextIdx >= slugs.length) {
+      return;
+    }
+    const slug = slugs[nextIdx];
+    if (!slug) {
+      return;
+    }
+    updateHistoryStatus(slug);
+    currentArchiveSlug = slug;
+    loadDashboardData(slug);
   };
 
   const buildUsageRangeSlugs = (rangeKey) => {
@@ -2311,6 +2358,32 @@
       hourPickerEl.title = "Pick a specific reading to pin.";
       controls.appendChild(hourPickerEl);
     }
+
+    if (!prevDayButtonEl) {
+      prevDayButtonEl = document.createElement("button");
+      prevDayButtonEl.id = "archive-prev";
+      prevDayButtonEl.type = "button";
+      prevDayButtonEl.className = "chart-control";
+      prevDayButtonEl.textContent = "<<";
+      prevDayButtonEl.style.marginLeft = "10px";
+      prevDayButtonEl.title = "Previous day";
+      prevDayButtonEl.addEventListener("click", () => navigateArchiveByDays(-1));
+      controls.appendChild(prevDayButtonEl);
+    }
+
+    if (!nextDayButtonEl) {
+      nextDayButtonEl = document.createElement("button");
+      nextDayButtonEl.id = "archive-next";
+      nextDayButtonEl.type = "button";
+      nextDayButtonEl.className = "chart-control";
+      nextDayButtonEl.textContent = ">>";
+      nextDayButtonEl.style.marginLeft = "6px";
+      nextDayButtonEl.title = "Next day";
+      nextDayButtonEl.addEventListener("click", () => navigateArchiveByDays(1));
+      controls.appendChild(nextDayButtonEl);
+    }
+
+    syncArchiveNavButtons();
   };
 
   const syncHourPickerOptions = () => {
@@ -2369,6 +2442,7 @@
 
     // Make the "Latest" selection match the orange selection accents.
     hourPickerEl.style.color = hourPickerEl.value === "" ? "#ffb347" : "#f4f6ff";
+    syncArchiveNavButtons();
   };
 
   const updateSelectionIndicator = () => {
@@ -2695,6 +2769,7 @@
     const isArchiveLoad = Boolean(slugHint);
     renderArchiveList();
     updateHistoryStatus(currentArchiveSlug);
+    syncArchiveNavButtons();
     updateTimestampFromSelection();
     updateSelectionIndicator();
     bindUsageSlotControls();

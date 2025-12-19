@@ -1804,8 +1804,15 @@ line-height: 1;
         color: #6f7176;
         padding: 5px 10px;
         border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
         cursor: pointer;
         transition: background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+      }}
+      .chart-control[data-mode] {{
+        width: 150px;
       }}
       .chart-control.active {{
         background: #0d0d12;
