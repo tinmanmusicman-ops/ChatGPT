@@ -1437,6 +1437,65 @@ font-size; 8PX;
 line-height: 1;
 }}
 
+
+.tv-frame {{
+  position: relative;
+  isolation: isolate;
+  --frame-border: 10px;
+  border-radius: 14px;
+  border: var(--frame-border) solid rgba(255, 255, 255, 0.10);
+  box-shadow:
+    0 20px 44px rgba(0, 0, 0, 0.70),
+    inset 0 3px 4px rgba(255, 255, 255, 0.18),
+    inset 0 -3px 6px rgba(0, 0, 0, 0.85),
+    inset 0 0 18px rgba(255, 255, 255, 0.06),
+    inset 0 0 34px rgba(0, 0, 0, 0.70);
+  background: linear-gradient(
+    to bottom,
+    #07050f 0%,
+    #1a1730 45%,
+    #0b0a16 100%
+  );
+  /* Must be visible so the chart-history picker (positioned above) isn't clipped. */
+  overflow: visible;
+}}
+
+/* Glossy highlight + specular edge for the TV frame (border only). */
+.tv-frame::before {{
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: var(--frame-border);
+  pointer-events: none;
+  z-index: 2;
+  background:
+    radial-gradient(120% 70% at 18% 8%, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0) 55%),
+    linear-gradient(to bottom, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0) 35%, rgba(0,0,0,0.25) 100%);
+  mix-blend-mode: screen;
+  opacity: 0.95;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}}
+.tv-frame::after {{
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: var(--frame-border);
+  pointer-events: none;
+  z-index: 3;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.22),
+    inset 0 -1px 0 rgba(0,0,0,0.55);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}}
+
+
+
       .logo-placeholder {{
 
         width: 190px;
@@ -2006,6 +2065,7 @@ line-height: 1;
         margin-top: 10px;
         top: -217px;
         right: 55px;
+        z-index: 5;
         background: #2f3136;
         border: 1px solid rgba(255, 255, 255, 0.2);
         border-radius: 14px;
@@ -2309,7 +2369,7 @@ line-height: 1;
         </div>
         </div>
       </div>
-        <div class="chart-wrap">
+        <div class="chart-wrap tv-frame">
           <div>
           </div>
           <canvas id="history-chart"></canvas>

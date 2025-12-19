@@ -2328,11 +2328,19 @@
     const controls =
       document.getElementById("chartcontrols") ||
       document.querySelector(".chart-controls");
-    if (!controls) {
+    const existingSelectionIndicator = document.getElementById("selection-indicator");
+    if (existingSelectionIndicator) {
+      selectionIndicatorEl = existingSelectionIndicator;
+    }
+    if (!controls && !selectionIndicatorEl) {
       return;
     }
     const transportNav = document.getElementById("transport-nav");
-    const appendControl = (el) => controls.appendChild(el);
+    const appendControl = (el) => {
+      if (controls) {
+        controls.appendChild(el);
+      }
+    };
     const appendNavControl = (el) => {
       if (transportNav) {
         transportNav.appendChild(el);
