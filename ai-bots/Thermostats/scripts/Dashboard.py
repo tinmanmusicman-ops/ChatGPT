@@ -1845,6 +1845,7 @@ line-height: 1;
         flex-direction: column;
         gap: 6px;
         min-width: 0;
+        align-items: flex-start;
       }}
       .usage-slot .title {{
         font-size: 12px;
@@ -1852,6 +1853,7 @@ line-height: 1;
         text-transform: uppercase;
         margin-bottom: 0;
         opacity: 0.9;
+        text-align: left;
       }}
       .usage-slot .hint {{
         opacity: 0.75;
@@ -1935,9 +1937,6 @@ line-height: 1;
       .chart-wrap #usage-slot-chart {{
         width: 100% !important;
         height: 70% !important;
-      }}
-      body.charts-swapped #chart-history {{
-        display: none;
       }}
       .usage-slot .title {{
         cursor: pointer;
@@ -2053,7 +2052,7 @@ line-height: 1;
       }}
       .chart-wrap {{
         height: 580px;
-        margin: 8px auto 0;
+        margin: -29px auto 0;
         background: linear-gradient(
           to bottom,
           #0F0B1A 0%,
@@ -2121,8 +2120,75 @@ line-height: 1;
       body.charts-swapped #usage-pip {{
         display: block;
       }}
+      body.charts-swapped #usage-pip {{
+        left: 18px;
+        right: auto;
+        width: 540px;
+      }}
+      body.charts-swapped #usage-pip .usage-header {{
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: nowrap;
+        gap: 12px;
+      }}
+      body.charts-swapped #usage-pip .usage-header-left {{
+        flex-direction: row;
+        align-items: center;
+        gap: 12px;
+      }}
+      body.charts-swapped #usage-pip .title {{
+        font-size: 14px;
+        letter-spacing: 0.08em;
+        white-space: nowrap;
+      }}
+      body.charts-swapped #usage-pip .usage-controls {{
+        padding: 8px;
+        gap: 4px;
+        flex-wrap: nowrap;
+      }}
+      body.charts-swapped #usage-pip .usage-control {{
+        font-size: 13px;
+        padding: 6px 12px;
+        border-radius: 10px;
+        white-space: nowrap;
+      }}
+      body.charts-swapped #usage-pip .usage-stats {{
+        font-size: 11px;
+        gap: 4px 12px;
+        padding: 6px 10px;
+        border-radius: 12px;
+      }}
+      body.charts-swapped #usage-pip .usage-stats .v {{
+        min-width: 72px;
+      }}
       @media (max-width: 680px) {{
         #usage-pip {{
+          display: none !important;
+        }}
+      }}
+      /* Hands logo overlay when the Usage chart is on the TV frame. */
+      #tv-hands-logo {{
+        display: none;
+        position: absolute;
+        top: 22px;
+        right: 38px;
+        width: 250px;
+        height: 64px;
+        background-image: url("../../../Images/Hands.png");
+        background-repeat: no-repeat;
+        background-position: right center;
+        background-size: contain;
+        opacity: 0.9;
+        z-index: 4;
+        pointer-events: none;
+        filter: drop-shadow(0 10px 16px rgba(0,0,0,0.55));
+      }}
+      body.charts-swapped #tv-hands-logo {{
+        display: block;
+      }}
+      @media (max-width: 680px) {{
+        #tv-hands-logo {{
           display: none !important;
         }}
       }}
@@ -2511,6 +2577,7 @@ line-height: 1;
       </div>
         <div class="chart-wrap tv-frame">
           <div id="usage-pip" aria-hidden="true"></div>
+          <div id="tv-hands-logo" aria-hidden="true"></div>
           <div>
           </div>
           <div id="history-chart-canvas-slot">
