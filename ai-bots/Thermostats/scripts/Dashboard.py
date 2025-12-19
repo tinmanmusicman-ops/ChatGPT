@@ -1376,13 +1376,13 @@ def build_dashboard_html(
         margin: 1px auto;
         padding: 26px;
         background: transparent;
-        border: 2px solid rgba(255, 255, 255, 0.18);
+
         border-radius: 12px;
         box-sizing: border-box;
       }}
       .layout {{
         display: grid;
-        grid-template-columns: minmax(640px, 1fr) minmax(940px, 1.35fr);
+        grid-template-columns: minmax(940px, 1.35fr) minmax(640px, 1fr);
         gap: 18px;
         align-items: start;
       }}
@@ -1748,6 +1748,7 @@ line-height: 1;
   max-width: 795px;   /* <-- THIS is the width control */
   width: auto;
   margin-top: 14px;
+  margin-left: 40px;
   padding: 1px;
   display: flex;
   flex-wrap: wrap;
@@ -1761,9 +1762,9 @@ line-height: 1;
   box-sizing: border-box;
  }}
       .controls-transport-wrap {{
-        height: 250px;
-        margin-top: -310px;
-        margin-left: 260px;
+        height: 280px;
+        margin-top: -330px;
+        margin-left: 280px;
         display: flex;
         flex-direction: column;
         align-items: flex-start;
@@ -1833,7 +1834,7 @@ line-height: 1;
         align-items: flex-start;
         justify-content: space-between;
         gap: 14px;
-        margin-top: 20px;
+        margin-top: 35px;
         margin-bottom: 18px;
         border: 1px solid rgba(255, 255, 255, 0.18);
       }}
@@ -1842,8 +1843,8 @@ line-height: 1;
         width: 300px;
         min-width: 260px;
         height: 236px;
-        margin-top: -65px;
-        margin-left: 1px;
+        margin-top: -85px;
+        margin-left: -20px;
  
         border: 2px solid rgba(255, 179, 71, 0.85);
         border-radius: 12px;
@@ -2029,8 +2030,8 @@ line-height: 1;
         display: block;
         margin-top: 65px;
         position: absolute;
-        top: 99px;
-        right: 34px;
+        top: 109px;
+        right: 44px;
         text-align: right;
         font-size: 12px;
         color: #b1ffce;
@@ -2073,6 +2074,7 @@ line-height: 1;
         height: 100% !important;
       }}
       .chart-wrap {{
+        margin-top: 26px;
         height: 580px;
         margin: -29px auto 0;
         background: linear-gradient(
@@ -2487,23 +2489,6 @@ line-height: 1;
   <body>
     <div class="container frame">
       <div class="layout">
-        <div class="left-rail">
-          <div class="header-row">
-            <div id="Company">Any Company<br>Anywhere USA</div>
-            <div id="Logo"class="logo-placeholder">
-              <img src="../../../Images/Hands.png" alt="Logo" />
-            </div>
-          </div>
-          <div class="timestamp-row">
-            <div id="dashboard-timestamp" class="date-display">{generated_label}</div>
-          </div>
-          <div id="Cards" class="card-grid frame2">
-            {cards}
-          </div>
-          <div class="hands-logo-slot" aria-hidden="true">
-            <div class="hands-logo-top"></div>
-          </div>
-        </div>
         <div class="right-rail">
           <div id="history" class="history-panel">
 
@@ -2621,8 +2606,25 @@ line-height: 1;
         <pre id="js-log"></pre>
           </div>
         </div>
+        <div class="left-rail">
+          <div class="header-row">
+            <div id="Company">Any Company<br>Anywhere USA</div>
+            <div id="Logo"class="logo-placeholder">
+              <img src="../../../Images/Hands.png" alt="Logo" />
+            </div>
+          </div>
+          <div class="timestamp-row">
+            <div id="dashboard-timestamp" class="date-display">{generated_label}</div>
+          </div>
+          <div id="Cards" class="card-grid frame2">
+            {cards}
+          </div>
+          <div class="hands-logo-slot" aria-hidden="true">
+            <div class="hands-logo-top"></div>
+          </div>
+        </div>
       </div>
-    </div>  
+    </div>
     {script_block}
 
   </body>
