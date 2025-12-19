@@ -1664,13 +1664,13 @@ line-height: 1;
       
       #chartcontrols {{
        flex: 1;
-  max-width: 435px;   /* <-- THIS is the width control */
+  max-width: 835px;   /* <-- THIS is the width control */
   width: auto;
-  margin-top: 68px;
+  margin-top: -6px;
   padding: 1px;
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 3.3px;
 
   font-size: 13px;
   color: #f4f6ff;
@@ -1679,8 +1679,69 @@ line-height: 1;
   background: rgba(0, 0, 0, 0.18);
   box-sizing: border-box;
  }}
+      .controls-transport-wrap {{
+        margin-top: -270px;
+        margin-left: 300px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+      }}
+      .transport-panel {{
+        flex: 0 0 260px;
+        width: 260px;
+        margin-top: -40px;
+        margin-left: 100px;
+        padding: 6px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        border-radius: 12px;
+        background: rgba(0, 0, 0, 0.0);
+        box-sizing: border-box;
+      }}
+      .transport-deck {{
+        width: 200px;
+        height: 60px;
+        margin-top: -85px;
+        border-radius: 14px;
+        pointer-events: none;
+        opacity: 0.98;
+      }}
+      .transport-nav {{
+        margin-top: -8px;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+      }}
+      .transport-deck svg {{
+        width: 100%;
+        height: 100%;
+        display: block;
+      }}
+      .transport-deck .reel {{
+        transform-box: fill-box;
+        transform-origin: center;
+      }}
+      .transport-deck.playing .reel {{
+        animation: deck-spin 1.35s linear infinite;
+      }}
+      .transport-deck .led-dot {{
+        transition: fill 0.25s ease, filter 0.25s ease;
+      }}
+      .transport-deck.playing .led-dot {{
+        fill: rgba(102, 255, 153, 0.95) !important;
+        filter: drop-shadow(0 0 6px rgba(102, 255, 153, 0.55));
+      }}
+      @keyframes deck-spin {{
+        from {{ transform: rotate(0deg); }}
+        to {{ transform: rotate(360deg); }}
+      }}
       .chart-top-row {{
-        max-width: 900px;
+        max-width: 1120px;
         width: 100%;
         display: flex;
         flex-wrap: wrap;
@@ -1695,9 +1756,9 @@ line-height: 1;
         flex: 0 0 260px;
         width: 300px;
         min-width: 260px;
-        height: 230px;
+        height: 236px;
         margin-top: -65px;
-        margin-left: 20px;
+        margin-left: 1px;
  
         border: 2px solid rgba(255, 179, 71, 0.85);
         border-radius: 12px;
@@ -1792,6 +1853,22 @@ line-height: 1;
           justify-content: center;
           margin-right: 0;
           margin-left: 0;
+          padding-right: 1px;
+        }}
+        .controls-transport-wrap {{
+          margin-top: 0;
+          margin-left: 0;
+          width: 100%;
+          align-items: center;
+        }}
+        .transport-panel {{
+          flex: 0 0 auto;
+          width: 100%;
+          margin-top: 0;
+          margin-left: 0;
+        }}
+        .transport-deck {{
+          display: none;
         }}
         .usage-slot {{
           min-width: 0;
@@ -1922,8 +1999,9 @@ line-height: 1;
       }}
       .chart-history {{
         position: absolute;
-        top: -276px;
-        right: 25px;
+        margin-top: 65px;
+        top: -217px;
+        right: 55px;
         background: #2f3136;
         border: 1px solid rgba(255, 255, 255, 0.2);
         border-radius: 14px;
@@ -2166,16 +2244,66 @@ line-height: 1;
             <canvas id="usage-slot-chart"></canvas>
           </div>
         </div>
-        <div id="chartcontrols" class="chart-controls">
-            <button type="button" class="chart-control" data-mode="setpoint">Set Point</button>
-            <button type="button" class="chart-control" data-mode="actual">Building Temp</button>
-            <button type="button" class="chart-control" data-mode="outside">Outside Temp</button>
-            <button type="button" class="chart-control" data-mode="cooling">AC Status</button>
-            <button type="button" class="chart-control" data-mode="fan">Fan Mode</button>
-            <button type="button" class="chart-control active" data-mode="both">Combined</button>
-            <span>&nbsp;</span>
-            <button type="button" class="chart-control" id="autoplay-toggle">Auto-play: On</button>
+        <div class="controls-transport-wrap">
+          <div id="chartcontrols" class="chart-controls">
+              <button type="button" class="chart-control" data-mode="setpoint">Set Point</button>
+              <button type="button" class="chart-control" data-mode="actual">Building Temp</button>
+              <button type="button" class="chart-control" data-mode="outside">Outside Temp</button>
+              <button type="button" class="chart-control" data-mode="cooling">AC Status</button>
+              <button type="button" class="chart-control" data-mode="fan">Fan Mode</button>
+              <button type="button" class="chart-control active" data-mode="both">Combined</button>
+              <span>&nbsp;</span>
+              <button type="button" class="chart-control" id="autoplay-toggle">Auto-play: On</button>
+            </div>
+          <div id="transport-panel" class="transport-panel">
+            <div id="transport-deck" class="transport-deck" aria-hidden="true">
+              <svg viewBox="0 0 240 90" role="img" aria-label="Data deck">
+              <defs>
+                <linearGradient id="deck-bg" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0" stop-color="#0a0a10" />
+                  <stop offset="1" stop-color="#1f1f26" />
+                </linearGradient>
+              </defs>
+              <rect x="3" y="3" width="234" height="84" rx="14" fill="url(#deck-bg)" />
+              <rect x="12" y="14" width="216" height="40" rx="10" fill="rgba(255,255,255,0.06)" />
+              <rect x="14" y="16" width="212" height="36" rx="9" fill="rgba(0,0,0,0.28)" />
+
+              <g class="reel reel-left">
+                <circle cx="72" cy="34" r="14" fill="rgba(255,255,255,0.06)" />
+                <circle cx="72" cy="34" r="10" fill="rgba(0,0,0,0.35)" />
+                <circle cx="72" cy="34" r="2.5" fill="rgba(255,255,255,0.35)" />
+                <path d="M72 24 L74.8 32 L72 34 L69.2 32 Z" fill="rgba(255,255,255,0.35)" />
+                <path d="M62 34 L70 36.8 L72 34 L70 31.2 Z" fill="rgba(255,255,255,0.35)" />
+                <path d="M72 44 L74.8 36 L72 34 L69.2 36 Z" fill="rgba(255,255,255,0.35)" />
+                <path d="M82 34 L74 36.8 L72 34 L74 31.2 Z" fill="rgba(255,255,255,0.35)" />
+              </g>
+
+              <g class="reel reel-right">
+                <circle cx="168" cy="34" r="14" fill="rgba(255,255,255,0.06)" />
+                <circle cx="168" cy="34" r="10" fill="rgba(0,0,0,0.35)" />
+                <circle cx="168" cy="34" r="2.5" fill="rgba(255,255,255,0.35)" />
+                <path d="M168 24 L170.8 32 L168 34 L165.2 32 Z" fill="rgba(255,255,255,0.35)" />
+                <path d="M158 34 L166 36.8 L168 34 L166 31.2 Z" fill="rgba(255,255,255,0.35)" />
+                <path d="M168 44 L170.8 36 L168 34 L165.2 36 Z" fill="rgba(255,255,255,0.35)" />
+                <path d="M178 34 L170 36.8 L168 34 L170 31.2 Z" fill="rgba(255,255,255,0.35)" />
+              </g>
+
+              <path d="M86 34 C104 28, 136 28, 154 34" stroke="rgba(255,255,255,0.18)" stroke-width="2" fill="none" />
+              <path d="M86 38 C104 44, 136 44, 154 38" stroke="rgba(255,255,255,0.10)" stroke-width="2" fill="none" />
+
+              <text x="120" y="70" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="12" fill="rgba(244,246,255,0.72)" letter-spacing="0.18em">
+                DATA TRANSPORT
+              </text>
+
+              <g class="deck-led">
+                <circle cx="220" cy="70" r="5.5" fill="rgba(0,0,0,0.35)" />
+                <circle class="led-dot" cx="220" cy="70" r="3.5" fill="rgba(255,102,102,0.25)" />
+              </g>
+            </svg>
           </div>
+          <div id="transport-nav" class="transport-nav" role="group" aria-label="History navigation"></div>
+        </div>
+        </div>
       </div>
         <div class="chart-wrap">
           <div>

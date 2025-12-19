@@ -2312,6 +2312,15 @@
     if (!controls) {
       return;
     }
+    const transportNav = document.getElementById("transport-nav");
+    const appendControl = (el) => controls.appendChild(el);
+    const appendNavControl = (el) => {
+      if (transportNav) {
+        transportNav.appendChild(el);
+      } else {
+        appendControl(el);
+      }
+    };
 
     if (!selectionIndicatorEl) {
       selectionIndicatorEl = document.createElement("span");
@@ -2322,16 +2331,7 @@
       selectionIndicatorEl.style.userSelect = "none";
       selectionIndicatorEl.textContent = "";
       selectionIndicatorEl.title = "Hover the chart to preview a reading. Click to pin. Use Clear Pin or select Latest to reset.";
-      controls.appendChild(selectionIndicatorEl);
-
-      const help = document.createElement("span");
-      help.id = "selection-help";
-      help.textContent = "ⓘ";
-      help.style.marginLeft = "6px";
-      help.style.color = "#66ff99";
-      help.style.cursor = "help";
-      help.title = "Orange label = selected reading (hover or pinned). Click a point to pin; click again to unpin.";
-      controls.appendChild(help);
+      appendControl(selectionIndicatorEl);
     }
 
     if (!clearPinButtonEl) {
@@ -2342,7 +2342,7 @@
       clearPinButtonEl.textContent = "Clear Pin";
       clearPinButtonEl.style.marginLeft = "10px";
       clearPinButtonEl.style.display = "none";
-      controls.appendChild(clearPinButtonEl);
+      appendControl(clearPinButtonEl);
     }
 
     if (!hourPickerEl) {
@@ -2356,7 +2356,7 @@
       hourPickerEl.style.color = "#f4f6ff";
       hourPickerEl.style.maxWidth = "220px";
       hourPickerEl.title = "Pick a specific reading to pin.";
-      controls.appendChild(hourPickerEl);
+      appendControl(hourPickerEl);
     }
 
     if (!prevDayButtonEl) {
@@ -2368,7 +2368,8 @@
       prevDayButtonEl.style.marginLeft = "10px";
       prevDayButtonEl.title = "Previous day";
       prevDayButtonEl.addEventListener("click", () => navigateArchiveByDays(-1));
-      controls.appendChild(prevDayButtonEl);
+      prevDayButtonEl.style.marginLeft = "0";
+      appendNavControl(prevDayButtonEl);
     }
 
     if (!nextDayButtonEl) {
@@ -2380,7 +2381,8 @@
       nextDayButtonEl.style.marginLeft = "6px";
       nextDayButtonEl.title = "Next day";
       nextDayButtonEl.addEventListener("click", () => navigateArchiveByDays(1));
-      controls.appendChild(nextDayButtonEl);
+      nextDayButtonEl.style.marginLeft = "0";
+      appendNavControl(nextDayButtonEl);
     }
 
     syncArchiveNavButtons();
@@ -2797,6 +2799,10 @@
     autoplayToggle.classList.toggle("active", autoplayEnabled);
     autoplayToggle.classList.toggle("off", !autoplayEnabled);
     autoplayToggle.textContent = autoplayEnabled ? "Auto-play: On" : "Auto-play: Off";
+    const deck = document.getElementById("transport-deck");
+    if (deck) {
+      deck.classList.toggle("playing", Boolean(autoplayEnabled));
+    }
   };
 
   const bindAutoplayInteractions = () => {
