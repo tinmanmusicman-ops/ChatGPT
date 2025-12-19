@@ -1,0 +1,962 @@
+{
+  "headers": [
+    "Timestamp",
+    "Type",
+    "Building Temperature",
+    "Cooling Set Point",
+    "Climate Setting",
+    "Fan Setting",
+    "Equipment Status",
+    "Studio",
+    "Request Expires (local time)",
+    "Outside Temp",
+    "Condenser State",
+    "Condenser Minutes"
+  ],
+  "latestRow": [
+    "2025-09-01 23:00",
+    "System",
+    70.0,
+    78.0,
+    "Cool",
+    "O",
+    "Idle",
+    "",
+    "",
+    69.8,
+    "Off",
+    0
+  ],
+  "history": [],
+  "chartLabels": [
+    "Mon 09/01 12 AM",
+    "Mon 09/01 01 AM",
+    "Mon 09/01 02 AM",
+    "Mon 09/01 03 AM",
+    "Mon 09/01 04 AM",
+    "Mon 09/01 05 AM",
+    "Mon 09/01 06 AM",
+    "Mon 09/01 07 AM",
+    "Mon 09/01 08 AM",
+    "Mon 09/01 09 AM",
+    "Mon 09/01 10 AM",
+    "Mon 09/01 11 AM",
+    "Mon 09/01 12 PM",
+    "Mon 09/01 01 PM",
+    "Mon 09/01 02 PM",
+    "Mon 09/01 03 PM",
+    "Mon 09/01 04 PM",
+    "Mon 09/01 05 PM",
+    "Mon 09/01 06 PM",
+    "Mon 09/01 07 PM",
+    "Mon 09/01 08 PM",
+    "Mon 09/01 09 PM",
+    "Mon 09/01 10 PM",
+    "Mon 09/01 11 PM"
+  ],
+  "setpoint": [
+    80.0,
+    80.0,
+    80.0,
+    80.0,
+    80.0,
+    80.0,
+    80.0,
+    80.0,
+    80.0,
+    80.0,
+    80.0,
+    80.0,
+    80.0,
+    75.0,
+    75.0,
+    75.0,
+    75.0,
+    75.0,
+    78.0,
+    78.0,
+    78.0,
+    78.0,
+    78.0,
+    78.0
+  ],
+  "actual": [
+    69.16666666666667,
+    68.33333333333333,
+    67.5,
+    66.66666666666667,
+    65.83333333333333,
+    65.0,
+    70.0,
+    70.42857142857143,
+    70.85714285714286,
+    71.28571428571429,
+    71.71428571428571,
+    72.14285714285714,
+    72.57142857142857,
+    73.0,
+    73.66666666666667,
+    74.33333333333333,
+    75.0,
+    76.0,
+    78.0,
+    75.0,
+    73.75,
+    72.5,
+    71.25,
+    70.0
+  ],
+  "setpointLabel": "Set Point",
+  "actualLabel": "Building Temperature",
+  "fan": [
+    "O",
+    "O",
+    "O",
+    "O",
+    "O",
+    "O",
+    "C",
+    "C",
+    "C",
+    "C",
+    "C",
+    "C",
+    "C",
+    "A",
+    "A",
+    "A",
+    "A",
+    "A",
+    "A",
+    "O",
+    "O",
+    "O",
+    "O",
+    "O"
+  ],
+  "fanLegend": [
+    "Auto",
+    "Circulate",
+    "On"
+  ],
+  "outside": [
+    68.0,
+    67.7,
+    66.9,
+    66.2,
+    66.3,
+    65.9,
+    66.4,
+    68.5,
+    72.8,
+    75.5,
+    76.3,
+    76.7,
+    77.7,
+    77.8,
+    76.7,
+    75.7,
+    74.9,
+    74.8,
+    73.2,
+    71.8,
+    70.9,
+    70.4,
+    70.0,
+    69.8
+  ],
+  "outsideLabel": "Outside Temp",
+  "outsideFlags": [
+    "N",
+    "N",
+    "N",
+    "P",
+    "P",
+    "P",
+    "P",
+    "P",
+    "S",
+    "S",
+    "S",
+    "S",
+    "P",
+    "P",
+    "P",
+    "P",
+    "S",
+    "P",
+    "P",
+    "P",
+    "P",
+    "P",
+    "N",
+    "N"
+  ],
+  "outsideFlagDayChars": [
+    "N",
+    "N",
+    "N",
+    "N",
+    "N",
+    "N",
+    "D",
+    "D",
+    "D",
+    "D",
+    "D",
+    "D",
+    "D",
+    "D",
+    "D",
+    "D",
+    "D",
+    "D",
+    "D",
+    "N",
+    "N",
+    "N",
+    "N",
+    "N"
+  ],
+  "cooling": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "coolingLegend": [
+    "Idle",
+    "Cooling"
+  ],
+  "coolingLabel": "Status",
+  "climateSetting": [
+    "Cool",
+    "Cool",
+    "Cool",
+    "Cool",
+    "Cool",
+    "Cool",
+    "Cool",
+    "Cool",
+    "Cool",
+    "Cool",
+    "Cool",
+    "Cool",
+    "Cool",
+    "Cool",
+    "Cool",
+    "Cool",
+    "Cool",
+    "Cool",
+    "Cool",
+    "Cool",
+    "Cool",
+    "Cool",
+    "Cool",
+    "Cool"
+  ],
+  "climateSettingLabel": "Climate Setting",
+  "condenserMinutes": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    40,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "totalCondenserMinutes": "40",
+  "totalCondenserMinutesValue": 40.0,
+  "totalCondenserCost": "$2.00",
+  "totalCondenserCostValue": 2.0,
+  "condenserCostPerMinute": 0.05,
+  "latestActual": 70.0,
+  "latestSetpoint": 78.0,
+  "latestOutside": 69.8,
+  "latestOutsideRaw": "NN69.8 | Open-Meteo",
+  "latestOutsideDaylight": false,
+  "latestOutsideFlagDayChar": "N",
+  "latestFan": "O",
+  "latestCooling": 0,
+  "latestCondenserState": "Off",
+  "generatedTimestamp": "Projected Sep 01, 2025 (Open-Meteo)",
+  "generatedDateSlug": "2025-09-01",
+  "archiveDates": [
+    {
+      "slug": "2025-12-18",
+      "label": "Dec 18, 2025"
+    },
+    {
+      "slug": "2025-12-17",
+      "label": "Dec 17, 2025"
+    },
+    {
+      "slug": "2025-12-16",
+      "label": "Dec 16, 2025"
+    },
+    {
+      "slug": "2025-12-15",
+      "label": "Dec 15, 2025"
+    },
+    {
+      "slug": "2025-12-14",
+      "label": "Dec 14, 2025"
+    },
+    {
+      "slug": "2025-12-13",
+      "label": "Dec 13, 2025"
+    },
+    {
+      "slug": "2025-12-12",
+      "label": "Dec 12, 2025"
+    },
+    {
+      "slug": "2025-12-11",
+      "label": "Dec 11, 2025"
+    },
+    {
+      "slug": "2025-12-10",
+      "label": "Dec 10, 2025"
+    },
+    {
+      "slug": "2025-12-09",
+      "label": "Dec 09, 2025"
+    },
+    {
+      "slug": "2025-12-08",
+      "label": "Dec 08, 2025"
+    },
+    {
+      "slug": "2025-12-07",
+      "label": "Dec 07, 2025"
+    },
+    {
+      "slug": "2025-12-06",
+      "label": "Dec 06, 2025"
+    },
+    {
+      "slug": "2025-12-05",
+      "label": "Dec 05, 2025"
+    },
+    {
+      "slug": "2025-12-04",
+      "label": "Dec 04, 2025"
+    },
+    {
+      "slug": "2025-12-03",
+      "label": "Dec 03, 2025"
+    },
+    {
+      "slug": "2025-12-02",
+      "label": "Dec 02, 2025"
+    },
+    {
+      "slug": "2025-12-01",
+      "label": "Dec 01, 2025"
+    },
+    {
+      "slug": "2025-11-30",
+      "label": "Nov 30, 2025"
+    },
+    {
+      "slug": "2025-11-29",
+      "label": "Nov 29, 2025"
+    },
+    {
+      "slug": "2025-11-28",
+      "label": "Nov 28, 2025"
+    },
+    {
+      "slug": "2025-11-27",
+      "label": "Nov 27, 2025"
+    },
+    {
+      "slug": "2025-11-26",
+      "label": "Nov 26, 2025"
+    },
+    {
+      "slug": "2025-11-25",
+      "label": "Nov 25, 2025"
+    },
+    {
+      "slug": "2025-11-24",
+      "label": "Nov 24, 2025"
+    },
+    {
+      "slug": "2025-11-23",
+      "label": "Nov 23, 2025"
+    },
+    {
+      "slug": "2025-11-22",
+      "label": "Nov 22, 2025"
+    },
+    {
+      "slug": "2025-11-21",
+      "label": "Nov 21, 2025"
+    },
+    {
+      "slug": "2025-11-20",
+      "label": "Nov 20, 2025"
+    },
+    {
+      "slug": "2025-11-19",
+      "label": "Nov 19, 2025"
+    },
+    {
+      "slug": "2025-11-18",
+      "label": "Nov 18, 2025"
+    },
+    {
+      "slug": "2025-11-17",
+      "label": "Nov 17, 2025"
+    },
+    {
+      "slug": "2025-11-16",
+      "label": "Nov 16, 2025"
+    },
+    {
+      "slug": "2025-11-15",
+      "label": "Nov 15, 2025"
+    },
+    {
+      "slug": "2025-11-14",
+      "label": "Nov 14, 2025"
+    },
+    {
+      "slug": "2025-11-13",
+      "label": "Nov 13, 2025"
+    },
+    {
+      "slug": "2025-11-12",
+      "label": "Nov 12, 2025"
+    },
+    {
+      "slug": "2025-11-11",
+      "label": "Nov 11, 2025"
+    },
+    {
+      "slug": "2025-11-10",
+      "label": "Nov 10, 2025"
+    },
+    {
+      "slug": "2025-11-09",
+      "label": "Nov 09, 2025"
+    },
+    {
+      "slug": "2025-11-08",
+      "label": "Nov 08, 2025"
+    },
+    {
+      "slug": "2025-11-07",
+      "label": "Nov 07, 2025"
+    },
+    {
+      "slug": "2025-11-06",
+      "label": "Nov 06, 2025"
+    },
+    {
+      "slug": "2025-11-05",
+      "label": "Nov 05, 2025"
+    },
+    {
+      "slug": "2025-11-04",
+      "label": "Nov 04, 2025"
+    },
+    {
+      "slug": "2025-11-03",
+      "label": "Nov 03, 2025"
+    },
+    {
+      "slug": "2025-11-02",
+      "label": "Nov 02, 2025"
+    },
+    {
+      "slug": "2025-11-01",
+      "label": "Nov 01, 2025"
+    },
+    {
+      "slug": "2025-10-31",
+      "label": "Oct 31, 2025"
+    },
+    {
+      "slug": "2025-10-30",
+      "label": "Oct 30, 2025"
+    },
+    {
+      "slug": "2025-10-29",
+      "label": "Oct 29, 2025"
+    },
+    {
+      "slug": "2025-10-28",
+      "label": "Oct 28, 2025"
+    },
+    {
+      "slug": "2025-10-27",
+      "label": "Oct 27, 2025"
+    },
+    {
+      "slug": "2025-10-26",
+      "label": "Oct 26, 2025"
+    },
+    {
+      "slug": "2025-10-25",
+      "label": "Oct 25, 2025"
+    },
+    {
+      "slug": "2025-10-24",
+      "label": "Oct 24, 2025"
+    },
+    {
+      "slug": "2025-10-23",
+      "label": "Oct 23, 2025"
+    },
+    {
+      "slug": "2025-10-22",
+      "label": "Oct 22, 2025"
+    },
+    {
+      "slug": "2025-10-21",
+      "label": "Oct 21, 2025"
+    },
+    {
+      "slug": "2025-10-20",
+      "label": "Oct 20, 2025"
+    },
+    {
+      "slug": "2025-10-19",
+      "label": "Oct 19, 2025"
+    },
+    {
+      "slug": "2025-10-18",
+      "label": "Oct 18, 2025"
+    },
+    {
+      "slug": "2025-10-17",
+      "label": "Oct 17, 2025"
+    },
+    {
+      "slug": "2025-10-16",
+      "label": "Oct 16, 2025"
+    },
+    {
+      "slug": "2025-10-15",
+      "label": "Oct 15, 2025"
+    },
+    {
+      "slug": "2025-10-14",
+      "label": "Oct 14, 2025"
+    },
+    {
+      "slug": "2025-10-13",
+      "label": "Oct 13, 2025"
+    },
+    {
+      "slug": "2025-10-12",
+      "label": "Oct 12, 2025"
+    },
+    {
+      "slug": "2025-10-11",
+      "label": "Oct 11, 2025"
+    },
+    {
+      "slug": "2025-10-10",
+      "label": "Oct 10, 2025"
+    },
+    {
+      "slug": "2025-10-09",
+      "label": "Oct 09, 2025"
+    },
+    {
+      "slug": "2025-10-08",
+      "label": "Oct 08, 2025"
+    },
+    {
+      "slug": "2025-10-07",
+      "label": "Oct 07, 2025"
+    },
+    {
+      "slug": "2025-10-06",
+      "label": "Oct 06, 2025"
+    },
+    {
+      "slug": "2025-10-05",
+      "label": "Oct 05, 2025"
+    },
+    {
+      "slug": "2025-10-04",
+      "label": "Oct 04, 2025"
+    },
+    {
+      "slug": "2025-10-03",
+      "label": "Oct 03, 2025"
+    },
+    {
+      "slug": "2025-10-02",
+      "label": "Oct 02, 2025"
+    },
+    {
+      "slug": "2025-10-01",
+      "label": "Oct 01, 2025"
+    },
+    {
+      "slug": "2025-09-30",
+      "label": "Sep 30, 2025"
+    },
+    {
+      "slug": "2025-09-29",
+      "label": "Sep 29, 2025"
+    },
+    {
+      "slug": "2025-09-28",
+      "label": "Sep 28, 2025"
+    },
+    {
+      "slug": "2025-09-27",
+      "label": "Sep 27, 2025"
+    },
+    {
+      "slug": "2025-09-26",
+      "label": "Sep 26, 2025"
+    },
+    {
+      "slug": "2025-09-25",
+      "label": "Sep 25, 2025"
+    },
+    {
+      "slug": "2025-09-24",
+      "label": "Sep 24, 2025"
+    },
+    {
+      "slug": "2025-09-23",
+      "label": "Sep 23, 2025"
+    },
+    {
+      "slug": "2025-09-22",
+      "label": "Sep 22, 2025"
+    },
+    {
+      "slug": "2025-09-21",
+      "label": "Sep 21, 2025"
+    },
+    {
+      "slug": "2025-09-20",
+      "label": "Sep 20, 2025"
+    },
+    {
+      "slug": "2025-09-19",
+      "label": "Sep 19, 2025"
+    },
+    {
+      "slug": "2025-09-18",
+      "label": "Sep 18, 2025"
+    },
+    {
+      "slug": "2025-09-17",
+      "label": "Sep 17, 2025"
+    },
+    {
+      "slug": "2025-09-16",
+      "label": "Sep 16, 2025"
+    },
+    {
+      "slug": "2025-09-15",
+      "label": "Sep 15, 2025"
+    },
+    {
+      "slug": "2025-09-14",
+      "label": "Sep 14, 2025"
+    },
+    {
+      "slug": "2025-09-13",
+      "label": "Sep 13, 2025"
+    },
+    {
+      "slug": "2025-09-12",
+      "label": "Sep 12, 2025"
+    },
+    {
+      "slug": "2025-09-11",
+      "label": "Sep 11, 2025"
+    },
+    {
+      "slug": "2025-09-10",
+      "label": "Sep 10, 2025"
+    },
+    {
+      "slug": "2025-09-09",
+      "label": "Sep 09, 2025"
+    },
+    {
+      "slug": "2025-09-08",
+      "label": "Sep 08, 2025"
+    },
+    {
+      "slug": "2025-09-07",
+      "label": "Sep 07, 2025"
+    },
+    {
+      "slug": "2025-09-06",
+      "label": "Sep 06, 2025"
+    },
+    {
+      "slug": "2025-09-05",
+      "label": "Sep 05, 2025"
+    },
+    {
+      "slug": "2025-09-04",
+      "label": "Sep 04, 2025"
+    },
+    {
+      "slug": "2025-09-03",
+      "label": "Sep 03, 2025"
+    },
+    {
+      "slug": "2025-09-02",
+      "label": "Sep 02, 2025"
+    },
+    {
+      "slug": "2025-09-01",
+      "label": "Sep 01, 2025"
+    },
+    {
+      "slug": "2025-08-31",
+      "label": "Aug 31, 2025"
+    },
+    {
+      "slug": "2025-08-30",
+      "label": "Aug 30, 2025"
+    },
+    {
+      "slug": "2025-08-29",
+      "label": "Aug 29, 2025"
+    },
+    {
+      "slug": "2025-08-28",
+      "label": "Aug 28, 2025"
+    },
+    {
+      "slug": "2025-08-27",
+      "label": "Aug 27, 2025"
+    },
+    {
+      "slug": "2025-08-26",
+      "label": "Aug 26, 2025"
+    },
+    {
+      "slug": "2025-08-25",
+      "label": "Aug 25, 2025"
+    },
+    {
+      "slug": "2025-08-24",
+      "label": "Aug 24, 2025"
+    },
+    {
+      "slug": "2025-08-23",
+      "label": "Aug 23, 2025"
+    },
+    {
+      "slug": "2025-08-22",
+      "label": "Aug 22, 2025"
+    },
+    {
+      "slug": "2025-08-21",
+      "label": "Aug 21, 2025"
+    },
+    {
+      "slug": "2025-08-20",
+      "label": "Aug 20, 2025"
+    },
+    {
+      "slug": "2025-08-19",
+      "label": "Aug 19, 2025"
+    },
+    {
+      "slug": "2025-08-18",
+      "label": "Aug 18, 2025"
+    },
+    {
+      "slug": "2025-08-17",
+      "label": "Aug 17, 2025"
+    },
+    {
+      "slug": "2025-08-16",
+      "label": "Aug 16, 2025"
+    },
+    {
+      "slug": "2025-08-15",
+      "label": "Aug 15, 2025"
+    },
+    {
+      "slug": "2025-08-14",
+      "label": "Aug 14, 2025"
+    },
+    {
+      "slug": "2025-08-13",
+      "label": "Aug 13, 2025"
+    },
+    {
+      "slug": "2025-08-12",
+      "label": "Aug 12, 2025"
+    },
+    {
+      "slug": "2025-08-11",
+      "label": "Aug 11, 2025"
+    },
+    {
+      "slug": "2025-08-10",
+      "label": "Aug 10, 2025"
+    },
+    {
+      "slug": "2025-08-09",
+      "label": "Aug 09, 2025"
+    },
+    {
+      "slug": "2025-08-08",
+      "label": "Aug 08, 2025"
+    },
+    {
+      "slug": "2025-08-07",
+      "label": "Aug 07, 2025"
+    },
+    {
+      "slug": "2025-08-06",
+      "label": "Aug 06, 2025"
+    },
+    {
+      "slug": "2025-08-05",
+      "label": "Aug 05, 2025"
+    },
+    {
+      "slug": "2025-08-04",
+      "label": "Aug 04, 2025"
+    },
+    {
+      "slug": "2025-08-03",
+      "label": "Aug 03, 2025"
+    },
+    {
+      "slug": "2025-08-02",
+      "label": "Aug 02, 2025"
+    },
+    {
+      "slug": "2025-08-01",
+      "label": "Aug 01, 2025"
+    }
+  ],
+  "archivePath": "chart hist",
+  "typeSeries": [
+    "System",
+    "System",
+    "System",
+    "System",
+    "request (studio 15, zone2, 50m)",
+    "System",
+    "System",
+    "System",
+    "request (studio 9, zone4, 40m)",
+    "System",
+    "System",
+    "System",
+    "request (studio 2, zone2, 60m)",
+    "System",
+    "System",
+    "System",
+    "request (studio 18, zone4, 45m)",
+    "System",
+    "System",
+    "System",
+    "request (studio 11, zone2, 30m)",
+    "System",
+    "System",
+    "System"
+  ],
+  "studioSeries": [
+    "",
+    "",
+    "",
+    "",
+    "15",
+    "",
+    "",
+    "",
+    "9",
+    "",
+    "",
+    "",
+    "2",
+    "",
+    "",
+    "",
+    "18",
+    "",
+    "",
+    "",
+    "11",
+    "",
+    "",
+    ""
+  ],
+  "requestExpiresLocalSeries": [
+    "",
+    "",
+    "",
+    "",
+    "4:50 AM",
+    "",
+    "",
+    "",
+    "8:40 AM",
+    "",
+    "",
+    "",
+    "1:00 PM",
+    "",
+    "",
+    "",
+    "4:45 PM",
+    "",
+    "",
+    "",
+    "8:30 PM",
+    "",
+    "",
+    ""
+  ]
+}
