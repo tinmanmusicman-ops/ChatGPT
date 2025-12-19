@@ -89,6 +89,8 @@
   const timestampDisplay = document.getElementById("dashboard-timestamp");
   const usageSlotCanvas = document.getElementById("usage-slot-chart");
   const usageSlotCtx = usageSlotCanvas ? usageSlotCanvas.getContext("2d") : null;
+  const usageSlotCanvasSlot = document.getElementById("usage-slot-canvas-slot");
+  const historyChartCanvasSlot = document.getElementById("history-chart-canvas-slot");
   let chart = null;
   let usageSlotChart = null;
   let cardsInitialized = false;
@@ -100,6 +102,8 @@
   let prevDayButtonEl = null;
   let nextDayButtonEl = null;
   let usageSlotBound = false;
+  let chartSwapBound = false;
+  let chartsSwapped = false;
   let usageRangeKey = "year"; // 7d | month | year
 
   const STORAGE_KEY = "thermostatDashboard.ui.v1";
@@ -480,6 +484,63 @@
         },
       },
     });
+  };
+
+  const applyChartSwap = (nextSwapped) => {
+    if (!canvas || !usageSlotCanvas || !usageSlotCanvasSlot || !historyChartCanvasSlot) {
+      return;
+    }
+    const next = Boolean(nextSwapped);
+    if (chartsSwapped === next) {
+      return;
+    }
+    if (next) {
+      historyChartCanvasSlot.appendChild(usageSlotCanvas);
+      usageSlotCanvasSlot.appendChild(canvas);
+      document.body.classList.add("charts-swapped");
+    } else {
+      historyChartCanvasSlot.appendChild(canvas);
+      usageSlotCanvasSlot.appendChild(usageSlotCanvas);
+      document.body.classList.remove("charts-swapped");
+    }
+    chartsSwapped = next;
+    // Let layout settle before resizing charts.
+    setTimeout(() => {
+      try {
+        if (chart) {
+          chart.resize();
+        }
+      } catch (err) {
+        // ignore
+      }
+      try {
+        if (usageSlotChart) {
+          usageSlotChart.resize();
+        }
+      } catch (err) {
+        // ignore
+      }
+    }, 0);
+  };
+
+  const bindChartSwapControls = () => {
+    if (chartSwapBound) {
+      return;
+    }
+    if (!canvas || !usageSlotCanvas) {
+      return;
+    }
+    chartSwapBound = true;
+
+    const usageTitle = document.querySelector("#usage-slot .title");
+    if (usageTitle) {
+      usageTitle.title = "Swap charts";
+      usageTitle.addEventListener("click", () => applyChartSwap(!chartsSwapped));
+    }
+
+    // Use double-click on either canvas as a universal swap gesture.
+    canvas.addEventListener("dblclick", () => applyChartSwap(!chartsSwapped));
+    usageSlotCanvas.addEventListener("dblclick", () => applyChartSwap(!chartsSwapped));
   };
 
   const bindUsageSlotControls = () => {
@@ -2808,6 +2869,7 @@
     updateTimestampFromSelection();
     updateSelectionIndicator();
     bindUsageSlotControls();
+    bindChartSwapControls();
     renderUsageSlotChart();
     destroyChart();
     createChart();

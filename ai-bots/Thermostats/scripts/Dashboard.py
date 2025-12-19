@@ -1899,10 +1899,25 @@ line-height: 1;
         text-align: right;
         min-width: 58px;
       }}
-      #usage-slot-chart {{
+      .usage-slot #usage-slot-chart {{
         width: 100% !important;
         height: 150px !important;
         max-height: 100% !important;
+      }}
+      .usage-slot #history-chart {{
+        width: 100% !important;
+        height: 150px !important;
+        max-height: 100% !important;
+      }}
+      .chart-wrap #usage-slot-chart {{
+        width: 100% !important;
+        height: 100% !important;
+      }}
+      body.charts-swapped #chart-history {{
+        display: none;
+      }}
+      .usage-slot .title {{
+        cursor: pointer;
       }}
       @media (max-width: 980px) {{
         .chart-top-row {{
@@ -2012,12 +2027,6 @@ line-height: 1;
         display: none;
         width: 100% !important;
         height: 100% !important;
-        background: linear-gradient(
-          to bottom,
-          #0F0B1A 0%,
-          #2A1E55 40%,
-          #332459 75%
-        );
       }}
       .chart-wrap {{
         height: 600px;
@@ -2033,17 +2042,30 @@ line-height: 1;
         width: 100%;
         padding: 12px 0 18px;
         box-sizing: border-box;
-        background-image:
-          url("../../../Images/Hands.png"),
-          linear-gradient(
-            to bottom,
-            #0F0B1A 0%,
-            #2A1E55 40%,
-            #332459 75%
-          );
-        background-size: contain, cover;
-        background-repeat: no-repeat, no-repeat;
-        background-position: center top, center;
+      }}
+      .chart-wrap::before {{
+        content: "";
+        position: absolute;
+        top: 8px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 260px;
+        height: 160px;
+        pointer-events: none;
+        z-index: 1;
+        background-image: url("../../../Images/Hands.png");
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: contain;
+        opacity: 0;
+        filter: drop-shadow(0 8px 16px rgba(0,0,0,0.55));
+      }}
+      body.charts-swapped .chart-wrap::before {{
+        opacity: 0.16;
+      }}
+      .chart-wrap canvas {{
+        position: relative;
+        z-index: 2;
       }}
       .fan-legend-image {{
       }}
@@ -2305,7 +2327,9 @@ line-height: 1;
               <div class="k">Max</div><div class="v" id="usage-stat-max">—</div>
               <div class="k">Cost</div><div class="v" id="usage-stat-cost">—</div>
             </div>
-            <canvas id="usage-slot-chart"></canvas>
+            <div id="usage-slot-canvas-slot">
+              <canvas id="usage-slot-chart"></canvas>
+            </div>
           </div>
         </div>
         <div class="controls-transport-wrap">
@@ -2372,13 +2396,17 @@ line-height: 1;
         <div class="chart-wrap tv-frame">
           <div>
           </div>
-          <canvas id="history-chart"></canvas>
+          <div id="history-chart-canvas-slot">
+            <canvas id="history-chart"></canvas>
+          </div>
           <div class="chart-history" id="chart-history">
             <h4 id="chart-history-toggle">Chart History</h4>
             <div id="chart-history-status" class="chart-history-status"></div>
             <ul id="chart-history-list" class="hidden"></ul>
           </div>
         </div>
+          <img src="../../../Images/legs.png" alt="Logo" />
+     
         <div class="note">Data source: Google Sheet (last updated when this page was generated).</div>
         <pre id="js-log"></pre>
       </div>
