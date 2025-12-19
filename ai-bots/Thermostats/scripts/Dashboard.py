@@ -2101,9 +2101,9 @@ line-height: 1;
         <div class="usage-slot" id="usage-slot">
           <div class="title">Usage Chart</div>
           <div class="usage-controls" role="group" aria-label="Usage Range">
-            <button type="button" class="usage-control active" data-range="7d">7 Day</button>
+            <button type="button" class="usage-control" data-range="7d">7 Day</button>
             <button type="button" class="usage-control" data-range="month">Month</button>
-            <button type="button" class="usage-control" data-range="year">Year</button>
+            <button type="button" class="usage-control active" data-range="year">Year</button>
           </div>
           <div class="usage-canvas">
             <div class="usage-stats" id="usage-slot-stats" aria-hidden="true">

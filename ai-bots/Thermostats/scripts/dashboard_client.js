@@ -98,7 +98,7 @@
   let clearPinButtonEl = null;
   let hourPickerEl = null;
   let usageSlotBound = false;
-  let usageRangeKey = "7d"; // 7d | month | year
+  let usageRangeKey = "year"; // 7d | month | year
 
   const STORAGE_KEY = "thermostatDashboard.ui.v1";
   let savedUiState = null;
