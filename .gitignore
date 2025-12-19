@@ -21,6 +21,8 @@ __pycache__/
 *.xml
 *.bat
 *.json
+!/ai-bots/Thermostats/Web/dashboard_data.json
+!/ai-bots/Thermostats/Web/chart hist/*.json
 *.txt
 !/bridge/**
 
