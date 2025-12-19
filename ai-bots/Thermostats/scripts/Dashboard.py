@@ -1372,13 +1372,31 @@ def build_dashboard_html(
           inset 0 -2px 4px rgba(0,0,0,0.35);
       }}
       .container {{
-        max-width: 900px;
+        max-width: 1480px;
         margin: 1px auto;
-        padding: 40px;
+        padding: 26px;
         background: transparent;
         border: 2px solid rgba(255, 255, 255, 0.18);
         border-radius: 12px;
         box-sizing: border-box;
+      }}
+      .layout {{
+        display: grid;
+        grid-template-columns: minmax(640px, 1fr) minmax(740px, 1.2fr);
+        gap: 18px;
+        align-items: start;
+      }}
+      .left-rail,
+      .right-rail {{
+        min-width: 0;
+      }}
+      @media (max-width: 1100px) {{
+        .layout {{
+          grid-template-columns: 1fr;
+        }}
+        .container {{
+          padding: 18px;
+        }}
       }}
       h1 {{
         margin: 0 0 16px;
@@ -2464,23 +2482,26 @@ line-height: 1;
   </head>
   <body>
     <div class="container frame">
-      <div class="header-row">
-        <div id="Company">Any Company<br>Anywhere USA</div>
-        <div id="Logo"class="logo-placeholder">
-          <img src="../../../Images/Hands.png" alt="Logo" />
+      <div class="layout">
+        <div class="left-rail">
+          <div class="header-row">
+            <div id="Company">Any Company<br>Anywhere USA</div>
+            <div id="Logo"class="logo-placeholder">
+              <img src="../../../Images/Hands.png" alt="Logo" />
+            </div>
+          </div>
+          <div class="timestamp-row">
+            <div id="dashboard-timestamp" class="date-display">{generated_label}</div>
+          </div>
+          <div id="Cards" class="card-grid frame2">
+            {cards}
+          </div>
+          <div class="hands-logo-slot" aria-hidden="true">
+            <div class="hands-logo-top"></div>
+          </div>
         </div>
-      </div>
-      <div class="timestamp-row">
-        <div id="dashboard-timestamp" class="date-display">{generated_label}</div>
-      </div>
-      <div id="Cards" class="card-grid frame2">
-        {cards}
-      </div>
-      <div class="hands-logo-slot" aria-hidden="true">
-        <div class="hands-logo-top"></div>
-      </div>
-        
-      <div id="history" class="history-panel">
+        <div class="right-rail">
+          <div id="history" class="history-panel">
 
       <button id="toggle-history">Show History Chart</button>
       <div class="condenser-runtime">
@@ -2589,10 +2610,11 @@ line-height: 1;
             <ul id="chart-history-list" class="hidden"></ul>
           </div>
         </div>
-          <img src="../../../Images/Legs2.png" alt="Logo" style="z-index: 2; margin-top: -145px; width: 800px; height: 800px;"/>
         <div class="note">Data source: Google Sheet (last updated when this page was generated).</div>
 
         <pre id="js-log"></pre>
+          </div>
+        </div>
       </div>
     </div>
     {script_block}
