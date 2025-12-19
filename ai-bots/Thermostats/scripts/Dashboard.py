@@ -247,15 +247,17 @@ def _fan_mode_for_hour(target: date, hour: int) -> str:
         raise ValueError(f"Hour out of range: {hour}")
 
     mmdd = (target.month, target.day)
-    if (target.month == 8 and 1 <= target.day <= 30):
+    if target.month in (7, 8) and target.day >= 1:
         schedule = ((0, 5, "C"), (6, 12, "O"), (13, 18, "A"), (19, 23, "O"))
-    elif (target.month == 9 and 1 <= target.day <= 30):
+    elif target.month == 9 and target.day >= 1:
         schedule = ((0, 5, "O"), (6, 12, "C"), (13, 18, "A"), (19, 23, "O"))
-    elif (target.month == 10 and 1 <= target.day <= 30):
+    elif target.month == 10 and target.day >= 1:
         schedule = ((0, 5, "O"), (6, 12, "C"), (13, 18, "A"), (19, 23, "O"))
-    elif (target.month == 11 and 1 <= target.day <= 30):
+    elif target.month in (4, 5, 6) and target.day >= 1:
+        schedule = ((0, 5, "C"), (6, 12, "O"), (13, 19, "A"), (20, 23, "O"))
+    elif target.month == 11 and target.day >= 1:
         schedule = ((0, 18, "A"), (19, 23, "O"))
-    elif (target.month == 12 and 1 <= target.day <= 30):
+    elif target.month in (12, 1, 2, 3) and target.day >= 1:
         schedule = ((0, 12, "A"), (13, 18, "O"), (19, 23, "C"))
     else:
         schedule = ((0, 23, "A"),)
@@ -267,23 +269,28 @@ def _fan_mode_for_hour(target: date, hour: int) -> str:
 
 
 def _baseline_anchor_temps(target: date, *, full_sun: bool) -> dict[int, float]:
-    if target.month == 8 and 1 <= target.day <= 30:
+    if target.month == 7 and target.day >= 1:
+        # July is similar to August, but runs ~3°F cooler during the hot afternoon/evening window (~3pm–8pm).
+        if full_sun:
+            return {5: 65, 6: 65, 13: 73, 16: 72, 17: 74, 19: 77, 23: 70}
+        return {5: 65, 6: 65, 13: 73, 16: 71, 17: 72, 19: 73, 23: 70}
+    if target.month == 8 and target.day >= 1:
         if full_sun:
             return {5: 65, 6: 65, 13: 73, 16: 75, 17: 77, 19: 80, 23: 70}
         return {5: 65, 6: 65, 13: 73, 16: 74, 17: 75, 19: 76, 23: 70}
-    if target.month == 9 and 1 <= target.day <= 30:
+    if target.month == 9 and target.day >= 1:
         if full_sun:
             return {5: 65, 6: 70, 13: 77, 16: 78, 17: 80, 19: 77, 23: 70}
         return {5: 65, 6: 70, 13: 73, 16: 75, 17: 76, 19: 75, 23: 70}
-    if target.month == 10 and 1 <= target.day <= 30:
+    if target.month == 10 and target.day >= 1:
         if full_sun:
             return {5: 68, 6: 70, 13: 76, 16: 77, 17: 79, 19: 80, 23: 70}
         return {5: 68, 6: 65, 13: 70, 16: 72, 17: 73, 19: 74, 23: 70}
-    if target.month == 11 and 1 <= target.day <= 30:
+    if target.month in (11, 4, 5, 6) and target.day >= 1:
         if full_sun:
             return {5: 65, 6: 65, 13: 70, 16: 75, 17: 77, 19: 77, 23: 68}
         return {5: 65, 6: 65, 13: 70, 16: 70, 17: 72, 19: 73, 23: 68}
-    if target.month == 12 and 1 <= target.day <= 30:
+    if target.month in (12, 1, 2, 3) and target.day >= 1:
         if full_sun:
             return {5: 65, 6: 65, 13: 70, 16: 73, 17: 75, 19: 73, 23: 70}
         return {5: 63, 6: 62, 13: 68, 16: 69, 17: 70, 19: 68, 23: 65}
@@ -320,7 +327,7 @@ def _interpolate_hourly_from_anchors(anchors: dict[int, float]) -> List[float]:
 
 def _setpoint_for_hour(target: date, hour: int) -> float:
     # Summer-ish policy: Aug 1 through Oct 30 (inclusive).
-    if (target.month == 8 and target.day >= 1) or target.month in (9, 10):
+    if target.month == 7 or (target.month == 8 and target.day >= 1) or target.month in (9, 10):
         default = 80.0
         if hour in (13, 14, 15, 16, 17):
             return 75.0
@@ -328,8 +335,8 @@ def _setpoint_for_hour(target: date, hour: int) -> float:
             return 78.0
         return default
 
-    # Winter-ish policy: Nov 1 through Dec 31.
-    if target.month in (11, 12):
+    # Winter-ish policy: Nov 1 through Mar 31.
+    if target.month in (11, 12, 1, 2, 3):
         default = 75.0
         if hour in (13, 14, 15, 16, 17):
             return 72.0
