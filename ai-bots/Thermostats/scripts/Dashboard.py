@@ -496,6 +496,9 @@ def build_projected_dashboard_payload(
     archive_dates: List[dict],
     *,
     weather_source: str = "auto",
+    simulate_requests: bool = False,
+    request_every_days: int = 3,
+    request_setpoint_delta_f: float = 2.0,
 ) -> tuple[dict, dict]:
     """
     Create a full dashboard payload JSON for the archive viewer, generated from date only.
@@ -549,13 +552,27 @@ def build_projected_dashboard_payload(
     normal_temp = _interpolate_hourly_from_anchors(anchors)
     setpoint = [_setpoint_for_hour(target, hour) for hour in range(24)]
 
+    # Optional: simulate sporadic "someone came in and wanted it colder" requests.
+    # This lowers the setpoints for a small afternoon window on a periodic cadence (deterministic by date).
+    request_hours = set(range(15, 21))  # 3pm–8pm inclusive
+    request_enabled = bool(simulate_requests) and int(request_every_days) > 0
+    request_day = False
+    if request_enabled:
+        seed = int(target.strftime("%Y%m%d"))
+        request_day = (seed % int(request_every_days)) == 0
+    if request_day and request_setpoint_delta_f:
+        delta = float(request_setpoint_delta_f)
+        for hour in request_hours:
+            setpoint[hour] = max(60.0, float(setpoint[hour]) - delta)
+
     hourly_drop = _hourly_drop_for_condition(condition)
 
     adjusted_temp: List[float] = [float(normal_temp[0])]
     condenser_on: List[bool] = [False] * 24
 
     for hour in range(24):
-        if adjusted_temp[hour] > setpoint[hour]:
+        forced_request = bool(request_day) and hour in request_hours
+        if forced_request or adjusted_temp[hour] > setpoint[hour]:
             condenser_on[hour] = True
             if hour < 23:
                 cooled = float(normal_temp[hour + 1]) - hourly_drop
@@ -596,7 +613,8 @@ def build_projected_dashboard_payload(
     except Exception:
         tzinfo = None
     for hour in range(24):
-        if condenser_on[hour]:
+        forced_request = bool(request_day) and hour in request_hours
+        if forced_request:
             type_series.append(f"request (studio {request_studio}, zone{request_zone}, {request_minutes}m)")
             studio_series.append(request_studio)
             base_dt = datetime(target.year, target.month, target.day, hour, 0, 0)
@@ -2227,7 +2245,15 @@ def _format_archive_label(slug: str) -> str:
         return slug
 
 
-def run_projected_range(start: date, end: date, *, weather_source: str = "auto") -> List[dict]:
+def run_projected_range(
+    start: date,
+    end: date,
+    *,
+    weather_source: str = "auto",
+    simulate_requests: bool = False,
+    request_every_days: int = 3,
+    request_setpoint_delta_f: float = 2.0,
+) -> List[dict]:
     """
     Generate/overwrite archive JSON datasets for each day in [start, end].
 
@@ -2255,7 +2281,14 @@ def run_projected_range(start: date, end: date, *, weather_source: str = "auto")
         slug = day.strftime("%Y-%m-%d")
         target_json = archive_dir / f"{slug}.json"
         existed = target_json.exists()
-        payload, summary = build_projected_dashboard_payload(day, archive_dates, weather_source=weather_source)
+        payload, summary = build_projected_dashboard_payload(
+            day,
+            archive_dates,
+            weather_source=weather_source,
+            simulate_requests=simulate_requests,
+            request_every_days=request_every_days,
+            request_setpoint_delta_f=request_setpoint_delta_f,
+        )
         summary["datasetAction"] = "overwritten" if existed else "created"
         target_json.write_text(json.dumps(payload, indent=2), encoding="utf-8")
         summaries.append(summary)
@@ -2290,6 +2323,23 @@ def main(argv: Optional[List[str]] = None) -> None:
         default="auto",
         help="Outside temperature source for projection generation (default: auto).",
     )
+    parser.add_argument(
+        "--simulate-requests",
+        action="store_true",
+        help="For projected datasets, periodically lower afternoon setpoints and populate Type/Studio as if a request came in.",
+    )
+    parser.add_argument(
+        "--request-every-days",
+        type=int,
+        default=3,
+        help="When --simulate-requests is set, apply a request day every N days (default: 3).",
+    )
+    parser.add_argument(
+        "--request-delta",
+        type=float,
+        default=2.0,
+        help="When --simulate-requests is set, lower setpoints by this many °F in the request window (default: 2).",
+    )
     args = parser.parse_args(argv)
 
     if args.project_date or args.project_range:
@@ -2297,10 +2347,24 @@ def main(argv: Optional[List[str]] = None) -> None:
             raise SystemExit("Use only one of --project-date or --project-range.")
         if args.project_date:
             target = _parse_date_only(args.project_date)
-            run_projected_range(target, target, weather_source=args.weather)
+            run_projected_range(
+                target,
+                target,
+                weather_source=args.weather,
+                simulate_requests=bool(args.simulate_requests),
+                request_every_days=int(args.request_every_days),
+                request_setpoint_delta_f=float(args.request_delta),
+            )
             return
         start_s, end_s = args.project_range
-        run_projected_range(_parse_date_only(start_s), _parse_date_only(end_s), weather_source=args.weather)
+        run_projected_range(
+            _parse_date_only(start_s),
+            _parse_date_only(end_s),
+            weather_source=args.weather,
+            simulate_requests=bool(args.simulate_requests),
+            request_every_days=int(args.request_every_days),
+            request_setpoint_delta_f=float(args.request_delta),
+        )
         return
 
     run_live_dashboard()
