@@ -104,6 +104,9 @@
   let usageSlotBound = false;
   let chartSwapBound = false;
   let chartsSwapped = false;
+  const usageSlotEl = document.getElementById("usage-slot");
+  const usageHeaderEl = document.querySelector("#usage-slot .usage-header");
+  const usagePipEl = document.getElementById("usage-pip");
   let usageRangeKey = "year"; // 7d | month | year
 
   const STORAGE_KEY = "thermostatDashboard.ui.v1";
@@ -412,6 +415,7 @@
     destroyUsageSlotChart();
     const monthTickStep =
       usageRangeKey === "month" ? Math.max(1, Math.ceil(labels.length / 8)) : 1;
+    const usageOnBigScreen = Boolean(chartsSwapped);
     usageSlotChart = new Chart(usageSlotCtx, {
       type: "bar",
       data: {
@@ -449,6 +453,8 @@
               color: "rgba(244,246,255,0.6)",
               maxRotation: usageRangeKey === "month" || usageRangeKey === "year" ? 90 : 0,
               minRotation: usageRangeKey === "month" || usageRangeKey === "year" ? 90 : 0,
+              font: { size: usageOnBigScreen ? 14 : 11 },
+              padding: usageOnBigScreen ? 8 : 4,
               autoSkip: false,
               callback(value, index) {
                 if (usageRangeKey !== "month") {
@@ -467,7 +473,7 @@
             grid: { display: false },
           },
           y: {
-            ticks: { color: "rgba(244,246,255,0.6)" },
+            ticks: { color: "rgba(244,246,255,0.6)", font: { size: usageOnBigScreen ? 12 : 10 } },
             grid: { color: "rgba(255,255,255,0.08)" },
             beginAtZero: true,
           },
@@ -498,29 +504,51 @@
       historyChartCanvasSlot.appendChild(usageSlotCanvas);
       usageSlotCanvasSlot.appendChild(canvas);
       document.body.classList.add("charts-swapped");
+      if (usagePipEl && usageHeaderEl) {
+        usagePipEl.appendChild(usageHeaderEl);
+        usagePipEl.setAttribute("aria-hidden", "false");
+      }
     } else {
       historyChartCanvasSlot.appendChild(canvas);
       usageSlotCanvasSlot.appendChild(usageSlotCanvas);
       document.body.classList.remove("charts-swapped");
+      if (usageSlotEl && usageHeaderEl) {
+        usageSlotEl.insertBefore(usageHeaderEl, usageSlotEl.firstChild);
+      }
+      if (usagePipEl) {
+        usagePipEl.setAttribute("aria-hidden", "true");
+      }
     }
     chartsSwapped = next;
-    // Let layout settle before resizing charts.
-    setTimeout(() => {
+    // Let layout settle, then fully refresh both charts so Chart.js re-measures its new parent.
+    const refreshAfterSwap = async () => {
       try {
-        if (chart) {
-          chart.resize();
-        }
+        destroyUsageSlotChart();
+      } catch (err) {
+        // ignore
+      }
+      await renderUsageSlotChart();
+      try {
+        destroyChart();
       } catch (err) {
         // ignore
       }
       try {
-        if (usageSlotChart) {
-          usageSlotChart.resize();
-        }
+        createChart();
       } catch (err) {
         // ignore
       }
-    }, 0);
+      try {
+        showChart();
+      } catch (err) {
+        // ignore
+      }
+    };
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        void refreshAfterSwap();
+      });
+    });
   };
 
   const bindChartSwapControls = () => {
@@ -1576,15 +1604,7 @@
           includeInvisible: true,
         },
         plugins: {
-          legend: {
-            position: "left",
-            align: "start",
-            labels: {
-              color: "#f4f6ff",
-              usePointStyle: false,
-              boxWidth: 10,
-            },
-          },
+          legend: { display: false },
           tooltip: {
             callbacks: {
               label: (context) => {

@@ -1834,11 +1834,23 @@ line-height: 1;
         display: flex;
         flex-direction: column;
       }}
+      .usage-header {{
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 10px;
+      }}
+      .usage-header-left {{
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        min-width: 0;
+      }}
       .usage-slot .title {{
         font-size: 12px;
         letter-spacing: 0.06em;
         text-transform: uppercase;
-        margin-bottom: 6px;
+        margin-bottom: 0;
         opacity: 0.9;
       }}
       .usage-slot .hint {{
@@ -1848,7 +1860,7 @@ line-height: 1;
       .usage-controls {{
         display: flex;
         gap: 1px;
-        margin-bottom: 14px;
+        margin-bottom: 0;
         padding: 6px;
     
         border-radius: 12px;
@@ -1867,17 +1879,27 @@ line-height: 1;
         border-color: rgba(255, 179, 71, 0.9);
         color: #ffb347;
       }}
-      .usage-canvas {{
+      .usage-graphic {{
         flex: 1;
         min-height: 0;
         position: relative;
         display: flex;
-        align-items: center;
+        align-items: stretch;
+        height: 150px;
+      }}
+      #usage-slot-canvas-slot {{
+        flex: 1 1 auto;
+        min-height: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+      }}
+      #usage-slot-canvas-slot > canvas {{
+        flex: 1 1 auto;
+        min-height: 0;
       }}
       .usage-stats {{
-        position: absolute;
-        top: -60px;
-        right: 1px;
+        flex: 0 0 auto;
         display: grid;
         grid-template-columns: auto auto;
         gap: 2px 10px;
@@ -1889,6 +1911,7 @@ line-height: 1;
         font-size: 9px;
         line-height: 1.05;
         pointer-events: none;
+        margin-top: 2px;
       }}
       .usage-stats .k {{
         opacity: 0.75;
@@ -1901,17 +1924,17 @@ line-height: 1;
       }}
       .usage-slot #usage-slot-chart {{
         width: 100% !important;
-        height: 150px !important;
+        height: 100% !important;
         max-height: 100% !important;
       }}
       .usage-slot #history-chart {{
         width: 100% !important;
-        height: 150px !important;
+        height: 100% !important;
         max-height: 100% !important;
       }}
       .chart-wrap #usage-slot-chart {{
         width: 100% !important;
-        height: 100% !important;
+        height: 70% !important;
       }}
       body.charts-swapped #chart-history {{
         display: none;
@@ -2029,7 +2052,7 @@ line-height: 1;
         height: 100% !important;
       }}
       .chart-wrap {{
-        height: 600px;
+        height: 580px;
         margin: 8px auto 0;
         background: linear-gradient(
           to bottom,
@@ -2042,6 +2065,95 @@ line-height: 1;
         width: 100%;
         padding: 12px 0 18px;
         box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        --usage-pip-reserve: 0px;
+      }}
+      .chart-wrap #history-chart-canvas-slot {{
+        flex: 1 1 auto;
+        min-height: 0;
+        display: flex;
+      }}
+      .chart-wrap #history-chart {{
+        flex: 1 1 auto;
+        min-height: 0;
+      }}
+      body.charts-swapped .chart-wrap #usage-slot-chart {{
+        flex: 1 1 auto;
+        min-height: 0;
+      }}
+      body.charts-swapped .chart-wrap #history-chart-canvas-slot {{
+        align-items: stretch;
+        display: flex;
+        flex-direction: column;
+        padding-top: var(--usage-pip-reserve);
+        box-sizing: border-box;
+      }}
+      body.charts-swapped .chart-wrap #history-chart-canvas-slot > canvas {{
+        width: 100% !important;
+        box-sizing: border-box;
+        flex: 1 1 auto;
+        min-height: 0;
+      }}
+      body.charts-swapped .chart-wrap {{
+        --usage-pip-reserve: 130px;
+      }}
+      @media (max-width: 980px) {{
+        body.charts-swapped .chart-wrap {{
+          --usage-pip-reserve: 92px;
+        }}
+      }}
+      /* When the Usage chart is on the TV frame, show its header/stats as a right-side overlay. */
+      #usage-pip {{
+        display: none;
+        position: absolute;
+        top: 18px;
+        right: 18px;
+        width: 360px;
+        max-width: calc(100% - 36px);
+        padding: 10px 12px;
+        border-radius: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        background: rgba(0, 0, 0, 0.24);
+        box-shadow: 0 14px 28px rgba(0,0,0,0.55);
+        z-index: 4;
+      }}
+      body.charts-swapped #usage-pip {{
+        display: block;
+      }}
+      @media (max-width: 680px) {{
+        #usage-pip {{
+          display: none !important;
+        }}
+      }}
+      /* TV stand/legs graphic under the main chart frame. */
+      .chart-wrap.tv-frame {{
+        margin-bottom: 48px;
+      }}
+      .chart-wrap.tv-frame::after {{
+        content: "";
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: -44px;
+        width: min(720px, 92%);
+        height: 84px;
+        pointer-events: none;
+        z-index: 0;
+        background-image: url("../../../Images/Legs,png");
+        background-repeat: no-repeat;
+        background-position: center bottom;
+        background-size: contain;
+        opacity: 0.92;
+        filter: drop-shadow(0 12px 16px rgba(0,0,0,0.6));
+      }}
+      @media (max-width: 680px) {{
+        .chart-wrap.tv-frame {{
+          margin-bottom: 18px;
+        }}
+        .chart-wrap.tv-frame::after {{
+          display: none;
+        }}
       }}
       .chart-wrap::before {{
         content: "";
@@ -2314,19 +2426,23 @@ line-height: 1;
 
       <div class="chart-top-row">
         <div class="usage-slot" id="usage-slot">
-          <div class="title">Usage Chart</div>
-          <div class="usage-controls" role="group" aria-label="Usage Range">
-            <button type="button" class="usage-control" data-range="7d">7 Day</button>
-            <button type="button" class="usage-control" data-range="month">Month</button>
-            <button type="button" class="usage-control active" data-range="year">Year</button>
-          </div>
-          <div class="usage-canvas">
-            <div class="usage-stats" id="usage-slot-stats" aria-hidden="true">
-              <div class="k">Total</div><div class="v" id="usage-stat-total">—</div>
-              <div class="k">Avg</div><div class="v" id="usage-stat-avg">—</div>
-              <div class="k">Max</div><div class="v" id="usage-stat-max">—</div>
-              <div class="k">Cost</div><div class="v" id="usage-stat-cost">—</div>
+          <div class="usage-header">
+            <div class="usage-header-left">
+              <div class="title">Usage Chart</div>
+              <div class="usage-controls" role="group" aria-label="Usage Range">
+                <button type="button" class="usage-control" data-range="7d">7 Day</button>
+                <button type="button" class="usage-control" data-range="month">Month</button>
+                <button type="button" class="usage-control active" data-range="year">Year</button>
+              </div>
             </div>
+            <div class="usage-stats" id="usage-slot-stats" aria-hidden="true">
+              <div class="k">Total</div><div class="v" id="usage-stat-total">-</div>
+              <div class="k">Avg</div><div class="v" id="usage-stat-avg">-</div>
+              <div class="k">Max</div><div class="v" id="usage-stat-max">-</div>
+              <div class="k">Cost</div><div class="v" id="usage-stat-cost">-</div>
+            </div>
+          </div>
+          <div class="usage-graphic">
             <div id="usage-slot-canvas-slot">
               <canvas id="usage-slot-chart"></canvas>
             </div>
@@ -2394,6 +2510,7 @@ line-height: 1;
         </div>
       </div>
         <div class="chart-wrap tv-frame">
+          <div id="usage-pip" aria-hidden="true"></div>
           <div>
           </div>
           <div id="history-chart-canvas-slot">
@@ -2405,9 +2522,9 @@ line-height: 1;
             <ul id="chart-history-list" class="hidden"></ul>
           </div>
         </div>
-          <img src="../../../Images/legs.png" alt="Logo" />
-     
+          <img src="../../../Images/Legs2.png" alt="Logo" style="z-index: 2; margin-top: -145px; width: 800px; height: 800px;"/>
         <div class="note">Data source: Google Sheet (last updated when this page was generated).</div>
+
         <pre id="js-log"></pre>
       </div>
     </div>
