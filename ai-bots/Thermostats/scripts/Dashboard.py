@@ -979,7 +979,11 @@ def build_dashboard_html(
     latest_row: List[str],
     history_rows: List[List[str]],
     output_path: Path,
-) -> str:
+    *,
+    generated_slug_override: Optional[str] = None,
+    generated_label_override: Optional[str] = None,
+    data_source_note: Optional[str] = None,
+) -> tuple[str, dict]:
     def _safe_float(val: str) -> float:
         try:
             return float(val)
@@ -1056,6 +1060,8 @@ def build_dashboard_html(
     )
     timestamp_idx = _find_index(("timestamp",))
     type_idx = _find_index(("type",))
+    studio_idx = _find_index(("studio",))
+    request_expires_idx = _find_index(("request expires", "expires"))
     FAN_LABELS = ["Auto", "Circulate", "On"]
     COOLING_LABELS = ["Idle", "Cooling"]
 
@@ -1180,8 +1186,8 @@ def build_dashboard_html(
     )
     latest_outside_daylight = latest_outside_flag_day_char != "N"
     generated_at = datetime.now()
-    generated_label = generated_at.strftime("%A %b %d %Y %I:%M:%S %p")
-    generated_slug = generated_at.strftime("%Y-%m-%d")
+    generated_label = generated_label_override or generated_at.strftime("%A %b %d %Y %I:%M:%S %p")
+    generated_slug = generated_slug_override or generated_at.strftime("%Y-%m-%d")
     archive_slugs = set()
     if ARCHIVE_DIR.exists():
         for pattern in ("*.html", "*.json"):
@@ -1215,6 +1221,13 @@ def build_dashboard_html(
     # Force cooling-only climate setting for dashboard UI consistency.
     if climate_setting_idx is not None and climate_setting_idx < len(latest_row):
         latest_row[climate_setting_idx] = "Cool"
+
+    type_series = [row[type_idx] if type_idx is not None and type_idx < len(row) else "" for row in history_rows]
+    studio_series = [row[studio_idx] if studio_idx is not None and studio_idx < len(row) else "" for row in history_rows]
+    request_expires_series = [
+        row[request_expires_idx] if request_expires_idx is not None and request_expires_idx < len(row) else ""
+        for row in history_rows
+    ]
     dashboard_payload = {
         "headers": headers,
         "latestRow": latest_row,
@@ -1235,6 +1248,9 @@ def build_dashboard_html(
         "coolingLabel": cooling_label,
         "climateSetting": climate_setting_series,
         "climateSettingLabel": climate_setting_label,
+        "typeSeries": type_series,
+        "studioSeries": studio_series,
+        "requestExpiresLocalSeries": request_expires_series,
         "condenserMinutes": condenser_minutes_series,
         "totalCondenserMinutes": total_condenser_display,
         "totalCondenserMinutesValue": total_condenser_minutes_value,
@@ -1389,6 +1405,12 @@ def build_dashboard_html(
       .left-rail,
       .right-rail {{
         min-width: 0;
+      }}
+      body.metrics-hidden .layout {{
+        grid-template-columns: 1fr;
+      }}
+      body.metrics-hidden .right-rail {{
+        display: none;
       }}
       @media (max-width: 1100px) {{
         .layout {{
@@ -1687,6 +1709,26 @@ line-height: 1;
         flex-direction: column;
         align-items: center;
       }}
+      .main-toolbar {{
+        width: 100%;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+      }}
+      .metrics-toggle {{
+        border: 1px solid rgba(255,255,255,0.18);
+        border-radius: 999px;
+        background: rgba(0,0,0,0.35);
+        color: rgba(244,246,255,0.9);
+        padding: 8px 12px;
+        font-size: 12px;
+        cursor: pointer;
+      }}
+      .metrics-toggle:hover {{
+        background: rgba(0,0,0,0.48);
+      }}
       .hands-logo-top {{
         width: 195px;
         height: 120px;
@@ -1968,6 +2010,12 @@ line-height: 1;
         .chart-top-row {{
           flex-direction: column;
         }}
+        .chart-previews {{
+          grid-template-columns: 1fr;
+        }}
+        #history-preview-canvas-slot > canvas {{
+          height: 260px !important;
+        }}
 
         #chartcontrols {{
           max-width: none;
@@ -2079,9 +2127,8 @@ line-height: 1;
         margin: -29px auto 0;
         background: linear-gradient(
           to bottom,
-          #0F0B1A 0%,
-          #2A1E55 40%,
-          #332459 75%
+          #000000 0%,
+          #1f1f26 100%
         );
         position: relative;
         max-width: 900px;
@@ -2268,6 +2315,146 @@ line-height: 1;
       .chart-wrap canvas {{
         position: relative;
         z-index: 2;
+      }}
+
+      /* Preview-first layout + TV zoom mode */
+      .chart-previews {{
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        align-items: start;
+      }}
+      .history-preview {{
+        border: 1px solid rgba(255,255,255,0.14);
+        border-radius: 14px;
+        background: rgba(10,10,16,0.85);
+        box-shadow: 0 12px 26px rgba(0,0,0,0.45);
+        overflow: hidden;
+      }}
+      .history-preview-header {{
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 12px;
+        padding: 12px 14px 8px 14px;
+      }}
+      .history-preview-header .title {{
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-size: 12px;
+      }}
+      .history-preview-header .hint {{
+        font-size: 11px;
+        opacity: 0.7;
+        white-space: nowrap;
+      }}
+      #history-preview-canvas-slot {{
+        padding: 0 10px 10px 10px;
+      }}
+      #history-preview-canvas-slot > canvas {{
+        width: 100% !important;
+        height: 290px !important;
+        display: block;
+      }}
+      .history-preview .chart-history {{
+        position: static;
+        margin: 0 10px 12px 10px;
+        top: auto;
+        right: auto;
+        width: auto;
+        max-width: none;
+      }}
+      .history-preview .chart-history ul {{
+        max-height: 220px;
+        overflow: auto;
+      }}
+
+      #tv-frame {{
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        margin: 0;
+        border-radius: 0;
+        border-width: 0;
+      }}
+      body.tv-mode {{
+        overflow: hidden;
+      }}
+      body.tv-mode .layout {{
+        display: none;
+      }}
+      body.tv-mode #tv-frame {{
+        display: block;
+      }}
+      #tv-canvas-slot {{
+        position: absolute;
+        inset: 12px;
+      }}
+      #tv-canvas-slot > canvas {{
+        width: 100% !important;
+        height: 100% !important;
+        display: block;
+      }}
+      #tv-controls {{
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        z-index: 2;
+      }}
+      #tv-controls .tv-btn {{
+        border: 1px solid rgba(255,255,255,0.18);
+        border-radius: 999px;
+        background: rgba(0,0,0,0.45);
+        color: rgba(244,246,255,0.9);
+        padding: 8px 12px;
+        font-size: 12px;
+        cursor: pointer;
+      }}
+      #tv-controls .tv-btn.active {{
+        border-color: rgba(102,255,153,0.75);
+        color: rgba(102,255,153,0.95);
+      }}
+      #tv-exit-hint {{
+        position: absolute;
+        left: 12px;
+        bottom: 12px;
+        font-size: 12px;
+        opacity: 0.7;
+        z-index: 2;
+        background: rgba(0,0,0,0.35);
+        border: 1px solid rgba(255,255,255,0.10);
+        border-radius: 10px;
+        padding: 8px 10px;
+      }}
+
+      /* Debug layout framing: enable with ?debug=1 (adds body.debug-layout) */
+      body.debug-layout .container,
+      body.debug-layout .layout,
+      body.debug-layout .left-rail,
+      body.debug-layout .right-rail,
+      body.debug-layout #history,
+      body.debug-layout .history-panel,
+      body.debug-layout #Cards,
+      body.debug-layout .controls-transport-wrap,
+      body.debug-layout #transport-panel,
+      body.debug-layout #transport-nav,
+      body.debug-layout .chart-previews,
+      body.debug-layout #usage-slot,
+      body.debug-layout #history-preview,
+      body.debug-layout #tv-frame {{
+        outline: 2px solid rgba(255, 105, 180, 0.55);
+        outline-offset: 2px;
+      }}
+      body.debug-layout #usage-slot-canvas-slot,
+      body.debug-layout #history-preview-canvas-slot,
+      body.debug-layout #tv-canvas-slot {{
+        outline: 2px dashed rgba(102, 255, 153, 0.55);
+        outline-offset: 2px;
       }}
       .fan-legend-image {{
       }}
@@ -2486,13 +2673,16 @@ line-height: 1;
       }}
     </style>
   </head>
-  <body>
+  <body class="metrics-hidden">
     <div class="container frame">
       <div class="layout">
-        <div class="right-rail">
+        <div class="left-rail">
           <div id="history" class="history-panel">
 
-      <button id="toggle-history">Show History Chart</button>
+      <div class="main-toolbar">
+        <button type="button" id="metrics-toggle" class="metrics-toggle">Show Metrics</button>
+      </div>
+
       <div class="condenser-runtime">
         <div class="label">Total condenser runtime</div>
         <div class="value">{total_condenser_display or "0"} min</div>
@@ -2500,43 +2690,19 @@ line-height: 1;
         <div class="cost-value {condenser_cost_class}">{total_condenser_cost_display or "$0.00"}</div>
       </div>
 
-      <div class="chart-top-row">
-        <div class="usage-slot" id="usage-slot">
-          <div class="usage-header">
-            <div class="usage-header-left">
-              <div class="title">Usage Chart</div>
-              <div class="usage-controls" role="group" aria-label="Usage Range">
-                <button type="button" class="usage-control" data-range="7d">7 Day</button>
-                <button type="button" class="usage-control" data-range="month">Month</button>
-                <button type="button" class="usage-control active" data-range="year">Year</button>
-              </div>
-            </div>
-            <div class="usage-stats" id="usage-slot-stats" aria-hidden="true">
-              <div class="k">Total</div><div class="v" id="usage-stat-total">-</div>
-              <div class="k">Avg</div><div class="v" id="usage-stat-avg">-</div>
-              <div class="k">Max</div><div class="v" id="usage-stat-max">-</div>
-              <div class="k">Cost</div><div class="v" id="usage-stat-cost">-</div>
-            </div>
-          </div>
-          <div class="usage-graphic">
-            <div id="usage-slot-canvas-slot">
-              <canvas id="usage-slot-chart"></canvas>
-            </div>
-          </div>
+      <div class="controls-transport-wrap">
+        <div id="chartcontrols" class="chart-controls">
+          <button type="button" class="chart-control" data-mode="setpoint">Set Point</button>
+          <button type="button" class="chart-control" data-mode="actual">Building Temp</button>
+          <button type="button" class="chart-control" data-mode="outside">Outside Temp</button>
+          <button type="button" class="chart-control" data-mode="cooling">AC Status</button>
+          <button type="button" class="chart-control" data-mode="fan">Fan Mode</button>
+          <button type="button" class="chart-control active" data-mode="both">Combined</button>
+          <span>&nbsp;</span>
+          <button type="button" class="chart-control" id="autoplay-toggle">Auto-play: On</button>
         </div>
-        <div class="controls-transport-wrap">
-          <div id="chartcontrols" class="chart-controls">
-              <button type="button" class="chart-control" data-mode="setpoint">Set Point</button>
-              <button type="button" class="chart-control" data-mode="actual">Building Temp</button>
-              <button type="button" class="chart-control" data-mode="outside">Outside Temp</button>
-              <button type="button" class="chart-control" data-mode="cooling">AC Status</button>
-              <button type="button" class="chart-control" data-mode="fan">Fan Mode</button>
-              <button type="button" class="chart-control active" data-mode="both">Combined</button>
-              <span>&nbsp;</span>
-              <button type="button" class="chart-control" id="autoplay-toggle">Auto-play: On</button>
-            </div>
-          <div id="transport-panel" class="transport-panel">
-            <div id="transport-deck" class="transport-deck" aria-hidden="true">
+        <div id="transport-panel" class="transport-panel">
+          <div id="transport-deck" class="transport-deck" aria-hidden="true">
               <svg viewBox="0 0 240 90" role="img" aria-label="Data deck">
               <defs>
                 <linearGradient id="deck-bg" x1="0" x2="0" y1="0" y2="1">
@@ -2583,14 +2749,39 @@ line-height: 1;
           </div>
           <div id="transport-nav" class="transport-nav" role="group" aria-label="History navigation"></div>
         </div>
-        </div>
       </div>
-        <div class="chart-wrap tv-frame">
-          <div id="usage-pip" aria-hidden="true"></div>
-          <div id="tv-hands-logo" aria-hidden="true"></div>
-          <div>
+
+      <div class="chart-previews">
+        <div class="usage-slot" id="usage-slot">
+          <div class="usage-header">
+            <div class="usage-header-left">
+              <div class="title">Usage Chart</div>
+              <div class="usage-controls" role="group" aria-label="Usage Range">
+                <button type="button" class="usage-control" data-range="7d">7 Day</button>
+                <button type="button" class="usage-control" data-range="month">Month</button>
+                <button type="button" class="usage-control active" data-range="year">Year</button>
+              </div>
+            </div>
+            <div class="usage-stats" id="usage-slot-stats" aria-hidden="true">
+              <div class="k">Total</div><div class="v" id="usage-stat-total">-</div>
+              <div class="k">Avg</div><div class="v" id="usage-stat-avg">-</div>
+              <div class="k">Max</div><div class="v" id="usage-stat-max">-</div>
+              <div class="k">Cost</div><div class="v" id="usage-stat-cost">-</div>
+            </div>
           </div>
-          <div id="history-chart-canvas-slot">
+          <div class="usage-graphic">
+            <div id="usage-slot-canvas-slot">
+              <canvas id="usage-slot-chart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="history-preview" id="history-preview">
+          <div class="history-preview-header">
+            <div class="title">History Chart</div>
+            <div class="hint">Double-click to expand</div>
+          </div>
+          <div id="history-preview-canvas-slot">
             <canvas id="history-chart"></canvas>
           </div>
           <div class="chart-history" id="chart-history">
@@ -2599,14 +2790,15 @@ line-height: 1;
             <ul id="chart-history-list" class="hidden"></ul>
           </div>
         </div>
+      </div>
         <img style="margin-top: -138px; width: 800px; height: 800px;" src="../../../Images/Legs2.png" alt="Logo" />
 
-        <div class="note">Data source: Google Sheet (last updated when this page was generated).</div>
+        <div class="note">{data_source_note or "Data source: Google Sheet (last updated when this page was generated)."}</div>
 
         <pre id="js-log"></pre>
           </div>
         </div>
-        <div class="left-rail">
+        <div class="right-rail">
           <div class="header-row">
             <div id="Company">Any Company<br>Anywhere USA</div>
             <div id="Logo"class="logo-placeholder">
@@ -2625,6 +2817,16 @@ line-height: 1;
         </div>
       </div>
     </div>
+    <div class="chart-wrap tv-frame" id="tv-frame" aria-hidden="true">
+      <div id="usage-pip" aria-hidden="true"></div>
+      <div id="tv-hands-logo" aria-hidden="true"></div>
+      <div id="tv-controls" aria-label="TV controls">
+        <button type="button" id="tv-show-history" class="tv-btn">History</button>
+        <button type="button" id="tv-show-usage" class="tv-btn">Usage</button>
+      </div>
+      <div id="tv-exit-hint">Double-click to exit</div>
+      <div id="tv-canvas-slot"></div>
+    </div>
     {script_block}
 
   </body>
@@ -2633,6 +2835,180 @@ line-height: 1;
     output_path.write_text(html, encoding="utf-8")
     logger.info("Wrote dashboard HTML to %s", output_path)
     return generated_slug, dashboard_payload
+
+
+def _projected_payload_to_sheet_rows(payload: dict) -> tuple[List[str], List[str], List[List[str]]]:
+    headers = list(payload.get("headers") or [])
+    latest_row = list(payload.get("latestRow") or [])
+
+    if not headers:
+        raise SystemExit("Projected payload missing headers.")
+    if not latest_row:
+        raise SystemExit("Projected payload missing latestRow.")
+
+    setpoint = payload.get("setpoint") or []
+    actual = payload.get("actual") or []
+    outside = payload.get("outside") or []
+    outside_flags = payload.get("outsideFlags") or []
+    outside_day_chars = payload.get("outsideFlagDayChars") or []
+    cooling = payload.get("cooling") or []
+    fan = payload.get("fan") or []
+    climate_setting = payload.get("climateSetting") or []
+    condenser_minutes = payload.get("condenserMinutes") or []
+    type_series = payload.get("typeSeries") or []
+    studio_series = payload.get("studioSeries") or []
+    request_expires = payload.get("requestExpiresLocalSeries") or []
+
+    def _fan_to_text(value) -> str:
+        code = str(value or "").strip().upper()
+        if code == "C":
+            return "Circulate"
+        if code == "O":
+            return "On"
+        return "Auto"
+
+    def _cooling_to_text(value) -> str:
+        try:
+            num = int(value)
+        except (TypeError, ValueError):
+            text = str(value or "").strip().lower()
+            return "Cooling" if "cool" in text else "Idle"
+        return "Cooling" if num else "Idle"
+
+    slug = str(payload.get("generatedDateSlug") or "").strip()
+    if not slug:
+        slug = datetime.now().strftime("%Y-%m-%d")
+
+    history_rows: List[List[str]] = []
+    for hour in range(24):
+        outside_val = outside[hour] if hour < len(outside) else ""
+        flag = outside_flags[hour] if hour < len(outside_flags) else ""
+        day_char = outside_day_chars[hour] if hour < len(outside_day_chars) else "D"
+        outside_cell = ""
+        if outside_val != "" and outside_val is not None:
+            try:
+                outside_cell = f"{str(flag).upper()}{str(day_char).upper()} {float(outside_val):.1f}"
+            except (TypeError, ValueError):
+                outside_cell = f"{str(flag).upper()}{str(day_char).upper()} {outside_val}"
+
+        cooling_value = 0
+        if hour < len(cooling):
+            try:
+                cooling_value = int(cooling[hour] or 0)
+            except (TypeError, ValueError):
+                cooling_value = 1 if str(cooling[hour]).strip().lower() in ("1", "true", "cooling") else 0
+        condenser_state = "On" if cooling_value == 1 else "Off"
+
+        row_by_header = {
+            "Timestamp": f"{slug} {hour:02d}:00",
+            "Type": type_series[hour] if hour < len(type_series) else "System",
+            "Building Temperature": actual[hour] if hour < len(actual) else "",
+            "Cooling Set Point": setpoint[hour] if hour < len(setpoint) else "",
+            "Climate Setting": climate_setting[hour] if hour < len(climate_setting) else "Cool",
+            "Fan Setting": _fan_to_text(fan[hour] if hour < len(fan) else ""),
+            "Equipment Status": _cooling_to_text(cooling_value),
+            "Studio": studio_series[hour] if hour < len(studio_series) else "",
+            "Request Expires (local time)": request_expires[hour] if hour < len(request_expires) else "",
+            "Outside Temp": outside_cell,
+            "Condenser State": condenser_state,
+            "Condenser Minutes": condenser_minutes[hour] if hour < len(condenser_minutes) else 0,
+        }
+
+        history_rows.append([str(row_by_header.get(header, "")) for header in headers])
+
+    if history_rows:
+        latest_row = history_rows[-1]
+    return headers, latest_row, history_rows
+
+
+def run_projected_dashboard(
+    target: Optional[date] = None,
+    *,
+    weather_source: str = "auto",
+    simulate_requests: bool = False,
+    request_every_days: int = 3,
+    request_setpoint_delta_f: float = 2.0,
+    request_setpoint_deltas_f: Optional[List[float]] = None,
+    request_deltas_mode: str = "random",
+) -> None:
+    """
+    Generate the standard dashboard outputs without reading the Google Sheet.
+
+    Writes:
+    - ai-bots/Thermostats/Web/dashboard_public.html
+    - ai-bots/Thermostats/Web/dashboard_data.json
+    - ai-bots/Thermostats/Web/chart hist/<YYYY-MM-DD>.html
+    - ai-bots/Thermostats/Web/chart hist/<YYYY-MM-DD>.json
+    """
+    target = target or date.today()
+    slug = target.strftime("%Y-%m-%d")
+
+    archive_dir = ARCHIVE_DIR
+    archive_dir.mkdir(parents=True, exist_ok=True)
+    archive_slugs = {entry.stem for entry in archive_dir.glob("*.json") if entry.stem}
+    archive_slugs.add(slug)
+    archive_dates = [
+        {"slug": existing_slug, "label": _format_archive_label(existing_slug)}
+        for existing_slug in sorted(archive_slugs, reverse=True)
+    ]
+
+    projected_payload, _summary = build_projected_dashboard_payload(
+        target,
+        archive_dates,
+        weather_source=weather_source,
+        simulate_requests=simulate_requests,
+        request_every_days=request_every_days,
+        request_setpoint_delta_f=request_setpoint_delta_f,
+        request_setpoint_deltas_f=request_setpoint_deltas_f,
+        request_deltas_mode=request_deltas_mode,
+    )
+
+    headers, latest_row, history_rows = _projected_payload_to_sheet_rows(projected_payload)
+
+    TEMP_DIR.mkdir(parents=True, exist_ok=True)
+    target_path = TEMP_DIR / "dashboard.html"
+    note = "Data source: Projected dataset (generated locally; Google Sheet not read)."
+    generated_suffix, dashboard_payload = build_dashboard_html(
+        headers,
+        latest_row,
+        history_rows,
+        target_path,
+        generated_slug_override=slug,
+        generated_label_override=str(projected_payload.get("generatedTimestamp") or ""),
+        data_source_note=note,
+    )
+
+    public_dir = base_dir.parent / "Web"
+    public_dir.mkdir(parents=True, exist_ok=True)
+    public_copy = public_dir / "dashboard_public.html"
+
+    script_path = SCRIPT_DIR / "dashboard_client.js"
+    temp_script_src = Path(os.path.relpath(script_path, start=target_path.parent)).as_posix()
+    web_script_src = Path(os.path.relpath(script_path, start=public_copy.parent)).as_posix()
+    public_html = target_path.read_text(encoding="utf-8")
+    if temp_script_src != web_script_src:
+        public_html = public_html.replace(temp_script_src, web_script_src, 1)
+    public_copy.write_text(public_html, encoding="utf-8")
+    logger.info("Wrote projected public copy to %s", public_copy)
+
+    archive_target = archive_dir / f"{generated_suffix}.html"
+    shutil.copy2(public_copy, archive_target)
+    archive_json = archive_dir / f"{generated_suffix}.json"
+    archive_json.write_text(json.dumps(dashboard_payload, indent=2), encoding="utf-8")
+    dashboard_data_path = public_dir / "dashboard_data.json"
+    dashboard_data_path.write_text(json.dumps(dashboard_payload, indent=2), encoding="utf-8")
+
+    try:
+        dashboard_script_path = SCRIPT_DIR / "dashboard_client.js"
+        git_autopush(
+            public_copy,
+            extra_paths=[archive_target, dashboard_data_path, dashboard_script_path, archive_json],
+        )
+    except Exception as exc:
+        logger.warning("Failed to git autopush projected dashboard outputs (%s)", exc)
+
+    print(f"Projected dashboard generated at: {target_path.resolve()}")
+    logger.info("Projected dashboard generation complete at %s", target_path.resolve())
 
 
 def run_live_dashboard() -> None:
@@ -2763,6 +3139,12 @@ def run_projected_range(
 def main(argv: Optional[List[str]] = None) -> None:
     parser = argparse.ArgumentParser(description="Thermostat dashboard generator")
     parser.add_argument(
+        "--mode",
+        choices=("projected", "live"),
+        default="projected",
+        help="Default run mode when no --project-* args are provided (default: projected).",
+    )
+    parser.add_argument(
         "--project-date",
         metavar="YYYY-MM-DD",
         help="Generate/overwrite a single projected archive JSON file for the given date.",
@@ -2845,7 +3227,19 @@ def main(argv: Optional[List[str]] = None) -> None:
         )
         return
 
-    run_live_dashboard()
+    if args.mode == "live":
+        run_live_dashboard()
+        return
+
+    run_projected_dashboard(
+        date.today(),
+        weather_source=args.weather,
+        simulate_requests=bool(args.simulate_requests),
+        request_every_days=int(args.request_every_days),
+        request_setpoint_delta_f=float(args.request_delta),
+        request_setpoint_deltas_f=request_deltas,
+        request_deltas_mode=str(args.request_deltas_mode),
+    )
 
 
 if __name__ == "__main__":

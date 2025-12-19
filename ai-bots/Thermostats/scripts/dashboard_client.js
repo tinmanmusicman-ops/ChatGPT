@@ -90,7 +90,11 @@
   const usageSlotCanvas = document.getElementById("usage-slot-chart");
   const usageSlotCtx = usageSlotCanvas ? usageSlotCanvas.getContext("2d") : null;
   const usageSlotCanvasSlot = document.getElementById("usage-slot-canvas-slot");
-  const historyChartCanvasSlot = document.getElementById("history-chart-canvas-slot");
+  const historyPreviewCanvasSlot = document.getElementById("history-preview-canvas-slot");
+  const tvFrame = document.getElementById("tv-frame");
+  const tvCanvasSlot = document.getElementById("tv-canvas-slot");
+  const tvShowHistoryBtn = document.getElementById("tv-show-history");
+  const tvShowUsageBtn = document.getElementById("tv-show-usage");
   let chart = null;
   let usageSlotChart = null;
   let cardsInitialized = false;
@@ -102,15 +106,111 @@
   let prevDayButtonEl = null;
   let nextDayButtonEl = null;
   let usageSlotBound = false;
-  let chartSwapBound = false;
-  let chartsSwapped = false;
+  let tvZoomBound = false;
+  let tvMode = false;
+  let tvActiveChart = "history"; // "history" | "usage"
+  let autoplayEnabledBeforeTv = null;
   const usageSlotEl = document.getElementById("usage-slot");
   const usageHeaderEl = document.querySelector("#usage-slot .usage-header");
   const usagePipEl = document.getElementById("usage-pip");
   let usageRangeKey = "year"; // 7d | month | year
 
   const STORAGE_KEY = "thermostatDashboard.ui.v1";
+  const LAYOUT_KEY = "thermostatDashboard.layout.v1";
   let savedUiState = null;
+
+  const setMetricsHidden = (hidden) => {
+    document.body.classList.toggle("metrics-hidden", Boolean(hidden));
+    const btn = document.getElementById("metrics-toggle");
+    if (btn) {
+      btn.textContent = hidden ? "Show Metrics" : "Hide Metrics";
+    }
+  };
+
+  const loadLayoutPrefs = () => {
+    try {
+      const raw = localStorage.getItem(LAYOUT_KEY);
+      if (!raw) {
+        return null;
+      }
+      const parsed = JSON.parse(raw);
+      return parsed && typeof parsed === "object" ? parsed : null;
+    } catch (err) {
+      return null;
+    }
+  };
+
+  const saveLayoutPrefs = (prefs) => {
+    try {
+      localStorage.setItem(LAYOUT_KEY, JSON.stringify(prefs || {}));
+    } catch (err) {
+      // ignore
+    }
+  };
+
+  const applyLayoutFromUrlOrStorage = () => {
+    let metricsHidden = true;
+    try {
+      const params = new URLSearchParams(window.location.search || "");
+      const metrics = (params.get("metrics") || "").trim().toLowerCase();
+      if (metrics === "1" || metrics === "true" || metrics === "yes" || metrics === "show") {
+        metricsHidden = false;
+      } else if (metrics === "0" || metrics === "false" || metrics === "no" || metrics === "hide") {
+        metricsHidden = true;
+      } else {
+        const saved = loadLayoutPrefs();
+        if (saved && typeof saved.metricsHidden === "boolean") {
+          metricsHidden = saved.metricsHidden;
+        }
+      }
+    } catch (err) {
+      const saved = loadLayoutPrefs();
+      if (saved && typeof saved.metricsHidden === "boolean") {
+        metricsHidden = saved.metricsHidden;
+      }
+    }
+    setMetricsHidden(metricsHidden);
+  };
+
+  const bindMetricsToggle = () => {
+    const btn = document.getElementById("metrics-toggle");
+    if (!btn) {
+      return;
+    }
+    btn.addEventListener("click", () => {
+      const hidden = document.body.classList.contains("metrics-hidden");
+      const nextHidden = !hidden;
+      setMetricsHidden(nextHidden);
+      saveLayoutPrefs({ metricsHidden: nextHidden });
+      // When layout changes, Chart.js needs a re-measure.
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          void refreshChartsForRelayout();
+        });
+      });
+    });
+  };
+
+  const applyDebugLayoutFromUrl = () => {
+    try {
+      const params = new URLSearchParams(window.location.search || "");
+      const enabled = params.get("debug");
+      if (enabled === "1" || enabled === "true" || enabled === "yes") {
+        document.body.classList.add("debug-layout");
+      }
+    } catch (err) {
+      // ignore
+    }
+  };
+
+  const bindDebugLayoutHotkey = () => {
+    document.addEventListener("keydown", (event) => {
+      if (event.ctrlKey && event.altKey && String(event.key || "").toLowerCase() === "d") {
+        event.preventDefault();
+        document.body.classList.toggle("debug-layout");
+      }
+    });
+  };
 
   const getDashboardData = () => dashboardData || {};
   const getDashboardValue = (key, fallback) => getDashboardData()[key] || fallback;
@@ -415,7 +515,7 @@
     destroyUsageSlotChart();
     const monthTickStep =
       usageRangeKey === "month" ? Math.max(1, Math.ceil(labels.length / 8)) : 1;
-    const usageOnBigScreen = Boolean(chartsSwapped);
+    const usageOnBigScreen = Boolean(tvMode && tvActiveChart === "usage");
     usageSlotChart = new Chart(usageSlotCtx, {
       type: "bar",
       data: {
@@ -492,83 +592,150 @@
     });
   };
 
-  const applyChartSwap = (nextSwapped) => {
-    if (!canvas || !usageSlotCanvas || !usageSlotCanvasSlot || !historyChartCanvasSlot) {
+  const updateTvButtons = () => {
+    if (tvShowHistoryBtn) {
+      tvShowHistoryBtn.classList.toggle("active", tvMode && tvActiveChart === "history");
+    }
+    if (tvShowUsageBtn) {
+      tvShowUsageBtn.classList.toggle("active", tvMode && tvActiveChart === "usage");
+    }
+  };
+
+  const syncCanvasPlacement = () => {
+    if (!canvas || !usageSlotCanvas) {
       return;
     }
-    const next = Boolean(nextSwapped);
-    if (chartsSwapped === next) {
+    if (!usageSlotCanvasSlot || !historyPreviewCanvasSlot) {
       return;
     }
-    if (next) {
-      historyChartCanvasSlot.appendChild(usageSlotCanvas);
-      usageSlotCanvasSlot.appendChild(canvas);
-      document.body.classList.add("charts-swapped");
-      if (usagePipEl && usageHeaderEl) {
-        usagePipEl.appendChild(usageHeaderEl);
-        usagePipEl.setAttribute("aria-hidden", "false");
+    if (tvMode) {
+      if (!tvCanvasSlot) {
+        return;
       }
-    } else {
-      historyChartCanvasSlot.appendChild(canvas);
-      usageSlotCanvasSlot.appendChild(usageSlotCanvas);
-      document.body.classList.remove("charts-swapped");
-      if (usageSlotEl && usageHeaderEl) {
-        usageSlotEl.insertBefore(usageHeaderEl, usageSlotEl.firstChild);
+      if (tvActiveChart === "usage") {
+        tvCanvasSlot.appendChild(usageSlotCanvas);
+        historyPreviewCanvasSlot.appendChild(canvas);
+      } else {
+        tvCanvasSlot.appendChild(canvas);
+        usageSlotCanvasSlot.appendChild(usageSlotCanvas);
       }
-      if (usagePipEl) {
-        usagePipEl.setAttribute("aria-hidden", "true");
+      if (tvFrame) {
+        tvFrame.setAttribute("aria-hidden", "false");
       }
+      document.body.classList.add("tv-mode");
+      updateTvButtons();
+      return;
     }
-    chartsSwapped = next;
-    // Let layout settle, then fully refresh both charts so Chart.js re-measures its new parent.
-    const refreshAfterSwap = async () => {
-      try {
-        destroyUsageSlotChart();
-      } catch (err) {
-        // ignore
-      }
-      await renderUsageSlotChart();
-      try {
-        destroyChart();
-      } catch (err) {
-        // ignore
-      }
-      try {
-        createChart();
-      } catch (err) {
-        // ignore
-      }
-      try {
-        showChart();
-      } catch (err) {
-        // ignore
-      }
-    };
+
+    // Normal mode: both charts live in their preview slots.
+    historyPreviewCanvasSlot.appendChild(canvas);
+    usageSlotCanvasSlot.appendChild(usageSlotCanvas);
+    if (tvFrame) {
+      tvFrame.setAttribute("aria-hidden", "true");
+    }
+    document.body.classList.remove("tv-mode");
+    updateTvButtons();
+  };
+
+  const refreshChartsForRelayout = async () => {
+    try {
+      destroyUsageSlotChart();
+    } catch (err) {
+      // ignore
+    }
+    await renderUsageSlotChart();
+    try {
+      destroyChart();
+    } catch (err) {
+      // ignore
+    }
+    try {
+      createChart();
+    } catch (err) {
+      // ignore
+    }
+    try {
+      showChart();
+    } catch (err) {
+      // ignore
+    }
+  };
+
+  const enterTvMode = async (chartKey = "history") => {
+    tvMode = true;
+    tvActiveChart = chartKey === "usage" ? "usage" : "history";
+
+    if (autoplayEnabledBeforeTv === null) {
+      autoplayEnabledBeforeTv = autoplayEnabled;
+    }
+    autoplayEnabled = false;
+    try {
+      stopAutoplay();
+    } catch {
+      // ignore
+    }
+    updateAutoplayToggle();
+
+    syncCanvasPlacement();
     requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        void refreshAfterSwap();
-      });
+      void refreshChartsForRelayout();
     });
   };
 
-  const bindChartSwapControls = () => {
-    if (chartSwapBound) {
+  const exitTvMode = async () => {
+    tvMode = false;
+    syncCanvasPlacement();
+    requestAnimationFrame(() => {
+      void refreshChartsForRelayout();
+    });
+
+    if (autoplayEnabledBeforeTv !== null) {
+      autoplayEnabled = autoplayEnabledBeforeTv;
+      autoplayEnabledBeforeTv = null;
+    }
+    updateAutoplayToggle();
+    if (autoplayEnabled) {
+      ensureAutoplayScheduled();
+    }
+  };
+
+  const bindTvZoomControls = () => {
+    if (tvZoomBound) {
       return;
     }
     if (!canvas || !usageSlotCanvas) {
       return;
     }
-    chartSwapBound = true;
+    tvZoomBound = true;
 
-    const usageTitle = document.querySelector("#usage-slot .title");
-    if (usageTitle) {
-      usageTitle.title = "Swap charts";
-      usageTitle.addEventListener("click", () => applyChartSwap(!chartsSwapped));
+    canvas.addEventListener("dblclick", () => void enterTvMode("history"));
+    usageSlotCanvas.addEventListener("dblclick", () => void enterTvMode("usage"));
+
+    if (tvFrame) {
+      tvFrame.addEventListener("dblclick", (event) => {
+        event.preventDefault();
+        void exitTvMode();
+      });
+    }
+    if (tvShowHistoryBtn) {
+      tvShowHistoryBtn.addEventListener("click", (event) => {
+        event.preventDefault();
+        void enterTvMode("history");
+      });
+    }
+    if (tvShowUsageBtn) {
+      tvShowUsageBtn.addEventListener("click", (event) => {
+        event.preventDefault();
+        void enterTvMode("usage");
+      });
     }
 
-    // Use double-click on either canvas as a universal swap gesture.
-    canvas.addEventListener("dblclick", () => applyChartSwap(!chartsSwapped));
-    usageSlotCanvas.addEventListener("dblclick", () => applyChartSwap(!chartsSwapped));
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && tvMode) {
+        event.preventDefault();
+        void exitTvMode();
+      }
+    });
   };
 
   const bindUsageSlotControls = () => {
@@ -2889,7 +3056,8 @@
     updateTimestampFromSelection();
     updateSelectionIndicator();
     bindUsageSlotControls();
-    bindChartSwapControls();
+    bindTvZoomControls();
+    syncCanvasPlacement();
     renderUsageSlotChart();
     destroyChart();
     createChart();
@@ -2973,6 +3141,10 @@
   }
 
   applyDashboardData(dashboardData);
+  applyLayoutFromUrlOrStorage();
+  bindMetricsToggle();
+  applyDebugLayoutFromUrl();
+  bindDebugLayoutHotkey();
   bindAutoplayInteractions();
   updateAutoplayToggle();
   ensureAutoplayScheduled();
