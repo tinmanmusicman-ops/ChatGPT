@@ -326,13 +326,13 @@ def _interpolate_hourly_from_anchors(anchors: dict[int, float]) -> List[float]:
 
 
 def _setpoint_for_hour(target: date, hour: int) -> float:
-    # July variant: keep the summer schedule but extend the 75°F window later into the evening
-    # so projected datasets can include cooling runtime when the building stays warm.
+    # July variant:
+    # - default: 75°F
+    # - 3pm–8pm: 72°F
     if target.month == 7:
-        default = 80.0
-        if hour in (13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23):
-            return 75.0
-        return default
+        if hour in (15, 16, 17, 18, 19, 20):
+            return 72.0
+        return 75.0
 
     # Summer-ish policy: Aug 1 through Oct 30 (inclusive).
     if target.month == 7 or (target.month == 8 and target.day >= 1) or target.month in (9, 10):
