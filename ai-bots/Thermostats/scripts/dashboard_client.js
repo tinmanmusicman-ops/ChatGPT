@@ -567,6 +567,18 @@
     });
   };
 
+  const isTvHidden = () =>
+    document.body && document.body.classList.contains("hide-big-chart");
+
+  const launchTvWithCurrentSmallView = () => {
+    if (!document.body) {
+      return;
+    }
+    // "TV mode": reveal the big TV frame and move the currently-visible small chart into it.
+    document.body.classList.remove("hide-big-chart");
+    applyChartSwap(!chartsSwapped);
+  };
+
   const bindChartSwapControls = () => {
     if (chartSwapBound) {
       return;
@@ -584,7 +596,13 @@
 
     // Use double-click on either canvas as a universal swap gesture.
     canvas.addEventListener("dblclick", () => applyChartSwap(!chartsSwapped));
-    usageSlotCanvas.addEventListener("dblclick", () => applyChartSwap(!chartsSwapped));
+    usageSlotCanvas.addEventListener("dblclick", () => {
+      if (isTvHidden()) {
+        launchTvWithCurrentSmallView();
+        return;
+      }
+      applyChartSwap(!chartsSwapped);
+    });
   };
 
   const bindUsageSlotControls = () => {
