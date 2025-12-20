@@ -1754,9 +1754,10 @@ def build_dashboard_html(
         height: 210px;
         flex: 0 0 auto;
         width: 320px;
-        margin-top: -74px;
+        margin-top: -44px;
         margin-left: auto;
         margin-right: auto;
+        transform: translateX(15px);
         position: relative;
         z-index: 1;
         padding: 12px;
@@ -2034,6 +2035,7 @@ def build_dashboard_html(
           margin-top: 0;
           margin-left: 0;
           height: auto;
+          transform: none;
         }}
         .transport-deck {{
           display: none;
