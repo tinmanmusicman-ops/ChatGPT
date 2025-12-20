@@ -588,6 +588,25 @@
   let tvPrevHideBig = true;
   let tvPrevSwapped = false;
   let tvKeyHandlerBound = false;
+  let tvMouseHintBound = false;
+  let tvControlsAutoHideTimer = null;
+
+  const showTvControlsHint = (hideAfterMs = 30000) => {
+    if (!tvControls) {
+      return;
+    }
+    tvControls.classList.remove("auto-hidden");
+    if (tvControlsAutoHideTimer) {
+      clearTimeout(tvControlsAutoHideTimer);
+      tvControlsAutoHideTimer = null;
+    }
+    tvControlsAutoHideTimer = setTimeout(() => {
+      if (!tvModeActive || !tvControls) {
+        return;
+      }
+      tvControls.classList.add("auto-hidden");
+    }, hideAfterMs);
+  };
 
   const enterTvMode = () => {
     if (!document.body || tvModeActive) {
@@ -606,6 +625,7 @@
       tvControls.setAttribute("aria-hidden", "false");
     }
     updateSwapLabels();
+    showTvControlsHint(10000);
 
     if (!tvKeyHandlerBound) {
       tvKeyHandlerBound = true;
@@ -619,6 +639,22 @@
         }
       });
     }
+
+    if (!tvMouseHintBound) {
+      tvMouseHintBound = true;
+      window.addEventListener("mousemove", (event) => {
+        if (!tvModeActive || !tvControls) {
+          return;
+        }
+        const y = Number(event?.clientY);
+        if (!Number.isFinite(y)) {
+          return;
+        }
+        if (y > window.innerHeight - 140) {
+          showTvControlsHint(6000);
+        }
+      });
+    }
   };
 
   const exitTvMode = () => {
@@ -629,6 +665,11 @@
     tvModeActive = false;
     if (tvControls) {
       tvControls.setAttribute("aria-hidden", "true");
+      tvControls.classList.remove("auto-hidden");
+    }
+    if (tvControlsAutoHideTimer) {
+      clearTimeout(tvControlsAutoHideTimer);
+      tvControlsAutoHideTimer = null;
     }
 
     if (chartsSwapped !== tvPrevSwapped) {
@@ -685,6 +726,7 @@
       if (!tvModeActive) {
         return;
       }
+      showTvControlsHint(6000);
       applyChartSwap(!chartsSwapped);
     };
     tvControls.addEventListener("click", (event) => {

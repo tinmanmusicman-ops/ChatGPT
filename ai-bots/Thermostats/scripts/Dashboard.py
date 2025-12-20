@@ -1346,6 +1346,9 @@ def build_dashboard_html(
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap">
     <style>
+      html, body {{
+        height: 100%;
+      }}
       body {{
         forced-color-adjust: none;
         -webkit-text-fill-color: initial;
@@ -1353,6 +1356,10 @@ def build_dashboard_html(
         margin: 0;
         font-family: 'Inter', system-ui, sans-serif;
         background: linear-gradient(to bottom, #070312, #160d30, #221542, #453082, #5b517a, #71688c, #71688c, #877796, #71688c);
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        background-size: 100% 100%;
+        min-height: 100vh;
         color: #f4f6ff;
       }}
       .frame {{
@@ -2275,6 +2282,18 @@ def build_dashboard_html(
       body.hide-big-chart #tv-legs {{
         display: none;
       }}
+      #tv-legs {{
+        display: none;
+        position: absolute;
+        left: 50%;
+        bottom: 0;
+        transform: translateX(-50%) translateY(calc(78% + 130px));
+        height: clamp(400px, 52vh, 650px);
+        width: auto;
+        max-width: min(1100px, 95vw);
+        z-index: 0;
+        pointer-events: none;
+      }}
       body.hide-big-chart #toggle-history {{
         display: none;
       }}
@@ -2304,7 +2323,7 @@ def build_dashboard_html(
       }}
       body.tv-mode .chart-wrap.tv-frame {{
         position: fixed;
-        inset: 14px 14px 154px 14px;
+        inset: 14px 34px 154px 34px;
         z-index: 9999;
         height: auto;
         width: auto;
@@ -2333,6 +2352,8 @@ def build_dashboard_html(
         z-index: 10000;
         background: linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.0));
         color: rgba(244, 246, 255, 0.92);
+        opacity: 1;
+        transition: opacity 220ms ease;
       }}
       body.tv-mode .tv-controls {{
         display: flex;
@@ -2340,14 +2361,14 @@ def build_dashboard_html(
         justify-content: center;
         bottom: 96px;
       }}
-      body.tv-mode #tv-legs {{
-        display: flex !important;
-        position: fixed;
-        left: 50%;
-        transform: translateX(-50%);
-        bottom: 12px;
-        z-index: 10001;
+      body.tv-mode .tv-controls.auto-hidden {{
+        opacity: 0;
         pointer-events: none;
+      }}
+      body.tv-mode #tv-legs {{
+        display: block !important;
+        height: clamp(525px, 65vh, 800px);
+        z-index: 10001;
       }}
       .tv-controls .tv-controls-inner {{
         width: min(720px, calc(100% - 24px));
@@ -2699,7 +2720,7 @@ def build_dashboard_html(
     </style>
   </head>
   <body class="hide-big-chart hide-chart-history">
-    <div class="container frame">
+    <div class="container">
       <div id="Cards" class="card-grid frame2">
         {cards}
       </div>
@@ -2838,8 +2859,8 @@ def build_dashboard_html(
           <div id="history-chart-canvas-slot">
             <canvas id="history-chart"></canvas>
           </div>
+          <img id="tv-legs" src="../../../Images/Legs2.png" alt="TV stand" />
         </div>
-          <img id="tv-legs" src="../../../Images/Legs2.png" alt="Logo" style="z-index: 2; margin-top: -145px; width: 800px; height: 800px;"/>
         <div class="note">Data source: Google Sheet (last updated when this page was generated).</div>
 
         <pre id="js-log"></pre>
