@@ -617,7 +617,7 @@
       .swap-controls {
         margin-top: 8px;
         width: 100%;
-        display: flex;
+        display: none !important;
         justify-content: center;
       }
       .swap-controls .swap-controls-inner {
@@ -1004,7 +1004,7 @@
       body.tv-mode .chart-wrap.tv-frame {
         display: block !important;
         position: fixed;
-        inset: 14px 34px 124px 34px;
+        inset: 14px 34px 74px 34px;
         z-index: 9999;
         height: auto;
         width: auto;
@@ -1234,6 +1234,7 @@
         width: 100%;
         max-width: 720px;
         margin: 14px auto 0;
+        z-index: 40;
         box-sizing: border-box;
         padding: 0;
         background: transparent;
@@ -1380,7 +1381,7 @@
         left: 0;
         right: 0;
         bottom: calc(100% + 10px);
-        z-index: 20;
+        z-index: 60;
         background: #2f3136;
         border: 1px solid rgba(255, 255, 255, 0.2);
         border-radius: 14px;
@@ -2478,7 +2479,10 @@
 
     // Reveal the TV frame and move the currently visible small chart into it.
     document.body.classList.remove("hide-big-chart");
-    applyChartSwap(!chartsSwapped);
+    // Default TV mode to the thermostat/history chart (usage remains available via swap).
+    if (chartsSwapped) {
+      applyChartSwap(false);
+    }
 
     document.body.classList.add("tv-mode");
     tvModeActive = true;
@@ -2581,6 +2585,32 @@
       }
       enterTvMode();
     });
+
+    // In TV mode, clicking the X-axis label area swaps charts.
+    if (usageSlotCanvas.dataset.boundAxisSwap !== "1") {
+      usageSlotCanvas.dataset.boundAxisSwap = "1";
+      usageSlotCanvas.addEventListener("click", (event) => {
+        if (!usageSlotChart) {
+          return;
+        }
+        const y = Number(event?.offsetY);
+        if (!Number.isFinite(y)) {
+          return;
+        }
+        const bottom = usageSlotChart?.chartArea?.bottom;
+        if (!Number.isFinite(Number(bottom))) {
+          return;
+        }
+        if (y < Number(bottom)) {
+          return;
+        }
+        event.preventDefault();
+        if (tvModeActive) {
+          showTvControlsHint(6000);
+        }
+        applyChartSwap(!chartsSwapped);
+      });
+    }
   };
 
   const bindTvControls = () => {
@@ -3760,6 +3790,21 @@
     }
     chartPointPickerBound = true;
 
+    const isXAxisClickForSwap = (event) => {
+      if (!chart) {
+        return false;
+      }
+      const y = Number(event?.offsetY);
+      if (!Number.isFinite(y)) {
+        return false;
+      }
+      const bottom = chart?.chartArea?.bottom;
+      if (!Number.isFinite(Number(bottom))) {
+        return false;
+      }
+      return y >= Number(bottom);
+    };
+
     const pickIndexFromEvent = (event) => {
       if (!chart) {
         return null;
@@ -3810,6 +3855,14 @@
     });
 
     canvas.addEventListener("click", (event) => {
+      if (isXAxisClickForSwap(event)) {
+        event.preventDefault();
+        if (tvModeActive) {
+          showTvControlsHint(6000);
+        }
+        applyChartSwap(!chartsSwapped);
+        return;
+      }
       const idx = pickIndexFromEvent(event);
       if (idx === null) {
         setSelectedPoint(null, null, true);

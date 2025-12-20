@@ -717,7 +717,10 @@
 
     // Reveal the TV frame and move the currently visible small chart into it.
     document.body.classList.remove("hide-big-chart");
-    applyChartSwap(!chartsSwapped);
+    // Default TV mode to the thermostat/history chart (usage remains available via swap).
+    if (chartsSwapped) {
+      applyChartSwap(false);
+    }
 
     document.body.classList.add("tv-mode");
     tvModeActive = true;
@@ -814,6 +817,32 @@
       }
       enterTvMode();
     });
+
+    // In TV mode, clicking the X-axis label area swaps charts.
+    if (usageSlotCanvas.dataset.boundAxisSwap !== "1") {
+      usageSlotCanvas.dataset.boundAxisSwap = "1";
+      usageSlotCanvas.addEventListener("click", (event) => {
+        if (!usageSlotChart) {
+          return;
+        }
+        const y = Number(event?.offsetY);
+        if (!Number.isFinite(y)) {
+          return;
+        }
+        const bottom = usageSlotChart?.chartArea?.bottom;
+        if (!Number.isFinite(Number(bottom))) {
+          return;
+        }
+        if (y < Number(bottom)) {
+          return;
+        }
+        event.preventDefault();
+        if (tvModeActive) {
+          showTvControlsHint(6000);
+        }
+        applyChartSwap(!chartsSwapped);
+      });
+    }
   };
 
   const bindTvControls = () => {
@@ -1993,6 +2022,21 @@
     }
     chartPointPickerBound = true;
 
+    const isXAxisClickForSwap = (event) => {
+      if (!chart) {
+        return false;
+      }
+      const y = Number(event?.offsetY);
+      if (!Number.isFinite(y)) {
+        return false;
+      }
+      const bottom = chart?.chartArea?.bottom;
+      if (!Number.isFinite(Number(bottom))) {
+        return false;
+      }
+      return y >= Number(bottom);
+    };
+
     const pickIndexFromEvent = (event) => {
       if (!chart) {
         return null;
@@ -2043,6 +2087,14 @@
     });
 
     canvas.addEventListener("click", (event) => {
+      if (isXAxisClickForSwap(event)) {
+        event.preventDefault();
+        if (tvModeActive) {
+          showTvControlsHint(6000);
+        }
+        applyChartSwap(!chartsSwapped);
+        return;
+      }
       const idx = pickIndexFromEvent(event);
       if (idx === null) {
         setSelectedPoint(null, null, true);

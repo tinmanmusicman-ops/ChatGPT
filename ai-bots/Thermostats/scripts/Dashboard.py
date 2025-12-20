@@ -1974,7 +1974,7 @@ def build_dashboard_html(
       .swap-controls {{
         margin-top: 8px;
         width: 100%;
-        display: flex;
+        display: none !important;
         justify-content: center;
       }}
       .swap-controls .swap-controls-inner {{
@@ -2361,7 +2361,7 @@ def build_dashboard_html(
       body.tv-mode .chart-wrap.tv-frame {{
         display: block !important;
         position: fixed;
-        inset: 14px 34px 124px 34px;
+        inset: 14px 34px 74px 34px;
         z-index: 9999;
         height: auto;
         width: auto;
@@ -2404,12 +2404,13 @@ def build_dashboard_html(
         backdrop-filter: blur(8px);
         width: 380px;
         justify-content: start;
+
       }}
       body.tv-mode .tv-chartcontrols-overlay .chart-control {{
         width: 100%;
         text-align: left;
         font-size: 12px;
-        padding: 5px 8px;
+        padding: 2px 8px;
         letter-spacing: 0.2px;
         white-space: nowrap;
       }}
@@ -2421,7 +2422,7 @@ def build_dashboard_html(
         position: fixed;
         left: 34px;
         right: 34px;
-        bottom: 40px;
+        bottom: 15px;
         z-index: 10060;
         align-items: flex-end;
         justify-content: space-between;
@@ -2591,6 +2592,7 @@ def build_dashboard_html(
         width: 100%;
         max-width: 720px;
         margin: 14px auto 0;
+        z-index: 40;
         box-sizing: border-box;
         padding: 0;
         background: transparent;
@@ -2737,7 +2739,7 @@ def build_dashboard_html(
         left: 0;
         right: 0;
         bottom: calc(100% + 10px);
-        z-index: 20;
+        z-index: 60;
         background: #2f3136;
         border: 1px solid rgba(255, 255, 255, 0.2);
         border-radius: 14px;
