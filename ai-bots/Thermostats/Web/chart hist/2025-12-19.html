@@ -543,11 +543,11 @@
       .tv-legs-small {
         position: absolute;
         left: 50%;
-        bottom: -245px;
-        transform: translateX(-50%);
-        height: clamp(170px, 24vh, 260px);
-        width: auto;
-        max-width: min(520px, 95%);
+        top: 100%;
+        bottom: auto;
+        transform: translateX(-50%) translateY(-10px);
+        width: min(520px, 92%);
+        height: auto;
         z-index: 0;
         pointer-events: none;
         filter: brightness(1.25) contrast(1.1) saturate(1.15) drop-shadow(0 10px 20px rgba(0,0,0,0.6));
@@ -964,14 +964,14 @@
       }
       #tv-legs {
         display: none;
-        position: absolute;
+        position: fixed;
         left: 50%;
-        bottom: 0;
-        transform: translateX(-50%) translateY(calc(78% + 130px));
-        height: clamp(400px, 52vh, 650px);
-        width: auto;
-        max-width: min(1100px, 95vw);
-        z-index: 0;
+        top: 0;
+        transform: translateX(-50%);
+        width: min(990px, 80%);
+        height: auto;
+        max-width: 100%;
+        z-index: 9998;
         pointer-events: none;
       }
       body.hide-big-chart #toggle-history {
@@ -1004,7 +1004,7 @@
       body.tv-mode .chart-wrap.tv-frame {
         display: block !important;
         position: fixed;
-        inset: 14px 34px 74px 34px;
+        inset: 24px 44px 84px 44px;
         z-index: 9999;
         height: auto;
         width: auto;
@@ -1013,23 +1013,23 @@
         border-radius: 22px;
         padding: 18px 0 18px;
         --frame-border: 12px;
+        --tv-inset-bottom: 84px;
         border: var(--frame-border) solid rgba(255, 255, 255, 0.2);
         background: linear-gradient(to bottom, #050506 0%, #151518 55%, #2b2b2e 100%);
+        overflow: visible;
       }
       body.tv-mode #history-chart-canvas-slot,
       body.tv-mode #history-chart {
         height: 100% !important;
       }
       body.tv-mode #tv-legs {
-        display: none !important;
-        height: clamp(525px, 65vh, 800px);
-        z-index: 10001;
+        display: block !important;
+        top: calc(100vh - var(--tv-inset-bottom));
+        transform: translateX(-50%) translateY(-30px);
+        width: min(990px, 80%);
+        max-width: 100%;
         filter: brightness(1.25) contrast(1.1) saturate(1.15) drop-shadow(0 18px 26px rgba(0,0,0,0.65));
         opacity: 0.98;
-      }
-      /* Temporarily disable the TV legs/feet graphics while we finalize layout. */
-      .tv-legs-small {
-        display: none !important;
       }
       /* TV mode chart controls (mode toggles) shown on the right. */
       .tv-chartcontrols-overlay {
@@ -1696,8 +1696,8 @@
               <button type="button" class="chart-control" data-mode="both">Combined</button>
             </div>
           </div>
-          <img id="tv-legs" src="../../../Images/Legs2.png" alt="TV stand" />
         </div>
+        <img id="tv-legs" src="../../../Images/Legs2.png" alt="TV stand" />
         <div class="note">Data source: Google Sheet (last updated when this page was generated).</div>
 
         <pre id="js-log"></pre>

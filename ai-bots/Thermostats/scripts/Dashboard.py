@@ -1900,11 +1900,11 @@ def build_dashboard_html(
       .tv-legs-small {{
         position: absolute;
         left: 50%;
-        bottom: -215px;
-        transform: translateX(-50%);
-        height: clamp(170px, 24vh, 260px);
-        width: auto;
-        max-width: min(520px, 95%);
+        top: 100%;
+        bottom: auto;
+        transform: translateX(-50%) translateY(-10px);
+        width: min(520px, 92%);
+        height: auto;
         z-index: 0;
         pointer-events: none;
         opacity: 0.96;
@@ -2321,13 +2321,13 @@ def build_dashboard_html(
       }}
       #tv-legs {{
         display: none;
-        position: absolute;
+        position: fixed;
         left: 50%;
-        bottom: -10px;
-        transform: translateX(-50%) translateY(calc(78% + 130px));
-        height: clamp(400px, 52vh, 650px);
-        width: auto;
-        max-width: min(1100px, 95vw);
+        top: 0;
+        transform: translateX(-50%);
+        width: min(990px, 80%);
+        height: auto;
+        max-width: 100%;
         z-index: 0;
         pointer-events: none;
       }}
@@ -2361,7 +2361,7 @@ def build_dashboard_html(
       body.tv-mode .chart-wrap.tv-frame {{
         display: block !important;
         position: fixed;
-        inset: 14px 34px 74px 34px;
+        inset: 24px 44px 84px 44px;
         z-index: 9999;
         height: auto;
         width: auto;
@@ -2370,23 +2370,23 @@ def build_dashboard_html(
         border-radius: 22px;
         padding: 18px 0 18px;
         --frame-border: 12px;
+        --tv-inset-bottom: 84px;
         border: var(--frame-border) solid rgba(255, 255, 255, 0.2);
         background: linear-gradient(to bottom, #050506 0%, #151518 55%, #2b2b2e 100%);
+        overflow: visible;
       }}
       body.tv-mode #history-chart-canvas-slot,
       body.tv-mode #history-chart {{
         height: 100% !important;
       }}
       body.tv-mode #tv-legs {{
-        display: none !important;
-        height: clamp(525px, 65vh, 800px);
-        z-index: 10001;
+        display: block !important;
+        top: calc(100vh - var(--tv-inset-bottom));
+        transform: translateX(-50%) translateY(-30px);
+        width: min(990px, 80%);
+        max-width: 100%;
         filter: brightness(1.25) contrast(1.1) saturate(1.15) drop-shadow(0 18px 26px rgba(0,0,0,0.65));
         opacity: 0.98;
-      }}
-      /* Temporarily disable the TV legs/feet graphics while we finalize layout. */
-      .tv-legs-small {{
-        display: none !important;
       }}
       /* TV mode chart controls (mode toggles) shown on the right. */
       .tv-chartcontrols-overlay {{
@@ -2506,6 +2506,8 @@ def build_dashboard_html(
         justify-content: center;
         gap: 10px;
         pointer-events: auto;
+        margin-left: 70px;
+        
       }}
       .tv-nav-btn {{
         flex: 0 0 auto;
@@ -2853,7 +2855,6 @@ def build_dashboard_html(
 
       <div class="chart-top-row">
         <div class="usage-slot tv-frame" id="usage-slot">
-          <img class="tv-legs-small" src="../../../Images/Legs2.png" alt="TV stand" />
           <div class="usage-header">
             <div class="usage-header-left">
               <div class="title">Usage Chart</div>
@@ -2973,18 +2974,20 @@ def build_dashboard_html(
           <div id="history-chart-canvas-slot">
             <canvas id="history-chart"></canvas>
           </div>
-            <div class="tv-bottom-bar" aria-hidden="true">
-              <div class="tv-bottom-left">
+        <img style="z-index: 10;width: 500px; height: 300px;" id="tv-legs" src="../../../Images/Legs2.png" alt="TV stand" />
+          
+          <div class="tv-bottom-bar" aria-hidden="true">
+            <div class="tv-bottom-left">
               <div class="tv-file-select" id="tv-file-select" aria-label="TV file select">
                 <div class="tv-file-select-title">Chart History</div>
                 <div id="tv-history-status" class="tv-file-select-status">Current</div>
                 <div id="tv-history-slot"></div>
               </div>
             </div>
-              <div class="tv-nav-overlay" aria-hidden="true">
-                <button type="button" id="tv-archive-prev" class="tv-nav-btn" aria-label="Previous day">&lt;&lt;</button>
-                <button type="button" id="tv-archive-next" class="tv-nav-btn" aria-label="Next day">&gt;&gt;</button>
-              </div>
+            <div class="tv-nav-overlay" aria-hidden="true">
+              <button type="button" id="tv-archive-prev" class="tv-nav-btn" aria-label="Previous day">&lt;&lt;</button>
+              <button type="button" id="tv-archive-next" class="tv-nav-btn" aria-label="Next day">&gt;&gt;</button>
+            </div>
             <div class="tv-chartcontrols-overlay" aria-label="TV chart controls">
               <button type="button" class="chart-control" data-mode="setpoint">Set Point</button>
               <button type="button" class="chart-control" data-mode="actual">Building Temp</button>
@@ -2994,8 +2997,8 @@ def build_dashboard_html(
               <button type="button" class="chart-control" data-mode="both">Combined</button>
             </div>
           </div>
-          <img id="tv-legs" src="../../../Images/Legs2.png" alt="TV stand" />
         </div>
+        <img id="tv-legs" src="../../../Images/Legs2.png" alt="TV stand" />
         <div class="note">Data source: Google Sheet (last updated when this page was generated).</div>
 
         <pre id="js-log"></pre>
