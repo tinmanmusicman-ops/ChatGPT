@@ -128,9 +128,9 @@
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  padding: var(--frame-border);
+  padding: var(--frame-border, 10px);
   pointer-events: none;
-  z-index: 2;
+  z-index: 50;
   background:
     radial-gradient(120% 70% at 18% 8%, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0) 55%),
     linear-gradient(to bottom, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0) 35%, rgba(0,0,0,0.25) 100%);
@@ -145,9 +145,9 @@
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  padding: var(--frame-border);
+  padding: var(--frame-border, 10px);
   pointer-events: none;
-  z-index: 3;
+  z-index: 51;
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,0.22),
     inset 0 -1px 0 rgba(0,0,0,0.55);
@@ -1002,8 +1002,9 @@
         border-radius: 0;
       }
       body.tv-mode .chart-wrap.tv-frame {
+        display: block !important;
         position: fixed;
-        inset: 14px 34px 154px 34px;
+        inset: 14px 34px 124px 34px;
         z-index: 9999;
         height: auto;
         width: auto;
@@ -1011,68 +1012,159 @@
         margin: 0;
         border-radius: 22px;
         padding: 18px 0 18px;
-      }
-      body.tv-mode .chart-wrap.tv-frame::after {
-        display: none;
+        --frame-border: 12px;
+        border: var(--frame-border) solid rgba(255, 255, 255, 0.2);
+        background: linear-gradient(to bottom, #050506 0%, #151518 55%, #2b2b2e 100%);
       }
       body.tv-mode #history-chart-canvas-slot,
       body.tv-mode #history-chart {
         height: 100% !important;
       }
-      /* Fullscreen TV mode controls (swap chart / exit hint). */
-      .tv-controls {
-        display: none;
-        position: fixed;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        height: 92px;
-        padding: 14px 18px;
-        box-sizing: border-box;
-        z-index: 10000;
-        background: linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.0));
-        color: rgba(244, 246, 255, 0.92);
-        opacity: 1;
-        transition: opacity 220ms ease;
-      }
-      body.tv-mode .tv-controls {
-        display: flex;
-        align-items: flex-end;
-        justify-content: center;
-        bottom: 96px;
-      }
-      body.tv-mode .tv-controls.auto-hidden {
-        opacity: 0;
-        pointer-events: none;
-      }
       body.tv-mode #tv-legs {
-        display: block !important;
+        display: none !important;
         height: clamp(525px, 65vh, 800px);
         z-index: 10001;
         filter: brightness(1.25) contrast(1.1) saturate(1.15) drop-shadow(0 18px 26px rgba(0,0,0,0.65));
         opacity: 0.98;
       }
-      .tv-controls .tv-controls-inner {
-        width: min(720px, calc(100% - 24px));
-        border-radius: 16px;
-        padding: 10px 14px;
-        border: 1px solid rgba(255,255,255,0.16);
-        background: rgba(0,0,0,0.35);
-        backdrop-filter: blur(6px);
-        box-shadow: 0 16px 30px rgba(0,0,0,0.55);
-        cursor: pointer;
-        user-select: none;
+      /* Temporarily disable the TV legs/feet graphics while we finalize layout. */
+      .tv-legs-small {
+        display: none !important;
       }
-      .tv-controls .tv-controls-title {
+      /* TV mode chart controls (mode toggles) shown on the right. */
+      .tv-chartcontrols-overlay {
+        display: none;
+      }
+      body.tv-mode .tv-chartcontrols-overlay {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-auto-rows: auto;
+        gap: 8px 8px;
+        padding: 6px;
+        border-radius: 14px;
+        border: 1px solid rgba(255,255,255,0.12);
+        background: rgba(0,0,0,0.24);
+        backdrop-filter: blur(8px);
+        width: 380px;
+        justify-content: start;
+      }
+      body.tv-mode .tv-chartcontrols-overlay .chart-control {
+        width: 100%;
+        text-align: left;
         font-size: 12px;
+        padding: 5px 8px;
+        letter-spacing: 0.2px;
+        white-space: nowrap;
+      }
+      .tv-bottom-bar {
+        display: none;
+      }
+      body.tv-mode .tv-bottom-bar {
+        display: flex;
+        position: fixed;
+        left: 34px;
+        right: 34px;
+        bottom: 40px;
+        z-index: 10060;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 12px;
+        pointer-events: auto;
+      }
+      body.tv-mode .tv-bottom-left {
+        display: flex;
+        align-items: flex-end;
+        gap: 12px;
+      }
+      body.tv-mode .tv-file-select {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        padding: 6px 10px;
+        border-radius: 14px;
+        border: 1px solid rgba(255,255,255,0.12);
+        background: rgba(0,0,0,0.24);
+        backdrop-filter: blur(8px);
+        width: 320px;
+        box-sizing: border-box;
+      }
+      body.tv-mode .tv-file-select-title {
+        font-size: 10px;
+        line-height: 1.1;
         letter-spacing: 0.08em;
         text-transform: uppercase;
-        color: rgba(255, 245, 199, 0.95);
-      }
-      .tv-controls .tv-controls-hint {
-        margin-top: 4px;
-        font-size: 12px;
         opacity: 0.85;
+        user-select: none;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      body.tv-mode .tv-file-select-status {
+        font-size: 11px;
+        line-height: 1.1;
+        opacity: 0.9;
+        letter-spacing: 0.02em;
+        user-select: none;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      body.tv-mode #tv-file-select {
+        cursor: pointer;
+      }
+      body.tv-mode #tv-file-select .chart-history {
+        max-width: none;
+        margin: 0;
+        height: 0;
+        overflow: visible;
+      }
+      body.tv-mode #tv-file-select .chart-wrap.tv-frame .chart-history,
+      body.tv-mode #tv-file-select .chart-history {
+        position: relative;
+        top: auto;
+        right: auto;
+        background: transparent;
+        border: 0;
+        box-shadow: none;
+        padding: 0;
+        width: 100%;
+        max-height: none;
+        overflow: visible;
+        display: block;
+      }
+      body.tv-mode #tv-file-select .chart-history h4 {
+        display: none;
+      }
+      body.tv-mode #tv-file-select .chart-history-status {
+        display: none !important;
+      }
+      /* TV mode navigation controls (prev/next day) positioned between the legs. */
+      .tv-nav-overlay {
+        display: none;
+      }
+      body.tv-mode .tv-nav-overlay {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        pointer-events: auto;
+      }
+      .tv-nav-btn {
+        flex: 0 0 auto;
+        min-width: 52px;
+        height: 40px;
+        border-radius: 16px;
+        border: 1px solid rgba(255,255,255,0.22);
+        background: rgba(0,0,0,0.35);
+        color: rgba(244, 246, 255, 0.92);
+        font-size: 18px;
+        letter-spacing: 0.08em;
+        cursor: pointer;
+        box-shadow: 0 18px 30px rgba(0,0,0,0.55);
+      }
+      .tv-nav-btn:disabled {
+        opacity: 0.35;
+        cursor: default;
       }
       body.hide-chart-history .chart-history {
         height: 0 !important;
@@ -1093,29 +1185,9 @@
         margin: 14px auto 0;
         box-sizing: border-box;
       }
-      .chart-wrap.tv-frame::after {
-        content: "";
-        position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
-        bottom: -44px;
-        width: min(720px, 92%);
-        height: 84px;
-        pointer-events: none;
-        z-index: 0;
-        background-image: url("../../../Images/Legs,png");
-        background-repeat: no-repeat;
-        background-position: center bottom;
-        background-size: contain;
-        opacity: 0.92;
-        filter: drop-shadow(0 12px 16px rgba(0,0,0,0.6));
-      }
       @media (max-width: 680px) {
         .chart-wrap.tv-frame {
           margin-bottom: 18px;
-        }
-        .chart-wrap.tv-frame::after {
-          display: none;
         }
       }
       .chart-wrap::before {
@@ -1602,17 +1674,32 @@
           <div id="history-chart-canvas-slot">
             <canvas id="history-chart"></canvas>
           </div>
+          <div class="tv-bottom-bar" aria-hidden="true">
+            <div class="tv-bottom-left">
+              <div class="tv-file-select" id="tv-file-select" aria-label="TV file select">
+                <div class="tv-file-select-title">Chart History</div>
+                <div id="tv-history-status" class="tv-file-select-status">Current</div>
+                <div id="tv-history-slot"></div>
+              </div>
+            </div>
+            <div class="tv-nav-overlay" aria-hidden="true">
+              <button type="button" id="tv-archive-prev" class="tv-nav-btn" aria-label="Previous day">&lt;&lt;</button>
+              <button type="button" id="tv-archive-next" class="tv-nav-btn" aria-label="Next day">&gt;&gt;</button>
+            </div>
+            <div class="tv-chartcontrols-overlay" aria-label="TV chart controls">
+              <button type="button" class="chart-control" data-mode="setpoint">Set Point</button>
+              <button type="button" class="chart-control" data-mode="actual">Building Temp</button>
+              <button type="button" class="chart-control" data-mode="outside">Outside Temp</button>
+              <button type="button" class="chart-control" data-mode="cooling">AC Status</button>
+              <button type="button" class="chart-control" data-mode="fan">Fan Mode</button>
+              <button type="button" class="chart-control" data-mode="both">Combined</button>
+            </div>
+          </div>
           <img id="tv-legs" src="../../../Images/Legs2.png" alt="TV stand" />
         </div>
         <div class="note">Data source: Google Sheet (last updated when this page was generated).</div>
 
         <pre id="js-log"></pre>
-      </div>
-    </div>
-    <div id="tv-controls" class="tv-controls" aria-hidden="true">
-      <div class="tv-controls-inner" role="button" tabindex="0" aria-label="TV controls">
-        <div id="tv-controls-label" class="tv-controls-title">Click here to swap chart</div>
-        <div class="tv-controls-hint">Double-click the chart or press Esc to exit full screen</div>
       </div>
     </div>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -1661,6 +1748,13 @@
   const transportHistoryStatus = document.getElementById("transport-history-status");
   const tvControls = document.getElementById("tv-controls");
   const tvControlsLabel = document.getElementById("tv-controls-label");
+  const tvControlsSwap = document.getElementById("tv-controls-swap");
+  const tvArchivePrevButton = document.getElementById("tv-archive-prev");
+  const tvArchiveNextButton = document.getElementById("tv-archive-next");
+  const tvArchiveSelect = document.getElementById("tv-archive-select");
+  const tvHistorySlot = document.getElementById("tv-history-slot");
+  const tvFileSelect = document.getElementById("tv-file-select");
+  const tvHistoryStatus = document.getElementById("tv-history-status");
   const swapControls = document.getElementById("swap-controls");
   const swapControlsLabel = document.getElementById("swap-controls-label");
   const isChartHistoryUiHidden = () =>
@@ -1848,17 +1942,75 @@
   };
 
   const syncArchiveNavButtons = () => {
-    if (!prevDayButtonEl || !nextDayButtonEl) {
+    const hasInlineNav = Boolean(prevDayButtonEl && nextDayButtonEl);
+    const hasTvNav = Boolean(tvArchivePrevButton && tvArchiveNextButton);
+    if (!hasInlineNav && !hasTvNav) {
       return;
     }
     const slugs = getSortedArchiveSlugs();
     const idx = getCurrentArchiveIndex(slugs);
     const hasPrev = idx > 0;
     const hasNext = idx >= 0 && idx < slugs.length - 1;
-    prevDayButtonEl.disabled = !hasPrev;
-    nextDayButtonEl.disabled = !hasNext;
-    prevDayButtonEl.style.opacity = hasPrev ? "1" : "0.5";
-    nextDayButtonEl.style.opacity = hasNext ? "1" : "0.5";
+    if (hasInlineNav) {
+      prevDayButtonEl.disabled = !hasPrev;
+      nextDayButtonEl.disabled = !hasNext;
+      prevDayButtonEl.style.opacity = hasPrev ? "1" : "0.5";
+      nextDayButtonEl.style.opacity = hasNext ? "1" : "0.5";
+    }
+    if (hasTvNav) {
+      tvArchivePrevButton.disabled = !hasPrev;
+      tvArchiveNextButton.disabled = !hasNext;
+      tvArchivePrevButton.style.opacity = hasPrev ? "1" : "0.5";
+      tvArchiveNextButton.style.opacity = hasNext ? "1" : "0.5";
+    }
+    if (tvArchiveSelect) {
+      const current = currentArchiveSlug || dashboardData.generatedDateSlug || "";
+      if (current) {
+        tvArchiveSelect.value = current;
+      }
+    }
+  };
+
+  let tvArchiveSelectBound = false;
+  const renderTvArchiveSelect = () => {
+    if (!tvArchiveSelect) {
+      return;
+    }
+    const archiveDates = getArchiveDates();
+    if (!Array.isArray(archiveDates)) {
+      return;
+    }
+    const sorted = archiveDates
+      .filter((entry) => entry && entry.slug)
+      .slice()
+      .sort((a, b) => String(a.slug).localeCompare(String(b.slug)));
+    const current = currentArchiveSlug || dashboardData.generatedDateSlug || "";
+    tvArchiveSelect.innerHTML = "";
+    sorted.forEach((entry) => {
+      const opt = document.createElement("option");
+      opt.value = entry.slug;
+      opt.textContent = entry.label || entry.slug;
+      tvArchiveSelect.appendChild(opt);
+    });
+    if (current) {
+      tvArchiveSelect.value = current;
+    }
+  };
+
+  const bindTvArchiveSelect = () => {
+    if (!tvArchiveSelect || tvArchiveSelectBound) {
+      return;
+    }
+    tvArchiveSelectBound = true;
+    tvArchiveSelect.addEventListener("change", () => {
+      const slug = tvArchiveSelect.value;
+      if (!slug) {
+        return;
+      }
+      updateHistoryStatus(slug);
+      currentArchiveSlug = slug;
+      loadDashboardData(slug);
+    });
   };
 
   const navigateArchiveByDays = (delta) => {
@@ -1877,7 +2029,49 @@
     }
     updateHistoryStatus(slug);
     currentArchiveSlug = slug;
+    if (tvArchiveSelect) {
+      tvArchiveSelect.value = slug;
+    }
     loadDashboardData(slug);
+  };
+
+  let archiveKeyHandlerBound = false;
+  const isEditableTarget = (target) => {
+    const el = target;
+    if (!el) return false;
+    if (el.isContentEditable) return true;
+    const tag = String(el.tagName || "").toLowerCase();
+    return tag === "input" || tag === "textarea" || tag === "select";
+  };
+  const bindArchiveKeyboardShortcuts = () => {
+    if (archiveKeyHandlerBound) {
+      return;
+    }
+    archiveKeyHandlerBound = true;
+    window.addEventListener("keydown", (event) => {
+      if (event.defaultPrevented) {
+        return;
+      }
+      if (event.altKey || event.ctrlKey || event.metaKey) {
+        return;
+      }
+      if (isEditableTarget(event.target)) {
+        return;
+      }
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        if (tvModeActive) {
+          showTvControlsHint(6000);
+        }
+        navigateArchiveByDays(-1);
+      } else if (event.key === "ArrowRight") {
+        event.preventDefault();
+        if (tvModeActive) {
+          showTvControlsHint(6000);
+        }
+        navigateArchiveByDays(1);
+      }
+    });
   };
 
   const buildUsageRangeSlugs = (rangeKey) => {
@@ -2214,20 +2408,65 @@
   let tvControlsAutoHideTimer = null;
 
   const showTvControlsHint = (hideAfterMs = 30000) => {
-    if (!tvControls) {
+    if (!tvControlsSwap) {
       return;
     }
-    tvControls.classList.remove("auto-hidden");
+    tvControlsSwap.classList.remove("auto-hidden");
     if (tvControlsAutoHideTimer) {
       clearTimeout(tvControlsAutoHideTimer);
       tvControlsAutoHideTimer = null;
     }
     tvControlsAutoHideTimer = setTimeout(() => {
-      if (!tvModeActive || !tvControls) {
+      if (!tvModeActive || !tvControlsSwap) {
         return;
       }
-      tvControls.classList.add("auto-hidden");
+      tvControlsSwap.classList.add("auto-hidden");
     }, hideAfterMs);
+  };
+
+  let tvChartHistoryHomeParent = null;
+  let tvChartHistoryHomeNextSibling = null;
+  const mountTvHistory = () => {
+    if (!tvHistorySlot || !chartHistory) {
+      return;
+    }
+    if (tvHistorySlot.contains(chartHistory)) {
+      return;
+    }
+    tvChartHistoryHomeParent = chartHistory.parentElement;
+    tvChartHistoryHomeNextSibling = chartHistory.nextSibling;
+    tvHistorySlot.appendChild(chartHistory);
+  };
+
+  const unmountTvHistory = () => {
+    if (!chartHistory || !tvChartHistoryHomeParent) {
+      return;
+    }
+    const parent = tvChartHistoryHomeParent;
+    const next = tvChartHistoryHomeNextSibling;
+    if (next && next.parentNode === parent) {
+      parent.insertBefore(chartHistory, next);
+    } else {
+      parent.appendChild(chartHistory);
+    }
+    tvChartHistoryHomeParent = null;
+    tvChartHistoryHomeNextSibling = null;
+  };
+
+  let tvHistoryToggleBound = false;
+  const bindTvHistoryToggle = () => {
+    if (!tvFileSelect || tvHistoryToggleBound) {
+      return;
+    }
+    tvHistoryToggleBound = true;
+    tvFileSelect.addEventListener("click", (event) => {
+      const target = event.target;
+      if (target && target.closest && target.closest("button,select,a,input,textarea")) {
+        return;
+      }
+      event.preventDefault();
+      toggleHistoryList();
+    });
   };
 
   const enterTvMode = () => {
@@ -2248,6 +2487,8 @@
     }
     updateSwapLabels();
     showTvControlsHint(10000);
+    mountTvHistory();
+    bindTvHistoryToggle();
 
     if (!tvKeyHandlerBound) {
       tvKeyHandlerBound = true;
@@ -2285,9 +2526,12 @@
     }
     document.body.classList.remove("tv-mode");
     tvModeActive = false;
+    unmountTvHistory();
     if (tvControls) {
       tvControls.setAttribute("aria-hidden", "true");
-      tvControls.classList.remove("auto-hidden");
+    }
+    if (tvControlsSwap) {
+      tvControlsSwap.classList.remove("auto-hidden");
     }
     if (tvControlsAutoHideTimer) {
       clearTimeout(tvControlsAutoHideTimer);
@@ -2340,27 +2584,45 @@
   };
 
   const bindTvControls = () => {
-    if (!tvControls || tvControls.dataset.boundClick === "1") {
-      return;
-    }
-    tvControls.dataset.boundClick = "1";
-    const activate = () => {
-      if (!tvModeActive) {
-        return;
-      }
-      showTvControlsHint(6000);
-      applyChartSwap(!chartsSwapped);
-    };
-    tvControls.addEventListener("click", (event) => {
-      event.preventDefault();
-      activate();
-    });
-    tvControls.addEventListener("keydown", (event) => {
-      if (event.key === "Enter" || event.key === " ") {
+    if (tvControlsSwap && tvControlsSwap.dataset.boundClick !== "1") {
+      tvControlsSwap.dataset.boundClick = "1";
+      const activate = () => {
+        if (!tvModeActive) {
+          return;
+        }
+        showTvControlsHint(6000);
+        applyChartSwap(!chartsSwapped);
+      };
+      tvControlsSwap.addEventListener("click", (event) => {
         event.preventDefault();
         activate();
-      }
-    });
+      });
+      tvControlsSwap.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          activate();
+        }
+      });
+    }
+
+    if (tvArchivePrevButton && tvArchivePrevButton.dataset.boundClick !== "1") {
+      tvArchivePrevButton.dataset.boundClick = "1";
+      tvArchivePrevButton.addEventListener("click", () => {
+        if (tvModeActive) {
+          showTvControlsHint(6000);
+        }
+        navigateArchiveByDays(-1);
+      });
+    }
+    if (tvArchiveNextButton && tvArchiveNextButton.dataset.boundClick !== "1") {
+      tvArchiveNextButton.dataset.boundClick = "1";
+      tvArchiveNextButton.addEventListener("click", () => {
+        if (tvModeActive) {
+          showTvControlsHint(6000);
+        }
+        navigateArchiveByDays(1);
+      });
+    }
   };
 
   const bindSwapControls = () => {
@@ -4064,6 +4326,9 @@
     if (transportHistoryStatus) {
       transportHistoryStatus.textContent = text;
     }
+    if (tvHistoryStatus) {
+      tvHistoryStatus.textContent = text;
+    }
   };
 
   const bindTransportHistoryToggle = () => {
@@ -4744,6 +5009,8 @@
     hoverPointIndex = pinnedPointIndex;
     const isArchiveLoad = Boolean(slugHint);
     renderArchiveList();
+    renderTvArchiveSelect();
+    bindTvArchiveSelect();
     updateHistoryStatus(currentArchiveSlug);
     syncArchiveNavButtons();
     updateTimestampFromSelection();
@@ -4834,6 +5101,7 @@
 
   applyDashboardData(dashboardData);
   bindTransportHistoryToggle();
+  bindArchiveKeyboardShortcuts();
   bindTvControls();
   bindSwapControls();
   bindAutoplayInteractions();

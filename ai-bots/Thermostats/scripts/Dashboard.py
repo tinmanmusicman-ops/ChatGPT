@@ -1440,57 +1440,74 @@ def build_dashboard_html(
 }}
 
 
-.tv-frame {{
-  position: relative;
-  isolation: isolate;
-  --frame-border: 10px;
-  border-radius: 14px;
-  border: var(--frame-border) solid rgba(255, 255, 255, 0.10);
-  box-shadow:
-    0 20px 44px rgba(0, 0, 0, 0.70),
-    inset 0 3px 4px rgba(255, 255, 255, 0.18),
-    inset 0 -3px 6px rgba(0, 0, 0, 0.85),
-    inset 0 0 18px rgba(255, 255, 255, 0.06),
-    inset 0 0 34px rgba(0, 0, 0, 0.70);
-  background: linear-gradient(
-    to bottom,
-    #07050f 0%,
-    #1a1730 45%,
-    #0b0a16 100%
-  );
   /* Must be visible so the chart-history picker (positioned above) isn't clipped. */
   overflow: visible;
 }}
 
 /* Glossy highlight + specular edge for the TV frame (border only). */
+
+
+.tv-frame {{
+  position: relative;
+  isolation: isolate;
+  --frame-border: 10px;
+  border-radius: 14px;
+  border: var(--frame-border) solid rgba(255, 255, 255, 0.18);
+  background: linear-gradient(
+    to bottom,
+    #0c0a18 0%,
+    #2a2550 22%,
+    #1a1730 48%,
+    #0b0a16 100%
+  );
+  box-shadow:
+    0 22px 48px rgba(0, 0, 0, 0.75),
+    0 0 24px rgba(120, 140, 255, 0.14),
+    inset 0 4px 6px rgba(255, 255, 255, 0.32),
+    inset 0 -4px 8px rgba(0, 0, 0, 0.92),
+    inset 0 0 24px rgba(255, 255, 255, 0.12),
+    inset 0 0 38px rgba(0, 0, 0, 0.78);
+}}
+
+
 .tv-frame::before {{
   content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  padding: var(--frame-border);
+  padding: var(--frame-border, 10px);
   pointer-events: none;
-  z-index: 2;
+  z-index: 50;
   background:
-    radial-gradient(120% 70% at 18% 8%, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0) 55%),
-    linear-gradient(to bottom, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0) 35%, rgba(0,0,0,0.25) 100%);
+    radial-gradient(140% 80% at 20% 6%,
+      rgba(255,255,255,0.42) 0%,
+      rgba(255,255,255,0.18) 26%,
+      rgba(255,255,255,0.00) 56%
+    ),
+    linear-gradient(
+      to bottom,
+      rgba(255,255,255,0.22) 0%,
+      rgba(255,255,255,0.06) 38%,
+      rgba(255,255,255,0.00) 100%
+    );
   mix-blend-mode: screen;
-  opacity: 0.95;
+  opacity: 1;
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
 }}
+
 .tv-frame::after {{
   content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  padding: var(--frame-border);
+  padding: var(--frame-border, 10px);
   pointer-events: none;
-  z-index: 3;
+  z-index: 51;
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.22),
-    inset 0 -1px 0 rgba(0,0,0,0.55);
+    inset 0 2px 0 rgba(255,255,255,0.42),
+    inset 0 -1px 0 rgba(0,0,0,0.38);
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -2342,8 +2359,9 @@ def build_dashboard_html(
         border-radius: 0;
       }}
       body.tv-mode .chart-wrap.tv-frame {{
+        display: block !important;
         position: fixed;
-        inset: 14px 34px 154px 34px;
+        inset: 14px 34px 124px 34px;
         z-index: 9999;
         height: auto;
         width: auto;
@@ -2351,94 +2369,159 @@ def build_dashboard_html(
         margin: 0;
         border-radius: 22px;
         padding: 18px 0 18px;
-      }}
-      body.tv-mode .chart-wrap.tv-frame::after {{
-        display: none;
+        --frame-border: 12px;
+        border: var(--frame-border) solid rgba(255, 255, 255, 0.2);
+        background: linear-gradient(to bottom, #050506 0%, #151518 55%, #2b2b2e 100%);
       }}
       body.tv-mode #history-chart-canvas-slot,
       body.tv-mode #history-chart {{
         height: 100% !important;
       }}
-      /* Fullscreen TV mode controls (swap chart / exit hint). */
-      .tv-controls {{
-        display: none;
-        position: fixed;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        height: 92px;
-        padding: 14px 18px;
-        box-sizing: border-box;
-        z-index: 10000;
-        background: linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.0));
-        color: rgba(244, 246, 255, 0.92);
-        opacity: 1;
-        transition: opacity 220ms ease;
-      }}
-      body.tv-mode .tv-controls {{
-        display: flex;
-        align-items: flex-end;
-        justify-content: center;
-        bottom: 96px;
-      }}
       body.tv-mode #tv-legs {{
-        display: block !important;
+        display: none !important;
         height: clamp(525px, 65vh, 800px);
         z-index: 10001;
         filter: brightness(1.25) contrast(1.1) saturate(1.15) drop-shadow(0 18px 26px rgba(0,0,0,0.65));
         opacity: 0.98;
       }}
-      .tv-controls .tv-controls-inner {{
-        width: min(720px, calc(100% - 24px));
+      /* Temporarily disable the TV legs/feet graphics while we finalize layout. */
+      .tv-legs-small {{
+        display: none !important;
+      }}
+      /* TV mode chart controls (mode toggles) shown on the right. */
+      .tv-chartcontrols-overlay {{
+        display: none;
+      }}
+      body.tv-mode .tv-chartcontrols-overlay {{
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-auto-rows: auto;
+        gap: 8px 8px;
+        padding: 6px;
+        border-radius: 14px;
+        border: 1px solid rgba(255,255,255,0.12);
+        background: rgba(0,0,0,0.24);
+        backdrop-filter: blur(8px);
+        width: 380px;
+        justify-content: start;
+      }}
+      body.tv-mode .tv-chartcontrols-overlay .chart-control {{
+        width: 100%;
+        text-align: left;
+        font-size: 12px;
+        padding: 5px 8px;
+        letter-spacing: 0.2px;
+        white-space: nowrap;
+      }}
+      .tv-bottom-bar {{
+        display: none;
+      }}
+      body.tv-mode .tv-bottom-bar {{
         display: flex;
-        align-items: center;
+        position: fixed;
+        left: 34px;
+        right: 34px;
+        bottom: 40px;
+        z-index: 10060;
+        align-items: flex-end;
         justify-content: space-between;
         gap: 12px;
-        border-radius: 16px;
-        padding: 10px 14px;
-        border: 1px solid rgba(255,255,255,0.16);
-        background: rgba(0,0,0,0.35);
-        backdrop-filter: blur(6px);
-        box-shadow: 0 16px 30px rgba(0,0,0,0.55);
-        user-select: none;
+        pointer-events: auto;
       }}
-      .tv-controls .tv-nav-btn {{
-        flex: 0 0 auto;
-        min-width: 56px;
-        height: 44px;
+      body.tv-mode .tv-bottom-left {{
+        display: flex;
+        align-items: flex-end;
+        gap: 12px;
+      }}
+      body.tv-mode .tv-file-select {{
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        padding: 6px 10px;
         border-radius: 14px;
-        border: 1px solid rgba(255,255,255,0.18);
-        background: rgba(0,0,0,0.28);
-        color: rgba(244, 246, 255, 0.9);
+        border: 1px solid rgba(255,255,255,0.12);
+        background: rgba(0,0,0,0.24);
+        backdrop-filter: blur(8px);
+        width: 320px;
+        box-sizing: border-box;
+      }}
+      body.tv-mode .tv-file-select-title {{
+        font-size: 10px;
+        line-height: 1.1;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        opacity: 0.85;
+        user-select: none;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }}
+      body.tv-mode .tv-file-select-status {{
+        font-size: 11px;
+        line-height: 1.1;
+        opacity: 0.9;
+        letter-spacing: 0.02em;
+        user-select: none;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }}
+      body.tv-mode #tv-file-select {{
+        cursor: pointer;
+      }}
+      body.tv-mode #tv-file-select .chart-history {{
+        max-width: none;
+        margin: 0;
+        height: 0;
+        overflow: visible;
+      }}
+      body.tv-mode #tv-file-select .chart-wrap.tv-frame .chart-history,
+      body.tv-mode #tv-file-select .chart-history {{
+        position: relative;
+        top: auto;
+        right: auto;
+        background: transparent;
+        border: 0;
+        box-shadow: none;
+        padding: 0;
+        width: 100%;
+        max-height: none;
+        overflow: visible;
+        display: block;
+      }}
+      body.tv-mode #tv-file-select .chart-history h4 {{
+        display: none;
+      }}
+      body.tv-mode #tv-file-select .chart-history-status {{
+        display: none !important;
+      }}
+      /* TV mode navigation controls (prev/next day) positioned between the legs. */
+      .tv-nav-overlay {{
+        display: none;
+      }}
+      body.tv-mode .tv-nav-overlay {{
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        pointer-events: auto;
+      }}
+      .tv-nav-btn {{
+        flex: 0 0 auto;
+        min-width: 52px;
+        height: 40px;
+        border-radius: 16px;
+        border: 1px solid rgba(255,255,255,0.22);
+        background: rgba(0,0,0,0.35);
+        color: rgba(244, 246, 255, 0.92);
         font-size: 18px;
         letter-spacing: 0.08em;
         cursor: pointer;
+        box-shadow: 0 18px 30px rgba(0,0,0,0.55);
       }}
-      .tv-controls .tv-nav-btn:disabled {{
-        opacity: 0.4;
+      .tv-nav-btn:disabled {{
+        opacity: 0.35;
         cursor: default;
-      }}
-      .tv-controls .tv-controls-swap {{
-        flex: 1 1 auto;
-        text-align: center;
-        cursor: pointer;
-        opacity: 1;
-        transition: opacity 220ms ease;
-      }}
-      .tv-controls .tv-controls-swap.auto-hidden {{
-        opacity: 0;
-        pointer-events: none;
-      }}
-      .tv-controls .tv-controls-title {{
-        font-size: 12px;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: rgba(255, 245, 199, 0.95);
-      }}
-      .tv-controls .tv-controls-hint {{
-        margin-top: 4px;
-        font-size: 12px;
-        opacity: 0.85;
       }}
       body.hide-chart-history .chart-history {{
         height: 0 !important;
@@ -2459,29 +2542,9 @@ def build_dashboard_html(
         margin: 14px auto 0;
         box-sizing: border-box;
       }}
-      .chart-wrap.tv-frame::after {{
-        content: "";
-        position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
-        bottom: -44px;
-        width: min(720px, 92%);
-        height: 84px;
-        pointer-events: none;
-        z-index: 0;
-        background-image: url("../../../Images/Legs,png");
-        background-repeat: no-repeat;
-        background-position: center bottom;
-        background-size: contain;
-        opacity: 0.92;
-        filter: drop-shadow(0 12px 16px rgba(0,0,0,0.6));
-      }}
       @media (max-width: 680px) {{
         .chart-wrap.tv-frame {{
           margin-bottom: 18px;
-        }}
-        .chart-wrap.tv-frame::after {{
-          display: none;
         }}
       }}
       .chart-wrap::before {{
@@ -2908,21 +2971,32 @@ def build_dashboard_html(
           <div id="history-chart-canvas-slot">
             <canvas id="history-chart"></canvas>
           </div>
+            <div class="tv-bottom-bar" aria-hidden="true">
+              <div class="tv-bottom-left">
+              <div class="tv-file-select" id="tv-file-select" aria-label="TV file select">
+                <div class="tv-file-select-title">Chart History</div>
+                <div id="tv-history-status" class="tv-file-select-status">Current</div>
+                <div id="tv-history-slot"></div>
+              </div>
+            </div>
+              <div class="tv-nav-overlay" aria-hidden="true">
+                <button type="button" id="tv-archive-prev" class="tv-nav-btn" aria-label="Previous day">&lt;&lt;</button>
+                <button type="button" id="tv-archive-next" class="tv-nav-btn" aria-label="Next day">&gt;&gt;</button>
+              </div>
+            <div class="tv-chartcontrols-overlay" aria-label="TV chart controls">
+              <button type="button" class="chart-control" data-mode="setpoint">Set Point</button>
+              <button type="button" class="chart-control" data-mode="actual">Building Temp</button>
+              <button type="button" class="chart-control" data-mode="outside">Outside Temp</button>
+              <button type="button" class="chart-control" data-mode="cooling">AC Status</button>
+              <button type="button" class="chart-control" data-mode="fan">Fan Mode</button>
+              <button type="button" class="chart-control" data-mode="both">Combined</button>
+            </div>
+          </div>
           <img id="tv-legs" src="../../../Images/Legs2.png" alt="TV stand" />
         </div>
         <div class="note">Data source: Google Sheet (last updated when this page was generated).</div>
 
         <pre id="js-log"></pre>
-      </div>
-    </div>
-    <div id="tv-controls" class="tv-controls" aria-hidden="true">
-      <div class="tv-controls-inner" role="group" aria-label="TV controls">
-        <button type="button" id="tv-archive-prev" class="tv-nav-btn" aria-label="Previous day">&lt;&lt;</button>
-        <div id="tv-controls-swap" class="tv-controls-swap" role="button" tabindex="0" aria-label="Swap chart">
-          <div id="tv-controls-label" class="tv-controls-title">Click here to swap chart</div>
-          <div class="tv-controls-hint">Double-click the chart or press Esc to exit full screen</div>
-        </div>
-        <button type="button" id="tv-archive-next" class="tv-nav-btn" aria-label="Next day">&gt;&gt;</button>
       </div>
     </div>
     {script_block}

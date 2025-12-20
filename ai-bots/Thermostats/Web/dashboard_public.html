@@ -100,57 +100,74 @@
 }
 
 
-.tv-frame {
-  position: relative;
-  isolation: isolate;
-  --frame-border: 10px;
-  border-radius: 14px;
-  border: var(--frame-border) solid rgba(255, 255, 255, 0.10);
-  box-shadow:
-    0 20px 44px rgba(0, 0, 0, 0.70),
-    inset 0 3px 4px rgba(255, 255, 255, 0.18),
-    inset 0 -3px 6px rgba(0, 0, 0, 0.85),
-    inset 0 0 18px rgba(255, 255, 255, 0.06),
-    inset 0 0 34px rgba(0, 0, 0, 0.70);
-  background: linear-gradient(
-    to bottom,
-    #07050f 0%,
-    #1a1730 45%,
-    #0b0a16 100%
-  );
   /* Must be visible so the chart-history picker (positioned above) isn't clipped. */
   overflow: visible;
 }
 
 /* Glossy highlight + specular edge for the TV frame (border only). */
+
+
+.tv-frame {
+  position: relative;
+  isolation: isolate;
+  --frame-border: 10px;
+  border-radius: 14px;
+  border: var(--frame-border) solid rgba(255, 255, 255, 0.18);
+  background: linear-gradient(
+    to bottom,
+    #0c0a18 0%,
+    #2a2550 22%,
+    #1a1730 48%,
+    #0b0a16 100%
+  );
+  box-shadow:
+    0 22px 48px rgba(0, 0, 0, 0.75),
+    0 0 24px rgba(120, 140, 255, 0.14),
+    inset 0 4px 6px rgba(255, 255, 255, 0.32),
+    inset 0 -4px 8px rgba(0, 0, 0, 0.92),
+    inset 0 0 24px rgba(255, 255, 255, 0.12),
+    inset 0 0 38px rgba(0, 0, 0, 0.78);
+}
+
+
 .tv-frame::before {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  padding: var(--frame-border);
+  padding: var(--frame-border, 10px);
   pointer-events: none;
-  z-index: 2;
+  z-index: 50;
   background:
-    radial-gradient(120% 70% at 18% 8%, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0) 55%),
-    linear-gradient(to bottom, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0) 35%, rgba(0,0,0,0.25) 100%);
+    radial-gradient(140% 80% at 20% 6%,
+      rgba(255,255,255,0.42) 0%,
+      rgba(255,255,255,0.18) 26%,
+      rgba(255,255,255,0.00) 56%
+    ),
+    linear-gradient(
+      to bottom,
+      rgba(255,255,255,0.22) 0%,
+      rgba(255,255,255,0.06) 38%,
+      rgba(255,255,255,0.00) 100%
+    );
   mix-blend-mode: screen;
-  opacity: 0.95;
+  opacity: 1;
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
 }
+
 .tv-frame::after {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  padding: var(--frame-border);
+  padding: var(--frame-border, 10px);
   pointer-events: none;
-  z-index: 3;
+  z-index: 51;
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.22),
-    inset 0 -1px 0 rgba(0,0,0,0.55);
+    inset 0 2px 0 rgba(255,255,255,0.42),
+    inset 0 -1px 0 rgba(0,0,0,0.38);
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -966,7 +983,7 @@
         display: none;
         position: absolute;
         left: 50%;
-        bottom: -5px;
+        bottom: -10px;
         transform: translateX(-50%) translateY(calc(78% + 130px));
         height: clamp(400px, 52vh, 650px);
         width: auto;
@@ -1002,8 +1019,9 @@
         border-radius: 0;
       }
       body.tv-mode .chart-wrap.tv-frame {
+        display: block !important;
         position: fixed;
-        inset: 14px 34px 154px 34px;
+        inset: 14px 34px 124px 34px;
         z-index: 9999;
         height: auto;
         width: auto;
@@ -1011,94 +1029,159 @@
         margin: 0;
         border-radius: 22px;
         padding: 18px 0 18px;
-      }
-      body.tv-mode .chart-wrap.tv-frame::after {
-        display: none;
+        --frame-border: 12px;
+        border: var(--frame-border) solid rgba(255, 255, 255, 0.2);
+        background: linear-gradient(to bottom, #050506 0%, #151518 55%, #2b2b2e 100%);
       }
       body.tv-mode #history-chart-canvas-slot,
       body.tv-mode #history-chart {
         height: 100% !important;
       }
-      /* Fullscreen TV mode controls (swap chart / exit hint). */
-      .tv-controls {
-        display: none;
-        position: fixed;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        height: 92px;
-        padding: 14px 18px;
-        box-sizing: border-box;
-        z-index: 10000;
-        background: linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.0));
-        color: rgba(244, 246, 255, 0.92);
-        opacity: 1;
-        transition: opacity 220ms ease;
-      }
-      body.tv-mode .tv-controls {
-        display: flex;
-        align-items: flex-end;
-        justify-content: center;
-        bottom: 96px;
-      }
       body.tv-mode #tv-legs {
-        display: block !important;
+        display: none !important;
         height: clamp(525px, 65vh, 800px);
         z-index: 10001;
         filter: brightness(1.25) contrast(1.1) saturate(1.15) drop-shadow(0 18px 26px rgba(0,0,0,0.65));
         opacity: 0.98;
       }
-      .tv-controls .tv-controls-inner {
-        width: min(720px, calc(100% - 24px));
+      /* Temporarily disable the TV legs/feet graphics while we finalize layout. */
+      .tv-legs-small {
+        display: none !important;
+      }
+      /* TV mode chart controls (mode toggles) shown on the right. */
+      .tv-chartcontrols-overlay {
+        display: none;
+      }
+      body.tv-mode .tv-chartcontrols-overlay {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-auto-rows: auto;
+        gap: 8px 8px;
+        padding: 6px;
+        border-radius: 14px;
+        border: 1px solid rgba(255,255,255,0.12);
+        background: rgba(0,0,0,0.24);
+        backdrop-filter: blur(8px);
+        width: 380px;
+        justify-content: start;
+      }
+      body.tv-mode .tv-chartcontrols-overlay .chart-control {
+        width: 100%;
+        text-align: left;
+        font-size: 12px;
+        padding: 5px 8px;
+        letter-spacing: 0.2px;
+        white-space: nowrap;
+      }
+      .tv-bottom-bar {
+        display: none;
+      }
+      body.tv-mode .tv-bottom-bar {
         display: flex;
-        align-items: center;
+        position: fixed;
+        left: 34px;
+        right: 34px;
+        bottom: 40px;
+        z-index: 10060;
+        align-items: flex-end;
         justify-content: space-between;
         gap: 12px;
-        border-radius: 16px;
-        padding: 10px 14px;
-        border: 1px solid rgba(255,255,255,0.16);
-        background: rgba(0,0,0,0.35);
-        backdrop-filter: blur(6px);
-        box-shadow: 0 16px 30px rgba(0,0,0,0.55);
-        user-select: none;
+        pointer-events: auto;
       }
-      .tv-controls .tv-nav-btn {
-        flex: 0 0 auto;
-        min-width: 56px;
-        height: 44px;
+      body.tv-mode .tv-bottom-left {
+        display: flex;
+        align-items: flex-end;
+        gap: 12px;
+      }
+      body.tv-mode .tv-file-select {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        padding: 6px 10px;
         border-radius: 14px;
-        border: 1px solid rgba(255,255,255,0.18);
-        background: rgba(0,0,0,0.28);
-        color: rgba(244, 246, 255, 0.9);
+        border: 1px solid rgba(255,255,255,0.12);
+        background: rgba(0,0,0,0.24);
+        backdrop-filter: blur(8px);
+        width: 320px;
+        box-sizing: border-box;
+      }
+      body.tv-mode .tv-file-select-title {
+        font-size: 10px;
+        line-height: 1.1;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        opacity: 0.85;
+        user-select: none;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      body.tv-mode .tv-file-select-status {
+        font-size: 11px;
+        line-height: 1.1;
+        opacity: 0.9;
+        letter-spacing: 0.02em;
+        user-select: none;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      body.tv-mode #tv-file-select {
+        cursor: pointer;
+      }
+      body.tv-mode #tv-file-select .chart-history {
+        max-width: none;
+        margin: 0;
+        height: 0;
+        overflow: visible;
+      }
+      body.tv-mode #tv-file-select .chart-wrap.tv-frame .chart-history,
+      body.tv-mode #tv-file-select .chart-history {
+        position: relative;
+        top: auto;
+        right: auto;
+        background: transparent;
+        border: 0;
+        box-shadow: none;
+        padding: 0;
+        width: 100%;
+        max-height: none;
+        overflow: visible;
+        display: block;
+      }
+      body.tv-mode #tv-file-select .chart-history h4 {
+        display: none;
+      }
+      body.tv-mode #tv-file-select .chart-history-status {
+        display: none !important;
+      }
+      /* TV mode navigation controls (prev/next day) positioned between the legs. */
+      .tv-nav-overlay {
+        display: none;
+      }
+      body.tv-mode .tv-nav-overlay {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        pointer-events: auto;
+      }
+      .tv-nav-btn {
+        flex: 0 0 auto;
+        min-width: 52px;
+        height: 40px;
+        border-radius: 16px;
+        border: 1px solid rgba(255,255,255,0.22);
+        background: rgba(0,0,0,0.35);
+        color: rgba(244, 246, 255, 0.92);
         font-size: 18px;
         letter-spacing: 0.08em;
         cursor: pointer;
+        box-shadow: 0 18px 30px rgba(0,0,0,0.55);
       }
-      .tv-controls .tv-nav-btn:disabled {
-        opacity: 0.4;
+      .tv-nav-btn:disabled {
+        opacity: 0.35;
         cursor: default;
-      }
-      .tv-controls .tv-controls-swap {
-        flex: 1 1 auto;
-        text-align: center;
-        cursor: pointer;
-        opacity: 1;
-        transition: opacity 220ms ease;
-      }
-      .tv-controls .tv-controls-swap.auto-hidden {
-        opacity: 0;
-        pointer-events: none;
-      }
-      .tv-controls .tv-controls-title {
-        font-size: 12px;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: rgba(255, 245, 199, 0.95);
-      }
-      .tv-controls .tv-controls-hint {
-        margin-top: 4px;
-        font-size: 12px;
-        opacity: 0.85;
       }
       body.hide-chart-history .chart-history {
         height: 0 !important;
@@ -1119,29 +1202,9 @@
         margin: 14px auto 0;
         box-sizing: border-box;
       }
-      .chart-wrap.tv-frame::after {
-        content: "";
-        position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
-        bottom: -44px;
-        width: min(720px, 92%);
-        height: 84px;
-        pointer-events: none;
-        z-index: 0;
-        background-image: url("../../../Images/Legs,png");
-        background-repeat: no-repeat;
-        background-position: center bottom;
-        background-size: contain;
-        opacity: 0.92;
-        filter: drop-shadow(0 12px 16px rgba(0,0,0,0.6));
-      }
       @media (max-width: 680px) {
         .chart-wrap.tv-frame {
           margin-bottom: 18px;
-        }
-        .chart-wrap.tv-frame::after {
-          display: none;
         }
       }
       .chart-wrap::before {
@@ -1628,6 +1691,27 @@
           <div id="history-chart-canvas-slot">
             <canvas id="history-chart"></canvas>
           </div>
+            <div class="tv-bottom-bar" aria-hidden="true">
+              <div class="tv-bottom-left">
+              <div class="tv-file-select" id="tv-file-select" aria-label="TV file select">
+                <div class="tv-file-select-title">Chart History</div>
+                <div id="tv-history-status" class="tv-file-select-status">Current</div>
+                <div id="tv-history-slot"></div>
+              </div>
+            </div>
+              <div class="tv-nav-overlay" aria-hidden="true">
+                <button type="button" id="tv-archive-prev" class="tv-nav-btn" aria-label="Previous day">&lt;&lt;</button>
+                <button type="button" id="tv-archive-next" class="tv-nav-btn" aria-label="Next day">&gt;&gt;</button>
+              </div>
+            <div class="tv-chartcontrols-overlay" aria-label="TV chart controls">
+              <button type="button" class="chart-control" data-mode="setpoint">Set Point</button>
+              <button type="button" class="chart-control" data-mode="actual">Building Temp</button>
+              <button type="button" class="chart-control" data-mode="outside">Outside Temp</button>
+              <button type="button" class="chart-control" data-mode="cooling">AC Status</button>
+              <button type="button" class="chart-control" data-mode="fan">Fan Mode</button>
+              <button type="button" class="chart-control" data-mode="both">Combined</button>
+            </div>
+          </div>
           <img id="tv-legs" src="../../../Images/Legs2.png" alt="TV stand" />
         </div>
         <div class="note">Data source: Google Sheet (last updated when this page was generated).</div>
@@ -1635,19 +1719,9 @@
         <pre id="js-log"></pre>
       </div>
     </div>
-    <div id="tv-controls" class="tv-controls" aria-hidden="true">
-      <div class="tv-controls-inner" role="group" aria-label="TV controls">
-        <button type="button" id="tv-archive-prev" class="tv-nav-btn" aria-label="Previous day">&lt;&lt;</button>
-        <div id="tv-controls-swap" class="tv-controls-swap" role="button" tabindex="0" aria-label="Swap chart">
-          <div id="tv-controls-label" class="tv-controls-title">Click here to swap chart</div>
-          <div class="tv-controls-hint">Double-click the chart or press Esc to exit full screen</div>
-        </div>
-        <button type="button" id="tv-archive-next" class="tv-nav-btn" aria-label="Next day">&gt;&gt;</button>
-      </div>
-    </div>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script id="dashboard-data-inline" type="application/json">
-{"headers": ["Timestamp", "Type", "Current Temperature", "Cooling Set Point", "Climate Setting", "Fan Setting", "Equipment Status", "Studio", "Request Expires (local time)", "Outside Temp", "Condenser State", "Condenser Minutes"], "latestRow": ["Tuesday Nov 25 2025 8:11 PM", "System", "95", "80", "Cool", "On", "Cooling", " ", "8:54 PM", "NN57.0 | Mostly Cloudy", "On", "500"], "history": [{"label": "Sunday Nov 23     1:56 PM", "value": 70.0}, {"label": "Sunday Nov 23     2:02 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:46 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:59 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:03 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:06 PM", "value": 75.0}, {"label": "Sunday Nov 23     11:20 PM", "value": 75.0}, {"label": "Tuesday Nov 25     7:59 PM", "value": 72.0}, {"label": "Tuesday Nov 25     8:01 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:04 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:11 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:46 PM", "value": 74.0}, {"label": "Friday Nov 21     6:51 PM", "value": 74.0}, {"label": "Sunday Nov 23     1:56 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:02 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:46 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:59 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:03 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:06 PM", "value": 75.0}, {"label": "Sunday Nov 23     11:20 PM", "value": 74.0}, {"label": "Tuesday Nov 25     7:59 PM", "value": 72.0}, {"label": "Tuesday Nov 25     8:01 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:04 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:11 PM", "value": 80.0}], "chartLabels": ["Sunday Nov 23     1:56 PM", "Sunday Nov 23     2:02 PM", "Sunday Nov 23     2:46 PM", "Sunday Nov 23     2:59 PM", "Sunday Nov 23     3:03 PM", "Sunday Nov 23     3:06 PM", "Sunday Nov 23     11:20 PM", "Tuesday Nov 25     7:59 PM", "Tuesday Nov 25     8:01 PM", "Tuesday Nov 25     8:04 PM", "Tuesday Nov 25     8:11 PM", "Tuesday Nov 25     8:46 PM", "Friday Nov 21     6:51 PM", "Sunday Nov 23     1:56 PM", "Sunday Nov 23     2:02 PM", "Sunday Nov 23     2:46 PM", "Sunday Nov 23     2:59 PM", "Sunday Nov 23     3:03 PM", "Sunday Nov 23     3:06 PM", "Sunday Nov 23     11:20 PM", "Tuesday Nov 25     7:59 PM", "Tuesday Nov 25     8:01 PM", "Tuesday Nov 25     8:04 PM", "Tuesday Nov 25     8:11 PM"], "setpoint": [70.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 72.0, 74.0, 74.0, 74.0, 74.0, 74.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 74.0, 72.0, 74.0, 74.0, 80.0], "actual": [45.0, 71.0, 72.0, 73.0, 74.0, 75.0, 75.0, 75.0, 75.0, 73.0, 72.0, 71.0, 70.0, 68.0, 65.0, 61.0, 64.0, 63.0, 65.0, 65.0, 70.0, 88.0, 90.0, 95.0], "setpointLabel": "Set Point", "actualLabel": "Current Temperature", "fan": ["A", "A", "O", "O", "O", "O", "O", "C", "C", "C", "C", "A", "A", "A", "A", "A", "A", "A", "A", "A", "C", "C", "C", "O"], "fanLegend": ["Auto", "Circulate", "On"], "outside": [55.0, 65.0, 65.0, 65.0, 62.0, 59.0, 57.0, 53.0, 52.0, 50.0, 49.0, 49.0, 48.0, 48.0, 47.0, 46.0, 46.0, 47.0, 48.0, 54.0, 58.0, 61.0, 63.0, 57.0], "outsideLabel": "Outside Temp", "outsideFlags": ["S", "S", "P", "O", "R", "R", "P", "P", "O", "O", "P", "P", "P", "P", "O", "P", "P", "P", "P", "P", "P", "S", "S", "N"], "outsideFlagDayChars": ["5", "6", "6", "6", "6", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "4", "5", "5", "6", "6", "N"], "cooling": [0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1], "coolingLegend": ["Idle", "Cooling"], "coolingLabel": "Equipment Status", "climateSetting": ["Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool"], "climateSettingLabel": "Climate Setting", "condenserMinutes": [null, null, 0.0, 0.0, 0.0, null, null, null, null, 0.0, null, 0.0, null, 0.0, null, 0.0, null, 0.0, null, 0.0, null, 0.0, null, 500.0], "totalCondenserMinutes": "500", "totalCondenserMinutesValue": 500.0, "totalCondenserCost": "$25.00", "totalCondenserCostValue": 25.0, "condenserCostPerMinute": 0.05, "latestActual": 95.0, "latestSetpoint": 80.0, "latestOutside": 57.0, "latestOutsideRaw": "NN57.0 | Mostly Cloudy", "latestOutsideDaylight": false, "latestOutsideFlagDayChar": "N", "latestFan": "O", "latestCooling": 1, "latestCondenserState": "On", "generatedTimestamp": "Saturday Dec 20 2025 01:01:01 AM", "generatedDateSlug": "2025-12-20", "archiveDates": [{"slug": "2025-12-20", "label": "Dec 20, 2025"}, {"slug": "2025-12-19", "label": "Dec 19, 2025"}, {"slug": "2025-12-18", "label": "Dec 18, 2025"}, {"slug": "2025-12-17", "label": "Dec 17, 2025"}, {"slug": "2025-12-16", "label": "Dec 16, 2025"}, {"slug": "2025-12-15", "label": "Dec 15, 2025"}, {"slug": "2025-12-14", "label": "Dec 14, 2025"}, {"slug": "2025-12-13", "label": "Dec 13, 2025"}, {"slug": "2025-12-12", "label": "Dec 12, 2025"}, {"slug": "2025-12-11", "label": "Dec 11, 2025"}, {"slug": "2025-12-10", "label": "Dec 10, 2025"}, {"slug": "2025-12-09", "label": "Dec 09, 2025"}, {"slug": "2025-12-08", "label": "Dec 08, 2025"}, {"slug": "2025-12-07", "label": "Dec 07, 2025"}, {"slug": "2025-12-06", "label": "Dec 06, 2025"}, {"slug": "2025-12-05", "label": "Dec 05, 2025"}, {"slug": "2025-12-04", "label": "Dec 04, 2025"}, {"slug": "2025-12-03", "label": "Dec 03, 2025"}, {"slug": "2025-12-02", "label": "Dec 02, 2025"}, {"slug": "2025-12-01", "label": "Dec 01, 2025"}, {"slug": "2025-11-30", "label": "Nov 30, 2025"}, {"slug": "2025-11-29", "label": "Nov 29, 2025"}, {"slug": "2025-11-28", "label": "Nov 28, 2025"}, {"slug": "2025-11-27", "label": "Nov 27, 2025"}, {"slug": "2025-11-26", "label": "Nov 26, 2025"}, {"slug": "2025-11-25", "label": "Nov 25, 2025"}, {"slug": "2025-11-24", "label": "Nov 24, 2025"}, {"slug": "2025-11-23", "label": "Nov 23, 2025"}, {"slug": "2025-11-22", "label": "Nov 22, 2025"}, {"slug": "2025-11-21", "label": "Nov 21, 2025"}, {"slug": "2025-11-20", "label": "Nov 20, 2025"}, {"slug": "2025-11-19", "label": "Nov 19, 2025"}, {"slug": "2025-11-18", "label": "Nov 18, 2025"}, {"slug": "2025-11-17", "label": "Nov 17, 2025"}, {"slug": "2025-11-16", "label": "Nov 16, 2025"}, {"slug": "2025-11-15", "label": "Nov 15, 2025"}, {"slug": "2025-11-14", "label": "Nov 14, 2025"}, {"slug": "2025-11-13", "label": "Nov 13, 2025"}, {"slug": "2025-11-12", "label": "Nov 12, 2025"}, {"slug": "2025-11-11", "label": "Nov 11, 2025"}, {"slug": "2025-11-10", "label": "Nov 10, 2025"}, {"slug": "2025-11-09", "label": "Nov 09, 2025"}, {"slug": "2025-11-08", "label": "Nov 08, 2025"}, {"slug": "2025-11-07", "label": "Nov 07, 2025"}, {"slug": "2025-11-06", "label": "Nov 06, 2025"}, {"slug": "2025-11-05", "label": "Nov 05, 2025"}, {"slug": "2025-11-04", "label": "Nov 04, 2025"}, {"slug": "2025-11-03", "label": "Nov 03, 2025"}, {"slug": "2025-11-02", "label": "Nov 02, 2025"}, {"slug": "2025-11-01", "label": "Nov 01, 2025"}, {"slug": "2025-10-31", "label": "Oct 31, 2025"}, {"slug": "2025-10-30", "label": "Oct 30, 2025"}, {"slug": "2025-10-29", "label": "Oct 29, 2025"}, {"slug": "2025-10-28", "label": "Oct 28, 2025"}, {"slug": "2025-10-27", "label": "Oct 27, 2025"}, {"slug": "2025-10-26", "label": "Oct 26, 2025"}, {"slug": "2025-10-25", "label": "Oct 25, 2025"}, {"slug": "2025-10-24", "label": "Oct 24, 2025"}, {"slug": "2025-10-23", "label": "Oct 23, 2025"}, {"slug": "2025-10-22", "label": "Oct 22, 2025"}, {"slug": "2025-10-21", "label": "Oct 21, 2025"}, {"slug": "2025-10-20", "label": "Oct 20, 2025"}, {"slug": "2025-10-19", "label": "Oct 19, 2025"}, {"slug": "2025-10-18", "label": "Oct 18, 2025"}, {"slug": "2025-10-17", "label": "Oct 17, 2025"}, {"slug": "2025-10-16", "label": "Oct 16, 2025"}, {"slug": "2025-10-15", "label": "Oct 15, 2025"}, {"slug": "2025-10-14", "label": "Oct 14, 2025"}, {"slug": "2025-10-13", "label": "Oct 13, 2025"}, {"slug": "2025-10-12", "label": "Oct 12, 2025"}, {"slug": "2025-10-11", "label": "Oct 11, 2025"}, {"slug": "2025-10-10", "label": "Oct 10, 2025"}, {"slug": "2025-10-09", "label": "Oct 09, 2025"}, {"slug": "2025-10-08", "label": "Oct 08, 2025"}, {"slug": "2025-10-07", "label": "Oct 07, 2025"}, {"slug": "2025-10-06", "label": "Oct 06, 2025"}, {"slug": "2025-10-05", "label": "Oct 05, 2025"}, {"slug": "2025-10-04", "label": "Oct 04, 2025"}, {"slug": "2025-10-03", "label": "Oct 03, 2025"}, {"slug": "2025-10-02", "label": "Oct 02, 2025"}, {"slug": "2025-10-01", "label": "Oct 01, 2025"}, {"slug": "2025-09-30", "label": "Sep 30, 2025"}, {"slug": "2025-09-29", "label": "Sep 29, 2025"}, {"slug": "2025-09-28", "label": "Sep 28, 2025"}, {"slug": "2025-09-27", "label": "Sep 27, 2025"}, {"slug": "2025-09-26", "label": "Sep 26, 2025"}, {"slug": "2025-09-25", "label": "Sep 25, 2025"}, {"slug": "2025-09-24", "label": "Sep 24, 2025"}, {"slug": "2025-09-23", "label": "Sep 23, 2025"}, {"slug": "2025-09-22", "label": "Sep 22, 2025"}, {"slug": "2025-09-21", "label": "Sep 21, 2025"}, {"slug": "2025-09-20", "label": "Sep 20, 2025"}, {"slug": "2025-09-19", "label": "Sep 19, 2025"}, {"slug": "2025-09-18", "label": "Sep 18, 2025"}, {"slug": "2025-09-17", "label": "Sep 17, 2025"}, {"slug": "2025-09-16", "label": "Sep 16, 2025"}, {"slug": "2025-09-15", "label": "Sep 15, 2025"}, {"slug": "2025-09-14", "label": "Sep 14, 2025"}, {"slug": "2025-09-13", "label": "Sep 13, 2025"}, {"slug": "2025-09-12", "label": "Sep 12, 2025"}, {"slug": "2025-09-11", "label": "Sep 11, 2025"}, {"slug": "2025-09-10", "label": "Sep 10, 2025"}, {"slug": "2025-09-09", "label": "Sep 09, 2025"}, {"slug": "2025-09-08", "label": "Sep 08, 2025"}, {"slug": "2025-09-07", "label": "Sep 07, 2025"}, {"slug": "2025-09-06", "label": "Sep 06, 2025"}, {"slug": "2025-09-05", "label": "Sep 05, 2025"}, {"slug": "2025-09-04", "label": "Sep 04, 2025"}, {"slug": "2025-09-03", "label": "Sep 03, 2025"}, {"slug": "2025-09-02", "label": "Sep 02, 2025"}, {"slug": "2025-09-01", "label": "Sep 01, 2025"}, {"slug": "2025-08-31", "label": "Aug 31, 2025"}, {"slug": "2025-08-30", "label": "Aug 30, 2025"}, {"slug": "2025-08-29", "label": "Aug 29, 2025"}, {"slug": "2025-08-28", "label": "Aug 28, 2025"}, {"slug": "2025-08-27", "label": "Aug 27, 2025"}, {"slug": "2025-08-26", "label": "Aug 26, 2025"}, {"slug": "2025-08-25", "label": "Aug 25, 2025"}, {"slug": "2025-08-24", "label": "Aug 24, 2025"}, {"slug": "2025-08-23", "label": "Aug 23, 2025"}, {"slug": "2025-08-22", "label": "Aug 22, 2025"}, {"slug": "2025-08-21", "label": "Aug 21, 2025"}, {"slug": "2025-08-20", "label": "Aug 20, 2025"}, {"slug": "2025-08-19", "label": "Aug 19, 2025"}, {"slug": "2025-08-18", "label": "Aug 18, 2025"}, {"slug": "2025-08-17", "label": "Aug 17, 2025"}, {"slug": "2025-08-16", "label": "Aug 16, 2025"}, {"slug": "2025-08-15", "label": "Aug 15, 2025"}, {"slug": "2025-08-14", "label": "Aug 14, 2025"}, {"slug": "2025-08-13", "label": "Aug 13, 2025"}, {"slug": "2025-08-12", "label": "Aug 12, 2025"}, {"slug": "2025-08-11", "label": "Aug 11, 2025"}, {"slug": "2025-08-10", "label": "Aug 10, 2025"}, {"slug": "2025-08-09", "label": "Aug 09, 2025"}, {"slug": "2025-08-08", "label": "Aug 08, 2025"}, {"slug": "2025-08-07", "label": "Aug 07, 2025"}, {"slug": "2025-08-06", "label": "Aug 06, 2025"}, {"slug": "2025-08-05", "label": "Aug 05, 2025"}, {"slug": "2025-08-04", "label": "Aug 04, 2025"}, {"slug": "2025-08-03", "label": "Aug 03, 2025"}, {"slug": "2025-08-02", "label": "Aug 02, 2025"}, {"slug": "2025-08-01", "label": "Aug 01, 2025"}, {"slug": "2025-07-31", "label": "Jul 31, 2025"}, {"slug": "2025-07-30", "label": "Jul 30, 2025"}, {"slug": "2025-07-29", "label": "Jul 29, 2025"}, {"slug": "2025-07-28", "label": "Jul 28, 2025"}, {"slug": "2025-07-27", "label": "Jul 27, 2025"}, {"slug": "2025-07-26", "label": "Jul 26, 2025"}, {"slug": "2025-07-25", "label": "Jul 25, 2025"}, {"slug": "2025-07-24", "label": "Jul 24, 2025"}, {"slug": "2025-07-23", "label": "Jul 23, 2025"}, {"slug": "2025-07-22", "label": "Jul 22, 2025"}, {"slug": "2025-07-21", "label": "Jul 21, 2025"}, {"slug": "2025-07-20", "label": "Jul 20, 2025"}, {"slug": "2025-07-19", "label": "Jul 19, 2025"}, {"slug": "2025-07-18", "label": "Jul 18, 2025"}, {"slug": "2025-07-17", "label": "Jul 17, 2025"}, {"slug": "2025-07-16", "label": "Jul 16, 2025"}, {"slug": "2025-07-15", "label": "Jul 15, 2025"}, {"slug": "2025-07-14", "label": "Jul 14, 2025"}, {"slug": "2025-07-13", "label": "Jul 13, 2025"}, {"slug": "2025-07-12", "label": "Jul 12, 2025"}, {"slug": "2025-07-11", "label": "Jul 11, 2025"}, {"slug": "2025-07-10", "label": "Jul 10, 2025"}, {"slug": "2025-07-09", "label": "Jul 09, 2025"}, {"slug": "2025-07-08", "label": "Jul 08, 2025"}, {"slug": "2025-07-07", "label": "Jul 07, 2025"}, {"slug": "2025-07-06", "label": "Jul 06, 2025"}, {"slug": "2025-07-05", "label": "Jul 05, 2025"}, {"slug": "2025-07-04", "label": "Jul 04, 2025"}, {"slug": "2025-07-03", "label": "Jul 03, 2025"}, {"slug": "2025-07-02", "label": "Jul 02, 2025"}, {"slug": "2025-07-01", "label": "Jul 01, 2025"}, {"slug": "2025-06-30", "label": "Jun 30, 2025"}, {"slug": "2025-06-29", "label": "Jun 29, 2025"}, {"slug": "2025-06-28", "label": "Jun 28, 2025"}, {"slug": "2025-06-27", "label": "Jun 27, 2025"}, {"slug": "2025-06-26", "label": "Jun 26, 2025"}, {"slug": "2025-06-25", "label": "Jun 25, 2025"}, {"slug": "2025-06-24", "label": "Jun 24, 2025"}, {"slug": "2025-06-23", "label": "Jun 23, 2025"}, {"slug": "2025-06-22", "label": "Jun 22, 2025"}, {"slug": "2025-06-21", "label": "Jun 21, 2025"}, {"slug": "2025-06-20", "label": "Jun 20, 2025"}, {"slug": "2025-06-19", "label": "Jun 19, 2025"}, {"slug": "2025-06-18", "label": "Jun 18, 2025"}, {"slug": "2025-06-17", "label": "Jun 17, 2025"}, {"slug": "2025-06-16", "label": "Jun 16, 2025"}, {"slug": "2025-06-15", "label": "Jun 15, 2025"}, {"slug": "2025-06-14", "label": "Jun 14, 2025"}, {"slug": "2025-06-13", "label": "Jun 13, 2025"}, {"slug": "2025-06-12", "label": "Jun 12, 2025"}, {"slug": "2025-06-11", "label": "Jun 11, 2025"}, {"slug": "2025-06-10", "label": "Jun 10, 2025"}, {"slug": "2025-06-09", "label": "Jun 09, 2025"}, {"slug": "2025-06-08", "label": "Jun 08, 2025"}, {"slug": "2025-06-07", "label": "Jun 07, 2025"}, {"slug": "2025-06-06", "label": "Jun 06, 2025"}, {"slug": "2025-06-05", "label": "Jun 05, 2025"}, {"slug": "2025-06-04", "label": "Jun 04, 2025"}, {"slug": "2025-06-03", "label": "Jun 03, 2025"}, {"slug": "2025-06-02", "label": "Jun 02, 2025"}, {"slug": "2025-06-01", "label": "Jun 01, 2025"}, {"slug": "2025-05-31", "label": "May 31, 2025"}, {"slug": "2025-05-30", "label": "May 30, 2025"}, {"slug": "2025-05-29", "label": "May 29, 2025"}, {"slug": "2025-05-28", "label": "May 28, 2025"}, {"slug": "2025-05-27", "label": "May 27, 2025"}, {"slug": "2025-05-26", "label": "May 26, 2025"}, {"slug": "2025-05-25", "label": "May 25, 2025"}, {"slug": "2025-05-24", "label": "May 24, 2025"}, {"slug": "2025-05-23", "label": "May 23, 2025"}, {"slug": "2025-05-22", "label": "May 22, 2025"}, {"slug": "2025-05-21", "label": "May 21, 2025"}, {"slug": "2025-05-20", "label": "May 20, 2025"}, {"slug": "2025-05-19", "label": "May 19, 2025"}, {"slug": "2025-05-18", "label": "May 18, 2025"}, {"slug": "2025-05-17", "label": "May 17, 2025"}, {"slug": "2025-05-16", "label": "May 16, 2025"}, {"slug": "2025-05-15", "label": "May 15, 2025"}, {"slug": "2025-05-14", "label": "May 14, 2025"}, {"slug": "2025-05-13", "label": "May 13, 2025"}, {"slug": "2025-05-12", "label": "May 12, 2025"}, {"slug": "2025-05-11", "label": "May 11, 2025"}, {"slug": "2025-05-10", "label": "May 10, 2025"}, {"slug": "2025-05-09", "label": "May 09, 2025"}, {"slug": "2025-05-08", "label": "May 08, 2025"}, {"slug": "2025-05-07", "label": "May 07, 2025"}, {"slug": "2025-05-06", "label": "May 06, 2025"}, {"slug": "2025-05-05", "label": "May 05, 2025"}, {"slug": "2025-05-04", "label": "May 04, 2025"}, {"slug": "2025-05-03", "label": "May 03, 2025"}, {"slug": "2025-05-02", "label": "May 02, 2025"}, {"slug": "2025-05-01", "label": "May 01, 2025"}, {"slug": "2025-04-30", "label": "Apr 30, 2025"}, {"slug": "2025-04-29", "label": "Apr 29, 2025"}, {"slug": "2025-04-28", "label": "Apr 28, 2025"}, {"slug": "2025-04-27", "label": "Apr 27, 2025"}, {"slug": "2025-04-26", "label": "Apr 26, 2025"}, {"slug": "2025-04-25", "label": "Apr 25, 2025"}, {"slug": "2025-04-24", "label": "Apr 24, 2025"}, {"slug": "2025-04-23", "label": "Apr 23, 2025"}, {"slug": "2025-04-22", "label": "Apr 22, 2025"}, {"slug": "2025-04-21", "label": "Apr 21, 2025"}, {"slug": "2025-04-20", "label": "Apr 20, 2025"}, {"slug": "2025-04-19", "label": "Apr 19, 2025"}, {"slug": "2025-04-18", "label": "Apr 18, 2025"}, {"slug": "2025-04-17", "label": "Apr 17, 2025"}, {"slug": "2025-04-16", "label": "Apr 16, 2025"}, {"slug": "2025-04-15", "label": "Apr 15, 2025"}, {"slug": "2025-04-14", "label": "Apr 14, 2025"}, {"slug": "2025-04-13", "label": "Apr 13, 2025"}, {"slug": "2025-04-12", "label": "Apr 12, 2025"}, {"slug": "2025-04-11", "label": "Apr 11, 2025"}, {"slug": "2025-04-10", "label": "Apr 10, 2025"}, {"slug": "2025-04-09", "label": "Apr 09, 2025"}, {"slug": "2025-04-08", "label": "Apr 08, 2025"}, {"slug": "2025-04-07", "label": "Apr 07, 2025"}, {"slug": "2025-04-06", "label": "Apr 06, 2025"}, {"slug": "2025-04-05", "label": "Apr 05, 2025"}, {"slug": "2025-04-04", "label": "Apr 04, 2025"}, {"slug": "2025-04-03", "label": "Apr 03, 2025"}, {"slug": "2025-04-02", "label": "Apr 02, 2025"}, {"slug": "2025-04-01", "label": "Apr 01, 2025"}, {"slug": "2025-03-31", "label": "Mar 31, 2025"}, {"slug": "2025-03-30", "label": "Mar 30, 2025"}, {"slug": "2025-03-29", "label": "Mar 29, 2025"}, {"slug": "2025-03-28", "label": "Mar 28, 2025"}, {"slug": "2025-03-27", "label": "Mar 27, 2025"}, {"slug": "2025-03-26", "label": "Mar 26, 2025"}, {"slug": "2025-03-25", "label": "Mar 25, 2025"}, {"slug": "2025-03-24", "label": "Mar 24, 2025"}, {"slug": "2025-03-23", "label": "Mar 23, 2025"}, {"slug": "2025-03-22", "label": "Mar 22, 2025"}, {"slug": "2025-03-21", "label": "Mar 21, 2025"}, {"slug": "2025-03-20", "label": "Mar 20, 2025"}, {"slug": "2025-03-19", "label": "Mar 19, 2025"}, {"slug": "2025-03-18", "label": "Mar 18, 2025"}, {"slug": "2025-03-17", "label": "Mar 17, 2025"}, {"slug": "2025-03-16", "label": "Mar 16, 2025"}, {"slug": "2025-03-15", "label": "Mar 15, 2025"}, {"slug": "2025-03-14", "label": "Mar 14, 2025"}, {"slug": "2025-03-13", "label": "Mar 13, 2025"}, {"slug": "2025-03-12", "label": "Mar 12, 2025"}, {"slug": "2025-03-11", "label": "Mar 11, 2025"}, {"slug": "2025-03-10", "label": "Mar 10, 2025"}, {"slug": "2025-03-09", "label": "Mar 09, 2025"}, {"slug": "2025-03-08", "label": "Mar 08, 2025"}, {"slug": "2025-03-07", "label": "Mar 07, 2025"}, {"slug": "2025-03-06", "label": "Mar 06, 2025"}, {"slug": "2025-03-05", "label": "Mar 05, 2025"}, {"slug": "2025-03-04", "label": "Mar 04, 2025"}, {"slug": "2025-03-03", "label": "Mar 03, 2025"}, {"slug": "2025-03-02", "label": "Mar 02, 2025"}, {"slug": "2025-03-01", "label": "Mar 01, 2025"}, {"slug": "2025-02-28", "label": "Feb 28, 2025"}, {"slug": "2025-02-27", "label": "Feb 27, 2025"}, {"slug": "2025-02-26", "label": "Feb 26, 2025"}, {"slug": "2025-02-25", "label": "Feb 25, 2025"}, {"slug": "2025-02-24", "label": "Feb 24, 2025"}, {"slug": "2025-02-23", "label": "Feb 23, 2025"}, {"slug": "2025-02-22", "label": "Feb 22, 2025"}, {"slug": "2025-02-21", "label": "Feb 21, 2025"}, {"slug": "2025-02-20", "label": "Feb 20, 2025"}, {"slug": "2025-02-19", "label": "Feb 19, 2025"}, {"slug": "2025-02-18", "label": "Feb 18, 2025"}, {"slug": "2025-02-17", "label": "Feb 17, 2025"}, {"slug": "2025-02-16", "label": "Feb 16, 2025"}, {"slug": "2025-02-15", "label": "Feb 15, 2025"}, {"slug": "2025-02-14", "label": "Feb 14, 2025"}, {"slug": "2025-02-13", "label": "Feb 13, 2025"}, {"slug": "2025-02-12", "label": "Feb 12, 2025"}, {"slug": "2025-02-11", "label": "Feb 11, 2025"}, {"slug": "2025-02-10", "label": "Feb 10, 2025"}, {"slug": "2025-02-09", "label": "Feb 09, 2025"}, {"slug": "2025-02-08", "label": "Feb 08, 2025"}, {"slug": "2025-02-07", "label": "Feb 07, 2025"}, {"slug": "2025-02-06", "label": "Feb 06, 2025"}, {"slug": "2025-02-05", "label": "Feb 05, 2025"}, {"slug": "2025-02-04", "label": "Feb 04, 2025"}, {"slug": "2025-02-03", "label": "Feb 03, 2025"}, {"slug": "2025-02-02", "label": "Feb 02, 2025"}, {"slug": "2025-02-01", "label": "Feb 01, 2025"}, {"slug": "2025-01-31", "label": "Jan 31, 2025"}, {"slug": "2025-01-30", "label": "Jan 30, 2025"}, {"slug": "2025-01-29", "label": "Jan 29, 2025"}, {"slug": "2025-01-28", "label": "Jan 28, 2025"}, {"slug": "2025-01-27", "label": "Jan 27, 2025"}, {"slug": "2025-01-26", "label": "Jan 26, 2025"}, {"slug": "2025-01-25", "label": "Jan 25, 2025"}, {"slug": "2025-01-24", "label": "Jan 24, 2025"}, {"slug": "2025-01-23", "label": "Jan 23, 2025"}, {"slug": "2025-01-22", "label": "Jan 22, 2025"}, {"slug": "2025-01-21", "label": "Jan 21, 2025"}, {"slug": "2025-01-20", "label": "Jan 20, 2025"}, {"slug": "2025-01-19", "label": "Jan 19, 2025"}, {"slug": "2025-01-18", "label": "Jan 18, 2025"}, {"slug": "2025-01-17", "label": "Jan 17, 2025"}, {"slug": "2025-01-16", "label": "Jan 16, 2025"}, {"slug": "2025-01-15", "label": "Jan 15, 2025"}, {"slug": "2025-01-14", "label": "Jan 14, 2025"}, {"slug": "2025-01-13", "label": "Jan 13, 2025"}, {"slug": "2025-01-12", "label": "Jan 12, 2025"}, {"slug": "2025-01-11", "label": "Jan 11, 2025"}, {"slug": "2025-01-10", "label": "Jan 10, 2025"}, {"slug": "2025-01-09", "label": "Jan 09, 2025"}, {"slug": "2025-01-08", "label": "Jan 08, 2025"}, {"slug": "2025-01-07", "label": "Jan 07, 2025"}, {"slug": "2025-01-06", "label": "Jan 06, 2025"}, {"slug": "2025-01-05", "label": "Jan 05, 2025"}, {"slug": "2025-01-04", "label": "Jan 04, 2025"}, {"slug": "2025-01-03", "label": "Jan 03, 2025"}, {"slug": "2025-01-02", "label": "Jan 02, 2025"}, {"slug": "2025-01-01", "label": "Jan 01, 2025"}], "archivePath": "chart hist"}
+{"headers": ["Timestamp", "Type", "Current Temperature", "Cooling Set Point", "Climate Setting", "Fan Setting", "Equipment Status", "Studio", "Request Expires (local time)", "Outside Temp", "Condenser State", "Condenser Minutes"], "latestRow": ["Tuesday Nov 25 2025 8:11 PM", "System", "95", "80", "Cool", "On", "Cooling", " ", "8:54 PM", "NN57.0 | Mostly Cloudy", "On", "500"], "history": [{"label": "Sunday Nov 23     1:56 PM", "value": 70.0}, {"label": "Sunday Nov 23     2:02 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:46 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:59 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:03 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:06 PM", "value": 75.0}, {"label": "Sunday Nov 23     11:20 PM", "value": 75.0}, {"label": "Tuesday Nov 25     7:59 PM", "value": 72.0}, {"label": "Tuesday Nov 25     8:01 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:04 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:11 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:46 PM", "value": 74.0}, {"label": "Friday Nov 21     6:51 PM", "value": 74.0}, {"label": "Sunday Nov 23     1:56 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:02 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:46 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:59 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:03 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:06 PM", "value": 75.0}, {"label": "Sunday Nov 23     11:20 PM", "value": 74.0}, {"label": "Tuesday Nov 25     7:59 PM", "value": 72.0}, {"label": "Tuesday Nov 25     8:01 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:04 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:11 PM", "value": 80.0}], "chartLabels": ["Sunday Nov 23     1:56 PM", "Sunday Nov 23     2:02 PM", "Sunday Nov 23     2:46 PM", "Sunday Nov 23     2:59 PM", "Sunday Nov 23     3:03 PM", "Sunday Nov 23     3:06 PM", "Sunday Nov 23     11:20 PM", "Tuesday Nov 25     7:59 PM", "Tuesday Nov 25     8:01 PM", "Tuesday Nov 25     8:04 PM", "Tuesday Nov 25     8:11 PM", "Tuesday Nov 25     8:46 PM", "Friday Nov 21     6:51 PM", "Sunday Nov 23     1:56 PM", "Sunday Nov 23     2:02 PM", "Sunday Nov 23     2:46 PM", "Sunday Nov 23     2:59 PM", "Sunday Nov 23     3:03 PM", "Sunday Nov 23     3:06 PM", "Sunday Nov 23     11:20 PM", "Tuesday Nov 25     7:59 PM", "Tuesday Nov 25     8:01 PM", "Tuesday Nov 25     8:04 PM", "Tuesday Nov 25     8:11 PM"], "setpoint": [70.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 72.0, 74.0, 74.0, 74.0, 74.0, 74.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 74.0, 72.0, 74.0, 74.0, 80.0], "actual": [45.0, 71.0, 72.0, 73.0, 74.0, 75.0, 75.0, 75.0, 75.0, 73.0, 72.0, 71.0, 70.0, 68.0, 65.0, 61.0, 64.0, 63.0, 65.0, 65.0, 70.0, 88.0, 90.0, 95.0], "setpointLabel": "Set Point", "actualLabel": "Current Temperature", "fan": ["A", "A", "O", "O", "O", "O", "O", "C", "C", "C", "C", "A", "A", "A", "A", "A", "A", "A", "A", "A", "C", "C", "C", "O"], "fanLegend": ["Auto", "Circulate", "On"], "outside": [55.0, 65.0, 65.0, 65.0, 62.0, 59.0, 57.0, 53.0, 52.0, 50.0, 49.0, 49.0, 48.0, 48.0, 47.0, 46.0, 46.0, 47.0, 48.0, 54.0, 58.0, 61.0, 63.0, 57.0], "outsideLabel": "Outside Temp", "outsideFlags": ["S", "S", "P", "O", "R", "R", "P", "P", "O", "O", "P", "P", "P", "P", "O", "P", "P", "P", "P", "P", "P", "S", "S", "N"], "outsideFlagDayChars": ["5", "6", "6", "6", "6", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "4", "5", "5", "6", "6", "N"], "cooling": [0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1], "coolingLegend": ["Idle", "Cooling"], "coolingLabel": "Equipment Status", "climateSetting": ["Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool"], "climateSettingLabel": "Climate Setting", "condenserMinutes": [null, null, 0.0, 0.0, 0.0, null, null, null, null, 0.0, null, 0.0, null, 0.0, null, 0.0, null, 0.0, null, 0.0, null, 0.0, null, 500.0], "totalCondenserMinutes": "500", "totalCondenserMinutesValue": 500.0, "totalCondenserCost": "$25.00", "totalCondenserCostValue": 25.0, "condenserCostPerMinute": 0.05, "latestActual": 95.0, "latestSetpoint": 80.0, "latestOutside": 57.0, "latestOutsideRaw": "NN57.0 | Mostly Cloudy", "latestOutsideDaylight": false, "latestOutsideFlagDayChar": "N", "latestFan": "O", "latestCooling": 1, "latestCondenserState": "On", "generatedTimestamp": "Saturday Dec 20 2025 03:33:32 AM", "generatedDateSlug": "2025-12-20", "archiveDates": [{"slug": "2025-12-20", "label": "Dec 20, 2025"}, {"slug": "2025-12-19", "label": "Dec 19, 2025"}, {"slug": "2025-12-18", "label": "Dec 18, 2025"}, {"slug": "2025-12-17", "label": "Dec 17, 2025"}, {"slug": "2025-12-16", "label": "Dec 16, 2025"}, {"slug": "2025-12-15", "label": "Dec 15, 2025"}, {"slug": "2025-12-14", "label": "Dec 14, 2025"}, {"slug": "2025-12-13", "label": "Dec 13, 2025"}, {"slug": "2025-12-12", "label": "Dec 12, 2025"}, {"slug": "2025-12-11", "label": "Dec 11, 2025"}, {"slug": "2025-12-10", "label": "Dec 10, 2025"}, {"slug": "2025-12-09", "label": "Dec 09, 2025"}, {"slug": "2025-12-08", "label": "Dec 08, 2025"}, {"slug": "2025-12-07", "label": "Dec 07, 2025"}, {"slug": "2025-12-06", "label": "Dec 06, 2025"}, {"slug": "2025-12-05", "label": "Dec 05, 2025"}, {"slug": "2025-12-04", "label": "Dec 04, 2025"}, {"slug": "2025-12-03", "label": "Dec 03, 2025"}, {"slug": "2025-12-02", "label": "Dec 02, 2025"}, {"slug": "2025-12-01", "label": "Dec 01, 2025"}, {"slug": "2025-11-30", "label": "Nov 30, 2025"}, {"slug": "2025-11-29", "label": "Nov 29, 2025"}, {"slug": "2025-11-28", "label": "Nov 28, 2025"}, {"slug": "2025-11-27", "label": "Nov 27, 2025"}, {"slug": "2025-11-26", "label": "Nov 26, 2025"}, {"slug": "2025-11-25", "label": "Nov 25, 2025"}, {"slug": "2025-11-24", "label": "Nov 24, 2025"}, {"slug": "2025-11-23", "label": "Nov 23, 2025"}, {"slug": "2025-11-22", "label": "Nov 22, 2025"}, {"slug": "2025-11-21", "label": "Nov 21, 2025"}, {"slug": "2025-11-20", "label": "Nov 20, 2025"}, {"slug": "2025-11-19", "label": "Nov 19, 2025"}, {"slug": "2025-11-18", "label": "Nov 18, 2025"}, {"slug": "2025-11-17", "label": "Nov 17, 2025"}, {"slug": "2025-11-16", "label": "Nov 16, 2025"}, {"slug": "2025-11-15", "label": "Nov 15, 2025"}, {"slug": "2025-11-14", "label": "Nov 14, 2025"}, {"slug": "2025-11-13", "label": "Nov 13, 2025"}, {"slug": "2025-11-12", "label": "Nov 12, 2025"}, {"slug": "2025-11-11", "label": "Nov 11, 2025"}, {"slug": "2025-11-10", "label": "Nov 10, 2025"}, {"slug": "2025-11-09", "label": "Nov 09, 2025"}, {"slug": "2025-11-08", "label": "Nov 08, 2025"}, {"slug": "2025-11-07", "label": "Nov 07, 2025"}, {"slug": "2025-11-06", "label": "Nov 06, 2025"}, {"slug": "2025-11-05", "label": "Nov 05, 2025"}, {"slug": "2025-11-04", "label": "Nov 04, 2025"}, {"slug": "2025-11-03", "label": "Nov 03, 2025"}, {"slug": "2025-11-02", "label": "Nov 02, 2025"}, {"slug": "2025-11-01", "label": "Nov 01, 2025"}, {"slug": "2025-10-31", "label": "Oct 31, 2025"}, {"slug": "2025-10-30", "label": "Oct 30, 2025"}, {"slug": "2025-10-29", "label": "Oct 29, 2025"}, {"slug": "2025-10-28", "label": "Oct 28, 2025"}, {"slug": "2025-10-27", "label": "Oct 27, 2025"}, {"slug": "2025-10-26", "label": "Oct 26, 2025"}, {"slug": "2025-10-25", "label": "Oct 25, 2025"}, {"slug": "2025-10-24", "label": "Oct 24, 2025"}, {"slug": "2025-10-23", "label": "Oct 23, 2025"}, {"slug": "2025-10-22", "label": "Oct 22, 2025"}, {"slug": "2025-10-21", "label": "Oct 21, 2025"}, {"slug": "2025-10-20", "label": "Oct 20, 2025"}, {"slug": "2025-10-19", "label": "Oct 19, 2025"}, {"slug": "2025-10-18", "label": "Oct 18, 2025"}, {"slug": "2025-10-17", "label": "Oct 17, 2025"}, {"slug": "2025-10-16", "label": "Oct 16, 2025"}, {"slug": "2025-10-15", "label": "Oct 15, 2025"}, {"slug": "2025-10-14", "label": "Oct 14, 2025"}, {"slug": "2025-10-13", "label": "Oct 13, 2025"}, {"slug": "2025-10-12", "label": "Oct 12, 2025"}, {"slug": "2025-10-11", "label": "Oct 11, 2025"}, {"slug": "2025-10-10", "label": "Oct 10, 2025"}, {"slug": "2025-10-09", "label": "Oct 09, 2025"}, {"slug": "2025-10-08", "label": "Oct 08, 2025"}, {"slug": "2025-10-07", "label": "Oct 07, 2025"}, {"slug": "2025-10-06", "label": "Oct 06, 2025"}, {"slug": "2025-10-05", "label": "Oct 05, 2025"}, {"slug": "2025-10-04", "label": "Oct 04, 2025"}, {"slug": "2025-10-03", "label": "Oct 03, 2025"}, {"slug": "2025-10-02", "label": "Oct 02, 2025"}, {"slug": "2025-10-01", "label": "Oct 01, 2025"}, {"slug": "2025-09-30", "label": "Sep 30, 2025"}, {"slug": "2025-09-29", "label": "Sep 29, 2025"}, {"slug": "2025-09-28", "label": "Sep 28, 2025"}, {"slug": "2025-09-27", "label": "Sep 27, 2025"}, {"slug": "2025-09-26", "label": "Sep 26, 2025"}, {"slug": "2025-09-25", "label": "Sep 25, 2025"}, {"slug": "2025-09-24", "label": "Sep 24, 2025"}, {"slug": "2025-09-23", "label": "Sep 23, 2025"}, {"slug": "2025-09-22", "label": "Sep 22, 2025"}, {"slug": "2025-09-21", "label": "Sep 21, 2025"}, {"slug": "2025-09-20", "label": "Sep 20, 2025"}, {"slug": "2025-09-19", "label": "Sep 19, 2025"}, {"slug": "2025-09-18", "label": "Sep 18, 2025"}, {"slug": "2025-09-17", "label": "Sep 17, 2025"}, {"slug": "2025-09-16", "label": "Sep 16, 2025"}, {"slug": "2025-09-15", "label": "Sep 15, 2025"}, {"slug": "2025-09-14", "label": "Sep 14, 2025"}, {"slug": "2025-09-13", "label": "Sep 13, 2025"}, {"slug": "2025-09-12", "label": "Sep 12, 2025"}, {"slug": "2025-09-11", "label": "Sep 11, 2025"}, {"slug": "2025-09-10", "label": "Sep 10, 2025"}, {"slug": "2025-09-09", "label": "Sep 09, 2025"}, {"slug": "2025-09-08", "label": "Sep 08, 2025"}, {"slug": "2025-09-07", "label": "Sep 07, 2025"}, {"slug": "2025-09-06", "label": "Sep 06, 2025"}, {"slug": "2025-09-05", "label": "Sep 05, 2025"}, {"slug": "2025-09-04", "label": "Sep 04, 2025"}, {"slug": "2025-09-03", "label": "Sep 03, 2025"}, {"slug": "2025-09-02", "label": "Sep 02, 2025"}, {"slug": "2025-09-01", "label": "Sep 01, 2025"}, {"slug": "2025-08-31", "label": "Aug 31, 2025"}, {"slug": "2025-08-30", "label": "Aug 30, 2025"}, {"slug": "2025-08-29", "label": "Aug 29, 2025"}, {"slug": "2025-08-28", "label": "Aug 28, 2025"}, {"slug": "2025-08-27", "label": "Aug 27, 2025"}, {"slug": "2025-08-26", "label": "Aug 26, 2025"}, {"slug": "2025-08-25", "label": "Aug 25, 2025"}, {"slug": "2025-08-24", "label": "Aug 24, 2025"}, {"slug": "2025-08-23", "label": "Aug 23, 2025"}, {"slug": "2025-08-22", "label": "Aug 22, 2025"}, {"slug": "2025-08-21", "label": "Aug 21, 2025"}, {"slug": "2025-08-20", "label": "Aug 20, 2025"}, {"slug": "2025-08-19", "label": "Aug 19, 2025"}, {"slug": "2025-08-18", "label": "Aug 18, 2025"}, {"slug": "2025-08-17", "label": "Aug 17, 2025"}, {"slug": "2025-08-16", "label": "Aug 16, 2025"}, {"slug": "2025-08-15", "label": "Aug 15, 2025"}, {"slug": "2025-08-14", "label": "Aug 14, 2025"}, {"slug": "2025-08-13", "label": "Aug 13, 2025"}, {"slug": "2025-08-12", "label": "Aug 12, 2025"}, {"slug": "2025-08-11", "label": "Aug 11, 2025"}, {"slug": "2025-08-10", "label": "Aug 10, 2025"}, {"slug": "2025-08-09", "label": "Aug 09, 2025"}, {"slug": "2025-08-08", "label": "Aug 08, 2025"}, {"slug": "2025-08-07", "label": "Aug 07, 2025"}, {"slug": "2025-08-06", "label": "Aug 06, 2025"}, {"slug": "2025-08-05", "label": "Aug 05, 2025"}, {"slug": "2025-08-04", "label": "Aug 04, 2025"}, {"slug": "2025-08-03", "label": "Aug 03, 2025"}, {"slug": "2025-08-02", "label": "Aug 02, 2025"}, {"slug": "2025-08-01", "label": "Aug 01, 2025"}, {"slug": "2025-07-31", "label": "Jul 31, 2025"}, {"slug": "2025-07-30", "label": "Jul 30, 2025"}, {"slug": "2025-07-29", "label": "Jul 29, 2025"}, {"slug": "2025-07-28", "label": "Jul 28, 2025"}, {"slug": "2025-07-27", "label": "Jul 27, 2025"}, {"slug": "2025-07-26", "label": "Jul 26, 2025"}, {"slug": "2025-07-25", "label": "Jul 25, 2025"}, {"slug": "2025-07-24", "label": "Jul 24, 2025"}, {"slug": "2025-07-23", "label": "Jul 23, 2025"}, {"slug": "2025-07-22", "label": "Jul 22, 2025"}, {"slug": "2025-07-21", "label": "Jul 21, 2025"}, {"slug": "2025-07-20", "label": "Jul 20, 2025"}, {"slug": "2025-07-19", "label": "Jul 19, 2025"}, {"slug": "2025-07-18", "label": "Jul 18, 2025"}, {"slug": "2025-07-17", "label": "Jul 17, 2025"}, {"slug": "2025-07-16", "label": "Jul 16, 2025"}, {"slug": "2025-07-15", "label": "Jul 15, 2025"}, {"slug": "2025-07-14", "label": "Jul 14, 2025"}, {"slug": "2025-07-13", "label": "Jul 13, 2025"}, {"slug": "2025-07-12", "label": "Jul 12, 2025"}, {"slug": "2025-07-11", "label": "Jul 11, 2025"}, {"slug": "2025-07-10", "label": "Jul 10, 2025"}, {"slug": "2025-07-09", "label": "Jul 09, 2025"}, {"slug": "2025-07-08", "label": "Jul 08, 2025"}, {"slug": "2025-07-07", "label": "Jul 07, 2025"}, {"slug": "2025-07-06", "label": "Jul 06, 2025"}, {"slug": "2025-07-05", "label": "Jul 05, 2025"}, {"slug": "2025-07-04", "label": "Jul 04, 2025"}, {"slug": "2025-07-03", "label": "Jul 03, 2025"}, {"slug": "2025-07-02", "label": "Jul 02, 2025"}, {"slug": "2025-07-01", "label": "Jul 01, 2025"}, {"slug": "2025-06-30", "label": "Jun 30, 2025"}, {"slug": "2025-06-29", "label": "Jun 29, 2025"}, {"slug": "2025-06-28", "label": "Jun 28, 2025"}, {"slug": "2025-06-27", "label": "Jun 27, 2025"}, {"slug": "2025-06-26", "label": "Jun 26, 2025"}, {"slug": "2025-06-25", "label": "Jun 25, 2025"}, {"slug": "2025-06-24", "label": "Jun 24, 2025"}, {"slug": "2025-06-23", "label": "Jun 23, 2025"}, {"slug": "2025-06-22", "label": "Jun 22, 2025"}, {"slug": "2025-06-21", "label": "Jun 21, 2025"}, {"slug": "2025-06-20", "label": "Jun 20, 2025"}, {"slug": "2025-06-19", "label": "Jun 19, 2025"}, {"slug": "2025-06-18", "label": "Jun 18, 2025"}, {"slug": "2025-06-17", "label": "Jun 17, 2025"}, {"slug": "2025-06-16", "label": "Jun 16, 2025"}, {"slug": "2025-06-15", "label": "Jun 15, 2025"}, {"slug": "2025-06-14", "label": "Jun 14, 2025"}, {"slug": "2025-06-13", "label": "Jun 13, 2025"}, {"slug": "2025-06-12", "label": "Jun 12, 2025"}, {"slug": "2025-06-11", "label": "Jun 11, 2025"}, {"slug": "2025-06-10", "label": "Jun 10, 2025"}, {"slug": "2025-06-09", "label": "Jun 09, 2025"}, {"slug": "2025-06-08", "label": "Jun 08, 2025"}, {"slug": "2025-06-07", "label": "Jun 07, 2025"}, {"slug": "2025-06-06", "label": "Jun 06, 2025"}, {"slug": "2025-06-05", "label": "Jun 05, 2025"}, {"slug": "2025-06-04", "label": "Jun 04, 2025"}, {"slug": "2025-06-03", "label": "Jun 03, 2025"}, {"slug": "2025-06-02", "label": "Jun 02, 2025"}, {"slug": "2025-06-01", "label": "Jun 01, 2025"}, {"slug": "2025-05-31", "label": "May 31, 2025"}, {"slug": "2025-05-30", "label": "May 30, 2025"}, {"slug": "2025-05-29", "label": "May 29, 2025"}, {"slug": "2025-05-28", "label": "May 28, 2025"}, {"slug": "2025-05-27", "label": "May 27, 2025"}, {"slug": "2025-05-26", "label": "May 26, 2025"}, {"slug": "2025-05-25", "label": "May 25, 2025"}, {"slug": "2025-05-24", "label": "May 24, 2025"}, {"slug": "2025-05-23", "label": "May 23, 2025"}, {"slug": "2025-05-22", "label": "May 22, 2025"}, {"slug": "2025-05-21", "label": "May 21, 2025"}, {"slug": "2025-05-20", "label": "May 20, 2025"}, {"slug": "2025-05-19", "label": "May 19, 2025"}, {"slug": "2025-05-18", "label": "May 18, 2025"}, {"slug": "2025-05-17", "label": "May 17, 2025"}, {"slug": "2025-05-16", "label": "May 16, 2025"}, {"slug": "2025-05-15", "label": "May 15, 2025"}, {"slug": "2025-05-14", "label": "May 14, 2025"}, {"slug": "2025-05-13", "label": "May 13, 2025"}, {"slug": "2025-05-12", "label": "May 12, 2025"}, {"slug": "2025-05-11", "label": "May 11, 2025"}, {"slug": "2025-05-10", "label": "May 10, 2025"}, {"slug": "2025-05-09", "label": "May 09, 2025"}, {"slug": "2025-05-08", "label": "May 08, 2025"}, {"slug": "2025-05-07", "label": "May 07, 2025"}, {"slug": "2025-05-06", "label": "May 06, 2025"}, {"slug": "2025-05-05", "label": "May 05, 2025"}, {"slug": "2025-05-04", "label": "May 04, 2025"}, {"slug": "2025-05-03", "label": "May 03, 2025"}, {"slug": "2025-05-02", "label": "May 02, 2025"}, {"slug": "2025-05-01", "label": "May 01, 2025"}, {"slug": "2025-04-30", "label": "Apr 30, 2025"}, {"slug": "2025-04-29", "label": "Apr 29, 2025"}, {"slug": "2025-04-28", "label": "Apr 28, 2025"}, {"slug": "2025-04-27", "label": "Apr 27, 2025"}, {"slug": "2025-04-26", "label": "Apr 26, 2025"}, {"slug": "2025-04-25", "label": "Apr 25, 2025"}, {"slug": "2025-04-24", "label": "Apr 24, 2025"}, {"slug": "2025-04-23", "label": "Apr 23, 2025"}, {"slug": "2025-04-22", "label": "Apr 22, 2025"}, {"slug": "2025-04-21", "label": "Apr 21, 2025"}, {"slug": "2025-04-20", "label": "Apr 20, 2025"}, {"slug": "2025-04-19", "label": "Apr 19, 2025"}, {"slug": "2025-04-18", "label": "Apr 18, 2025"}, {"slug": "2025-04-17", "label": "Apr 17, 2025"}, {"slug": "2025-04-16", "label": "Apr 16, 2025"}, {"slug": "2025-04-15", "label": "Apr 15, 2025"}, {"slug": "2025-04-14", "label": "Apr 14, 2025"}, {"slug": "2025-04-13", "label": "Apr 13, 2025"}, {"slug": "2025-04-12", "label": "Apr 12, 2025"}, {"slug": "2025-04-11", "label": "Apr 11, 2025"}, {"slug": "2025-04-10", "label": "Apr 10, 2025"}, {"slug": "2025-04-09", "label": "Apr 09, 2025"}, {"slug": "2025-04-08", "label": "Apr 08, 2025"}, {"slug": "2025-04-07", "label": "Apr 07, 2025"}, {"slug": "2025-04-06", "label": "Apr 06, 2025"}, {"slug": "2025-04-05", "label": "Apr 05, 2025"}, {"slug": "2025-04-04", "label": "Apr 04, 2025"}, {"slug": "2025-04-03", "label": "Apr 03, 2025"}, {"slug": "2025-04-02", "label": "Apr 02, 2025"}, {"slug": "2025-04-01", "label": "Apr 01, 2025"}, {"slug": "2025-03-31", "label": "Mar 31, 2025"}, {"slug": "2025-03-30", "label": "Mar 30, 2025"}, {"slug": "2025-03-29", "label": "Mar 29, 2025"}, {"slug": "2025-03-28", "label": "Mar 28, 2025"}, {"slug": "2025-03-27", "label": "Mar 27, 2025"}, {"slug": "2025-03-26", "label": "Mar 26, 2025"}, {"slug": "2025-03-25", "label": "Mar 25, 2025"}, {"slug": "2025-03-24", "label": "Mar 24, 2025"}, {"slug": "2025-03-23", "label": "Mar 23, 2025"}, {"slug": "2025-03-22", "label": "Mar 22, 2025"}, {"slug": "2025-03-21", "label": "Mar 21, 2025"}, {"slug": "2025-03-20", "label": "Mar 20, 2025"}, {"slug": "2025-03-19", "label": "Mar 19, 2025"}, {"slug": "2025-03-18", "label": "Mar 18, 2025"}, {"slug": "2025-03-17", "label": "Mar 17, 2025"}, {"slug": "2025-03-16", "label": "Mar 16, 2025"}, {"slug": "2025-03-15", "label": "Mar 15, 2025"}, {"slug": "2025-03-14", "label": "Mar 14, 2025"}, {"slug": "2025-03-13", "label": "Mar 13, 2025"}, {"slug": "2025-03-12", "label": "Mar 12, 2025"}, {"slug": "2025-03-11", "label": "Mar 11, 2025"}, {"slug": "2025-03-10", "label": "Mar 10, 2025"}, {"slug": "2025-03-09", "label": "Mar 09, 2025"}, {"slug": "2025-03-08", "label": "Mar 08, 2025"}, {"slug": "2025-03-07", "label": "Mar 07, 2025"}, {"slug": "2025-03-06", "label": "Mar 06, 2025"}, {"slug": "2025-03-05", "label": "Mar 05, 2025"}, {"slug": "2025-03-04", "label": "Mar 04, 2025"}, {"slug": "2025-03-03", "label": "Mar 03, 2025"}, {"slug": "2025-03-02", "label": "Mar 02, 2025"}, {"slug": "2025-03-01", "label": "Mar 01, 2025"}, {"slug": "2025-02-28", "label": "Feb 28, 2025"}, {"slug": "2025-02-27", "label": "Feb 27, 2025"}, {"slug": "2025-02-26", "label": "Feb 26, 2025"}, {"slug": "2025-02-25", "label": "Feb 25, 2025"}, {"slug": "2025-02-24", "label": "Feb 24, 2025"}, {"slug": "2025-02-23", "label": "Feb 23, 2025"}, {"slug": "2025-02-22", "label": "Feb 22, 2025"}, {"slug": "2025-02-21", "label": "Feb 21, 2025"}, {"slug": "2025-02-20", "label": "Feb 20, 2025"}, {"slug": "2025-02-19", "label": "Feb 19, 2025"}, {"slug": "2025-02-18", "label": "Feb 18, 2025"}, {"slug": "2025-02-17", "label": "Feb 17, 2025"}, {"slug": "2025-02-16", "label": "Feb 16, 2025"}, {"slug": "2025-02-15", "label": "Feb 15, 2025"}, {"slug": "2025-02-14", "label": "Feb 14, 2025"}, {"slug": "2025-02-13", "label": "Feb 13, 2025"}, {"slug": "2025-02-12", "label": "Feb 12, 2025"}, {"slug": "2025-02-11", "label": "Feb 11, 2025"}, {"slug": "2025-02-10", "label": "Feb 10, 2025"}, {"slug": "2025-02-09", "label": "Feb 09, 2025"}, {"slug": "2025-02-08", "label": "Feb 08, 2025"}, {"slug": "2025-02-07", "label": "Feb 07, 2025"}, {"slug": "2025-02-06", "label": "Feb 06, 2025"}, {"slug": "2025-02-05", "label": "Feb 05, 2025"}, {"slug": "2025-02-04", "label": "Feb 04, 2025"}, {"slug": "2025-02-03", "label": "Feb 03, 2025"}, {"slug": "2025-02-02", "label": "Feb 02, 2025"}, {"slug": "2025-02-01", "label": "Feb 01, 2025"}, {"slug": "2025-01-31", "label": "Jan 31, 2025"}, {"slug": "2025-01-30", "label": "Jan 30, 2025"}, {"slug": "2025-01-29", "label": "Jan 29, 2025"}, {"slug": "2025-01-28", "label": "Jan 28, 2025"}, {"slug": "2025-01-27", "label": "Jan 27, 2025"}, {"slug": "2025-01-26", "label": "Jan 26, 2025"}, {"slug": "2025-01-25", "label": "Jan 25, 2025"}, {"slug": "2025-01-24", "label": "Jan 24, 2025"}, {"slug": "2025-01-23", "label": "Jan 23, 2025"}, {"slug": "2025-01-22", "label": "Jan 22, 2025"}, {"slug": "2025-01-21", "label": "Jan 21, 2025"}, {"slug": "2025-01-20", "label": "Jan 20, 2025"}, {"slug": "2025-01-19", "label": "Jan 19, 2025"}, {"slug": "2025-01-18", "label": "Jan 18, 2025"}, {"slug": "2025-01-17", "label": "Jan 17, 2025"}, {"slug": "2025-01-16", "label": "Jan 16, 2025"}, {"slug": "2025-01-15", "label": "Jan 15, 2025"}, {"slug": "2025-01-14", "label": "Jan 14, 2025"}, {"slug": "2025-01-13", "label": "Jan 13, 2025"}, {"slug": "2025-01-12", "label": "Jan 12, 2025"}, {"slug": "2025-01-11", "label": "Jan 11, 2025"}, {"slug": "2025-01-10", "label": "Jan 10, 2025"}, {"slug": "2025-01-09", "label": "Jan 09, 2025"}, {"slug": "2025-01-08", "label": "Jan 08, 2025"}, {"slug": "2025-01-07", "label": "Jan 07, 2025"}, {"slug": "2025-01-06", "label": "Jan 06, 2025"}, {"slug": "2025-01-05", "label": "Jan 05, 2025"}, {"slug": "2025-01-04", "label": "Jan 04, 2025"}, {"slug": "2025-01-03", "label": "Jan 03, 2025"}, {"slug": "2025-01-02", "label": "Jan 02, 2025"}, {"slug": "2025-01-01", "label": "Jan 01, 2025"}], "archivePath": "chart hist"}
     </script>
     <script id="dashboard-client" data-archive-path="chart hist">
 (() => {
@@ -1691,6 +1765,12 @@
   const transportHistoryStatus = document.getElementById("transport-history-status");
   const tvControls = document.getElementById("tv-controls");
   const tvControlsLabel = document.getElementById("tv-controls-label");
+  const tvControlsSwap = document.getElementById("tv-controls-swap");
+  const tvArchivePrevButton = document.getElementById("tv-archive-prev");
+  const tvArchiveNextButton = document.getElementById("tv-archive-next");
+  const tvHistorySlot = document.getElementById("tv-history-slot");
+  const tvFileSelect = document.getElementById("tv-file-select");
+  const tvHistoryStatus = document.getElementById("tv-history-status");
   const swapControls = document.getElementById("swap-controls");
   const swapControlsLabel = document.getElementById("swap-controls-label");
   const isChartHistoryUiHidden = () =>
@@ -1878,17 +1958,27 @@
   };
 
   const syncArchiveNavButtons = () => {
-    if (!prevDayButtonEl || !nextDayButtonEl) {
+    const hasInlineNav = Boolean(prevDayButtonEl && nextDayButtonEl);
+    const hasTvNav = Boolean(tvArchivePrevButton && tvArchiveNextButton);
+    if (!hasInlineNav && !hasTvNav) {
       return;
     }
     const slugs = getSortedArchiveSlugs();
     const idx = getCurrentArchiveIndex(slugs);
     const hasPrev = idx > 0;
     const hasNext = idx >= 0 && idx < slugs.length - 1;
-    prevDayButtonEl.disabled = !hasPrev;
-    nextDayButtonEl.disabled = !hasNext;
-    prevDayButtonEl.style.opacity = hasPrev ? "1" : "0.5";
-    nextDayButtonEl.style.opacity = hasNext ? "1" : "0.5";
+    if (hasInlineNav) {
+      prevDayButtonEl.disabled = !hasPrev;
+      nextDayButtonEl.disabled = !hasNext;
+      prevDayButtonEl.style.opacity = hasPrev ? "1" : "0.5";
+      nextDayButtonEl.style.opacity = hasNext ? "1" : "0.5";
+    }
+    if (hasTvNav) {
+      tvArchivePrevButton.disabled = !hasPrev;
+      tvArchiveNextButton.disabled = !hasNext;
+      tvArchivePrevButton.style.opacity = hasPrev ? "1" : "0.5";
+      tvArchiveNextButton.style.opacity = hasNext ? "1" : "0.5";
+    }
   };
 
   const navigateArchiveByDays = (delta) => {
@@ -1908,6 +1998,90 @@
     updateHistoryStatus(slug);
     currentArchiveSlug = slug;
     loadDashboardData(slug);
+  };
+
+  let tvChartHistoryHomeParent = null;
+  let tvChartHistoryHomeNextSibling = null;
+  const mountTvHistory = () => {
+    if (!tvHistorySlot || !chartHistory) {
+      return;
+    }
+    if (tvHistorySlot.contains(chartHistory)) {
+      return;
+    }
+    tvChartHistoryHomeParent = chartHistory.parentElement;
+    tvChartHistoryHomeNextSibling = chartHistory.nextSibling;
+    tvHistorySlot.appendChild(chartHistory);
+  };
+
+  const unmountTvHistory = () => {
+    if (!chartHistory || !tvChartHistoryHomeParent) {
+      return;
+    }
+    const parent = tvChartHistoryHomeParent;
+    const next = tvChartHistoryHomeNextSibling;
+    if (next && next.parentNode === parent) {
+      parent.insertBefore(chartHistory, next);
+    } else {
+      parent.appendChild(chartHistory);
+    }
+    tvChartHistoryHomeParent = null;
+    tvChartHistoryHomeNextSibling = null;
+  };
+
+  let tvHistoryToggleBound = false;
+  const bindTvHistoryToggle = () => {
+    if (!tvFileSelect || tvHistoryToggleBound) {
+      return;
+    }
+    tvHistoryToggleBound = true;
+    tvFileSelect.addEventListener("click", (event) => {
+      const target = event.target;
+      if (target && target.closest && target.closest("button,select,a,input,textarea")) {
+        return;
+      }
+      event.preventDefault();
+      toggleHistoryList();
+    });
+  };
+
+  let archiveKeyHandlerBound = false;
+  const isEditableTarget = (target) => {
+    const el = target;
+    if (!el) return false;
+    if (el.isContentEditable) return true;
+    const tag = String(el.tagName || "").toLowerCase();
+    return tag === "input" || tag === "textarea" || tag === "select";
+  };
+  const bindArchiveKeyboardShortcuts = () => {
+    if (archiveKeyHandlerBound) {
+      return;
+    }
+    archiveKeyHandlerBound = true;
+    window.addEventListener("keydown", (event) => {
+      if (event.defaultPrevented) {
+        return;
+      }
+      if (event.altKey || event.ctrlKey || event.metaKey) {
+        return;
+      }
+      if (isEditableTarget(event.target)) {
+        return;
+      }
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        if (tvModeActive) {
+          showTvControlsHint(6000);
+        }
+        navigateArchiveByDays(-1);
+      } else if (event.key === "ArrowRight") {
+        event.preventDefault();
+        if (tvModeActive) {
+          showTvControlsHint(6000);
+        }
+        navigateArchiveByDays(1);
+      }
+    });
   };
 
   const buildUsageRangeSlugs = (rangeKey) => {
@@ -2244,19 +2418,19 @@
   let tvControlsAutoHideTimer = null;
 
   const showTvControlsHint = (hideAfterMs = 30000) => {
-    if (!tvControls) {
+    if (!tvControlsSwap) {
       return;
     }
-    tvControls.classList.remove("auto-hidden");
+    tvControlsSwap.classList.remove("auto-hidden");
     if (tvControlsAutoHideTimer) {
       clearTimeout(tvControlsAutoHideTimer);
       tvControlsAutoHideTimer = null;
     }
     tvControlsAutoHideTimer = setTimeout(() => {
-      if (!tvModeActive || !tvControls) {
+      if (!tvModeActive || !tvControlsSwap) {
         return;
       }
-      tvControls.classList.add("auto-hidden");
+      tvControlsSwap.classList.add("auto-hidden");
     }, hideAfterMs);
   };
 
@@ -2273,11 +2447,10 @@
 
     document.body.classList.add("tv-mode");
     tvModeActive = true;
-    if (tvControls) {
-      tvControls.setAttribute("aria-hidden", "false");
-    }
     updateSwapLabels();
     showTvControlsHint(10000);
+    mountTvHistory();
+    bindTvHistoryToggle();
 
     if (!tvKeyHandlerBound) {
       tvKeyHandlerBound = true;
@@ -2295,7 +2468,7 @@
     if (!tvMouseHintBound) {
       tvMouseHintBound = true;
       window.addEventListener("mousemove", (event) => {
-        if (!tvModeActive || !tvControls) {
+        if (!tvModeActive) {
           return;
         }
         const y = Number(event?.clientY);
@@ -2315,9 +2488,9 @@
     }
     document.body.classList.remove("tv-mode");
     tvModeActive = false;
-    if (tvControls) {
-      tvControls.setAttribute("aria-hidden", "true");
-      tvControls.classList.remove("auto-hidden");
+    unmountTvHistory();
+    if (tvControlsSwap) {
+      tvControlsSwap.classList.remove("auto-hidden");
     }
     if (tvControlsAutoHideTimer) {
       clearTimeout(tvControlsAutoHideTimer);
@@ -2370,27 +2543,45 @@
   };
 
   const bindTvControls = () => {
-    if (!tvControls || tvControls.dataset.boundClick === "1") {
-      return;
-    }
-    tvControls.dataset.boundClick = "1";
-    const activate = () => {
-      if (!tvModeActive) {
-        return;
-      }
-      showTvControlsHint(6000);
-      applyChartSwap(!chartsSwapped);
-    };
-    tvControls.addEventListener("click", (event) => {
-      event.preventDefault();
-      activate();
-    });
-    tvControls.addEventListener("keydown", (event) => {
-      if (event.key === "Enter" || event.key === " ") {
+    if (tvControlsSwap && tvControlsSwap.dataset.boundClick !== "1") {
+      tvControlsSwap.dataset.boundClick = "1";
+      const activate = () => {
+        if (!tvModeActive) {
+          return;
+        }
+        showTvControlsHint(6000);
+        applyChartSwap(!chartsSwapped);
+      };
+      tvControlsSwap.addEventListener("click", (event) => {
         event.preventDefault();
         activate();
-      }
-    });
+      });
+      tvControlsSwap.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          activate();
+        }
+      });
+    }
+
+    if (tvArchivePrevButton && tvArchivePrevButton.dataset.boundClick !== "1") {
+      tvArchivePrevButton.dataset.boundClick = "1";
+      tvArchivePrevButton.addEventListener("click", () => {
+        if (tvModeActive) {
+          showTvControlsHint(6000);
+        }
+        navigateArchiveByDays(-1);
+      });
+    }
+    if (tvArchiveNextButton && tvArchiveNextButton.dataset.boundClick !== "1") {
+      tvArchiveNextButton.dataset.boundClick = "1";
+      tvArchiveNextButton.addEventListener("click", () => {
+        if (tvModeActive) {
+          showTvControlsHint(6000);
+        }
+        navigateArchiveByDays(1);
+      });
+    }
   };
 
   const bindSwapControls = () => {
@@ -4094,6 +4285,9 @@
     if (transportHistoryStatus) {
       transportHistoryStatus.textContent = text;
     }
+    if (tvHistoryStatus) {
+      tvHistoryStatus.textContent = text;
+    }
   };
 
   const bindTransportHistoryToggle = () => {
@@ -4864,6 +5058,7 @@
 
   applyDashboardData(dashboardData);
   bindTransportHistoryToggle();
+  bindArchiveKeyboardShortcuts();
   bindTvControls();
   bindSwapControls();
   bindAutoplayInteractions();

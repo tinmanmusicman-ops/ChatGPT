@@ -42,6 +42,9 @@
   const tvControlsSwap = document.getElementById("tv-controls-swap");
   const tvArchivePrevButton = document.getElementById("tv-archive-prev");
   const tvArchiveNextButton = document.getElementById("tv-archive-next");
+  const tvHistorySlot = document.getElementById("tv-history-slot");
+  const tvFileSelect = document.getElementById("tv-file-select");
+  const tvHistoryStatus = document.getElementById("tv-history-status");
   const swapControls = document.getElementById("swap-controls");
   const swapControlsLabel = document.getElementById("swap-controls-label");
   const isChartHistoryUiHidden = () =>
@@ -269,6 +272,51 @@
     updateHistoryStatus(slug);
     currentArchiveSlug = slug;
     loadDashboardData(slug);
+  };
+
+  let tvChartHistoryHomeParent = null;
+  let tvChartHistoryHomeNextSibling = null;
+  const mountTvHistory = () => {
+    if (!tvHistorySlot || !chartHistory) {
+      return;
+    }
+    if (tvHistorySlot.contains(chartHistory)) {
+      return;
+    }
+    tvChartHistoryHomeParent = chartHistory.parentElement;
+    tvChartHistoryHomeNextSibling = chartHistory.nextSibling;
+    tvHistorySlot.appendChild(chartHistory);
+  };
+
+  const unmountTvHistory = () => {
+    if (!chartHistory || !tvChartHistoryHomeParent) {
+      return;
+    }
+    const parent = tvChartHistoryHomeParent;
+    const next = tvChartHistoryHomeNextSibling;
+    if (next && next.parentNode === parent) {
+      parent.insertBefore(chartHistory, next);
+    } else {
+      parent.appendChild(chartHistory);
+    }
+    tvChartHistoryHomeParent = null;
+    tvChartHistoryHomeNextSibling = null;
+  };
+
+  let tvHistoryToggleBound = false;
+  const bindTvHistoryToggle = () => {
+    if (!tvFileSelect || tvHistoryToggleBound) {
+      return;
+    }
+    tvHistoryToggleBound = true;
+    tvFileSelect.addEventListener("click", (event) => {
+      const target = event.target;
+      if (target && target.closest && target.closest("button,select,a,input,textarea")) {
+        return;
+      }
+      event.preventDefault();
+      toggleHistoryList();
+    });
   };
 
   let archiveKeyHandlerBound = false;
@@ -673,11 +721,10 @@
 
     document.body.classList.add("tv-mode");
     tvModeActive = true;
-    if (tvControls) {
-      tvControls.setAttribute("aria-hidden", "false");
-    }
     updateSwapLabels();
     showTvControlsHint(10000);
+    mountTvHistory();
+    bindTvHistoryToggle();
 
     if (!tvKeyHandlerBound) {
       tvKeyHandlerBound = true;
@@ -695,7 +742,7 @@
     if (!tvMouseHintBound) {
       tvMouseHintBound = true;
       window.addEventListener("mousemove", (event) => {
-        if (!tvModeActive || !tvControls) {
+        if (!tvModeActive) {
           return;
         }
         const y = Number(event?.clientY);
@@ -715,9 +762,7 @@
     }
     document.body.classList.remove("tv-mode");
     tvModeActive = false;
-    if (tvControls) {
-      tvControls.setAttribute("aria-hidden", "true");
-    }
+    unmountTvHistory();
     if (tvControlsSwap) {
       tvControlsSwap.classList.remove("auto-hidden");
     }
@@ -772,29 +817,29 @@
   };
 
   const bindTvControls = () => {
-    if (!tvControlsSwap || tvControlsSwap.dataset.boundClick === "1") {
-      return;
-    }
-    tvControlsSwap.dataset.boundClick = "1";
-    const activate = () => {
-      if (!tvModeActive) {
-        return;
-      }
-      showTvControlsHint(6000);
-      applyChartSwap(!chartsSwapped);
-    };
-    tvControlsSwap.addEventListener("click", (event) => {
-      event.preventDefault();
-      activate();
-    });
-    tvControlsSwap.addEventListener("keydown", (event) => {
-      if (event.key === "Enter" || event.key === " ") {
+    if (tvControlsSwap && tvControlsSwap.dataset.boundClick !== "1") {
+      tvControlsSwap.dataset.boundClick = "1";
+      const activate = () => {
+        if (!tvModeActive) {
+          return;
+        }
+        showTvControlsHint(6000);
+        applyChartSwap(!chartsSwapped);
+      };
+      tvControlsSwap.addEventListener("click", (event) => {
         event.preventDefault();
         activate();
-      }
-    });
+      });
+      tvControlsSwap.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          activate();
+        }
+      });
+    }
 
-    if (tvArchivePrevButton) {
+    if (tvArchivePrevButton && tvArchivePrevButton.dataset.boundClick !== "1") {
+      tvArchivePrevButton.dataset.boundClick = "1";
       tvArchivePrevButton.addEventListener("click", () => {
         if (tvModeActive) {
           showTvControlsHint(6000);
@@ -802,7 +847,8 @@
         navigateArchiveByDays(-1);
       });
     }
-    if (tvArchiveNextButton) {
+    if (tvArchiveNextButton && tvArchiveNextButton.dataset.boundClick !== "1") {
+      tvArchiveNextButton.dataset.boundClick = "1";
       tvArchiveNextButton.addEventListener("click", () => {
         if (tvModeActive) {
           showTvControlsHint(6000);
@@ -2512,6 +2558,9 @@
     }
     if (transportHistoryStatus) {
       transportHistoryStatus.textContent = text;
+    }
+    if (tvHistoryStatus) {
+      tvHistoryStatus.textContent = text;
     }
   };
 
