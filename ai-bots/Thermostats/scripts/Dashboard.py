@@ -1875,9 +1875,29 @@ def build_dashboard_html(
         color: #fff5c7;
         font-size: 12px;
         opacity: 0.9;
-        overflow: hidden;
+        position: relative;
+        overflow: visible;
         display: flex;
         flex-direction: column;
+      }}
+      .tv-legs-small {{
+        position: absolute;
+        left: 50%;
+        bottom: -215px;
+        transform: translateX(-50%);
+        height: clamp(170px, 24vh, 260px);
+        width: auto;
+        max-width: min(520px, 95%);
+        z-index: 0;
+        pointer-events: none;
+        opacity: 0.96;
+        filter: brightness(1.25) contrast(1.1) saturate(1.15) drop-shadow(0 10px 20px rgba(0,0,0,0.6));
+      }}
+      .usage-slot > .usage-header,
+      .usage-slot > .usage-graphic,
+      .usage-slot > .swap-controls {{
+        position: relative;
+        z-index: 1;
       }}
       .usage-header {{
         display: flex;
@@ -2286,7 +2306,7 @@ def build_dashboard_html(
         display: none;
         position: absolute;
         left: 50%;
-        bottom: 0;
+        bottom: -10px;
         transform: translateX(-50%) translateY(calc(78% + 130px));
         height: clamp(400px, 52vh, 650px);
         width: auto;
@@ -2361,25 +2381,53 @@ def build_dashboard_html(
         justify-content: center;
         bottom: 96px;
       }}
-      body.tv-mode .tv-controls.auto-hidden {{
-        opacity: 0;
-        pointer-events: none;
-      }}
       body.tv-mode #tv-legs {{
         display: block !important;
         height: clamp(525px, 65vh, 800px);
         z-index: 10001;
+        filter: brightness(1.25) contrast(1.1) saturate(1.15) drop-shadow(0 18px 26px rgba(0,0,0,0.65));
+        opacity: 0.98;
       }}
       .tv-controls .tv-controls-inner {{
         width: min(720px, calc(100% - 24px));
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
         border-radius: 16px;
         padding: 10px 14px;
         border: 1px solid rgba(255,255,255,0.16);
         background: rgba(0,0,0,0.35);
         backdrop-filter: blur(6px);
         box-shadow: 0 16px 30px rgba(0,0,0,0.55);
-        cursor: pointer;
         user-select: none;
+      }}
+      .tv-controls .tv-nav-btn {{
+        flex: 0 0 auto;
+        min-width: 56px;
+        height: 44px;
+        border-radius: 14px;
+        border: 1px solid rgba(255,255,255,0.18);
+        background: rgba(0,0,0,0.28);
+        color: rgba(244, 246, 255, 0.9);
+        font-size: 18px;
+        letter-spacing: 0.08em;
+        cursor: pointer;
+      }}
+      .tv-controls .tv-nav-btn:disabled {{
+        opacity: 0.4;
+        cursor: default;
+      }}
+      .tv-controls .tv-controls-swap {{
+        flex: 1 1 auto;
+        text-align: center;
+        cursor: pointer;
+        opacity: 1;
+        transition: opacity 220ms ease;
+      }}
+      .tv-controls .tv-controls-swap.auto-hidden {{
+        opacity: 0;
+        pointer-events: none;
       }}
       .tv-controls .tv-controls-title {{
         font-size: 12px;
@@ -2740,6 +2788,7 @@ def build_dashboard_html(
 
       <div class="chart-top-row">
         <div class="usage-slot tv-frame" id="usage-slot">
+          <img class="tv-legs-small" src="../../../Images/Legs2.png" alt="TV stand" />
           <div class="usage-header">
             <div class="usage-header-left">
               <div class="title">Usage Chart</div>
@@ -2867,9 +2916,13 @@ def build_dashboard_html(
       </div>
     </div>
     <div id="tv-controls" class="tv-controls" aria-hidden="true">
-      <div class="tv-controls-inner" role="button" tabindex="0" aria-label="TV controls">
-        <div id="tv-controls-label" class="tv-controls-title">Click here to swap chart</div>
-        <div class="tv-controls-hint">Double-click the chart or press Esc to exit full screen</div>
+      <div class="tv-controls-inner" role="group" aria-label="TV controls">
+        <button type="button" id="tv-archive-prev" class="tv-nav-btn" aria-label="Previous day">&lt;&lt;</button>
+        <div id="tv-controls-swap" class="tv-controls-swap" role="button" tabindex="0" aria-label="Swap chart">
+          <div id="tv-controls-label" class="tv-controls-title">Click here to swap chart</div>
+          <div class="tv-controls-hint">Double-click the chart or press Esc to exit full screen</div>
+        </div>
+        <button type="button" id="tv-archive-next" class="tv-nav-btn" aria-label="Next day">&gt;&gt;</button>
       </div>
     </div>
     {script_block}

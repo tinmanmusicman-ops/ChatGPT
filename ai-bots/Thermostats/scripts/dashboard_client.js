@@ -39,6 +39,9 @@
   const transportHistoryStatus = document.getElementById("transport-history-status");
   const tvControls = document.getElementById("tv-controls");
   const tvControlsLabel = document.getElementById("tv-controls-label");
+  const tvControlsSwap = document.getElementById("tv-controls-swap");
+  const tvArchivePrevButton = document.getElementById("tv-archive-prev");
+  const tvArchiveNextButton = document.getElementById("tv-archive-next");
   const swapControls = document.getElementById("swap-controls");
   const swapControlsLabel = document.getElementById("swap-controls-label");
   const isChartHistoryUiHidden = () =>
@@ -226,17 +229,27 @@
   };
 
   const syncArchiveNavButtons = () => {
-    if (!prevDayButtonEl || !nextDayButtonEl) {
+    const hasInlineNav = Boolean(prevDayButtonEl && nextDayButtonEl);
+    const hasTvNav = Boolean(tvArchivePrevButton && tvArchiveNextButton);
+    if (!hasInlineNav && !hasTvNav) {
       return;
     }
     const slugs = getSortedArchiveSlugs();
     const idx = getCurrentArchiveIndex(slugs);
     const hasPrev = idx > 0;
     const hasNext = idx >= 0 && idx < slugs.length - 1;
-    prevDayButtonEl.disabled = !hasPrev;
-    nextDayButtonEl.disabled = !hasNext;
-    prevDayButtonEl.style.opacity = hasPrev ? "1" : "0.5";
-    nextDayButtonEl.style.opacity = hasNext ? "1" : "0.5";
+    if (hasInlineNav) {
+      prevDayButtonEl.disabled = !hasPrev;
+      nextDayButtonEl.disabled = !hasNext;
+      prevDayButtonEl.style.opacity = hasPrev ? "1" : "0.5";
+      nextDayButtonEl.style.opacity = hasNext ? "1" : "0.5";
+    }
+    if (hasTvNav) {
+      tvArchivePrevButton.disabled = !hasPrev;
+      tvArchiveNextButton.disabled = !hasNext;
+      tvArchivePrevButton.style.opacity = hasPrev ? "1" : "0.5";
+      tvArchiveNextButton.style.opacity = hasNext ? "1" : "0.5";
+    }
   };
 
   const navigateArchiveByDays = (delta) => {
@@ -256,6 +269,45 @@
     updateHistoryStatus(slug);
     currentArchiveSlug = slug;
     loadDashboardData(slug);
+  };
+
+  let archiveKeyHandlerBound = false;
+  const isEditableTarget = (target) => {
+    const el = target;
+    if (!el) return false;
+    if (el.isContentEditable) return true;
+    const tag = String(el.tagName || "").toLowerCase();
+    return tag === "input" || tag === "textarea" || tag === "select";
+  };
+  const bindArchiveKeyboardShortcuts = () => {
+    if (archiveKeyHandlerBound) {
+      return;
+    }
+    archiveKeyHandlerBound = true;
+    window.addEventListener("keydown", (event) => {
+      if (event.defaultPrevented) {
+        return;
+      }
+      if (event.altKey || event.ctrlKey || event.metaKey) {
+        return;
+      }
+      if (isEditableTarget(event.target)) {
+        return;
+      }
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        if (tvModeActive) {
+          showTvControlsHint(6000);
+        }
+        navigateArchiveByDays(-1);
+      } else if (event.key === "ArrowRight") {
+        event.preventDefault();
+        if (tvModeActive) {
+          showTvControlsHint(6000);
+        }
+        navigateArchiveByDays(1);
+      }
+    });
   };
 
   const buildUsageRangeSlugs = (rangeKey) => {
@@ -592,19 +644,19 @@
   let tvControlsAutoHideTimer = null;
 
   const showTvControlsHint = (hideAfterMs = 30000) => {
-    if (!tvControls) {
+    if (!tvControlsSwap) {
       return;
     }
-    tvControls.classList.remove("auto-hidden");
+    tvControlsSwap.classList.remove("auto-hidden");
     if (tvControlsAutoHideTimer) {
       clearTimeout(tvControlsAutoHideTimer);
       tvControlsAutoHideTimer = null;
     }
     tvControlsAutoHideTimer = setTimeout(() => {
-      if (!tvModeActive || !tvControls) {
+      if (!tvModeActive || !tvControlsSwap) {
         return;
       }
-      tvControls.classList.add("auto-hidden");
+      tvControlsSwap.classList.add("auto-hidden");
     }, hideAfterMs);
   };
 
@@ -665,7 +717,9 @@
     tvModeActive = false;
     if (tvControls) {
       tvControls.setAttribute("aria-hidden", "true");
-      tvControls.classList.remove("auto-hidden");
+    }
+    if (tvControlsSwap) {
+      tvControlsSwap.classList.remove("auto-hidden");
     }
     if (tvControlsAutoHideTimer) {
       clearTimeout(tvControlsAutoHideTimer);
@@ -718,10 +772,10 @@
   };
 
   const bindTvControls = () => {
-    if (!tvControls || tvControls.dataset.boundClick === "1") {
+    if (!tvControlsSwap || tvControlsSwap.dataset.boundClick === "1") {
       return;
     }
-    tvControls.dataset.boundClick = "1";
+    tvControlsSwap.dataset.boundClick = "1";
     const activate = () => {
       if (!tvModeActive) {
         return;
@@ -729,16 +783,33 @@
       showTvControlsHint(6000);
       applyChartSwap(!chartsSwapped);
     };
-    tvControls.addEventListener("click", (event) => {
+    tvControlsSwap.addEventListener("click", (event) => {
       event.preventDefault();
       activate();
     });
-    tvControls.addEventListener("keydown", (event) => {
+    tvControlsSwap.addEventListener("keydown", (event) => {
       if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
         activate();
       }
     });
+
+    if (tvArchivePrevButton) {
+      tvArchivePrevButton.addEventListener("click", () => {
+        if (tvModeActive) {
+          showTvControlsHint(6000);
+        }
+        navigateArchiveByDays(-1);
+      });
+    }
+    if (tvArchiveNextButton) {
+      tvArchiveNextButton.addEventListener("click", () => {
+        if (tvModeActive) {
+          showTvControlsHint(6000);
+        }
+        navigateArchiveByDays(1);
+      });
+    }
   };
 
   const bindSwapControls = () => {
@@ -3212,6 +3283,7 @@
 
   applyDashboardData(dashboardData);
   bindTransportHistoryToggle();
+  bindArchiveKeyboardShortcuts();
   bindTvControls();
   bindSwapControls();
   bindAutoplayInteractions();

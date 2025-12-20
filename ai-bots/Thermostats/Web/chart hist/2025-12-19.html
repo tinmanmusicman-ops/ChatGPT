@@ -535,9 +535,29 @@
         color: #fff5c7;
         font-size: 12px;
         opacity: 0.9;
-        overflow: hidden;
+        position: relative;
+        overflow: visible;
         display: flex;
         flex-direction: column;
+      }
+      .tv-legs-small {
+        position: absolute;
+        left: 50%;
+        bottom: -245px;
+        transform: translateX(-50%);
+        height: clamp(170px, 24vh, 260px);
+        width: auto;
+        max-width: min(520px, 95%);
+        z-index: 0;
+        pointer-events: none;
+        filter: brightness(1.25) contrast(1.1) saturate(1.15) drop-shadow(0 10px 20px rgba(0,0,0,0.6));
+        opacity: 0.96;
+      }
+      .usage-slot > .usage-header,
+      .usage-slot > .usage-graphic,
+      .usage-slot > .swap-controls {
+        position: relative;
+        z-index: 1;
       }
       .usage-header {
         display: flex;
@@ -1029,6 +1049,8 @@
         display: block !important;
         height: clamp(525px, 65vh, 800px);
         z-index: 10001;
+        filter: brightness(1.25) contrast(1.1) saturate(1.15) drop-shadow(0 18px 26px rgba(0,0,0,0.65));
+        opacity: 0.98;
       }
       .tv-controls .tv-controls-inner {
         width: min(720px, calc(100% - 24px));
@@ -1460,6 +1482,7 @@
 
       <div class="chart-top-row">
         <div class="usage-slot tv-frame" id="usage-slot">
+          <img class="tv-legs-small" src="../../../Images/Legs2.png" alt="TV stand" />
           <div class="usage-header">
             <div class="usage-header-left">
               <div class="title">Usage Chart</div>
