@@ -1372,7 +1372,7 @@ def build_dashboard_html(
           inset 0 -2px 4px rgba(0,0,0,0.35);
       }}
       .container {{
-        max-width: 1000px;
+        max-width: 1020px;
         margin: 1px auto;
         padding: 22px;
         background: transparent;
@@ -1717,10 +1717,10 @@ def build_dashboard_html(
       }}
       
       #chartcontrols {{
-       flex: 1;
-  max-width: 835px;   /* <-- THIS is the width control */
-  width: auto;
-  margin-top: -12px;
+  max-width: none;
+  width: calc(100% - 40px);
+  margin-top: 0;
+  margin-left: 40px;
   position: relative;
   z-index: 30;
   padding: 1px;
@@ -1736,25 +1736,27 @@ def build_dashboard_html(
   box-sizing: border-box;
  }}
       .controls-transport-wrap {{
-        height: 250px;
-        margin-top: -270px;
-        margin-left: 300px;
+        margin-top: -65px;
+        margin-left: 0;
+        height: auto;
         display: flex;
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
+        gap: 10px;
       }}
       .transport-stack {{
-        margin-top: 30px;
+        margin-top: 10px;
         position: relative;
         z-index: 10;
-        transform: translateY(-120px);
+        transform: none;
       }}
       .transport-panel {{
         height: 210px;
         flex: 0 0 auto;
         width: 320px;
-        margin-top: 76px;
-        margin-left: 75px;
+        margin-top: -74px;
+        margin-left: auto;
+        margin-right: auto;
         position: relative;
         z-index: 1;
         padding: 12px;
@@ -1841,19 +1843,18 @@ def build_dashboard_html(
       .chart-top-row {{
         max-width: 1120px;
         width: 100%;
-        display: flex;
-        flex-wrap: wrap;
+        display: grid;
+        grid-template-columns: 400px minmax(340px, 1fr);
         align-items: flex-start;
-        justify-content: space-between;
         gap: 14px;
         margin-top: 20px;
         margin-bottom: 18px;
+        transform: translateX(-15px);
         border: 1px solid rgba(255, 255, 255, 0.18);
       }}
       .usage-slot {{
-        flex: 0 0 260px;
-        width: 300px;
-        min-width: 260px;
+        width: 400px;
+        min-width: 400px;
         height: 236px;
         margin-top: -65px;
         margin-left: 1px;
@@ -2005,7 +2006,8 @@ def build_dashboard_html(
       }}
       @media (max-width: 980px) {{
         .chart-top-row {{
-          flex-direction: column;
+          grid-template-columns: 1fr;
+          transform: none;
         }}
 
         #chartcontrols {{
