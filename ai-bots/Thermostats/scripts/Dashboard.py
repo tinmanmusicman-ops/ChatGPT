@@ -1372,9 +1372,9 @@ def build_dashboard_html(
           inset 0 -2px 4px rgba(0,0,0,0.35);
       }}
       .container {{
-        max-width: 900px;
+        max-width: 1000px;
         margin: 1px auto;
-        padding: 40px;
+        padding: 22px;
         background: transparent;
         border: 2px solid rgba(255, 255, 255, 0.01);
         border-radius: 12px;
@@ -1388,13 +1388,13 @@ def build_dashboard_html(
 
         display: flex;
         justify-content: space-between;
-        align-items: center;
-        margin-bottom: 12px;
+        align-items: flex-start;
+        margin-bottom: 1px;
       }}
       .timestamp-row {{
-        display: flex;
+        display: none;
         justify-content: flex-end;
-        margin-bottom: 18px;
+        margin-bottom: 0;
       }}
       .date-display {{
         font-size: 14px;
@@ -1416,10 +1416,14 @@ def build_dashboard_html(
       }}
       #Company {{
 
-        width: 80%;
-        font-size: 60px;
-        text-align: center;
-        padding: 4px 0;
+        width: auto;
+        font-size: 16px;
+        line-height: 1.05;
+        text-align: left;
+        padding: 0;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        opacity: 0.9;
       }}
 
 #chart-history-months {{
@@ -1489,8 +1493,8 @@ def build_dashboard_html(
 
       .logo-placeholder {{
 
-        width: 190px;
-        height: 126px;
+        width: 72px;
+        height: 52px;
 
                 border-radius: 0px;
         display: flex;
@@ -1921,6 +1925,32 @@ def build_dashboard_html(
         align-items: stretch;
         height: 150px;
       }}
+      .swap-controls {{
+        margin-top: 8px;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+      }}
+      .swap-controls .swap-controls-inner {{
+        width: 100%;
+        max-width: 320px;
+        padding: 8px 12px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        background: rgba(0, 0, 0, 0.18);
+        box-shadow: 0 10px 18px rgba(0, 0, 0, 0.35);
+        cursor: pointer;
+        user-select: none;
+        text-align: center;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: rgba(255, 245, 199, 0.95);
+      }}
+      .swap-controls .swap-controls-inner:focus-visible {{
+        outline: 2px solid rgba(102, 255, 153, 0.55);
+        outline-offset: 2px;
+      }}
       #usage-slot-canvas-slot {{
         flex: 1 1 auto;
         min-height: 0;
@@ -2243,6 +2273,99 @@ def build_dashboard_html(
       }}
       body.hide-big-chart #toggle-history {{
         display: none;
+      }}
+      body.tv-mode {{
+        overflow: hidden;
+        background: #07070b;
+      }}
+      body.tv-mode .header-row,
+      body.tv-mode .timestamp-row,
+      body.tv-mode #Cards,
+      body.tv-mode .hands-logo-slot,
+      body.tv-mode #toggle-history,
+      body.tv-mode .condenser-runtime,
+      body.tv-mode .chart-top-row,
+      body.tv-mode .note,
+      body.tv-mode #js-log {{
+        display: none !important;
+      }}
+      body.tv-mode .container.frame {{
+        max-width: none;
+        width: 100vw;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        box-shadow: none;
+        border-radius: 0;
+      }}
+      body.tv-mode .chart-wrap.tv-frame {{
+        position: fixed;
+        inset: 14px 14px 154px 14px;
+        z-index: 9999;
+        height: auto;
+        width: auto;
+        max-width: none;
+        margin: 0;
+        border-radius: 22px;
+        padding: 18px 0 18px;
+      }}
+      body.tv-mode .chart-wrap.tv-frame::after {{
+        display: none;
+      }}
+      body.tv-mode #history-chart-canvas-slot,
+      body.tv-mode #history-chart {{
+        height: 100% !important;
+      }}
+      /* Fullscreen TV mode controls (swap chart / exit hint). */
+      .tv-controls {{
+        display: none;
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 92px;
+        padding: 14px 18px;
+        box-sizing: border-box;
+        z-index: 10000;
+        background: linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.0));
+        color: rgba(244, 246, 255, 0.92);
+      }}
+      body.tv-mode .tv-controls {{
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        bottom: 96px;
+      }}
+      body.tv-mode #tv-legs {{
+        display: flex !important;
+        position: fixed;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: 12px;
+        z-index: 10001;
+        pointer-events: none;
+      }}
+      .tv-controls .tv-controls-inner {{
+        width: min(720px, calc(100% - 24px));
+        border-radius: 16px;
+        padding: 10px 14px;
+        border: 1px solid rgba(255,255,255,0.16);
+        background: rgba(0,0,0,0.35);
+        backdrop-filter: blur(6px);
+        box-shadow: 0 16px 30px rgba(0,0,0,0.55);
+        cursor: pointer;
+        user-select: none;
+      }}
+      .tv-controls .tv-controls-title {{
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: rgba(255, 245, 199, 0.95);
+      }}
+      .tv-controls .tv-controls-hint {{
+        margin-top: 4px;
+        font-size: 12px;
+        opacity: 0.85;
       }}
       body.hide-chart-history .chart-history {{
         height: 0 !important;
@@ -2573,15 +2696,6 @@ def build_dashboard_html(
   </head>
   <body class="hide-big-chart hide-chart-history">
     <div class="container frame">
-      <div class="header-row">
-        <div id="Company">Any Company<br>Anywhere USA</div>
-        <div id="Logo"class="logo-placeholder">
-          <img src="../../../Images/Hands.png" alt="Logo" />
-        </div>
-      </div>
-      <div class="timestamp-row">
-        <div id="dashboard-timestamp" class="date-display">{generated_label}</div>
-      </div>
       <div id="Cards" class="card-grid frame2">
         {cards}
       </div>
@@ -2620,6 +2734,11 @@ def build_dashboard_html(
           <div class="usage-graphic">
             <div id="usage-slot-canvas-slot">
               <canvas id="usage-slot-chart"></canvas>
+            </div>
+          </div>
+          <div id="swap-controls" class="swap-controls" aria-hidden="false">
+            <div id="swap-controls-label" class="swap-controls-inner" role="button" tabindex="0" aria-label="Swap chart">
+              Swap Chart
             </div>
           </div>
         </div>
@@ -2720,6 +2839,12 @@ def build_dashboard_html(
         <div class="note">Data source: Google Sheet (last updated when this page was generated).</div>
 
         <pre id="js-log"></pre>
+      </div>
+    </div>
+    <div id="tv-controls" class="tv-controls" aria-hidden="true">
+      <div class="tv-controls-inner" role="button" tabindex="0" aria-label="TV controls">
+        <div id="tv-controls-label" class="tv-controls-title">Click here to swap chart</div>
+        <div class="tv-controls-hint">Double-click the chart or press Esc to exit full screen</div>
       </div>
     </div>
     {script_block}

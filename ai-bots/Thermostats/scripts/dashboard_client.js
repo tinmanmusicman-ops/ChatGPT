@@ -37,6 +37,10 @@
   const chartHistoryToggle = document.getElementById("chart-history-toggle");
   const chartHistoryStatus = document.getElementById("chart-history-status");
   const transportHistoryStatus = document.getElementById("transport-history-status");
+  const tvControls = document.getElementById("tv-controls");
+  const tvControlsLabel = document.getElementById("tv-controls-label");
+  const swapControls = document.getElementById("swap-controls");
+  const swapControlsLabel = document.getElementById("swap-controls-label");
   const isChartHistoryUiHidden = () =>
     document.body && document.body.classList.contains("hide-chart-history");
   const chartArea = document.getElementById("history");
@@ -127,6 +131,15 @@
 
   const STORAGE_KEY = "thermostatDashboard.ui.v1";
   let savedUiState = null;
+  const updateSwapLabels = () => {
+    const mainLabel = chartsSwapped ? "Usage Chart" : "History Chart";
+    if (tvControlsLabel) {
+      tvControlsLabel.textContent = `Click here to swap chart (now showing: ${mainLabel})`;
+    }
+    if (swapControlsLabel) {
+      swapControlsLabel.textContent = `Swap Chart (now showing: ${mainLabel})`;
+    }
+  };
 
   const getDashboardData = () => dashboardData || {};
   const getDashboardValue = (key, fallback) => getDashboardData()[key] || fallback;
@@ -536,6 +549,7 @@
       }
     }
     chartsSwapped = next;
+    updateSwapLabels();
     // Let layout settle, then fully refresh both charts so Chart.js re-measures its new parent.
     const refreshAfterSwap = async () => {
       try {
@@ -570,13 +584,61 @@
   const isTvHidden = () =>
     document.body && document.body.classList.contains("hide-big-chart");
 
-  const launchTvWithCurrentSmallView = () => {
-    if (!document.body) {
+  let tvModeActive = false;
+  let tvPrevHideBig = true;
+  let tvPrevSwapped = false;
+  let tvKeyHandlerBound = false;
+
+  const enterTvMode = () => {
+    if (!document.body || tvModeActive) {
       return;
     }
-    // "TV mode": reveal the big TV frame and move the currently-visible small chart into it.
+    tvPrevHideBig = isTvHidden();
+    tvPrevSwapped = chartsSwapped;
+
+    // Reveal the TV frame and move the currently visible small chart into it.
     document.body.classList.remove("hide-big-chart");
     applyChartSwap(!chartsSwapped);
+
+    document.body.classList.add("tv-mode");
+    tvModeActive = true;
+    if (tvControls) {
+      tvControls.setAttribute("aria-hidden", "false");
+    }
+    updateSwapLabels();
+
+    if (!tvKeyHandlerBound) {
+      tvKeyHandlerBound = true;
+      window.addEventListener("keydown", (event) => {
+        if (!tvModeActive) {
+          return;
+        }
+        if (event.key === "Escape") {
+          event.preventDefault();
+          exitTvMode();
+        }
+      });
+    }
+  };
+
+  const exitTvMode = () => {
+    if (!document.body || !tvModeActive) {
+      return;
+    }
+    document.body.classList.remove("tv-mode");
+    tvModeActive = false;
+    if (tvControls) {
+      tvControls.setAttribute("aria-hidden", "true");
+    }
+
+    if (chartsSwapped !== tvPrevSwapped) {
+      applyChartSwap(tvPrevSwapped);
+    }
+    if (tvPrevHideBig) {
+      document.body.classList.add("hide-big-chart");
+    } else {
+      document.body.classList.remove("hide-big-chart");
+    }
   };
 
   const bindChartSwapControls = () => {
@@ -594,15 +656,71 @@
       usageTitle.addEventListener("click", () => applyChartSwap(!chartsSwapped));
     }
 
-    // Use double-click on either canvas as a universal swap gesture.
-    canvas.addEventListener("dblclick", () => applyChartSwap(!chartsSwapped));
+    // Double-click behaviour:
+    // - When TV is hidden: enter full-screen TV mode using the current small view.
+    // - When in TV mode: exit back to the dashboard.
+    // - Otherwise: swap charts.
+    canvas.addEventListener("dblclick", () => {
+      if (tvModeActive) {
+        exitTvMode();
+        return;
+      }
+      enterTvMode();
+    });
     usageSlotCanvas.addEventListener("dblclick", () => {
-      if (isTvHidden()) {
-        launchTvWithCurrentSmallView();
+      if (tvModeActive) {
+        exitTvMode();
+        return;
+      }
+      enterTvMode();
+    });
+  };
+
+  const bindTvControls = () => {
+    if (!tvControls || tvControls.dataset.boundClick === "1") {
+      return;
+    }
+    tvControls.dataset.boundClick = "1";
+    const activate = () => {
+      if (!tvModeActive) {
         return;
       }
       applyChartSwap(!chartsSwapped);
+    };
+    tvControls.addEventListener("click", (event) => {
+      event.preventDefault();
+      activate();
     });
+    tvControls.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        activate();
+      }
+    });
+  };
+
+  const bindSwapControls = () => {
+    if (!swapControls || swapControls.dataset.boundClick === "1") {
+      return;
+    }
+    swapControls.dataset.boundClick = "1";
+    const activate = () => {
+      if (tvModeActive) {
+        return;
+      }
+      applyChartSwap(!chartsSwapped);
+    };
+    swapControls.addEventListener("click", (event) => {
+      event.preventDefault();
+      activate();
+    });
+    swapControls.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        activate();
+      }
+    });
+    updateSwapLabels();
   };
 
   const bindUsageSlotControls = () => {
@@ -3033,6 +3151,8 @@
 
   applyDashboardData(dashboardData);
   bindTransportHistoryToggle();
+  bindTvControls();
+  bindSwapControls();
   bindAutoplayInteractions();
   updateAutoplayToggle();
   ensureAutoplayScheduled();
