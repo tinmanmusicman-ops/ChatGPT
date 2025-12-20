@@ -826,6 +826,25 @@
   };
   const getFanLegend = () => getDashboardValue("fanLegend", ["On", "Circulate", "Auto"]);
   const getCoolingLegend = () => getDashboardValue("coolingLegend", ["Idle", "Cooling"]);
+  const abbreviateFanLabel = (label) => {
+    const raw = String(label || "").trim();
+    if (!raw) return "";
+    const key = raw.toLowerCase();
+    if (key === "circulate" || key === "circulation") return "Cir.";
+    if (key === "auto" || key === "automatic") return "Aut";
+    if (key === "on") return "On";
+    if (key === "off") return "Off";
+    return raw.length <= 4 ? raw : `${raw.slice(0, 3)}.`;
+  };
+  const abbreviateCoolingLabel = (label) => {
+    const raw = String(label || "").trim();
+    if (!raw) return "";
+    const key = raw.toLowerCase();
+    if (key === "cooling" || key === "cool") return "Cool";
+    if (key === "idle") return "Idle";
+    if (key === "off") return "Off";
+    return raw.length <= 4 ? raw : raw.slice(0, 4);
+  };
   const getCondenserMinutes = () => getDashboardValue("condenserMinutes", []);
   const getTotalCondenserMinutesValue = () => getDashboardValue("totalCondenserMinutesValue", null);
   const getTotalCondenserMinutesDisplay = () => getDashboardValue("totalCondenserMinutes", "");
@@ -1706,7 +1725,7 @@
             max: 2,
             ticks: {
               stepSize: 1,
-              callback: (value) => getFanLegend()[Math.round(value)] || "",
+              callback: (value) => abbreviateFanLabel(getFanLegend()[Math.round(value)] || ""),
               color: (ctxValue) => {
                 const tickValue = ctxValue.tick?.value ?? ctxValue.parsed ?? null;
                 return fanColorForValue(tickValue);
@@ -1725,7 +1744,7 @@
             max: 2,
             ticks: {
               stepSize: 1,
-              callback: (value) => getCoolingLegend()[Math.round(value)] || "",
+              callback: (value) => abbreviateCoolingLabel(getCoolingLegend()[Math.round(value)] || ""),
               color: (ctxValue) => {
                 const numeric = Number(ctxValue.tick.value);
                 return Number.isNaN(numeric) || numeric <= 0 ? "#ffd000" : "#32d15c";
