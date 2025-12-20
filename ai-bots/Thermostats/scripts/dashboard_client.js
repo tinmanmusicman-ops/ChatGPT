@@ -36,6 +36,9 @@
   const chartHistoryList = document.getElementById("chart-history-list");
   const chartHistoryToggle = document.getElementById("chart-history-toggle");
   const chartHistoryStatus = document.getElementById("chart-history-status");
+  const transportHistoryStatus = document.getElementById("transport-history-status");
+  const isChartHistoryUiHidden = () =>
+    document.body && document.body.classList.contains("hide-chart-history");
   const chartArea = document.getElementById("history");
   const autoplayToggle = document.getElementById("autoplay-toggle");
   const AUTOPLAY_IDLE_MS = 60_000;
@@ -65,18 +68,27 @@
   let chartHistoryHoverBound = false;
   let chartHistoryListHoverBound = false;
   let chartPointPickerBound = false;
-  const showHistoryFiles = () => {
-    chartHistoryList.classList.remove("hidden");
+  let historyExpanded = false;
+  const setHistoryExpanded = (open) => {
+    historyExpanded = Boolean(open);
+    if (chartHistory) {
+      chartHistory.classList.toggle("expanded", historyExpanded);
+    }
+    if (chartHistoryList) {
+      chartHistoryList.classList.toggle("hidden", !historyExpanded);
+    }
+    if (chartHistoryToggle) {
+      chartHistoryToggle.classList.toggle("history-visible", historyExpanded);
+    }
     if (chartHistoryListColumn) {
-      chartHistoryListColumn.classList.add("expanded");
+      chartHistoryListColumn.classList.toggle("expanded", historyExpanded);
+    }
+    if (chartHistoryListsRow) {
+      chartHistoryListsRow.classList.toggle("expanded", historyExpanded);
     }
   };
-  const hideHistoryFiles = () => {
-    chartHistoryList.classList.add("hidden");
-    if (chartHistoryListColumn) {
-      chartHistoryListColumn.classList.remove("expanded");
-    }
-  };
+  const showHistoryFiles = () => setHistoryExpanded(true);
+  const hideHistoryFiles = () => setHistoryExpanded(false);
   let currentMonthKey =
     (dashboardData.generatedDateSlug || "").slice(0, 7) || "";
   // Reference chart controls, canvas, and state flags used throughout the script.
@@ -96,6 +108,10 @@
   let cardsInitialized = false;
   let hoverPointIndex = null;
   let pinnedPointIndex = null;
+  let suppressHoverUntilMouseLeave = false;
+  const suppressHoverUntilLeave = () => {
+    suppressHoverUntilMouseLeave = true;
+  };
   let selectionIndicatorEl = null;
   let clearPinButtonEl = null;
   let hourPickerEl = null;
@@ -1688,6 +1704,9 @@
       if (pinnedPointIndex !== null) {
         return;
       }
+      if (suppressHoverUntilMouseLeave) {
+        return;
+      }
       const idx = pickIndexFromEvent(event);
       if (idx === null) {
         return;
@@ -1699,6 +1718,7 @@
     });
 
     canvas.addEventListener("mouseleave", () => {
+      suppressHoverUntilMouseLeave = false;
       if (pinnedPointIndex !== null) {
         return;
       }
@@ -1712,6 +1732,7 @@
       const idx = pickIndexFromEvent(event);
       if (idx === null) {
         setSelectedPoint(null, null, true);
+        suppressHoverUntilLeave();
         return;
       }
       if (pinnedPointIndex === idx) {
@@ -1730,6 +1751,7 @@
         const raw = String(hourPickerEl.value || "").trim();
         if (!raw) {
           setSelectedPoint(null, null, true);
+          suppressHoverUntilLeave();
           hourPickerEl.style.color = "#ffb347";
           return;
         }
@@ -1754,6 +1776,7 @@
         }
         if (chosenIdx === null) {
           setSelectedPoint(null, null, true);
+          suppressHoverUntilLeave();
           return;
         }
         setSelectedPoint(chosenIdx, chosenIdx, true);
@@ -2206,33 +2229,50 @@
   };
 
   const closeHistoryList = () => {
-    if (chartHistoryList) {
-      chartHistoryList.classList.add("hidden");
-    }
-    if (chartHistoryToggle && chartHistoryToggle.classList.contains("history-visible")) {
-      chartHistoryToggle.classList.remove("history-visible");
-    }
+    hideHistoryFiles();
   };
 
   const toggleHistoryList = () => {
-    if (!chartHistoryList) {
-      return;
-    }
-    chartHistoryList.classList.toggle("hidden");
-    if (chartHistoryToggle) {
-      const visible = !chartHistoryList.classList.contains("hidden");
-      chartHistoryToggle.classList.toggle("history-visible", visible);
-    }
+    setHistoryExpanded(!historyExpanded);
   };
 
   const updateHistoryStatus = (slug) => {
-    if (!chartHistoryStatus) {
+    const label = slug ? archiveLabelMap.get(slug) : null;
+    const text = label || (slug ? String(slug) : "Current");
+    if (chartHistoryStatus) {
+      chartHistoryStatus.textContent = text;
+    }
+    if (transportHistoryStatus) {
+      transportHistoryStatus.textContent = text;
+    }
+  };
+
+  const bindTransportHistoryToggle = () => {
+    const transportPanel = document.getElementById("transport-panel");
+    if (!transportPanel || transportPanel.dataset.boundHistoryToggle === "1") {
       return;
     }
-    const label = slug ? archiveLabelMap.get(slug) : null;
-    chartHistoryStatus.textContent = label
-      ? `History: ${label}`
-      : "History: current data";
+    transportPanel.dataset.boundHistoryToggle = "1";
+    transportPanel.title = "Click to select a history file";
+    transportPanel.addEventListener("click", (event) => {
+      // Don't interfere with actual navigation controls inside the transport panel.
+      const target = event.target;
+      if (target && target.closest && target.closest("button,select,a,input,textarea")) {
+        return;
+      }
+      event.preventDefault();
+      if (chartHistoryList && chartHistoryList.classList.contains("hidden")) {
+        showHistoryFiles();
+        if (chartHistoryToggle) {
+          chartHistoryToggle.classList.add("history-visible");
+        }
+      } else {
+        hideHistoryFiles();
+        if (chartHistoryToggle) {
+          chartHistoryToggle.classList.remove("history-visible");
+        }
+      }
+    });
   };
 
   const updateTimestampDisplay = (text) => {
@@ -2456,6 +2496,7 @@
       clearPinButtonEl.dataset.boundClick = "1";
       clearPinButtonEl.addEventListener("click", () => {
         setSelectedPoint(null, null, true);
+        suppressHoverUntilLeave();
       });
     }
 
@@ -2712,21 +2753,28 @@
   };
 
   function renderArchiveList() {
+    const archiveDates = getArchiveDates();
+    archiveLabelMap.clear();
+    if (Array.isArray(archiveDates)) {
+      archiveDates.forEach((entry) => {
+        const label = entry?.label || entry?.slug || "Unknown";
+        const slug = entry?.slug || "";
+        if (slug) {
+          archiveLabelMap.set(slug, label);
+        }
+      });
+    }
+
     if (!chartHistoryList) {
       return;
     }
     hideHistoryFiles();
-    const archiveDates = getArchiveDates();
     chartHistoryList.innerHTML = "";
-    archiveLabelMap.clear();
     const monthGroups = new Map();
     const monthLabels = new Map();
-    archiveDates.forEach((entry) => {
+    (Array.isArray(archiveDates) ? archiveDates : []).forEach((entry) => {
       const label = entry.label || entry.slug || "Unknown";
       const slug = entry.slug || "";
-      if (slug) {
-        archiveLabelMap.set(slug, label);
-      }
       const monthKey = getMonthKeyFromSlug(slug) || getMonthKeyFromLabel(label);
       const monthLabel = getMonthLabel(monthKey);
       if (!monthGroups.has(monthKey)) {
@@ -2755,17 +2803,11 @@
       chartHistoryListsRow.appendChild(chartHistoryMonthPicker);
       chartHistoryListsRow.appendChild(chartHistoryListColumn);
       chartHistory.appendChild(chartHistoryListsRow);
-      chartHistoryListsRow.addEventListener("mouseenter", showHistoryFiles);
-      chartHistoryListsRow.addEventListener("mouseleave", hideHistoryFiles);
-      if (!chartHistoryHoverBound) {
-        chartHistory.addEventListener("mouseleave", hideHistoryFiles);
-        chartHistoryHoverBound = true;
-      }
-      if (!chartHistoryListHoverBound) {
-        chartHistoryListColumn.addEventListener("mouseenter", showHistoryFiles);
-        chartHistoryListColumn.addEventListener("mouseleave", hideHistoryFiles);
-        chartHistoryListHoverBound = true;
-      }
+
+      // Click-to-expand behavior: start collapsed, expand when interacting with months/files.
+      chartHistoryMonthPicker.addEventListener("click", () => showHistoryFiles());
+      chartHistoryListColumn.addEventListener("click", () => showHistoryFiles());
+      setHistoryExpanded(false);
     }
 
     // Render month picker
@@ -2786,7 +2828,7 @@
         button.addEventListener("click", () => {
           currentMonthKey = key;
           renderArchiveList();
-          hideHistoryFiles();
+          showHistoryFiles();
         });
         item.appendChild(button);
         monthListEl.appendChild(item);
@@ -2832,7 +2874,6 @@
             currentArchiveSlug = entry.slug;
             loadDashboardData(entry.slug);
           }
-          hideHistoryFiles();
           closeHistoryList();
         });
         entryItem.appendChild(button);
@@ -2966,13 +3007,14 @@
     });
   }
 
-  if (chartHistoryToggle && chartHistoryList) {
+  if (!isChartHistoryUiHidden() && chartHistoryToggle && chartHistoryList) {
     chartHistoryToggle.addEventListener("click", () => {
       toggleHistoryList();
     });
   }
 
   applyDashboardData(dashboardData);
+  bindTransportHistoryToggle();
   bindAutoplayInteractions();
   updateAutoplayToggle();
   ensureAutoplayScheduled();

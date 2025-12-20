@@ -1376,7 +1376,7 @@ def build_dashboard_html(
         margin: 1px auto;
         padding: 40px;
         background: transparent;
-        border: 2px solid rgba(255, 255, 255, 0.18);
+        border: 2px solid rgba(255, 255, 255, 0.01);
         border-radius: 12px;
         box-sizing: border-box;
       }}
@@ -1423,18 +1423,9 @@ def build_dashboard_html(
       }}
 
 #chart-history-months {{
-height: 5px
-padding: 0;
-font-size; 8PX;
-line-height: 1
-height: auto;
-}}
-
-#chart-history-months option {{
-height: 5px
-padding: 1 3px;
-font-size; 8PX;
-line-height: 1;
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }}
 
 
@@ -1725,7 +1716,9 @@ line-height: 1;
        flex: 1;
   max-width: 835px;   /* <-- THIS is the width control */
   width: auto;
-  margin-top: -6px;
+  margin-top: -12px;
+  position: relative;
+  z-index: 30;
   padding: 1px;
   display: flex;
   flex-wrap: wrap;
@@ -1733,7 +1726,7 @@ line-height: 1;
 
   font-size: 13px;
   color: #f4f6ff;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.38);
   border-radius: 12px;
   background: rgba(0, 0, 0, 0.18);
   box-sizing: border-box;
@@ -1746,39 +1739,76 @@ line-height: 1;
         flex-direction: column;
         align-items: flex-start;
       }}
+      .transport-stack {{
+        margin-top: 30px;
+        position: relative;
+        z-index: 10;
+        transform: translateY(-120px);
+      }}
       .transport-panel {{
-        height: 100px;
-        flex: 0 0 260px;
-        width: 260px;
-        margin-top: 50px;
-        margin-left: 100px;
-        padding: 6px;
+        height: 210px;
+        flex: 0 0 auto;
+        width: 320px;
+        margin-top: 76px;
+        margin-left: 75px;
+        position: relative;
+        z-index: 1;
+        padding: 12px;
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
+        justify-content: flex-start;
         gap: 6px;
         border-radius: 12px;
-        background: rgba(0, 0, 0, 0.0);
         box-sizing: border-box;
-        pointer-events: none;
+        pointer-events: auto;
+        cursor: pointer;
+      }}
+      .transport-history-status {{
+        
+        position: relative;
+        z-index: 10;
+        width: 320px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 26px;
+        font-size: 14px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        opacity: 0.9;
+        color: white;
+        margin: 1px auto px;
+        padding: 1px 1px;
+        border-radius: 12px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        text-align: center;
+        line-height: .5;
+        margin-top: -40px;
       }}
       .transport-deck {{
-        width: 200px;
-        height: 60px;
-        margin-top: -85px;
+        width: 280px;
+        height: 130px;
+        margin-top: 0px;
         border-radius: 14px;
-        pointer-events: none;
+        pointer-events: auto;
         opacity: 0.98;
       }}
       .transport-nav {{
-        margin-top: -8px;
+        margin-top: -1px;
         width: 100%;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 6px;
+        gap: 1px;
         pointer-events: auto;
+      }}
+      .transport-nav .chart-control {{
+        padding: 10px 18px;
+        font-size: 18px;
+        border-radius: 12px;
       }}
       .transport-deck svg {{
         width: 100%;
@@ -1786,6 +1816,7 @@ line-height: 1;
         display: block;
       }}
       .transport-deck .reel {{
+        height: 200px;
         transform-box: fill-box;
         transform-origin: center;
       }}
@@ -1823,9 +1854,10 @@ line-height: 1;
         margin-top: -65px;
         margin-left: 1px;
  
-        border: 2px solid rgba(255, 179, 71, 0.85);
+
         border-radius: 12px;
-        background: linear-gradient(to bottom, #000000 0%, #1f1f26 100%);
+        background: rgba(0, 0, 0, 0.6);
+
         padding: 10px 12px;
         color: #fff5c7;
         font-size: 12px;
@@ -1961,14 +1993,21 @@ line-height: 1;
           width: 100%;
           align-items: center;
         }}
+        .transport-stack {{
+          transform: none;
+        }}
         .transport-panel {{
           flex: 0 0 auto;
           width: 100%;
           margin-top: 0;
           margin-left: 0;
+          height: auto;
         }}
         .transport-deck {{
           display: none;
+        }}
+        .transport-nav {{
+          margin-top: 10px;
         }}
         .usage-slot {{
           min-width: 0;
@@ -2196,6 +2235,34 @@ line-height: 1;
       .chart-wrap.tv-frame {{
         margin-bottom: 48px;
       }}
+      body.hide-big-chart .chart-wrap.tv-frame {{
+        display: none;
+      }}
+      body.hide-big-chart #tv-legs {{
+        display: none;
+      }}
+      body.hide-big-chart #toggle-history {{
+        display: none;
+      }}
+      body.hide-chart-history .chart-history {{
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: 0;
+        background: transparent;
+        min-height: 0;
+      }}
+      body.hide-chart-history .chart-history > h4,
+      body.hide-chart-history .chart-history > .chart-history-status {{
+        display: none !important;
+      }}
+      body.hide-big-chart .chart-history {{
+        position: relative;
+        width: 100%;
+        max-width: 720px;
+        margin: 14px auto 0;
+        box-sizing: border-box;
+      }}
       .chart-wrap.tv-frame::after {{
         content: "";
         position: absolute;
@@ -2261,6 +2328,18 @@ line-height: 1;
         color: #f4f6ff;
       }}
       .chart-history {{
+        position: relative;
+        width: 100%;
+        max-width: 720px;
+        margin: 14px auto 0;
+        box-sizing: border-box;
+        padding: 0;
+        background: transparent;
+        border: 0;
+        box-shadow: none;
+        color: #fff5c7;
+      }}
+      .chart-wrap.tv-frame .chart-history {{
         position: absolute;
         margin-top: 10px;
         top: -217px;
@@ -2289,8 +2368,6 @@ line-height: 1;
       .history-months {{
         flex: 0 0 125px;
         width: 125px;
-        max-height: 140px;
-        overflow-y: auto;
         padding-right: 4px;
         border-right: 1px solid rgba(255, 255, 255, 0.18);
       }}
@@ -2309,11 +2386,9 @@ line-height: 1;
         display: none;
         flex-direction: column;
         gap: 2px;
-        max-height: 120px;
-        overflow-y: auto;
       }}
-      .history-lists-row:hover .history-months-list,
-      .history-months:focus-within .history-months-list {{
+      /* Open months list only when history is expanded (no hover-open). */
+      .chart-history.expanded .history-months-list {{
         display: flex;
       }}
       .history-months-list li {{
@@ -2355,10 +2430,10 @@ line-height: 1;
         transition: max-height 0.2s ease, padding 0.2s ease;
       }}
       .history-list-column.expanded {{
-        max-height: 220px;
-        overflow-y: auto;
-        padding: 4px 14px 4px 0;
-        margin-right: 71px;
+        max-height: none;
+        overflow: visible;
+        padding: 0;
+        margin-right: 0;
       }}
       .history-month {{
         margin-bottom: 6px;
@@ -2390,21 +2465,55 @@ line-height: 1;
         display: none;
       }}
       .history-lists-row {{
-        display: flex;
+        display: none;
         flex-wrap: nowrap;
         gap: 12px;
         align-items: flex-start;
         width: 100%;
       }}
+      /* Expand upward (drop-up) without pushing layout down. */
+      .chart-history.expanded .history-lists-row {{
+        display: flex;
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: calc(100% + 10px);
+        z-index: 20;
+        background: #2f3136;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 14px;
+        padding: 12px 14px;
+        box-shadow:
+          0 14px 30px rgba(0, 0, 0, 0.45),
+          inset 0 1px 2px rgba(255, 255, 255, 0.15);
+      }}
       .chart-history h4 {{
-        margin: 0 0 6px;
+        margin: 0;
         font-size: 12px;
         letter-spacing: 0.08em;
         font-weight: 600;
         text-transform: uppercase;
         cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 12px;
+        background: #2f3136;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 10px 18px rgba(0, 0, 0, 0.35);
+      }}
+      .chart-history.expanded h4 {{
+        border-color: rgba(102, 255, 153, 0.45);
+      }}
+      .chart-history {{
+        position: relative;
+      }}
+      .chart-history:not(.expanded) .chart-history-status {{
+        display: none;
       }}
       .chart-history-status {{
+        display: none;
         font-size: 11px;
         opacity: 0.7;
         letter-spacing: 0.05em;
@@ -2462,7 +2571,7 @@ line-height: 1;
       }}
     </style>
   </head>
-  <body>
+  <body class="hide-big-chart hide-chart-history">
     <div class="container frame">
       <div class="header-row">
         <div id="Company">Any Company<br>Anywhere USA</div>
@@ -2491,7 +2600,7 @@ line-height: 1;
       </div>
 
       <div class="chart-top-row">
-        <div class="usage-slot" id="usage-slot">
+        <div class="usage-slot tv-frame" id="usage-slot">
           <div class="usage-header">
             <div class="usage-header-left">
               <div class="title">Usage Chart</div>
@@ -2515,7 +2624,7 @@ line-height: 1;
           </div>
         </div>
         <div class="controls-transport-wrap">
-          <div id="chartcontrols" class="chart-controls">
+          <div id="chartcontrols" class="chart-controls tv-frame">
               <button type="button" class="chart-control" data-mode="setpoint">Set Point</button>
               <button type="button" class="chart-control" data-mode="actual">Building Temp</button>
               <button type="button" class="chart-control" data-mode="outside">Outside Temp</button>
@@ -2525,22 +2634,43 @@ line-height: 1;
               <span>&nbsp;</span>
               <button type="button" class="chart-control" id="autoplay-toggle">Auto-play: On</button>
             </div>
-          <div id="transport-panel" class="transport-panel">
+          <div class="chart-history" id="chart-history">
+            <h4 id="chart-history-toggle">Chart History</h4>
+            <div id="chart-history-status" class="chart-history-status"></div>
+            <ul id="chart-history-list" class="hidden"></ul>
+          </div>
+          <div class="transport-stack">
+
+      <div id="transport-panel" class="transport-panel">
             <div id="transport-deck" class="transport-deck" aria-hidden="true">
               <svg viewBox="0 0 240 90" role="img" aria-label="Data deck">
               <defs>
                 <linearGradient id="deck-bg" x1="0" x2="0" y1="0" y2="1">
-                  <stop offset="0" stop-color="#0a0a10" />
-                  <stop offset="1" stop-color="#1f1f26" />
+                  <stop offset="0" stop-color="#1c1c24" />
+                  <stop offset="0.55" stop-color="#0d0d14" />
+                  <stop offset="1" stop-color="#2b2b34" />
                 </linearGradient>
+                <linearGradient id="deck-edge" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0" stop-color="rgba(255,255,255,0.18)" />
+                  <stop offset="1" stop-color="rgba(0,0,0,0.6)" />
+                </linearGradient>
+                <filter id="deck-shadow" x="-20%" y="-40%" width="140%" height="180%">
+                  <feDropShadow dx="0" dy="10" stdDeviation="7" flood-color="rgba(0,0,0,0.7)" />
+                </filter>
               </defs>
-              <rect x="3" y="3" width="234" height="84" rx="14" fill="url(#deck-bg)" />
-              <rect x="12" y="14" width="216" height="40" rx="10" fill="rgba(255,255,255,0.06)" />
-              <rect x="14" y="16" width="212" height="36" rx="9" fill="rgba(0,0,0,0.28)" />
+              <!-- Depth/back plate to make the deck feel like a cassette -->
+              <rect x="6" y="6" width="234" height="84" rx="14" fill="rgba(0,0,0,0.55)" />
+              <!-- Main body -->
+              <rect x="3" y="3" width="234" height="84" rx="14" fill="url(#deck-bg)" stroke="url(#deck-edge)" stroke-width="2" filter="url(#deck-shadow)" />
+              <!-- Bottom lip -->
+              <rect x="10" y="74" width="220" height="10" rx="6" fill="rgba(0,0,0,0.28)" />
+              <!-- Window area -->
+              <rect x="12" y="14" width="216" height="40" rx="10" fill="rgba(255,255,255,0.07)" />
+              <rect x="14" y="16" width="212" height="36" rx="9" fill="rgba(0,0,0,0.30)" />
 
               <g class="reel reel-left">
-                <circle cx="72" cy="34" r="14" fill="rgba(255,255,255,0.06)" />
-                <circle cx="72" cy="34" r="10" fill="rgba(0,0,0,0.35)" />
+                <circle cx="72" cy="34" r="14" fill="rgba(0,0,0,0.0)" stroke="rgba(0,0,0,0.55)" stroke-width="1.5" />
+                <circle cx="72" cy="34" r="10" fill="rgba(0,0,0,0.0)" stroke="rgba(255,255,255,0.14)" stroke-width="1" />
                 <circle cx="72" cy="34" r="2.5" fill="rgba(255,255,255,0.35)" />
                 <path d="M72 24 L74.8 32 L72 34 L69.2 32 Z" fill="rgba(255,255,255,0.35)" />
                 <path d="M62 34 L70 36.8 L72 34 L70 31.2 Z" fill="rgba(255,255,255,0.35)" />
@@ -2549,8 +2679,8 @@ line-height: 1;
               </g>
 
               <g class="reel reel-right">
-                <circle cx="168" cy="34" r="14" fill="rgba(255,255,255,0.06)" />
-                <circle cx="168" cy="34" r="10" fill="rgba(0,0,0,0.35)" />
+                <circle cx="168" cy="34" r="14" fill="rgba(0,0,0,0.0)" stroke="rgba(0,0,0,0.55)" stroke-width="1.5" />
+                <circle cx="168" cy="34" r="10" fill="rgba(0,0,0,0.0)" stroke="rgba(255,255,255,0.14)" stroke-width="1" />
                 <circle cx="168" cy="34" r="2.5" fill="rgba(255,255,255,0.35)" />
                 <path d="M168 24 L170.8 32 L168 34 L165.2 32 Z" fill="rgba(255,255,255,0.35)" />
                 <path d="M158 34 L166 36.8 L168 34 L166 31.2 Z" fill="rgba(255,255,255,0.35)" />
@@ -2571,7 +2701,9 @@ line-height: 1;
               </g>
             </svg>
           </div>
+          <div id="transport-history-status" class="transport-history-status">Current</div>
           <div id="transport-nav" class="transport-nav" role="group" aria-label="History navigation"></div>
+        </div>
         </div>
         </div>
       </div>
@@ -2583,13 +2715,8 @@ line-height: 1;
           <div id="history-chart-canvas-slot">
             <canvas id="history-chart"></canvas>
           </div>
-          <div class="chart-history" id="chart-history">
-            <h4 id="chart-history-toggle">Chart History</h4>
-            <div id="chart-history-status" class="chart-history-status"></div>
-            <ul id="chart-history-list" class="hidden"></ul>
-          </div>
         </div>
-          <img src="../../../Images/Legs2.png" alt="Logo" style="z-index: 2; margin-top: -145px; width: 800px; height: 800px;"/>
+          <img id="tv-legs" src="../../../Images/Legs2.png" alt="Logo" style="z-index: 2; margin-top: -145px; width: 800px; height: 800px;"/>
         <div class="note">Data source: Google Sheet (last updated when this page was generated).</div>
 
         <pre id="js-log"></pre>
