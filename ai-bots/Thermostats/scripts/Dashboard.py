@@ -1741,8 +1741,8 @@ def build_dashboard_html(
       }}
       
       #chartcontrols {{
-        margin-top: 5PX;
-        margin-left: 35PX;
+        margin-top: 50PX;
+        margin-left: 100PX;
         max-width: none;
         width: 80%;
         position: relative;
@@ -1751,7 +1751,7 @@ def build_dashboard_html(
         display: grid;
         grid-template-columns: 1fr;
         gap: 2px;
-        font-size: 13px;
+        font-size: 15px;
         color: #f4f6ff;
 
 
@@ -1761,39 +1761,33 @@ def build_dashboard_html(
         width: 60%;
         justify-content: flex-start;
         padding: 3px 8px;
-        font-size: 12px;
+        font-size: 16px;
         line-height: 1;
       }}
       #chartcontrols #autoplay-toggle {{
         grid-column: 1 / -1;
       }}
       .controls-transport-wrap {{
-        margin-top: -45px;
-        margin-left: 0;
-        height: auto;
-        display: grid;
-        grid-template-columns: minmax(0, 240px) minmax(0, 320px);
-        grid-template-areas:
-          "controls transport"
-          "history history";
-        align-items: start;
-        column-gap: 14px;
-        row-gap: 10px;
+        /* Let children participate in the outer 3-column grid for even spacing. */
+        display: contents;
       }}
       #chartcontrols {{
-        grid-area: controls;
         min-width: 0;
+        margin-top: -45px;
+        justify-self: center;
+        width: 240px;
       }}
       .controls-transport-wrap .chart-history {{
         grid-area: history;
       }}
       .transport-stack {{
-        margin-top: 0;
+        margin-top: -45px;
+        margin-left: -45px;
         position: relative;
         z-index: 10;
         transform: none;
-        grid-area: transport;
         min-width: 0;
+        justify-self: end;
       }}
       .transport-panel {{
         height: 210px;
@@ -1939,9 +1933,9 @@ def build_dashboard_html(
       }}
       .transport-deck {{
         --cassette-reel-scale: 1.05;
-        --cassette-reel-left-x: 20px;
-        --cassette-reel-left-y: -10px;
-        --cassette-reel-right-x: -20px;
+        --cassette-reel-left-x: 18px;
+        --cassette-reel-left-y: -11px;
+        --cassette-reel-right-x: -18px;
         --cassette-reel-right-y: -10px;
         --cassette-image-scale: 1.05;
         --cassette-image-x: 0px;
@@ -1985,13 +1979,27 @@ def build_dashboard_html(
         max-width: 1120px;
         width: 100%;
         display: grid;
-        grid-template-columns: 400px minmax(340px, 1fr);
+        grid-template-columns: 400px 240px 320px;
+        grid-template-areas:
+          "usage controls transport"
+          "usage history history";
         align-items: flex-start;
-        gap: 14px;
+        column-gap: 0;
+        row-gap: 10px;
+        justify-content: space-between;
         margin-top: 20px;
         margin-bottom: 18px;
         transform: translateX(-15px);
         border: 1px solid rgba(255, 255, 255, 0.18);
+      }}
+      .usage-frame-wrap {{
+        grid-area: usage;
+      }}
+      #chartcontrols {{
+        grid-area: controls;
+      }}
+      .transport-stack {{
+        grid-area: transport;
       }}
       .usage-slot {{
         width: 400px;
@@ -2495,7 +2503,7 @@ def build_dashboard_html(
         transform: translateX(-50%) translateY(calc(100% - var(--tv-legs-overlap)));
         height: clamp(400px, 95%, 650px);
         width: min(1100px, 95%);
-        z-index: 0;
+        z-index: -1;
         pointer-events: none;
         opacity: 0.98;
         background-image: url("../../../Images/Legs2.png");
@@ -3218,13 +3226,16 @@ def build_dashboard_html(
               </g>
 
               <!-- Cassette overlay (RGBA). Place behind reels so the animated reels are visible. -->
-              <image class="deck-cassette" href="../../../Images/Casette2.png" x="0" y="0" width="240" height="90" preserveAspectRatio="xMidYMid meet" />
+              <image class="deck-cassette" href="../../../Images/Casette2.png" x="0" y="0" width="242" height="94" preserveAspectRatio="xMidYMid meet" />
 
               <g class="reel-wrap reel-left" aria-hidden="true">
                 <g class="reel-spin">
                   <circle cx="72" cy="34" r="14" fill="rgba(0,0,0,0.0)" stroke="rgba(0,0,0,0.55)" stroke-width="1.5" />
+                  <!--
                   <circle cx="72" cy="34" r="10" fill="rgba(0,0,0,0.0)" stroke="rgba(255,255,255,0.14)" stroke-width="1" />
                   <circle cx="72" cy="34" r="2.5" fill="rgba(255,255,255,0.35)" />
+                  -->
+
                   <path d="M72 24 L74.8 32 L72 34 L69.2 32 Z" fill="rgba(255,255,255,0.35)" />
                   <path d="M62 34 L70 36.8 L72 34 L70 31.2 Z" fill="rgba(255,255,255,0.35)" />
                   <path d="M72 44 L74.8 36 L72 34 L69.2 36 Z" fill="rgba(255,255,255,0.35)" />
@@ -3232,11 +3243,13 @@ def build_dashboard_html(
                 </g>
               </g>
 
-              <g class="reel-wrap reel-right" aria-hidden="true">
+              <g class="reel-wrap reel-right" aria-hidden="true" transform="translate(12,0) scale(0.9)">
                 <g class="reel-spin">
                   <circle cx="168" cy="34" r="14" fill="rgba(0,0,0,0.0)" stroke="rgba(0,0,0,0.55)" stroke-width="1.5" />
+                  <!--
                   <circle cx="168" cy="34" r="10" fill="rgba(0,0,0,0.0)" stroke="rgba(255,255,255,0.14)" stroke-width="1" />
                   <circle cx="168" cy="34" r="2.5" fill="rgba(255,255,255,0.35)" />
+                  -->
                   <path d="M168 24 L170.8 32 L168 34 L165.2 32 Z" fill="rgba(255,255,255,0.35)" />
                   <path d="M158 34 L166 36.8 L168 34 L166 31.2 Z" fill="rgba(255,255,255,0.35)" />
                   <path d="M168 44 L170.8 36 L168 34 L165.2 36 Z" fill="rgba(255,255,255,0.35)" />
@@ -3254,8 +3267,8 @@ def build_dashboard_html(
               </g>
 
               <g class="deck-led">
-                <circle cx="178" cy="50" r="5.5" fill="rgba(0,0,0,0.35)" />
-                <circle class="led-dot" cx="178" cy="50" r="3.5" fill="rgba(255,102,102,0.25)" />
+                <circle cx="182" cy="50" r="4" fill="rgba(0,0,0,0.3)" />
+                <circle class="led-dot" cx="182" cy="50" r="2" fill="rgba(255,102,102,0.25)" />
               </g>
             </svg>
           </div>
