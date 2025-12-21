@@ -42,9 +42,17 @@
   const tvControlsSwap = document.getElementById("tv-controls-swap");
   const tvArchivePrevButton = document.getElementById("tv-archive-prev");
   const tvArchiveNextButton = document.getElementById("tv-archive-next");
+  const chartStepPrevButton = document.getElementById("chart-step-prev");
+  const chartStepNextButton = document.getElementById("chart-step-next");
   const tvHistorySlot = document.getElementById("tv-history-slot");
   const tvFileSelect = document.getElementById("tv-file-select");
   const tvHistoryStatus = document.getElementById("tv-history-status");
+  const tvHistoryMonth = document.getElementById("tv-history-month");
+  const tvHistoryDay = document.getElementById("tv-history-day");
+  const tvHistoryHour = document.getElementById("tv-history-hour");
+  const tvNavMonth = document.getElementById("tv-nav-month");
+  const tvNavDay = document.getElementById("tv-nav-day");
+  const tvNavHour = document.getElementById("tv-nav-hour");
   const isChartHistoryUiHidden = () =>
     document.body && document.body.classList.contains("hide-chart-history");
   const chartArea = document.getElementById("history");
@@ -2122,6 +2130,15 @@
     }
   };
 
+  if (chartStepPrevButton && chartStepPrevButton.dataset.boundClick !== "1") {
+    chartStepPrevButton.dataset.boundClick = "1";
+    chartStepPrevButton.addEventListener("click", () => stepPinnedPoint(-1));
+  }
+  if (chartStepNextButton && chartStepNextButton.dataset.boundClick !== "1") {
+    chartStepNextButton.dataset.boundClick = "1";
+    chartStepNextButton.addEventListener("click", () => stepPinnedPoint(1));
+  }
+
   // Re-render all front-panel cards when the data changes (actual, fan, condenser, etc.).
   const updateMetricCards = () => {
     const idx = getSelectedIndex();
@@ -2577,13 +2594,61 @@
   const updateHistoryStatus = (slug) => {
     const label = slug ? archiveLabelMap.get(slug) : null;
     const text = label || (slug ? String(slug) : "Current");
+    const compactMonthDay = (value) => {
+      const trimmed = String(value || "").trim();
+      if (!trimmed) {
+        return trimmed;
+      }
+      const match = trimmed.match(/^([A-Za-z]{3,9})\s+(\d{1,2})(?:st|nd|rd|th)?(?:,\s*\d{4})?$/);
+      if (!match) {
+        return trimmed;
+      }
+      return `${match[1]} ${match[2]}`;
+    };
+    const mainDisplay = document.body && document.body.classList.contains("tv-mode")
+      ? text
+      : compactMonthDay(text);
     if (chartHistoryStatus) {
-      chartHistoryStatus.textContent = text;
+      chartHistoryStatus.textContent = mainDisplay;
     }
     if (transportHistoryStatus) {
-      transportHistoryStatus.textContent = text;
+      transportHistoryStatus.textContent = mainDisplay;
     }
-    if (tvHistoryStatus) {
+    if (tvHistoryMonth || tvHistoryDay) {
+      const trimmed = String(text || "").trim();
+      const match = trimmed.match(/^([A-Za-z]{3,9})\s+(\d{1,2})(?:st|nd|rd|th)?(?:,\s*\d{4})?$/);
+      if (match) {
+        if (tvHistoryMonth) {
+          tvHistoryMonth.textContent = String(match[1] || "").toUpperCase();
+        } else if (tvHistoryStatus) {
+          tvHistoryStatus.textContent = String(match[1] || "").toUpperCase();
+        }
+        if (tvHistoryDay) {
+          tvHistoryDay.textContent = String(match[2] || "");
+        }
+        if (tvNavMonth) {
+          tvNavMonth.textContent = String(match[1] || "").toUpperCase();
+        }
+        if (tvNavDay) {
+          tvNavDay.textContent = String(match[2] || "");
+        }
+      } else {
+        if (tvHistoryMonth) {
+          tvHistoryMonth.textContent = trimmed || "Current";
+        } else if (tvHistoryStatus) {
+          tvHistoryStatus.textContent = trimmed || "Current";
+        }
+        if (tvHistoryDay) {
+          tvHistoryDay.textContent = "";
+        }
+        if (tvNavMonth) {
+          tvNavMonth.textContent = trimmed || "";
+        }
+        if (tvNavDay) {
+          tvNavDay.textContent = "";
+        }
+      }
+    } else if (tvHistoryStatus) {
       tvHistoryStatus.textContent = text;
     }
   };
@@ -2633,6 +2698,14 @@
       const label = valueAt(labels, idx, null);
       if (label) {
         updateTimestampDisplay(String(label));
+        if (tvHistoryHour) {
+          const hour24 = roundedUpHour24FromLabel(label);
+          tvHistoryHour.textContent = hour24 === null ? "" : formatHourOnly(hour24);
+        }
+        if (tvNavHour) {
+          const hour24 = roundedUpHour24FromLabel(label);
+          tvNavHour.textContent = hour24 === null ? "" : formatHourOnly(hour24);
+        }
         return;
       }
     }
@@ -2641,6 +2714,12 @@
       (currentArchiveSlug ? archiveLabelMap.get(currentArchiveSlug) : null) ||
       "History: current data";
     updateTimestampDisplay(fallback);
+    if (tvHistoryHour) {
+      tvHistoryHour.textContent = "";
+    }
+    if (tvNavHour) {
+      tvNavHour.textContent = "";
+    }
   };
 
   const formatHourLabel = (label) => {
@@ -2877,6 +2956,41 @@
     syncArchiveNavButtons();
   };
 
+  const syncStepButtons = () => {
+    if (!chartStepPrevButton && !chartStepNextButton) {
+      return;
+    }
+    const labels = getChartLabels();
+    const length = Array.isArray(labels) ? labels.length : 0;
+    const current = clampIndex(
+      pinnedPointIndex !== null ? pinnedPointIndex : hoverPointIndex,
+      length
+    );
+    const hasData = length > 0;
+    if (chartStepPrevButton) {
+      chartStepPrevButton.disabled = !hasData || current === null || current <= 0;
+    }
+    if (chartStepNextButton) {
+      chartStepNextButton.disabled = !hasData || current === null || current >= length - 1;
+    }
+  };
+
+  const stepPinnedPoint = (delta) => {
+    const labels = getChartLabels();
+    const length = Array.isArray(labels) ? labels.length : 0;
+    if (length <= 0) {
+      return;
+    }
+    const base =
+      clampIndex(pinnedPointIndex, length) ??
+      clampIndex(hoverPointIndex, length) ??
+      (length - 1);
+    const next = Math.max(0, Math.min(length - 1, base + delta));
+    setSelectedPoint(next, next, true);
+    suppressHoverUntilLeave();
+    syncStepButtons();
+  };
+
   const syncHourPickerOptions = () => {
     ensureSelectionUi();
     if (!hourPickerEl) {
@@ -2963,16 +3077,19 @@
       const label = valueAt(labels, pinned, "");
       selectionIndicatorEl.textContent = `Pinned: ${formatHourLabel(label)}`;
       selectionIndicatorEl.style.color = "#ffb347";
+      syncStepButtons();
       return;
     }
     if (hovered !== null) {
       const label = valueAt(labels, hovered, "");
       selectionIndicatorEl.textContent = `Hover: ${formatHourLabel(label)}`;
       selectionIndicatorEl.style.color = "#ffb347";
+      syncStepButtons();
       return;
     }
     selectionIndicatorEl.textContent = "";
     selectionIndicatorEl.style.color = "";
+    syncStepButtons();
     syncHourPickerOptions();
   };
 
