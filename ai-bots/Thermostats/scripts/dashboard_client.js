@@ -45,8 +45,6 @@
   const tvHistorySlot = document.getElementById("tv-history-slot");
   const tvFileSelect = document.getElementById("tv-file-select");
   const tvHistoryStatus = document.getElementById("tv-history-status");
-  const swapControls = document.getElementById("swap-controls");
-  const swapControlsLabel = document.getElementById("swap-controls-label");
   const isChartHistoryUiHidden = () =>
     document.body && document.body.classList.contains("hide-chart-history");
   const chartArea = document.getElementById("history");
@@ -141,9 +139,6 @@
     const mainLabel = chartsSwapped ? "Usage Chart" : "History Chart";
     if (tvControlsLabel) {
       tvControlsLabel.textContent = `Click here to swap chart (now showing: ${mainLabel})`;
-    }
-    if (swapControlsLabel) {
-      swapControlsLabel.textContent = `Swap Chart (now showing: ${mainLabel})`;
     }
   };
 
@@ -887,29 +882,6 @@
     }
   };
 
-  const bindSwapControls = () => {
-    if (!swapControls || swapControls.dataset.boundClick === "1") {
-      return;
-    }
-    swapControls.dataset.boundClick = "1";
-    const activate = () => {
-      if (tvModeActive) {
-        return;
-      }
-      applyChartSwap(!chartsSwapped);
-    };
-    swapControls.addEventListener("click", (event) => {
-      event.preventDefault();
-      activate();
-    });
-    swapControls.addEventListener("keydown", (event) => {
-      if (event.key === "Enter" || event.key === " ") {
-        event.preventDefault();
-        activate();
-      }
-    });
-    updateSwapLabels();
-  };
 
   const bindUsageSlotControls = () => {
     if (usageSlotBound) {
@@ -2847,7 +2819,7 @@
       selectionIndicatorEl.style.opacity = "0.9";
       selectionIndicatorEl.style.userSelect = "none";
       selectionIndicatorEl.textContent = "";
-      selectionIndicatorEl.title = "Hover the chart to preview a reading. Click to pin. Use Clear Pin or select Latest to reset.";
+      selectionIndicatorEl.title = "Hover the chart to preview a reading. Click to pin. Use Clear Pin to reset.";
       appendControl(selectionIndicatorEl);
     }
 
@@ -2869,19 +2841,12 @@
       });
     }
 
-    if (!hourPickerEl) {
-      hourPickerEl = document.createElement("select");
-      hourPickerEl.id = "hour-picker";
-      hourPickerEl.style.marginLeft = "10px";
-      hourPickerEl.style.borderRadius = "8px";
-      hourPickerEl.style.padding = "6px 10px";
-      hourPickerEl.style.border = "1px solid #1a1a20";
-      hourPickerEl.style.background = "#0d0d12";
-      hourPickerEl.style.color = "#f4f6ff";
-      hourPickerEl.style.maxWidth = "220px";
-      hourPickerEl.title = "Pick a specific reading to pin.";
-      appendControl(hourPickerEl);
+    // Hour picker removed (the old "Latest" control lived here).
+    const existingHourPicker = document.getElementById("hour-picker");
+    if (existingHourPicker) {
+      existingHourPicker.remove();
     }
+    hourPickerEl = null;
 
     if (!prevDayButtonEl) {
       prevDayButtonEl = document.createElement("button");
@@ -2920,23 +2885,16 @@
     const labels = getChartLabels();
     if (!Array.isArray(labels) || labels.length === 0) {
       hourPickerEl.innerHTML = "";
-      const opt = document.createElement("option");
-      opt.value = "";
-      opt.textContent = "Latest";
-      hourPickerEl.appendChild(opt);
       hourPickerEl.disabled = true;
+      hourPickerEl.style.display = "none";
       return;
     }
 
     hourPickerEl.disabled = false;
+    hourPickerEl.style.display = "";
     hourPickerEl.innerHTML = "";
-    const latestOpt = document.createElement("option");
-    latestOpt.value = "";
     const lastLabel = labels[labels.length - 1];
     const lastHour24 = roundedUpHour24FromLabel(lastLabel);
-    const lastHourText = lastHour24 === null ? "" : formatHourOnly(lastHour24);
-    latestOpt.textContent = lastHourText ? `Latest (${lastHourText})` : "Latest";
-    hourPickerEl.appendChild(latestOpt);
 
     const byHour = new Map();
     labels.forEach((label, idx) => {
@@ -2947,6 +2905,18 @@
       // Keep the latest point in that rounded-up hour.
       byHour.set(hour24, idx);
     });
+
+    const defaultHour24 = (() => {
+      if (lastHour24 !== null && byHour.has(lastHour24)) {
+        return lastHour24;
+      }
+      for (let hour24 = 23; hour24 >= 0; hour24 -= 1) {
+        if (byHour.has(hour24)) {
+          return hour24;
+        }
+      }
+      return 0;
+    })();
 
     for (let hour24 = 0; hour24 <= 23; hour24 += 1) {
       const opt = document.createElement("option");
@@ -2961,13 +2931,14 @@
     const selectedPinned = clampIndex(pinnedPointIndex, labels.length);
     if (selectedPinned !== null) {
       const hour24 = roundedUpHour24FromLabel(labels[selectedPinned]);
-      hourPickerEl.value = hour24 === null ? "" : `H${hour24}`;
+      hourPickerEl.value =
+        hour24 !== null && byHour.has(hour24) ? `H${hour24}` : `H${defaultHour24}`;
     } else {
-      hourPickerEl.value = "";
+      hourPickerEl.value = `H${defaultHour24}`;
     }
 
-    // Make the "Latest" selection match the orange selection accents.
-    hourPickerEl.style.color = hourPickerEl.value === "" ? "#ffb347" : "#f4f6ff";
+    // Match the orange selection accents when no pin is set.
+    hourPickerEl.style.color = selectedPinned === null ? "#ffb347" : "#f4f6ff";
     syncArchiveNavButtons();
   };
 
@@ -3386,7 +3357,6 @@
   bindTransportHistoryToggle();
   bindArchiveKeyboardShortcuts();
   bindTvControls();
-  bindSwapControls();
   bindAutoplayInteractions();
   updateAutoplayToggle();
   ensureAutoplayScheduled();
