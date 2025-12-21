@@ -2644,6 +2644,22 @@ def build_dashboard_html(
         text-align: center;
         user-select: none;
       }}
+      body.tv-mode .tv-nav-overlay .tv-nav-autoscroll {{
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 4px;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: rgba(244, 246, 255, 0.78);
+        user-select: none;
+      }}
+      body.tv-mode .tv-nav-overlay .tv-nav-autoscroll input[type="checkbox"] {{
+        width: 16px;
+        height: 16px;
+        accent-color: #ffb347;
+      }}
       body.tv-mode .tv-nav-overlay .tv-nav-month {{
         font-size: 11px;
         letter-spacing: 0.12em;
@@ -3160,6 +3176,10 @@ def build_dashboard_html(
                     <div id="tv-nav-month" class="tv-nav-month"></div>
                     <div id="tv-nav-day" class="tv-nav-day"></div>
                     <div id="tv-nav-hour" class="tv-nav-hour"></div>
+                    <label class="tv-nav-autoscroll">
+                      <input type="checkbox" id="tv-nav-autoscroll" />
+                      Auto Scroll
+                    </label>
                   </div>
                   <div class="tv-nav-buttons">
                     <button type="button" id="tv-archive-prev" class="tv-nav-btn" aria-label="Previous day">&lt;&lt;</button>

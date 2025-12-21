@@ -53,6 +53,7 @@
   const tvNavMonth = document.getElementById("tv-nav-month");
   const tvNavDay = document.getElementById("tv-nav-day");
   const tvNavHour = document.getElementById("tv-nav-hour");
+  const tvNavAutoscroll = document.getElementById("tv-nav-autoscroll");
   const isChartHistoryUiHidden = () =>
     document.body && document.body.classList.contains("hide-chart-history");
   const chartArea = document.getElementById("history");
@@ -140,6 +141,17 @@
   const usageHeaderEl = document.querySelector("#usage-slot .usage-header");
   const usagePipEl = document.getElementById("usage-pip");
   let usageRangeKey = "year"; // 7d | month | year
+
+  let tvNavAutoscrollTimer = null;
+  const stopTvNavAutoscroll = () => {
+    if (tvNavAutoscrollTimer) {
+      clearInterval(tvNavAutoscrollTimer);
+      tvNavAutoscrollTimer = null;
+    }
+    if (tvNavAutoscroll) {
+      tvNavAutoscroll.checked = false;
+    }
+  };
 
   const STORAGE_KEY = "thermostatDashboard.ui.v1";
   let savedUiState = null;
@@ -2138,6 +2150,16 @@
     chartStepNextButton.dataset.boundClick = "1";
     chartStepNextButton.addEventListener("click", () => stepPinnedPoint(1));
   }
+  if (tvNavAutoscroll && tvNavAutoscroll.dataset.boundChange !== "1") {
+    tvNavAutoscroll.dataset.boundChange = "1";
+    tvNavAutoscroll.addEventListener("change", () => {
+      if (tvNavAutoscroll.checked) {
+        startTvNavAutoscroll();
+      } else {
+        stopTvNavAutoscroll();
+      }
+    });
+  }
 
   // Re-render all front-panel cards when the data changes (actual, fan, condenser, etc.).
   const updateMetricCards = () => {
@@ -2989,6 +3011,39 @@
     setSelectedPoint(next, next, true);
     suppressHoverUntilLeave();
     syncStepButtons();
+  };
+
+  const startTvNavAutoscroll = () => {
+    stopTvNavAutoscroll();
+    const labels = getChartLabels();
+    const length = Array.isArray(labels) ? labels.length : 0;
+    if (length <= 0) {
+      return;
+    }
+    if (tvNavAutoscroll) {
+      tvNavAutoscroll.checked = true;
+    }
+    // If nothing is pinned yet, start from the current selection or last point.
+    const base =
+      clampIndex(pinnedPointIndex, length) ??
+      clampIndex(hoverPointIndex, length) ??
+      (length - 1);
+    setSelectedPoint(base, base, true);
+    suppressHoverUntilLeave();
+
+    // Advance at a readable cadence; stop once we hit the end.
+    tvNavAutoscrollTimer = setInterval(() => {
+      const current = clampIndex(pinnedPointIndex, length);
+      if (current === null) {
+        stopTvNavAutoscroll();
+        return;
+      }
+      if (current >= length - 1) {
+        stopTvNavAutoscroll();
+        return;
+      }
+      stepPinnedPoint(1);
+    }, 900);
   };
 
   const syncHourPickerOptions = () => {
