@@ -1386,6 +1386,39 @@ def build_dashboard_html(
         border: 2px solid rgba(255, 255, 255, 0.01);
         border-radius: 12px;
         box-sizing: border-box;
+        position: relative;
+      }}
+      #help-chat-link {{
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        z-index: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        background: rgba(0, 0, 0, 0.25);
+        color: rgba(244, 246, 255, 0.92);
+        text-decoration: none;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        backdrop-filter: blur(8px);
+      }}
+      #help-chat-link:hover,
+      #help-chat-link:focus-visible {{
+        border-color: rgba(102, 255, 153, 0.6);
+        background: rgba(102, 255, 153, 0.12);
+        color: rgba(255, 255, 255, 0.98);
+      }}
+      #help-chat-link:focus-visible {{
+        outline: 2px solid rgba(102, 255, 153, 0.8);
+        outline-offset: 2px;
+      }}
+      body.tv-mode #help-chat-link {{
+        display: none !important;
       }}
       h1 {{
         margin: 0 0 16px;
@@ -1680,6 +1713,8 @@ def build_dashboard_html(
         padding: 16px;
         border: 1px solid rgba(255,255,255,0.08);
         position: relative;
+        z-index: 250;
+        isolation: isolate;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -2790,12 +2825,42 @@ def build_dashboard_html(
       }}
       body.tv-mode .tv-nav-overlay .tv-step-value {{
         min-width: 140px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         text-align: center;
-        font-size: 22px;
+        user-select: none;
+      }}
+      body.tv-mode .tv-nav-overlay .tv-step-stack {{
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        font-size: 12px;
         letter-spacing: 0.12em;
         text-transform: uppercase;
+        line-height: 1.05;
+      }}
+      body.tv-mode .tv-nav-overlay .tv-step-row {{
+        display: flex;
+        align-items: baseline;
+        justify-content: center;
+        gap: 6px;
+      }}
+      body.tv-mode .tv-nav-overlay .tv-step-row .k {{
+        opacity: 0.7;
+        min-width: 58px;
+        text-align: right;
+        color: rgba(244, 246, 255, 0.75);
+      }}
+      body.tv-mode .tv-nav-overlay .tv-step-row .sep {{
+        opacity: 0.55;
+        color: rgba(244, 246, 255, 0.7);
+      }}
+      body.tv-mode .tv-nav-overlay .tv-step-row .v {{
+        min-width: 62px;
+        text-align: left;
+        letter-spacing: 0.16em;
         color: rgba(244, 246, 255, 0.92);
-        user-select: none;
       }}
       .tv-nav-btn {{
         flex: 0 0 auto;
@@ -3029,7 +3094,7 @@ def build_dashboard_html(
         left: 0;
         right: 0;
         bottom: calc(100% + 10px);
-        z-index: 60;
+        z-index: 600;
         background: #2f3136;
         border: 1px solid rgba(255, 255, 255, 0.2);
         border-radius: 14px;
@@ -3127,6 +3192,7 @@ def build_dashboard_html(
   </head>
   <body class="hide-big-chart hide-chart-history">
     <div class="container">
+      <a id="help-chat-link" href="http://localhost/" target="_blank" rel="noopener noreferrer">Chat Help</a>
       <div id="Cards" class="card-grid frame2">
         {cards}
       </div>
@@ -3311,11 +3377,17 @@ def build_dashboard_html(
                   <div class="tv-step-modes" aria-label="Step size" role="radiogroup">
                     <label><input type="radio" name="tv-step-mode" id="tv-step-month" value="month" /><span>Month</span></label>
                     <label><input type="radio" name="tv-step-mode" id="tv-step-day" value="day" checked /><span>Day</span></label>
-                    <label><input type="radio" name="tv-step-mode" id="tv-step-hour" value="hour" /><span>Hour</span></label>
+                    <label><input type="radio" name="tv-step-mode" id="tv-step-hour" value="hour" /><span>Time</span></label>
                   </div>
                   <div class="tv-nav-row" aria-hidden="true">
                     <button type="button" id="tv-archive-prev" class="tv-nav-btn" aria-label="Previous">&lt;&lt;</button>
-                    <div id="tv-step-value" class="tv-step-value"></div>
+                    <div id="tv-step-value" class="tv-step-value">
+                      <div class="tv-step-stack" aria-label="Selected step">
+                        <div class="tv-step-row"><span class="k">Month</span><span class="sep">:</span><span id="tv-step-month-value" class="v"></span></div>
+                        <div class="tv-step-row"><span class="k">Day</span><span class="sep">:</span><span id="tv-step-day-value" class="v"></span></div>
+                        <div class="tv-step-row"><span class="k">Time</span><span class="sep">:</span><span id="tv-step-time-value" class="v"></span></div>
+                      </div>
+                    </div>
                     <button type="button" id="tv-archive-next" class="tv-nav-btn" aria-label="Next">&gt;&gt;</button>
                   </div>
                 </div>

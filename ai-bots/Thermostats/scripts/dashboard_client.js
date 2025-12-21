@@ -59,6 +59,15 @@
   const tvStepDay = document.getElementById("tv-step-day");
   const tvStepHour = document.getElementById("tv-step-hour");
   const tvStepValue = document.getElementById("tv-step-value");
+  const tvStepMonthValue = document.getElementById("tv-step-month-value");
+  const tvStepDayValue = document.getElementById("tv-step-day-value");
+  const tvStepTimeValue = document.getElementById("tv-step-time-value");
+  const setTvStepReadout = (monthText, dayText, timeText) => {
+    if (tvStepMonthValue) tvStepMonthValue.textContent = monthText || "";
+    if (tvStepDayValue) tvStepDayValue.textContent = dayText || "";
+    if (tvStepTimeValue) tvStepTimeValue.textContent = timeText || "";
+    return Boolean(tvStepMonthValue || tvStepDayValue || tvStepTimeValue);
+  };
   const isChartHistoryUiHidden = () =>
     document.body && document.body.classList.contains("hide-chart-history");
   const chartArea = document.getElementById("history");
@@ -162,7 +171,7 @@
   // re-pin to the opposite edge to create a continuous "scrolling" feel.
   let pendingPinnedIndexAfterArchiveLoad = null;
 
-  const HOLD_REPEAT_DELAY_MS = 2000;
+  const HOLD_REPEAT_DELAY_MS = 1000;
   const HOLD_REPEAT_INTERVAL_MS = 160;
   const holdRepeatSuppressClickUntil = new WeakMap();
   const holdRepeatTimers = new WeakMap(); // el -> { timeoutId, intervalId }
@@ -2970,13 +2979,9 @@
         if (tvHistoryDay) {
           tvHistoryDay.textContent = String(match[2] || "");
         }
-        if (tvStepValue) {
-          if (tvStepMode === "month") {
-            tvStepValue.textContent = String(match[1] || "").toUpperCase();
-          } else if (tvStepMode === "day") {
-            tvStepValue.textContent = String(match[2] || "");
-          }
-        }
+        const monthText = String(match[1] || "").toUpperCase();
+        const dayText = String(match[2] || "");
+        setTvStepReadout(monthText, dayText, tvStepTimeValue?.textContent || "");
       } else {
         if (tvHistoryMonth) {
           tvHistoryMonth.textContent = trimmed || "Current";
@@ -2986,9 +2991,7 @@
         if (tvHistoryDay) {
           tvHistoryDay.textContent = "";
         }
-        if (tvStepValue && tvStepMode !== "hour") {
-          tvStepValue.textContent = trimmed || "";
-        }
+        setTvStepReadout(trimmed || "Current", "", "");
       }
     } else if (tvHistoryStatus) {
       tvHistoryStatus.textContent = text;
@@ -3163,10 +3166,9 @@
           const hour24 = roundedUpHour24FromLabel(label);
           tvHistoryHour.textContent = hour24 === null ? "" : formatHourOnly(hour24);
         }
-        if (tvStepValue && tvStepMode === "hour") {
-          const hour24 = roundedUpHour24FromLabel(label);
-          tvStepValue.textContent = hour24 === null ? "" : formatHourOnly(hour24);
-        }
+        const hour24 = roundedUpHour24FromLabel(label);
+        const timeText = hour24 === null ? "" : formatHourOnly(hour24);
+        setTvStepReadout(tvStepMonthValue?.textContent || "", tvStepDayValue?.textContent || "", timeText);
         return;
       }
     }
@@ -3181,9 +3183,7 @@
     if (tvHistoryHour) {
       tvHistoryHour.textContent = "";
     }
-    if (tvStepValue && tvStepMode === "hour") {
-      tvStepValue.textContent = "";
-    }
+    setTvStepReadout(tvStepMonthValue?.textContent || "", tvStepDayValue?.textContent || "", "");
   };
 
   const formatHourLabel = (label) => {
