@@ -2454,21 +2454,21 @@ def build_dashboard_html(
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
         grid-auto-rows: auto;
-        gap: 8px 8px;
-        padding: 6px;
-        border-radius: 14px;
+        gap: 6px 6px;
+        padding: 5px;
+        border-radius: 12px;
         border: 1px solid rgba(255,255,255,0.12);
         background: rgba(0,0,0,0.24);
         backdrop-filter: blur(8px);
-        width: 380px;
+        width: 300px;
         justify-content: start;
 
       }}
       body.tv-mode .tv-chartcontrols-overlay .chart-control {{
         width: 100%;
         text-align: left;
-        font-size: 12px;
-        padding: 2px 8px;
+        font-size: 11px;
+        padding: 2px 6px;
         letter-spacing: 0.2px;
         white-space: nowrap;
       }}
@@ -2511,6 +2511,8 @@ def build_dashboard_html(
         text-transform: uppercase;
         opacity: 0.85;
         user-select: none;
+        width: 100%;
+        text-align: center;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -2521,6 +2523,8 @@ def build_dashboard_html(
         opacity: 0.9;
         letter-spacing: 0.02em;
         user-select: none;
+        width: 100%;
+        text-align: center;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
