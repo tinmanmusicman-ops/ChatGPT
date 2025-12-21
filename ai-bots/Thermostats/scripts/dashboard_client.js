@@ -171,21 +171,197 @@
   // re-pin to the opposite edge to create a continuous "scrolling" feel.
   let pendingPinnedIndexAfterArchiveLoad = null;
 
-  const DECK_SPIN_DURATION_MS = 4_000;
+  const DECK_SPIN_DEFAULT_MS = 4_000;
+  const DECK_SPIN_FAST_MS = 1_000; // forward one day
+  const DECK_REWIND_MIN_MS = 700; // quick rewind effect for small jumps
+  const DECK_REWIND_BASE_MONTH_MS = 1_500; // 30 days back
+  const DECK_REWIND_PER_MONTH_MS = 500; // add per additional 30 days
+  const DECK_REWIND_MAX_MS = 5_000; // cap rewind duration
+  const DECK_PLAY_AFTER_MOVE_MS = 1_000; // brief "play" after a long move
   let deckSpinTimerId = null;
-  const triggerDeckSpin = () => {
-    const deck = document.getElementById("transport-deck");
-    if (!deck) {
+  let pendingArchiveLoadTimerId = null;
+  let pendingArchivePhaseTimerId = null;
+  let pendingArchiveSlug = null;
+  let pendingSelectedArchiveSlug = null;
+  const triggerDeckSpin = (
+    durationMs = DECK_SPIN_DEFAULT_MS,
+    { direction = "normal", spinSpeedSeconds = "1.35s" } = {}
+  ) => {
+    const decks = [
+      document.getElementById("transport-deck"),
+      document.getElementById("tv-transport-deck"),
+    ].filter(Boolean);
+    if (!decks.length) {
       return;
     }
-    deck.classList.add("playing");
+    decks.forEach((deck) => {
+      deck.style.setProperty("--deck-spin-direction", direction);
+      deck.style.setProperty("--deck-spin-duration", spinSpeedSeconds);
+      deck.classList.add("playing");
+    });
     if (deckSpinTimerId) {
       clearTimeout(deckSpinTimerId);
     }
     deckSpinTimerId = setTimeout(() => {
-      deck.classList.remove("playing");
+      decks.forEach((deck) => deck.classList.remove("playing"));
       deckSpinTimerId = null;
-    }, DECK_SPIN_DURATION_MS);
+    }, durationMs);
+  };
+
+  const computeTapeMoveDurationMs = (absDays) => {
+    const days = Math.max(0, Math.floor(Number(absDays || 0)));
+    const months = Math.floor(days / 30);
+    if (months <= 0) {
+      return DECK_REWIND_MIN_MS;
+    }
+    return Math.min(
+      DECK_REWIND_MAX_MS,
+      DECK_REWIND_BASE_MONTH_MS + DECK_REWIND_PER_MONTH_MS * Math.max(0, months - 1)
+    );
+  };
+
+  const computeArchiveDeltaDays = (fromSlug, toSlug) => {
+    const fromDate = parseSlugDateUtc(fromSlug);
+    const toDate = parseSlugDateUtc(toSlug);
+    if (!fromDate || !toDate) {
+      return null;
+    }
+    const msPerDay = 24 * 60 * 60 * 1000;
+    return Math.round((toDate - fromDate) / msPerDay);
+  };
+
+  const scheduleArchiveLoadAfterSpin = (
+    slug,
+    pinIndexAfterLoad = null,
+    durationMs = DECK_SPIN_DEFAULT_MS,
+    spinOptions = null
+  ) => {
+    if (!slug) {
+      return false;
+    }
+    pendingSelectedArchiveSlug = null;
+    pendingArchiveSlug = slug;
+    if (pendingArchiveLoadTimerId) {
+      clearTimeout(pendingArchiveLoadTimerId);
+      pendingArchiveLoadTimerId = null;
+    }
+    if (pendingArchivePhaseTimerId) {
+      clearTimeout(pendingArchivePhaseTimerId);
+      pendingArchivePhaseTimerId = null;
+    }
+    triggerDeckSpin(durationMs, spinOptions || undefined);
+    pendingArchiveLoadTimerId = setTimeout(() => {
+      pendingArchiveLoadTimerId = null;
+      pendingArchiveSlug = null;
+      if (pinIndexAfterLoad !== null && pinIndexAfterLoad !== undefined) {
+        pendingPinnedIndexAfterArchiveLoad = Number.isFinite(Number(pinIndexAfterLoad))
+          ? Math.floor(Number(pinIndexAfterLoad))
+          : null;
+      }
+      updateHistoryStatus(slug);
+      currentArchiveSlug = slug;
+      loadDashboardData(slug);
+    }, durationMs);
+    return true;
+  };
+
+  const scheduleArchiveLoadAfterFastForwardPlay = (slug, pinIndexAfterLoad = null) => {
+    if (!slug) {
+      return false;
+    }
+    const fromSlug = pendingArchiveSlug || currentArchiveSlug || dashboardData.generatedDateSlug || "";
+    const deltaDays = computeArchiveDeltaDays(fromSlug, slug);
+    const absDays = deltaDays === null ? 0 : Math.abs(deltaDays);
+    const fastForwardMs = computeTapeMoveDurationMs(absDays);
+
+    pendingSelectedArchiveSlug = null;
+    pendingArchiveSlug = slug;
+    if (pendingArchiveLoadTimerId) {
+      clearTimeout(pendingArchiveLoadTimerId);
+      pendingArchiveLoadTimerId = null;
+    }
+    if (pendingArchivePhaseTimerId) {
+      clearTimeout(pendingArchivePhaseTimerId);
+      pendingArchivePhaseTimerId = null;
+    }
+    // Fast-forward (forward), then briefly play forward, then load.
+    triggerDeckSpin(fastForwardMs, { direction: "normal", spinSpeedSeconds: "0.35s" });
+    pendingArchivePhaseTimerId = setTimeout(() => {
+      pendingArchivePhaseTimerId = null;
+      triggerDeckSpin(DECK_PLAY_AFTER_MOVE_MS, { direction: "normal", spinSpeedSeconds: "1.35s" });
+    }, fastForwardMs);
+    pendingArchiveLoadTimerId = setTimeout(() => {
+      pendingArchiveLoadTimerId = null;
+      pendingArchiveSlug = null;
+      if (pinIndexAfterLoad !== null && pinIndexAfterLoad !== undefined) {
+        pendingPinnedIndexAfterArchiveLoad = Number.isFinite(Number(pinIndexAfterLoad))
+          ? Math.floor(Number(pinIndexAfterLoad))
+          : null;
+      }
+      updateHistoryStatus(slug);
+      currentArchiveSlug = slug;
+      loadDashboardData(slug);
+    }, fastForwardMs + DECK_PLAY_AFTER_MOVE_MS);
+    return true;
+  };
+
+  const scheduleArchiveLoadAfterRewindPlay = (slug, pinIndexAfterLoad = null) => {
+    if (!slug) {
+      return false;
+    }
+    const fromSlug = pendingArchiveSlug || currentArchiveSlug || dashboardData.generatedDateSlug || "";
+    const deltaDays = computeArchiveDeltaDays(fromSlug, slug);
+    const absDays = deltaDays === null ? 0 : Math.abs(deltaDays);
+    const rewindMs = computeTapeMoveDurationMs(absDays);
+    pendingSelectedArchiveSlug = null;
+    pendingArchiveSlug = slug;
+    if (pendingArchiveLoadTimerId) {
+      clearTimeout(pendingArchiveLoadTimerId);
+      pendingArchiveLoadTimerId = null;
+    }
+    if (pendingArchivePhaseTimerId) {
+      clearTimeout(pendingArchivePhaseTimerId);
+      pendingArchivePhaseTimerId = null;
+    }
+    // Rewind fast (reverse), then briefly play forward, then load.
+    triggerDeckSpin(rewindMs, { direction: "reverse", spinSpeedSeconds: "0.35s" });
+    pendingArchivePhaseTimerId = setTimeout(() => {
+      pendingArchivePhaseTimerId = null;
+      triggerDeckSpin(DECK_PLAY_AFTER_MOVE_MS, { direction: "normal", spinSpeedSeconds: "1.35s" });
+    }, rewindMs);
+    pendingArchiveLoadTimerId = setTimeout(() => {
+      pendingArchiveLoadTimerId = null;
+      pendingArchiveSlug = null;
+      if (pinIndexAfterLoad !== null && pinIndexAfterLoad !== undefined) {
+        pendingPinnedIndexAfterArchiveLoad = Number.isFinite(Number(pinIndexAfterLoad))
+          ? Math.floor(Number(pinIndexAfterLoad))
+          : null;
+      }
+      updateHistoryStatus(slug);
+      currentArchiveSlug = slug;
+      loadDashboardData(slug);
+    }, rewindMs + DECK_PLAY_AFTER_MOVE_MS);
+    return true;
+  };
+
+  const scheduleArchiveLoadWithTapeRules = (slug, pinIndexAfterLoad = null) => {
+    if (!slug) {
+      return false;
+    }
+    const fromSlug = pendingArchiveSlug || currentArchiveSlug || dashboardData.generatedDateSlug || "";
+    const deltaDays = computeArchiveDeltaDays(fromSlug, slug);
+    if (deltaDays === null) {
+      return scheduleArchiveLoadAfterSpin(slug, pinIndexAfterLoad, DECK_SPIN_DEFAULT_MS);
+    }
+    if (deltaDays === 1) {
+      // Special-case: "next day" is quick.
+      return scheduleArchiveLoadAfterSpin(slug, pinIndexAfterLoad, DECK_SPIN_FAST_MS);
+    }
+    if (deltaDays > 1) {
+      return scheduleArchiveLoadAfterFastForwardPlay(slug, pinIndexAfterLoad);
+    }
+    // deltaDays <= 0
+    return scheduleArchiveLoadAfterRewindPlay(slug, pinIndexAfterLoad);
   };
 
   const HOLD_REPEAT_DELAY_MS = 1000;
@@ -374,7 +550,7 @@
     if (!slugs.length) {
       return -1;
     }
-    const current = currentArchiveSlug || dashboardData.generatedDateSlug || "";
+    const current = pendingArchiveSlug || currentArchiveSlug || dashboardData.generatedDateSlug || "";
     const idx = current ? slugs.indexOf(current) : -1;
     return idx >= 0 ? idx : slugs.length - 1;
   };
@@ -472,10 +648,13 @@
     if (!slug) {
       return;
     }
-    triggerDeckSpin();
-    updateHistoryStatus(slug);
-    currentArchiveSlug = slug;
-    loadDashboardData(slug);
+    const normalizedDelta = Number(delta || 0);
+    if (normalizedDelta < 0) {
+      scheduleArchiveLoadAfterRewindPlay(slug);
+      return;
+    }
+    // Next day is always quick (1s).
+    scheduleArchiveLoadAfterSpin(slug, null, DECK_SPIN_FAST_MS);
   };
 
   const navigateArchiveByDaysWithPinnedIndex = (delta, pinIndexAfterLoad) => {
@@ -492,18 +671,16 @@
     if (!slug) {
       return false;
     }
-    pendingPinnedIndexAfterArchiveLoad = Number.isFinite(Number(pinIndexAfterLoad))
-      ? Math.floor(Number(pinIndexAfterLoad))
-      : null;
-    triggerDeckSpin();
-    updateHistoryStatus(slug);
-    currentArchiveSlug = slug;
-    loadDashboardData(slug);
-    return true;
+    const normalizedDelta = Number(delta || 0);
+    if (normalizedDelta < 0) {
+      return scheduleArchiveLoadAfterRewindPlay(slug, pinIndexAfterLoad);
+    }
+    // Next day is always quick (1s).
+    return scheduleArchiveLoadAfterSpin(slug, pinIndexAfterLoad, DECK_SPIN_FAST_MS);
   };
 
   const navigateArchiveByMonths = (delta) => {
-    const current = currentArchiveSlug || dashboardData.generatedDateSlug || "";
+    const current = pendingArchiveSlug || currentArchiveSlug || dashboardData.generatedDateSlug || "";
     const currentDate = parseSlugDateUtc(current);
     if (!currentDate) {
       return;
@@ -531,10 +708,7 @@
     }
     candidates.sort();
     const slug = candidates[candidates.length - 1]; // latest day in that month
-    triggerDeckSpin();
-    updateHistoryStatus(slug);
-    currentArchiveSlug = slug;
-    loadDashboardData(slug);
+    scheduleArchiveLoadWithTapeRules(slug);
   };
 
   let tvChartHistoryHomeParent = null;
@@ -2225,15 +2399,19 @@
               color: "rgba(50,209,92,0.15)",
             },
           },
-          x: {
-            ticks: {
-              // Lower label opacity for the X-axis coordinates (more subtle than the lines).
-              color: "rgba(244,246,255,0.4)",
-              maxRotation: 0,
-              minRotation: 90,
-              padding: 8,
-            },
-            grid: {
+           x: {
+             ticks: {
+               // Lower label opacity for the X-axis coordinates (more subtle than the lines).
+               color: "rgba(244,246,255,0.4)",
+               callback: function (value) {
+                 const raw = this && typeof this.getLabelForValue === "function" ? this.getLabelForValue(value) : value;
+                 return formatXAxisTimeLabel(raw);
+               },
+               maxRotation: 0,
+               minRotation: 90,
+               padding: 8,
+             },
+             grid: {
               color: "rgba(255,255,255,0.08)",
             },
           },
@@ -3035,6 +3213,15 @@
       ) {
         return;
       }
+      // If a history file has been selected, clicking the cassette deck "loads" it (after spin).
+      if (pendingSelectedArchiveSlug && target && target.closest && target.closest("#transport-deck")) {
+        event.preventDefault();
+        const slug = pendingSelectedArchiveSlug;
+        pendingSelectedArchiveSlug = null;
+        scheduleArchiveLoadWithTapeRules(slug);
+        closeHistoryList();
+        return;
+      }
       event.preventDefault();
       if (chartHistoryList && chartHistoryList.classList.contains("hidden")) {
         showHistoryFiles();
@@ -3240,6 +3427,38 @@
     }
     return text;
   };
+
+  function formatXAxisTimeLabel(label) {
+    const text = String(label || "").trim();
+    if (!text) {
+      return "";
+    }
+    let match = text.match(/(\d{1,2})\s*:\s*(\d{2})\s*(AM|PM)\b/i);
+    if (match) {
+      const hh = Number(match[1]);
+      const mm = match[2];
+      const ap = match[3].toUpperCase();
+      return `${hh}:${mm} ${ap}`;
+    }
+    match = text.match(/(\d{1,2})\s*(AM|PM)\b/i);
+    if (match) {
+      return `${Number(match[1])} ${match[2].toUpperCase()}`;
+    }
+    match = text.match(/\b(\d{1,2})\s*:\s*(\d{2})\b/);
+    if (match) {
+      const hour24 = Number(match[1]);
+      const minute = match[2];
+      if (Number.isFinite(hour24) && hour24 >= 0 && hour24 <= 23) {
+        const ap = hour24 < 12 ? "AM" : "PM";
+        let hour12 = hour24 % 12;
+        if (hour12 === 0) {
+          hour12 = 12;
+        }
+        return `${hour12}:${minute} ${ap}`;
+      }
+    }
+    return text;
+  }
 
   const parseLabelTime = (label) => {
     const text = String(label || "").trim();
@@ -3873,10 +4092,16 @@
         button.addEventListener("click", (event) => {
           event.preventDefault();
           if (entry.slug) {
-            triggerDeckSpin();
-            updateHistoryStatus(entry.slug);
-            currentArchiveSlug = entry.slug;
-            loadDashboardData(entry.slug);
+            pendingSelectedArchiveSlug = null;
+            setActiveArchiveItem(entry.slug);
+            closeHistoryList();
+            // Let the history panel fully close before the tape animation starts.
+            if (typeof requestAnimationFrame === "function") {
+              requestAnimationFrame(() => scheduleArchiveLoadWithTapeRules(entry.slug));
+            } else {
+              setTimeout(() => scheduleArchiveLoadWithTapeRules(entry.slug), 0);
+            }
+            return;
           }
           closeHistoryList();
         });
@@ -3903,6 +4128,7 @@
       return;
     }
     dashboardData = data;
+    pendingSelectedArchiveSlug = null;
     currentArchiveSlug = slugHint || data.generatedDateSlug || currentArchiveSlug;
     const labels = getChartLabels();
     const length = Array.isArray(labels) ? labels.length : 0;
