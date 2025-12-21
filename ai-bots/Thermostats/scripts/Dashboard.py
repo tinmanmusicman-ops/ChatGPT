@@ -1711,7 +1711,7 @@ def build_dashboard_html(
         background: rgba(255,255,255,0.02);
         border-radius: 12px;
         padding: 16px;
-        border: 1px solid rgba(255,255,255,0.08);
+        border: 0;
         position: relative;
         z-index: 250;
         isolation: isolate;
@@ -1777,7 +1777,7 @@ def build_dashboard_html(
       
       #chartcontrols {{
         margin-top: 50PX;
-        margin-left: 100PX;
+        margin-left: 200PX;
         max-width: none;
         width: 80%;
         position: relative;
@@ -1809,20 +1809,23 @@ def build_dashboard_html(
       #chartcontrols {{
         min-width: 0;
         margin-top: -45px;
-        justify-self: center;
+        margin-left: 0;
+        margin-right: 0;
+        justify-self: end;
         width: 240px;
+        transform: translateX(60px);
       }}
       .controls-transport-wrap .chart-history {{
         grid-area: history;
       }}
       .transport-stack {{
-        margin-top: -45px;
-        margin-left: -45px;
+        margin-top: -68px;
+        margin-left: 0;
         position: relative;
         z-index: 10;
         transform: none;
         min-width: 0;
-        justify-self: end;
+        justify-self: center;
       }}
       .transport-panel {{
         height: 210px;
@@ -1835,12 +1838,12 @@ def build_dashboard_html(
         transform: none;
         position: relative;
         z-index: 1;
-        padding: 12px;
+        padding: 8px;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: flex-start;
-        gap: 6px;
+        gap: 2px;
         border-radius: 12px;
         box-sizing: border-box;
         pointer-events: auto;
@@ -1889,6 +1892,7 @@ def build_dashboard_html(
         justify-content: center;
         gap: 0;
         padding: 4px;
+        margin-top: -10px;
         border-radius: 14px;
         border: 1px solid rgba(255,255,255,0.12);
         background: rgba(0,0,0,0.18);
@@ -1930,15 +1934,15 @@ def build_dashboard_html(
         outline-offset: 2px;
       }}
       .transport-deck {{
-        width: 280px;
-        height: 130px;
+        width: 440px;
+        height: 206px;
         margin-top: 0px;
         border-radius: 14px;
         pointer-events: auto;
         opacity: 0.98;
       }}
       .transport-nav {{
-        margin-top: -1px;
+        margin-top: -8px;
         width: 100%;
         display: flex;
         align-items: center;
@@ -2014,10 +2018,10 @@ def build_dashboard_html(
         max-width: 1120px;
         width: 100%;
         display: grid;
-        grid-template-columns: 400px 240px 320px;
+        grid-template-columns: 320px 400px 240px;
         grid-template-areas:
-          "usage controls transport"
-          "usage history history";
+          "transport usage controls"
+          "history history history";
         align-items: flex-start;
         column-gap: 0;
         row-gap: 10px;
@@ -2025,7 +2029,7 @@ def build_dashboard_html(
         margin-top: 20px;
         margin-bottom: 18px;
         transform: translateX(-15px);
-        border: 1px solid rgba(255, 255, 255, 0.18);
+        border: 0;
       }}
       .usage-frame-wrap {{
         grid-area: usage;
@@ -3170,7 +3174,7 @@ def build_dashboard_html(
         display: none;
       }}
       .note {{
-        border: 2px solid;
+        border: 0;
         margin-top: 12px;
         font-size: 12px;
         opacity: 0.7;
@@ -3338,7 +3342,7 @@ def build_dashboard_html(
               </g>
             </svg>
           </div>
-          <div id="transport-history-status" class="transport-history-status">
+          <div id="transport-history-status" class="transport-history-status" style="display:none">
             <div id="transport-history-month" class="transport-history-month">Current</div>
             <div id="transport-history-day" class="transport-history-day"></div>
           </div>
@@ -3402,8 +3406,6 @@ def build_dashboard_html(
             </div>
           </div>
         </div>
-        <div class="note">Data source: Google Sheet (last updated when this page was generated).</div>
-
         <pre id="js-log"></pre>
       </div>
     </div>
