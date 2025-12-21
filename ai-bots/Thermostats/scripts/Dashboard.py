@@ -194,7 +194,7 @@ TEST_MODE = _normalize_flag(
     cfg_payload.get("test_mode", cfg_payload.get("testMode", cfg_payload.get("test", False))),
     default=False,
 )
-logger.info("Dashboard test_mode=%s (disables git autopush)", TEST_MODE)
+logger.info("Dashboard test_mode=%s (generates HTML from cached JSON)", TEST_MODE)
 
 HISTORY_WINDOW = 24
 CHART_METRIC_INDEX = 1  # Fallback index; overridden to "Current Temperature" if present
@@ -979,11 +979,7 @@ def build_dashboard_html(
     latest_row: List[str],
     history_rows: List[List[str]],
     output_path: Path,
-    *,
-    generated_slug_override: Optional[str] = None,
-    generated_label_override: Optional[str] = None,
-    data_source_note: Optional[str] = None,
-) -> tuple[str, dict]:
+) -> str:
     def _safe_float(val: str) -> float:
         try:
             return float(val)
@@ -1060,8 +1056,6 @@ def build_dashboard_html(
     )
     timestamp_idx = _find_index(("timestamp",))
     type_idx = _find_index(("type",))
-    studio_idx = _find_index(("studio",))
-    request_expires_idx = _find_index(("request expires", "expires"))
     FAN_LABELS = ["Auto", "Circulate", "On"]
     COOLING_LABELS = ["Idle", "Cooling"]
 
@@ -1186,8 +1180,8 @@ def build_dashboard_html(
     )
     latest_outside_daylight = latest_outside_flag_day_char != "N"
     generated_at = datetime.now()
-    generated_label = generated_label_override or generated_at.strftime("%A %b %d %Y %I:%M:%S %p")
-    generated_slug = generated_slug_override or generated_at.strftime("%Y-%m-%d")
+    generated_label = generated_at.strftime("%A %b %d %Y %I:%M:%S %p")
+    generated_slug = generated_at.strftime("%Y-%m-%d")
     archive_slugs = set()
     if ARCHIVE_DIR.exists():
         for pattern in ("*.html", "*.json"):
@@ -1221,13 +1215,6 @@ def build_dashboard_html(
     # Force cooling-only climate setting for dashboard UI consistency.
     if climate_setting_idx is not None and climate_setting_idx < len(latest_row):
         latest_row[climate_setting_idx] = "Cool"
-
-    type_series = [row[type_idx] if type_idx is not None and type_idx < len(row) else "" for row in history_rows]
-    studio_series = [row[studio_idx] if studio_idx is not None and studio_idx < len(row) else "" for row in history_rows]
-    request_expires_series = [
-        row[request_expires_idx] if request_expires_idx is not None and request_expires_idx < len(row) else ""
-        for row in history_rows
-    ]
     dashboard_payload = {
         "headers": headers,
         "latestRow": latest_row,
@@ -1248,9 +1235,6 @@ def build_dashboard_html(
         "coolingLabel": cooling_label,
         "climateSetting": climate_setting_series,
         "climateSettingLabel": climate_setting_label,
-        "typeSeries": type_series,
-        "studioSeries": studio_series,
-        "requestExpiresLocalSeries": request_expires_series,
         "condenserMinutes": condenser_minutes_series,
         "totalCondenserMinutes": total_condenser_display,
         "totalCondenserMinutesValue": total_condenser_minutes_value,
@@ -1362,6 +1346,9 @@ def build_dashboard_html(
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap">
     <style>
+      html, body {{
+        height: 100%;
+      }}
       body {{
         forced-color-adjust: none;
         -webkit-text-fill-color: initial;
@@ -1369,6 +1356,10 @@ def build_dashboard_html(
         margin: 0;
         font-family: 'Inter', system-ui, sans-serif;
         background: linear-gradient(to bottom, #070312, #160d30, #221542, #453082, #5b517a, #71688c, #71688c, #877796, #71688c);
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        background-size: 100% 100%;
+        min-height: 100vh;
         color: #f4f6ff;
       }}
       .frame {{
@@ -1388,40 +1379,13 @@ def build_dashboard_html(
           inset 0 -2px 4px rgba(0,0,0,0.35);
       }}
       .container {{
-        max-width: 1480px;
+        max-width: 1020px;
         margin: 1px auto;
-        padding: 26px;
+        padding: 22px;
         background: transparent;
-
+        border: 2px solid rgba(255, 255, 255, 0.01);
         border-radius: 12px;
         box-sizing: border-box;
-      }}
-      .layout {{
-        display: grid;
-        grid-template-columns: minmax(940px, 1.35fr) minmax(640px, 1fr);
-        gap: 18px;
-        align-items: start;
-      }}
-      .left-rail,
-      .right-rail {{
-        min-width: 0;
-      }}
-      body.metrics-hidden .layout {{
-        grid-template-columns: 1fr;
-      }}
-      body.metrics-hidden .right-rail {{
-        display: none;
-      }}
-      @media (max-width: 1100px) {{
-        .layout {{
-          grid-template-columns: 1fr;
-        }}
-        .container {{
-          padding: 18px;
-        }}
-        .card-grid {{
-          margin-top: 0;
-        }}
       }}
       h1 {{
         margin: 0 0 16px;
@@ -1431,13 +1395,13 @@ def build_dashboard_html(
 
         display: flex;
         justify-content: space-between;
-        align-items: center;
-        margin-bottom: 12px;
+        align-items: flex-start;
+        margin-bottom: 1px;
       }}
       .timestamp-row {{
-        display: flex;
+        display: none;
         justify-content: flex-end;
-        margin-bottom: 18px;
+        margin-bottom: 0;
       }}
       .date-display {{
         font-size: 14px;
@@ -1459,26 +1423,28 @@ def build_dashboard_html(
       }}
       #Company {{
 
-        width: 80%;
-        font-size: 60px;
-        text-align: center;
-        padding: 4px 0;
+        width: auto;
+        font-size: 16px;
+        line-height: 1.05;
+        text-align: left;
+        padding: 0;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        opacity: 0.9;
       }}
 
 #chart-history-months {{
-height: 5px
-padding: 0;
-font-size; 8PX;
-line-height: 1
-height: auto;
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }}
 
-#chart-history-months option {{
-height: 5px
-padding: 1 3px;
-font-size; 8PX;
-line-height: 1;
+
+  /* Must be visible so the chart-history picker (positioned above) isn't clipped. */
+  overflow: visible;
 }}
+
+/* Glossy highlight + specular edge for the TV frame (border only). */
 
 
 .tv-frame {{
@@ -1486,52 +1452,62 @@ line-height: 1;
   isolation: isolate;
   --frame-border: 10px;
   border-radius: 14px;
-  border: var(--frame-border) solid rgba(255, 255, 255, 0.10);
-  box-shadow:
-    0 20px 44px rgba(0, 0, 0, 0.70),
-    inset 0 3px 4px rgba(255, 255, 255, 0.18),
-    inset 0 -3px 6px rgba(0, 0, 0, 0.85),
-    inset 0 0 18px rgba(255, 255, 255, 0.06),
-    inset 0 0 34px rgba(0, 0, 0, 0.70);
+  border: var(--frame-border) solid rgba(255, 255, 255, 0.18);
   background: linear-gradient(
     to bottom,
-    #07050f 0%,
-    #1a1730 45%,
+    #0c0a18 0%,
+    #2a2550 22%,
+    #1a1730 48%,
     #0b0a16 100%
   );
-  /* Must be visible so the chart-history picker (positioned above) isn't clipped. */
-  overflow: visible;
+  box-shadow:
+    0 22px 48px rgba(0, 0, 0, 0.75),
+    0 0 24px rgba(120, 140, 255, 0.14),
+    inset 0 4px 6px rgba(255, 255, 255, 0.32),
+    inset 0 -4px 8px rgba(0, 0, 0, 0.92),
+    inset 0 0 24px rgba(255, 255, 255, 0.12),
+    inset 0 0 38px rgba(0, 0, 0, 0.78);
 }}
 
-/* Glossy highlight + specular edge for the TV frame (border only). */
+
 .tv-frame::before {{
   content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  padding: var(--frame-border);
+  padding: var(--frame-border, 10px);
   pointer-events: none;
-  z-index: 2;
+  z-index: 50;
   background:
-    radial-gradient(120% 70% at 18% 8%, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0) 55%),
-    linear-gradient(to bottom, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0) 35%, rgba(0,0,0,0.25) 100%);
+    radial-gradient(140% 80% at 20% 6%,
+      rgba(255,255,255,0.42) 0%,
+      rgba(255,255,255,0.18) 26%,
+      rgba(255,255,255,0.00) 56%
+    ),
+    linear-gradient(
+      to bottom,
+      rgba(255,255,255,0.22) 0%,
+      rgba(255,255,255,0.06) 38%,
+      rgba(255,255,255,0.00) 100%
+    );
   mix-blend-mode: screen;
-  opacity: 0.95;
+  opacity: 1;
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
 }}
+
 .tv-frame::after {{
   content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  padding: var(--frame-border);
+  padding: var(--frame-border, 10px);
   pointer-events: none;
-  z-index: 3;
+  z-index: 51;
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.22),
-    inset 0 -1px 0 rgba(0,0,0,0.55);
+    inset 0 2px 0 rgba(255,255,255,0.42),
+    inset 0 -1px 0 rgba(0,0,0,0.38);
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -1541,8 +1517,8 @@ line-height: 1;
 
       .logo-placeholder {{
 
-        width: 190px;
-        height: 126px;
+        width: 72px;
+        height: 52px;
 
                 border-radius: 0px;
         display: flex;
@@ -1558,7 +1534,6 @@ line-height: 1;
         object-fit: contain;
       }}
       .card-grid {{
-        margin-top: 105px;
         padding: 18px 22px;
         border-radius: 12px;
         display: grid;
@@ -1709,26 +1684,6 @@ line-height: 1;
         flex-direction: column;
         align-items: center;
       }}
-      .main-toolbar {{
-        width: 100%;
-        display: flex;
-        justify-content: flex-end;
-        align-items: center;
-        gap: 10px;
-        margin-bottom: 10px;
-      }}
-      .metrics-toggle {{
-        border: 1px solid rgba(255,255,255,0.18);
-        border-radius: 999px;
-        background: rgba(0,0,0,0.35);
-        color: rgba(244,246,255,0.9);
-        padding: 8px 12px;
-        font-size: 12px;
-        cursor: pointer;
-      }}
-      .metrics-toggle:hover {{
-        background: rgba(0,0,0,0.48);
-      }}
       .hands-logo-top {{
         width: 195px;
         height: 120px;
@@ -1786,64 +1741,128 @@ line-height: 1;
       }}
       
       #chartcontrols {{
-       flex: 1;
-  max-width: 795px;   /* <-- THIS is the width control */
-  width: auto;
-  margin-top: 14px;
-  margin-left: 40px;
-  padding: 1px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 3.3px;
+        margin-top: 5PX;
+        margin-left: 35PX;
+        max-width: none;
+        width: 80%;
+        position: relative;
+        z-index: 30;
+        padding: 1px;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 2px;
+        font-size: 13px;
+        color: #f4f6ff;
 
-  font-size: 13px;
-  color: #f4f6ff;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 12px;
-  background: rgba(0, 0, 0, 0.18);
-  box-sizing: border-box;
- }}
+
+
+      }}
+      #chartcontrols .chart-control {{
+        width: 60%;
+        justify-content: flex-start;
+        padding: 3px 8px;
+        font-size: 12px;
+        line-height: 1;
+      }}
+      #chartcontrols #autoplay-toggle {{
+        grid-column: 1 / -1;
+      }}
       .controls-transport-wrap {{
-        height: 280px;
-        margin-top: -330px;
-        margin-left: 280px;
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
+        margin-top: -45px;
+        margin-left: 0;
+        height: auto;
+        display: grid;
+        grid-template-columns: minmax(0, 240px) minmax(0, 320px);
+        grid-template-areas:
+          "controls transport"
+          "history history";
+        align-items: start;
+        column-gap: 14px;
+        row-gap: 10px;
+      }}
+      #chartcontrols {{
+        grid-area: controls;
+        min-width: 0;
+      }}
+      .controls-transport-wrap .chart-history {{
+        grid-area: history;
+      }}
+      .transport-stack {{
+        margin-top: 0;
+        position: relative;
+        z-index: 10;
+        transform: none;
+        grid-area: transport;
+        min-width: 0;
       }}
       .transport-panel {{
-        height: 120px;
-        flex: 0 0 300px;
-        width: 300px;
-        margin-top: 50px;
-        margin-left: 0;
-        padding: 6px;
+        height: 210px;
+        flex: 0 0 auto;
+        width: 100%;
+        max-width: 320px;
+        margin-top: 0;
+        margin-left: auto;
+        margin-right: auto;
+        transform: none;
+        position: relative;
+        z-index: 1;
+        padding: 12px;
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
+        justify-content: flex-start;
         gap: 6px;
         border-radius: 12px;
-        background: rgba(0, 0, 0, 0.0);
         box-sizing: border-box;
-        pointer-events: none;
+        pointer-events: auto;
+        cursor: pointer;
+      }}
+      .transport-history-status {{
+        
+        position: relative;
+        z-index: 10;
+        width: 100%;
+        max-width: 320px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 26px;
+        font-size: 14px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        opacity: 0.9;
+        color: white;
+        margin: 1px auto px;
+        padding: 1px 1px;
+        border-radius: 12px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        text-align: center;
+        line-height: .5;
+        margin-top: 0;
       }}
       .transport-deck {{
-        width: 240px;
-        height: 72px;
-        margin-top: -85px;
+        width: 280px;
+        height: 130px;
+        margin-top: 0px;
         border-radius: 14px;
-        pointer-events: none;
+        pointer-events: auto;
         opacity: 0.98;
       }}
       .transport-nav {{
-        margin-top: -8px;
+        margin-top: -1px;
         width: 100%;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 6px;
+        gap: 1px;
         pointer-events: auto;
+      }}
+      .transport-nav .chart-control {{
+        padding: 10px 18px;
+        font-size: 18px;
+        border-radius: 12px;
       }}
       .transport-deck svg {{
         width: 100%;
@@ -1851,6 +1870,7 @@ line-height: 1;
         display: block;
       }}
       .transport-deck .reel {{
+        height: 200px;
         transform-box: fill-box;
         transform-origin: center;
       }}
@@ -1871,33 +1891,70 @@ line-height: 1;
       .chart-top-row {{
         max-width: 1120px;
         width: 100%;
-        display: flex;
-        flex-wrap: wrap;
+        display: grid;
+        grid-template-columns: 400px minmax(340px, 1fr);
         align-items: flex-start;
-        justify-content: space-between;
         gap: 14px;
-        margin-top: 35px;
+        margin-top: 20px;
         margin-bottom: 18px;
+        transform: translateX(-15px);
         border: 1px solid rgba(255, 255, 255, 0.18);
       }}
       .usage-slot {{
-        flex: 0 0 260px;
-        width: 300px;
-        min-width: 260px;
+        width: 400px;
+        min-width: 400px;
         height: 236px;
-        margin-top: -85px;
-        margin-left: -20px;
+        margin-top: -65px;
+        margin-left: 1px;
  
-        border: 2px solid rgba(255, 179, 71, 0.85);
         border-radius: 12px;
-        background: linear-gradient(to bottom, #000000 0%, #1f1f26 100%);
+        background: rgba(0, 0, 0, 0.6);
+
         padding: 10px 12px;
         color: #fff5c7;
         font-size: 12px;
         opacity: 0.9;
-        overflow: hidden;
+        position: relative;
+        overflow: visible;
         display: flex;
         flex-direction: column;
+      }}
+      .usage-frame-wrap {{
+        position: relative;
+        container-type: inline-size;
+        --usage-legs-overlap: 18px;
+      }}
+      .usage-frame-wrap .usage-legs {{
+        position: absolute;
+        left: 50%;
+        bottom: 0;
+        transform: translateX(-50%) translateY(calc(100% - var(--usage-legs-overlap)));
+        height: clamp(170px, 92%, 260px);
+        width: min(520px, 95%);
+        z-index: 0;
+        pointer-events: none;
+        opacity: 0.96;
+        background-image: url("../../../Images/Legs2.png");
+        background-repeat: no-repeat;
+        background-position: center bottom;
+        background-size: contain;
+        filter: brightness(1.25) contrast(1.1) saturate(1.15) drop-shadow(0 10px 20px rgba(0,0,0,0.6));
+      }}
+      @supports (height: 1cqi) {{
+        .usage-frame-wrap .usage-legs {{
+          height: clamp(170px, 62cqi, 300px);
+          width: min(520px, 120cqi);
+        }}
+      }}
+      .usage-frame-wrap .usage-slot {{
+        position: relative;
+        z-index: 1;
+      }}
+      .usage-slot > .usage-header,
+      .usage-slot > .usage-graphic,
+      .usage-slot > .swap-controls {{
+        position: relative;
+        z-index: 1;
       }}
       .usage-header {{
         display: flex;
@@ -1954,6 +2011,59 @@ line-height: 1;
         align-items: stretch;
         height: 150px;
       }}
+      .swap-controls {{
+        margin-top: 8px;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+      }}
+      .swap-controls .swap-controls-inner {{
+        width: 100%;
+        max-width: 320px;
+        padding: 8px 12px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        background: rgba(0, 0, 0, 0.18);
+        box-shadow: 0 10px 18px rgba(0, 0, 0, 0.35);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        user-select: none;
+        color: rgba(255, 245, 199, 0.95);
+      }}
+      .swap-controls .swap-step-btn {{
+        flex: 0 0 auto;
+        min-width: 48px;
+        height: 36px;
+        border-radius: 14px;
+        border: 1px solid rgba(255,255,255,0.22);
+        background: rgba(0,0,0,0.35);
+        color: rgba(244, 246, 255, 0.92);
+        font-size: 16px;
+        letter-spacing: 0.08em;
+        cursor: pointer;
+        box-shadow: 0 10px 18px rgba(0, 0, 0, 0.35);
+      }}
+      .swap-controls .swap-step-btn:disabled {{
+        opacity: 0.35;
+        cursor: default;
+      }}
+      .swap-controls .swap-step-label {{
+        flex: 1 1 auto;
+        text-align: center;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        opacity: 0.95;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }}
+      .swap-controls .swap-controls-inner:focus-visible {{
+        outline: 2px solid rgba(102, 255, 153, 0.55);
+        outline-offset: 2px;
+      }}
       #usage-slot-canvas-slot {{
         flex: 1 1 auto;
         min-height: 0;
@@ -2008,38 +2118,50 @@ line-height: 1;
       }}
       @media (max-width: 980px) {{
         .chart-top-row {{
-          flex-direction: column;
-        }}
-        .chart-previews {{
           grid-template-columns: 1fr;
-        }}
-        #history-preview-canvas-slot > canvas {{
-          height: 260px !important;
+          transform: none;
         }}
 
         #chartcontrols {{
           max-width: none;
           width: 100%;
           box-sizing: border-box;
-          justify-content: center;
+          display: grid;
+          grid-template-columns: 1fr;
           margin-right: 0;
           margin-left: 0;
           padding-right: 1px;
         }}
         .controls-transport-wrap {{
-          margin-top: 0;
-          margin-left: 0;
+          margin-top: 40;
+          margin-left: 10;
           width: 100%;
-          align-items: center;
+          align-items: start;
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+          grid-template-areas:
+            "controls transport"
+            "history history";
+        }}
+        .transport-stack {{
+          width: 100%;
+          max-width: 320px;
+          margin-top: 0;
+          transform: none;
         }}
         .transport-panel {{
           flex: 0 0 auto;
           width: 100%;
           margin-top: 0;
           margin-left: 0;
+          height: auto;
+          transform: none;
         }}
         .transport-deck {{
           display: none;
+        }}
+        .transport-nav {{
+          margin-top: 10px;
         }}
         .usage-slot {{
           min-width: 0;
@@ -2075,11 +2197,11 @@ line-height: 1;
         color: #ff6666;
       }}
       .condenser-runtime {{
-        display: block;
+        display: none;
         margin-top: 65px;
         position: absolute;
-        top: 109px;
-        right: 44px;
+        top: 24px;
+        right: 4px;
         text-align: right;
         font-size: 12px;
         color: #b1ffce;
@@ -2122,13 +2244,13 @@ line-height: 1;
         height: 100% !important;
       }}
       .chart-wrap {{
-        margin-top: 26px;
         height: 580px;
         margin: -29px auto 0;
         background: linear-gradient(
           to bottom,
-          #000000 0%,
-          #1f1f26 100%
+          #0F0B1A 0%,
+          #2A1E55 40%,
+          #332459 75%
         );
         position: relative;
         max-width: 900px;
@@ -2264,32 +2386,327 @@ line-height: 1;
         }}
       }}
       /* TV stand/legs graphic under the main chart frame. */
-      .chart-wrap.tv-frame {{
+      .tv-frame-wrap {{
+        position: relative;
+        container-type: inline-size;
+        --tv-legs-overlap: 35px;
         margin-bottom: 48px;
       }}
-      .chart-wrap.tv-frame::after {{
-        content: "";
+      body.hide-big-chart .tv-frame-wrap {{
+        display: none;
+      }}
+      .tv-frame-wrap .tv-legs {{
         position: absolute;
         left: 50%;
-        transform: translateX(-50%);
-        bottom: -44px;
-        width: min(720px, 92%);
-        height: 84px;
-        pointer-events: none;
+        bottom: 0;
+        transform: translateX(-50%) translateY(calc(100% - var(--tv-legs-overlap)));
+        height: clamp(400px, 95%, 650px);
+        width: min(1100px, 95%);
         z-index: 0;
-        background-image: url("../../../Images/Legs,png");
+        pointer-events: none;
+        opacity: 0.98;
+        background-image: url("../../../Images/Legs2.png");
         background-repeat: no-repeat;
         background-position: center bottom;
         background-size: contain;
-        opacity: 0.92;
-        filter: drop-shadow(0 12px 16px rgba(0,0,0,0.6));
+        filter: brightness(1.25) contrast(1.1) saturate(1.15) drop-shadow(0 18px 26px rgba(0,0,0,0.65));
+      }}
+      @supports (height: 1cqi) {{
+        .tv-frame-wrap .tv-legs {{
+          height: clamp(400px, 62cqi, 700px);
+          width: min(1100px, 140cqi);
+        }}
+      }}
+      .tv-frame-wrap .chart-wrap.tv-frame {{
+        position: relative;
+        z-index: 1;
+      }}
+      body.hide-big-chart #toggle-history {{
+        display: none;
+      }}
+      body.tv-mode {{
+        overflow: hidden;
+        background: #07070b;
+      }}
+      body.tv-mode .header-row,
+      body.tv-mode .timestamp-row,
+      body.tv-mode #Cards,
+      body.tv-mode .hands-logo-slot,
+      body.tv-mode #toggle-history,
+      body.tv-mode .condenser-runtime,
+      body.tv-mode .chart-top-row,
+      body.tv-mode .note,
+      body.tv-mode #js-log {{
+        display: none !important;
+      }}
+      body.tv-mode .container.frame {{
+        max-width: none;
+        width: 100vw;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        box-shadow: none;
+        border-radius: 0;
+      }}
+      body.tv-mode .tv-frame-wrap {{
+        display: block !important;
+        position: fixed;
+        inset: 14px 34px 74px 34px;
+        z-index: 9999;
+      }}
+      body.tv-mode .tv-frame-wrap .chart-wrap.tv-frame {{
+        position: absolute;
+        inset: 0;
+        height: auto;
+        width: auto;
+        max-width: none;
+        margin: 0;
+        border-radius: 22px;
+        padding: 18px 0 18px;
+        --frame-border: 12px;
+        border: var(--frame-border) solid rgba(255, 255, 255, 0.2);
+        background: linear-gradient(to bottom, #050506 0%, #151518 55%, #2b2b2e 100%);
+      }}
+      body.tv-mode #history-chart-canvas-slot,
+      body.tv-mode #history-chart {{
+        height: 100% !important;
+      }}
+      body.tv-mode .tv-frame-wrap .tv-legs {{
+        display: block;
+        height: clamp(360px, 72%, 560px);
+      }}
+      @supports (height: 1cqi) {{
+        body.tv-mode .tv-frame-wrap .tv-legs {{
+          height: clamp(360px, 40cqi, 600px);
+        }}
+      }}
+      /* TV mode chart controls (mode toggles) shown on the right. */
+      .tv-chartcontrols-overlay {{
+        display: none;
+      }}
+      body.tv-mode .tv-chartcontrols-overlay {{
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-auto-rows: auto;
+        gap: 6px 6px;
+        padding: 5px;
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.12);
+        background: rgba(0,0,0,0.24);
+        backdrop-filter: blur(8px);
+        width: 300px;
+        justify-content: start;
+
+      }}
+      body.tv-mode .tv-chartcontrols-overlay .chart-control {{
+        width: 100%;
+        text-align: left;
+        font-size: 11px;
+        padding: 2px 6px;
+        letter-spacing: 0.2px;
+        white-space: nowrap;
+      }}
+      .tv-bottom-bar {{
+        display: none;
+      }}
+      body.tv-mode .tv-bottom-bar {{
+        display: flex;
+        position: fixed;
+        left: 34px;
+        right: 34px;
+        bottom: 15px;
+        z-index: 10060;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 12px;
+        pointer-events: auto;
+      }}
+      body.tv-mode .tv-bottom-left {{
+        display: flex;
+        align-items: flex-end;
+        gap: 12px;
+      }}
+      body.tv-mode .tv-file-select {{
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        padding: 6px 10px;
+        border-radius: 14px;
+        border: 1px solid rgba(255,255,255,0.12);
+        background: rgba(0,0,0,0.24);
+        backdrop-filter: blur(8px);
+        width: 320px;
+        box-sizing: border-box;
+      }}
+      body.tv-mode .tv-file-select-title {{
+        font-size: 10px;
+        line-height: 1.1;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        opacity: 0.85;
+        user-select: none;
+        width: 100%;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }}
+      body.tv-mode .tv-file-select-status {{
+        font-size: 11px;
+        line-height: 1.1;
+        opacity: 0.9;
+        letter-spacing: 0.02em;
+        user-select: none;
+        width: 100%;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }}
+      body.tv-mode #tv-history-status {{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+      }}
+      body.tv-mode #tv-history-status .tv-history-month {{
+        width: 100%;
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        opacity: 0.9;
+      }}
+      body.tv-mode #tv-history-status .tv-history-day {{
+        width: 100%;
+        font-size: 18px;
+        letter-spacing: 0.06em;
+        opacity: 0.95;
+      }}
+      body.tv-mode #tv-history-status .tv-history-hour {{
+        width: 100%;
+        font-size: 14px;
+        letter-spacing: 0.08em;
+        color: #ffb347;
+      }}
+      body.tv-mode #tv-file-select {{
+        cursor: pointer;
+      }}
+      body.tv-mode #tv-file-select .chart-history {{
+        max-width: none;
+        margin: 0;
+        height: 0;
+        overflow: visible;
+      }}
+      body.tv-mode #tv-file-select .chart-wrap.tv-frame .chart-history,
+      body.tv-mode #tv-file-select .chart-history {{
+        position: relative;
+        top: auto;
+        right: auto;
+        background: transparent;
+        border: 0;
+        box-shadow: none;
+        padding: 0;
+        width: 100%;
+        max-height: none;
+        overflow: visible;
+        display: block;
+      }}
+      body.tv-mode #tv-file-select .chart-history h4 {{
+        display: none;
+      }}
+      body.tv-mode #tv-file-select .chart-history-status {{
+        display: none !important;
+      }}
+      /* TV mode navigation controls (prev/next day) positioned between the legs. */
+      .tv-nav-overlay {{
+        display: none;
+      }}
+      body.tv-mode .tv-nav-overlay {{
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 8px;
+        pointer-events: auto;
+        position: fixed;
+        left: 50%;
+        bottom: 22px;
+        transform: translateX(-50%);
+        z-index: 10070;
+      }}
+      body.tv-mode .tv-nav-overlay .tv-nav-date {{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        text-align: center;
+        user-select: none;
+      }}
+      body.tv-mode .tv-nav-overlay .tv-nav-month {{
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        opacity: 0.9;
+        color: rgba(244, 246, 255, 0.9);
+      }}
+      body.tv-mode .tv-nav-overlay .tv-nav-day {{
+        font-size: 18px;
+        letter-spacing: 0.06em;
+        opacity: 0.95;
+        color: rgba(244, 246, 255, 0.95);
+      }}
+      body.tv-mode .tv-nav-overlay .tv-nav-hour {{
+        font-size: 14px;
+        letter-spacing: 0.08em;
+        color: #ffb347;
+      }}
+      body.tv-mode .tv-nav-overlay .tv-nav-buttons {{
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+      }}
+      .tv-nav-btn {{
+        flex: 0 0 auto;
+        min-width: 52px;
+        height: 40px;
+        border-radius: 16px;
+        border: 1px solid rgba(255,255,255,0.22);
+        background: rgba(0,0,0,0.35);
+        color: rgba(244, 246, 255, 0.92);
+        font-size: 18px;
+        letter-spacing: 0.08em;
+        cursor: pointer;
+        box-shadow: 0 18px 30px rgba(0,0,0,0.55);
+      }}
+      .tv-nav-btn:disabled {{
+        opacity: 0.35;
+        cursor: default;
+      }}
+      body.hide-chart-history .chart-history {{
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: 0;
+        background: transparent;
+        min-height: 0;
+      }}
+      body.hide-chart-history .chart-history > h4,
+      body.hide-chart-history .chart-history > .chart-history-status {{
+        display: none !important;
+      }}
+      body.hide-big-chart .chart-history {{
+        position: relative;
+        width: 100%;
+        max-width: 720px;
+        margin: 14px auto 0;
+        box-sizing: border-box;
       }}
       @media (max-width: 680px) {{
         .chart-wrap.tv-frame {{
           margin-bottom: 18px;
-        }}
-        .chart-wrap.tv-frame::after {{
-          display: none;
         }}
       }}
       .chart-wrap::before {{
@@ -2316,146 +2733,6 @@ line-height: 1;
         position: relative;
         z-index: 2;
       }}
-
-      /* Preview-first layout + TV zoom mode */
-      .chart-previews {{
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 16px;
-        align-items: start;
-      }}
-      .history-preview {{
-        border: 1px solid rgba(255,255,255,0.14);
-        border-radius: 14px;
-        background: rgba(10,10,16,0.85);
-        box-shadow: 0 12px 26px rgba(0,0,0,0.45);
-        overflow: hidden;
-      }}
-      .history-preview-header {{
-        display: flex;
-        justify-content: space-between;
-        align-items: baseline;
-        gap: 12px;
-        padding: 12px 14px 8px 14px;
-      }}
-      .history-preview-header .title {{
-        font-weight: 600;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        font-size: 12px;
-      }}
-      .history-preview-header .hint {{
-        font-size: 11px;
-        opacity: 0.7;
-        white-space: nowrap;
-      }}
-      #history-preview-canvas-slot {{
-        padding: 0 10px 10px 10px;
-      }}
-      #history-preview-canvas-slot > canvas {{
-        width: 100% !important;
-        height: 290px !important;
-        display: block;
-      }}
-      .history-preview .chart-history {{
-        position: static;
-        margin: 0 10px 12px 10px;
-        top: auto;
-        right: auto;
-        width: auto;
-        max-width: none;
-      }}
-      .history-preview .chart-history ul {{
-        max-height: 220px;
-        overflow: auto;
-      }}
-
-      #tv-frame {{
-        display: none;
-        position: fixed;
-        inset: 0;
-        z-index: 9999;
-        margin: 0;
-        border-radius: 0;
-        border-width: 0;
-      }}
-      body.tv-mode {{
-        overflow: hidden;
-      }}
-      body.tv-mode .layout {{
-        display: none;
-      }}
-      body.tv-mode #tv-frame {{
-        display: block;
-      }}
-      #tv-canvas-slot {{
-        position: absolute;
-        inset: 12px;
-      }}
-      #tv-canvas-slot > canvas {{
-        width: 100% !important;
-        height: 100% !important;
-        display: block;
-      }}
-      #tv-controls {{
-        position: absolute;
-        top: 12px;
-        right: 12px;
-        display: flex;
-        gap: 10px;
-        align-items: center;
-        z-index: 2;
-      }}
-      #tv-controls .tv-btn {{
-        border: 1px solid rgba(255,255,255,0.18);
-        border-radius: 999px;
-        background: rgba(0,0,0,0.45);
-        color: rgba(244,246,255,0.9);
-        padding: 8px 12px;
-        font-size: 12px;
-        cursor: pointer;
-      }}
-      #tv-controls .tv-btn.active {{
-        border-color: rgba(102,255,153,0.75);
-        color: rgba(102,255,153,0.95);
-      }}
-      #tv-exit-hint {{
-        position: absolute;
-        left: 12px;
-        bottom: 12px;
-        font-size: 12px;
-        opacity: 0.7;
-        z-index: 2;
-        background: rgba(0,0,0,0.35);
-        border: 1px solid rgba(255,255,255,0.10);
-        border-radius: 10px;
-        padding: 8px 10px;
-      }}
-
-      /* Debug layout framing: enable with ?debug=1 (adds body.debug-layout) */
-      body.debug-layout .container,
-      body.debug-layout .layout,
-      body.debug-layout .left-rail,
-      body.debug-layout .right-rail,
-      body.debug-layout #history,
-      body.debug-layout .history-panel,
-      body.debug-layout #Cards,
-      body.debug-layout .controls-transport-wrap,
-      body.debug-layout #transport-panel,
-      body.debug-layout #transport-nav,
-      body.debug-layout .chart-previews,
-      body.debug-layout #usage-slot,
-      body.debug-layout #history-preview,
-      body.debug-layout #tv-frame {{
-        outline: 2px solid rgba(255, 105, 180, 0.55);
-        outline-offset: 2px;
-      }}
-      body.debug-layout #usage-slot-canvas-slot,
-      body.debug-layout #history-preview-canvas-slot,
-      body.debug-layout #tv-canvas-slot {{
-        outline: 2px dashed rgba(102, 255, 153, 0.55);
-        outline-offset: 2px;
-      }}
       .fan-legend-image {{
       }}
       #logo2 {{
@@ -2472,9 +2749,22 @@ line-height: 1;
         color: #f4f6ff;
       }}
       .chart-history {{
+        position: relative;
+        width: 100%;
+        max-width: 720px;
+        margin: 14px auto 0;
+        z-index: 40;
+        box-sizing: border-box;
+        padding: 0;
+        background: transparent;
+        border: 0;
+        box-shadow: none;
+        color: #fff5c7;
+      }}
+      .chart-wrap.tv-frame .chart-history {{
         position: absolute;
         margin-top: 10px;
-        top: -202px;
+        top: -217px;
         right: 55px;
         z-index: 5;
         background: #2f3136;
@@ -2500,8 +2790,6 @@ line-height: 1;
       .history-months {{
         flex: 0 0 125px;
         width: 125px;
-        max-height: 140px;
-        overflow-y: auto;
         padding-right: 4px;
         border-right: 1px solid rgba(255, 255, 255, 0.18);
       }}
@@ -2520,11 +2808,9 @@ line-height: 1;
         display: none;
         flex-direction: column;
         gap: 2px;
-        max-height: 120px;
-        overflow-y: auto;
       }}
-      .history-lists-row:hover .history-months-list,
-      .history-months:focus-within .history-months-list {{
+      /* Open months list only when history is expanded (no hover-open). */
+      .chart-history.expanded .history-months-list {{
         display: flex;
       }}
       .history-months-list li {{
@@ -2566,10 +2852,10 @@ line-height: 1;
         transition: max-height 0.2s ease, padding 0.2s ease;
       }}
       .history-list-column.expanded {{
-        max-height: 220px;
-        overflow-y: auto;
-        padding: 4px 14px 4px 0;
-        margin-right: 71px;
+        max-height: none;
+        overflow: visible;
+        padding: 0;
+        margin-right: 0;
       }}
       .history-month {{
         margin-bottom: 6px;
@@ -2601,21 +2887,55 @@ line-height: 1;
         display: none;
       }}
       .history-lists-row {{
-        display: flex;
+        display: none;
         flex-wrap: nowrap;
         gap: 12px;
         align-items: flex-start;
         width: 100%;
       }}
+      /* Expand upward (drop-up) without pushing layout down. */
+      .chart-history.expanded .history-lists-row {{
+        display: flex;
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: calc(100% + 10px);
+        z-index: 60;
+        background: #2f3136;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 14px;
+        padding: 12px 14px;
+        box-shadow:
+          0 14px 30px rgba(0, 0, 0, 0.45),
+          inset 0 1px 2px rgba(255, 255, 255, 0.15);
+      }}
       .chart-history h4 {{
-        margin: 0 0 6px;
+        margin: 0;
         font-size: 12px;
         letter-spacing: 0.08em;
         font-weight: 600;
         text-transform: uppercase;
         cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 12px;
+        background: #2f3136;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 10px 18px rgba(0, 0, 0, 0.35);
+      }}
+      .chart-history.expanded h4 {{
+        border-color: rgba(102, 255, 153, 0.45);
+      }}
+      .chart-history {{
+        position: relative;
+      }}
+      .chart-history:not(.expanded) .chart-history-status {{
+        display: none;
       }}
       .chart-history-status {{
+        display: none;
         font-size: 11px;
         opacity: 0.7;
         letter-spacing: 0.05em;
@@ -2631,12 +2951,15 @@ line-height: 1;
       }}
       .chart-history ul button {{
         all: unset;
+        display: block;
         width: 100%;
+        box-sizing: border-box;
         text-align: left;
         cursor: pointer;
         color: #33ccff;
         font-size: 11px;
         letter-spacing: 0.04em;
+        padding: 3px 8px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -2673,16 +2996,18 @@ line-height: 1;
       }}
     </style>
   </head>
-  <body class="metrics-hidden">
-    <div class="container frame">
-      <div class="layout">
-        <div class="left-rail">
-          <div id="history" class="history-panel">
-
-      <div class="main-toolbar">
-        <button type="button" id="metrics-toggle" class="metrics-toggle">Show Metrics</button>
+  <body class="hide-big-chart hide-chart-history">
+    <div class="container">
+      <div id="Cards" class="card-grid frame2">
+        {cards}
       </div>
+      <div class="hands-logo-slot" aria-hidden="true">
+        <div class="hands-logo-top"></div>
+      </div>
+        
+      <div id="history" class="history-panel">
 
+      <button id="toggle-history">Show History Chart</button>
       <div class="condenser-runtime">
         <div class="label">Total condenser runtime</div>
         <div class="value">{total_condenser_display or "0"} min</div>
@@ -2690,33 +3015,88 @@ line-height: 1;
         <div class="cost-value {condenser_cost_class}">{total_condenser_cost_display or "$0.00"}</div>
       </div>
 
-      <div class="controls-transport-wrap">
-        <div id="chartcontrols" class="chart-controls">
-          <button type="button" class="chart-control" data-mode="setpoint">Set Point</button>
-          <button type="button" class="chart-control" data-mode="actual">Building Temp</button>
-          <button type="button" class="chart-control" data-mode="outside">Outside Temp</button>
-          <button type="button" class="chart-control" data-mode="cooling">AC Status</button>
-          <button type="button" class="chart-control" data-mode="fan">Fan Mode</button>
-          <button type="button" class="chart-control active" data-mode="both">Combined</button>
-          <span>&nbsp;</span>
-          <button type="button" class="chart-control" id="autoplay-toggle">Auto-play: On</button>
+      <div class="chart-top-row">
+        <div class="usage-frame-wrap">
+          <div class="usage-legs" aria-hidden="true"></div>
+          <div class="usage-slot tv-frame" id="usage-slot">
+            <div class="usage-header">
+              <div class="usage-header-left">
+                <div class="title">Usage Chart</div>
+                <div class="usage-controls" role="group" aria-label="Usage Range">
+                  <button type="button" class="usage-control" data-range="7d">7 Day</button>
+                  <button type="button" class="usage-control" data-range="month">Month</button>
+                  <button type="button" class="usage-control active" data-range="year">Year</button>
+                </div>
+              </div>
+              <div class="usage-stats" id="usage-slot-stats" aria-hidden="true">
+                <div class="k">Total</div><div class="v" id="usage-stat-total">-</div>
+                <div class="k">Avg</div><div class="v" id="usage-stat-avg">-</div>
+                <div class="k">Max</div><div class="v" id="usage-stat-max">-</div>
+                <div class="k">Cost</div><div class="v" id="usage-stat-cost">-</div>
+              </div>
+            </div>
+            <div class="usage-graphic">
+              <div id="usage-slot-canvas-slot">
+                <canvas id="usage-slot-chart"></canvas>
+              </div>
+            </div>
+            <div id="swap-controls" class="swap-controls" aria-hidden="false">
+              <div id="swap-controls-label" class="swap-controls-inner" role="group" aria-label="Step through 24 hour chart">
+                <button type="button" id="chart-step-prev" class="swap-step-btn" aria-label="Previous point">&lt;&lt;</button>
+                <div class="swap-step-label">Step Time</div>
+                <button type="button" id="chart-step-next" class="swap-step-btn" aria-label="Next point">&gt;&gt;</button>
+              </div>
+            </div>
+          </div>
         </div>
-        <div id="transport-panel" class="transport-panel">
-          <div id="transport-deck" class="transport-deck" aria-hidden="true">
+        <div class="controls-transport-wrap">
+          <div id="chartcontrols" class="chart-controls">
+              <button type="button" class="chart-control" data-mode="setpoint">Set Point</button>
+              <button type="button" class="chart-control" data-mode="actual">Building Temp</button>
+              <button type="button" class="chart-control" data-mode="outside">Outside Temp</button>
+              <button type="button" class="chart-control" data-mode="cooling">AC Status</button>
+              <button type="button" class="chart-control" data-mode="fan">Fan Mode</button>
+              <button type="button" class="chart-control active" data-mode="both">Combined</button>
+              <span>&nbsp;</span>
+              <button type="button" class="chart-control" id="autoplay-toggle">Auto-play: On</button>
+            </div>
+          <div class="chart-history" id="chart-history">
+            <h4 id="chart-history-toggle">Chart History</h4>
+            <div id="chart-history-status" class="chart-history-status"></div>
+            <ul id="chart-history-list" class="hidden"></ul>
+          </div>
+          <div class="transport-stack">
+
+      <div id="transport-panel" class="transport-panel">
+            <div id="transport-deck" class="transport-deck" aria-hidden="true">
               <svg viewBox="0 0 240 90" role="img" aria-label="Data deck">
               <defs>
                 <linearGradient id="deck-bg" x1="0" x2="0" y1="0" y2="1">
-                  <stop offset="0" stop-color="#0a0a10" />
-                  <stop offset="1" stop-color="#1f1f26" />
+                  <stop offset="0" stop-color="#1c1c24" />
+                  <stop offset="0.55" stop-color="#0d0d14" />
+                  <stop offset="1" stop-color="#2b2b34" />
                 </linearGradient>
+                <linearGradient id="deck-edge" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0" stop-color="rgba(255,255,255,0.18)" />
+                  <stop offset="1" stop-color="rgba(0,0,0,0.6)" />
+                </linearGradient>
+                <filter id="deck-shadow" x="-20%" y="-40%" width="140%" height="180%">
+                  <feDropShadow dx="0" dy="10" stdDeviation="7" flood-color="rgba(0,0,0,0.7)" />
+                </filter>
               </defs>
-              <rect x="3" y="3" width="234" height="84" rx="14" fill="url(#deck-bg)" />
-              <rect x="12" y="14" width="216" height="40" rx="10" fill="rgba(255,255,255,0.06)" />
-              <rect x="14" y="16" width="212" height="36" rx="9" fill="rgba(0,0,0,0.28)" />
+              <!-- Depth/back plate to make the deck feel like a cassette -->
+              <rect x="6" y="6" width="234" height="84" rx="14" fill="rgba(0,0,0,0.55)" />
+              <!-- Main body -->
+              <rect x="3" y="3" width="234" height="84" rx="14" fill="url(#deck-bg)" stroke="url(#deck-edge)" stroke-width="2" filter="url(#deck-shadow)" />
+              <!-- Bottom lip -->
+              <rect x="10" y="74" width="220" height="10" rx="6" fill="rgba(0,0,0,0.28)" />
+              <!-- Window area -->
+              <rect x="12" y="14" width="216" height="40" rx="10" fill="rgba(255,255,255,0.07)" />
+              <rect x="14" y="16" width="212" height="36" rx="9" fill="rgba(0,0,0,0.30)" />
 
               <g class="reel reel-left">
-                <circle cx="72" cy="34" r="14" fill="rgba(255,255,255,0.06)" />
-                <circle cx="72" cy="34" r="10" fill="rgba(0,0,0,0.35)" />
+                <circle cx="72" cy="34" r="14" fill="rgba(0,0,0,0.0)" stroke="rgba(0,0,0,0.55)" stroke-width="1.5" />
+                <circle cx="72" cy="34" r="10" fill="rgba(0,0,0,0.0)" stroke="rgba(255,255,255,0.14)" stroke-width="1" />
                 <circle cx="72" cy="34" r="2.5" fill="rgba(255,255,255,0.35)" />
                 <path d="M72 24 L74.8 32 L72 34 L69.2 32 Z" fill="rgba(255,255,255,0.35)" />
                 <path d="M62 34 L70 36.8 L72 34 L70 31.2 Z" fill="rgba(255,255,255,0.35)" />
@@ -2725,8 +3105,8 @@ line-height: 1;
               </g>
 
               <g class="reel reel-right">
-                <circle cx="168" cy="34" r="14" fill="rgba(255,255,255,0.06)" />
-                <circle cx="168" cy="34" r="10" fill="rgba(0,0,0,0.35)" />
+                <circle cx="168" cy="34" r="14" fill="rgba(0,0,0,0.0)" stroke="rgba(0,0,0,0.55)" stroke-width="1.5" />
+                <circle cx="168" cy="34" r="10" fill="rgba(0,0,0,0.0)" stroke="rgba(255,255,255,0.14)" stroke-width="1" />
                 <circle cx="168" cy="34" r="2.5" fill="rgba(255,255,255,0.35)" />
                 <path d="M168 24 L170.8 32 L168 34 L165.2 32 Z" fill="rgba(255,255,255,0.35)" />
                 <path d="M158 34 L166 36.8 L168 34 L166 31.2 Z" fill="rgba(255,255,255,0.35)" />
@@ -2747,85 +3127,60 @@ line-height: 1;
               </g>
             </svg>
           </div>
+          <div id="transport-history-status" class="transport-history-status">Current</div>
           <div id="transport-nav" class="transport-nav" role="group" aria-label="History navigation"></div>
         </div>
+        </div>
+        </div>
       </div>
-
-      <div class="chart-previews">
-        <div class="usage-slot" id="usage-slot">
-          <div class="usage-header">
-            <div class="usage-header-left">
-              <div class="title">Usage Chart</div>
-              <div class="usage-controls" role="group" aria-label="Usage Range">
-                <button type="button" class="usage-control" data-range="7d">7 Day</button>
-                <button type="button" class="usage-control" data-range="month">Month</button>
-                <button type="button" class="usage-control active" data-range="year">Year</button>
+        <div class="tv-frame-wrap">
+          <div class="tv-legs" aria-hidden="true"></div>
+          <div class="chart-wrap tv-frame">
+            <div id="usage-pip" aria-hidden="true"></div>
+            <div id="tv-hands-logo" aria-hidden="true"></div>
+            <div>
+            </div>
+            <div id="history-chart-canvas-slot">
+              <canvas id="history-chart"></canvas>
+            </div>
+              <div class="tv-bottom-bar" aria-hidden="true">
+                <div class="tv-bottom-left">
+                <div class="tv-file-select" id="tv-file-select" aria-label="TV file select">
+                  <div class="tv-file-select-title">Chart History</div>
+                  <div id="tv-history-status" class="tv-file-select-status">
+                    <div id="tv-history-month" class="tv-history-month">Current</div>
+                    <div id="tv-history-day" class="tv-history-day"></div>
+                    <div id="tv-history-hour" class="tv-history-hour"></div>
+                  </div>
+                  <div id="tv-history-slot"></div>
+                </div>
+              </div>
+                <div class="tv-nav-overlay" aria-hidden="true">
+                  <div class="tv-nav-date" aria-hidden="true">
+                    <div id="tv-nav-month" class="tv-nav-month"></div>
+                    <div id="tv-nav-day" class="tv-nav-day"></div>
+                    <div id="tv-nav-hour" class="tv-nav-hour"></div>
+                  </div>
+                  <div class="tv-nav-buttons">
+                    <button type="button" id="tv-archive-prev" class="tv-nav-btn" aria-label="Previous day">&lt;&lt;</button>
+                    <button type="button" id="tv-archive-next" class="tv-nav-btn" aria-label="Next day">&gt;&gt;</button>
+                  </div>
+                </div>
+              <div class="tv-chartcontrols-overlay" aria-label="TV chart controls">
+                <button type="button" class="chart-control" data-mode="setpoint">Set Point</button>
+                <button type="button" class="chart-control" data-mode="actual">Building Temp</button>
+                <button type="button" class="chart-control" data-mode="outside">Outside Temp</button>
+                <button type="button" class="chart-control" data-mode="cooling">AC Status</button>
+                <button type="button" class="chart-control" data-mode="fan">Fan Mode</button>
+                <button type="button" class="chart-control" data-mode="both">Combined</button>
               </div>
             </div>
-            <div class="usage-stats" id="usage-slot-stats" aria-hidden="true">
-              <div class="k">Total</div><div class="v" id="usage-stat-total">-</div>
-              <div class="k">Avg</div><div class="v" id="usage-stat-avg">-</div>
-              <div class="k">Max</div><div class="v" id="usage-stat-max">-</div>
-              <div class="k">Cost</div><div class="v" id="usage-stat-cost">-</div>
-            </div>
-          </div>
-          <div class="usage-graphic">
-            <div id="usage-slot-canvas-slot">
-              <canvas id="usage-slot-chart"></canvas>
-            </div>
           </div>
         </div>
-
-        <div class="history-preview" id="history-preview">
-          <div class="history-preview-header">
-            <div class="title">History Chart</div>
-            <div class="hint">Double-click to expand</div>
-          </div>
-          <div id="history-preview-canvas-slot">
-            <canvas id="history-chart"></canvas>
-          </div>
-          <div class="chart-history" id="chart-history">
-            <h4 id="chart-history-toggle">Chart History</h4>
-            <div id="chart-history-status" class="chart-history-status"></div>
-            <ul id="chart-history-list" class="hidden"></ul>
-          </div>
-        </div>
-      </div>
-        <img style="margin-top: -138px; width: 800px; height: 800px;" src="../../../Images/Legs2.png" alt="Logo" />
-
-        <div class="note">{data_source_note or "Data source: Google Sheet (last updated when this page was generated)."}</div>
+        <div class="note">Data source: Google Sheet (last updated when this page was generated).</div>
 
         <pre id="js-log"></pre>
-          </div>
-        </div>
-        <div class="right-rail">
-          <div class="header-row">
-            <div id="Company">Any Company<br>Anywhere USA</div>
-            <div id="Logo"class="logo-placeholder">
-              <img src="../../../Images/Hands.png" alt="Logo" />
-            </div>
-          </div>
-          <div class="timestamp-row">
-            <div id="dashboard-timestamp" class="date-display">{generated_label}</div>
-          </div>
-          <div id="Cards" class="card-grid frame2">
-            {cards}
-          </div>
-          <div class="hands-logo-slot" aria-hidden="true">
-            <div class="hands-logo-top"></div>
-          </div>
-        </div>
       </div>
-    </div>
-    <div class="chart-wrap tv-frame" id="tv-frame" aria-hidden="true">
-      <div id="usage-pip" aria-hidden="true"></div>
-      <div id="tv-hands-logo" aria-hidden="true"></div>
-      <div id="tv-controls" aria-label="TV controls">
-        <button type="button" id="tv-show-history" class="tv-btn">History</button>
-        <button type="button" id="tv-show-usage" class="tv-btn">Usage</button>
-      </div>
-      <div id="tv-exit-hint">Double-click to exit</div>
-      <div id="tv-canvas-slot"></div>
     </div>
     {script_block}
 
@@ -2837,181 +3192,10 @@ line-height: 1;
     return generated_slug, dashboard_payload
 
 
-def _projected_payload_to_sheet_rows(payload: dict) -> tuple[List[str], List[str], List[List[str]]]:
-    headers = list(payload.get("headers") or [])
-    latest_row = list(payload.get("latestRow") or [])
-
-    if not headers:
-        raise SystemExit("Projected payload missing headers.")
-    if not latest_row:
-        raise SystemExit("Projected payload missing latestRow.")
-
-    setpoint = payload.get("setpoint") or []
-    actual = payload.get("actual") or []
-    outside = payload.get("outside") or []
-    outside_flags = payload.get("outsideFlags") or []
-    outside_day_chars = payload.get("outsideFlagDayChars") or []
-    cooling = payload.get("cooling") or []
-    fan = payload.get("fan") or []
-    climate_setting = payload.get("climateSetting") or []
-    condenser_minutes = payload.get("condenserMinutes") or []
-    type_series = payload.get("typeSeries") or []
-    studio_series = payload.get("studioSeries") or []
-    request_expires = payload.get("requestExpiresLocalSeries") or []
-
-    def _fan_to_text(value) -> str:
-        code = str(value or "").strip().upper()
-        if code == "C":
-            return "Circulate"
-        if code == "O":
-            return "On"
-        return "Auto"
-
-    def _cooling_to_text(value) -> str:
-        try:
-            num = int(value)
-        except (TypeError, ValueError):
-            text = str(value or "").strip().lower()
-            return "Cooling" if "cool" in text else "Idle"
-        return "Cooling" if num else "Idle"
-
-    slug = str(payload.get("generatedDateSlug") or "").strip()
-    if not slug:
-        slug = datetime.now().strftime("%Y-%m-%d")
-
-    history_rows: List[List[str]] = []
-    for hour in range(24):
-        outside_val = outside[hour] if hour < len(outside) else ""
-        flag = outside_flags[hour] if hour < len(outside_flags) else ""
-        day_char = outside_day_chars[hour] if hour < len(outside_day_chars) else "D"
-        outside_cell = ""
-        if outside_val != "" and outside_val is not None:
-            try:
-                outside_cell = f"{str(flag).upper()}{str(day_char).upper()} {float(outside_val):.1f}"
-            except (TypeError, ValueError):
-                outside_cell = f"{str(flag).upper()}{str(day_char).upper()} {outside_val}"
-
-        cooling_value = 0
-        if hour < len(cooling):
-            try:
-                cooling_value = int(cooling[hour] or 0)
-            except (TypeError, ValueError):
-                cooling_value = 1 if str(cooling[hour]).strip().lower() in ("1", "true", "cooling") else 0
-        condenser_state = "On" if cooling_value == 1 else "Off"
-
-        row_by_header = {
-            "Timestamp": f"{slug} {hour:02d}:00",
-            "Type": type_series[hour] if hour < len(type_series) else "System",
-            "Building Temperature": actual[hour] if hour < len(actual) else "",
-            "Cooling Set Point": setpoint[hour] if hour < len(setpoint) else "",
-            "Climate Setting": climate_setting[hour] if hour < len(climate_setting) else "Cool",
-            "Fan Setting": _fan_to_text(fan[hour] if hour < len(fan) else ""),
-            "Equipment Status": _cooling_to_text(cooling_value),
-            "Studio": studio_series[hour] if hour < len(studio_series) else "",
-            "Request Expires (local time)": request_expires[hour] if hour < len(request_expires) else "",
-            "Outside Temp": outside_cell,
-            "Condenser State": condenser_state,
-            "Condenser Minutes": condenser_minutes[hour] if hour < len(condenser_minutes) else 0,
-        }
-
-        history_rows.append([str(row_by_header.get(header, "")) for header in headers])
-
-    if history_rows:
-        latest_row = history_rows[-1]
-    return headers, latest_row, history_rows
-
-
-def run_projected_dashboard(
-    target: Optional[date] = None,
-    *,
-    weather_source: str = "auto",
-    simulate_requests: bool = False,
-    request_every_days: int = 3,
-    request_setpoint_delta_f: float = 2.0,
-    request_setpoint_deltas_f: Optional[List[float]] = None,
-    request_deltas_mode: str = "random",
-) -> None:
-    """
-    Generate the standard dashboard outputs without reading the Google Sheet.
-
-    Writes:
-    - ai-bots/Thermostats/Web/dashboard_public.html
-    - ai-bots/Thermostats/Web/dashboard_data.json
-    - ai-bots/Thermostats/Web/chart hist/<YYYY-MM-DD>.html
-    - ai-bots/Thermostats/Web/chart hist/<YYYY-MM-DD>.json
-    """
-    target = target or date.today()
-    slug = target.strftime("%Y-%m-%d")
-
-    archive_dir = ARCHIVE_DIR
-    archive_dir.mkdir(parents=True, exist_ok=True)
-    archive_slugs = {entry.stem for entry in archive_dir.glob("*.json") if entry.stem}
-    archive_slugs.add(slug)
-    archive_dates = [
-        {"slug": existing_slug, "label": _format_archive_label(existing_slug)}
-        for existing_slug in sorted(archive_slugs, reverse=True)
-    ]
-
-    projected_payload, _summary = build_projected_dashboard_payload(
-        target,
-        archive_dates,
-        weather_source=weather_source,
-        simulate_requests=simulate_requests,
-        request_every_days=request_every_days,
-        request_setpoint_delta_f=request_setpoint_delta_f,
-        request_setpoint_deltas_f=request_setpoint_deltas_f,
-        request_deltas_mode=request_deltas_mode,
-    )
-
-    headers, latest_row, history_rows = _projected_payload_to_sheet_rows(projected_payload)
-
-    TEMP_DIR.mkdir(parents=True, exist_ok=True)
-    target_path = TEMP_DIR / "dashboard.html"
-    note = "Data source: Projected dataset (generated locally; Google Sheet not read)."
-    generated_suffix, dashboard_payload = build_dashboard_html(
-        headers,
-        latest_row,
-        history_rows,
-        target_path,
-        generated_slug_override=slug,
-        generated_label_override=str(projected_payload.get("generatedTimestamp") or ""),
-        data_source_note=note,
-    )
-
-    public_dir = base_dir.parent / "Web"
-    public_dir.mkdir(parents=True, exist_ok=True)
-    public_copy = public_dir / "dashboard_public.html"
-
-    script_path = SCRIPT_DIR / "dashboard_client.js"
-    temp_script_src = Path(os.path.relpath(script_path, start=target_path.parent)).as_posix()
-    web_script_src = Path(os.path.relpath(script_path, start=public_copy.parent)).as_posix()
-    public_html = target_path.read_text(encoding="utf-8")
-    if temp_script_src != web_script_src:
-        public_html = public_html.replace(temp_script_src, web_script_src, 1)
-    public_copy.write_text(public_html, encoding="utf-8")
-    logger.info("Wrote projected public copy to %s", public_copy)
-
-    archive_target = archive_dir / f"{generated_suffix}.html"
-    shutil.copy2(public_copy, archive_target)
-    archive_json = archive_dir / f"{generated_suffix}.json"
-    archive_json.write_text(json.dumps(dashboard_payload, indent=2), encoding="utf-8")
-    dashboard_data_path = public_dir / "dashboard_data.json"
-    dashboard_data_path.write_text(json.dumps(dashboard_payload, indent=2), encoding="utf-8")
-
-    try:
-        dashboard_script_path = SCRIPT_DIR / "dashboard_client.js"
-        git_autopush(
-            public_copy,
-            extra_paths=[archive_target, dashboard_data_path, dashboard_script_path, archive_json],
-        )
-    except Exception as exc:
-        logger.warning("Failed to git autopush projected dashboard outputs (%s)", exc)
-
-    print(f"Projected dashboard generated at: {target_path.resolve()}")
-    logger.info("Projected dashboard generation complete at %s", target_path.resolve())
-
-
 def run_live_dashboard() -> None:
+    if TEST_MODE:
+        run_test_mode_dashboard()
+        return
     headers, latest_row, history_rows = fetch_sheet_data()
     if not headers:
         raise SystemExit("Sheet returned no data; set GOOGLE_SHEET_ID and DATA_RANGE.")
@@ -3034,6 +3218,7 @@ def run_live_dashboard() -> None:
             public_html = public_html.replace(temp_script_src, web_script_src, 1)
         public_copy.write_text(public_html, encoding="utf-8")
         logger.info("Wrote public copy to %s", public_copy)
+
         archive_dir = ARCHIVE_DIR
         archive_dir.mkdir(parents=True, exist_ok=True)
         archive_target = archive_dir / f"{generated_suffix}.html"
@@ -3063,6 +3248,127 @@ def run_live_dashboard() -> None:
             logger.info("Dashboard uploaded to Drive (file id %s); kept local copy at %s", file_id, target_path)
     except Exception as exc:
         logger.error("Failed to upload dashboard to Drive: %s", exc)
+
+
+def _find_index_in_headers(headers: List[str], keywords: Tuple[str, ...]) -> Optional[int]:
+    for idx, header in enumerate(headers):
+        if not header:
+            continue
+        value = str(header).strip().lower()
+        for keyword in keywords:
+            if keyword in value:
+                return idx
+    return None
+
+
+def _reconstruct_history_rows_from_payload(payload: dict) -> Tuple[List[str], List[str], List[List[str]]]:
+    headers = list(payload.get("headers") or [])
+    latest_row = list(payload.get("latestRow") or [])
+
+    chart_labels = list(payload.get("chartLabels") or [])
+    setpoint_series = list(payload.get("setpoint") or [])
+    actual_series = list(payload.get("actual") or [])
+    outside_series = list(payload.get("outside") or [])
+    fan_series = list(payload.get("fan") or [])
+    cooling_series = list(payload.get("cooling") or [])
+    condenser_minutes_series = list(payload.get("condenserMinutes") or [])
+
+    row_count = max(
+        len(chart_labels),
+        len(setpoint_series),
+        len(actual_series),
+        len(outside_series),
+        len(fan_series),
+        len(cooling_series),
+        len(condenser_minutes_series),
+    )
+    if row_count == 0:
+        raise SystemExit("Cached payload missing chart series; cannot reconstruct history rows.")
+
+    setpoint_idx = _find_index_in_headers(
+        headers, ("cooling set point", "cooling setpoint", "set point", "d")
+    )
+    actual_idx = _find_index_in_headers(headers, ("building temperature", "actual temperature", "temperature"))
+    outside_idx = _find_index_in_headers(headers, ("outside temperature", "outside temp", "exterior temperature", "outdoor temp"))
+    fan_idx = _find_index_in_headers(headers, ("fan", "fan setting", "fan mode"))
+    cooling_idx = _find_index_in_headers(headers, ("equipment status", "status", "equipment", "cooling status"))
+    condenser_idx = _find_index_in_headers(headers, ("condenser minutes", "condenser runtime"))
+
+    def _series_value(series: List, idx: int) -> str:
+        if idx < 0 or idx >= len(series):
+            return ""
+        value = series[idx]
+        if value is None:
+            return ""
+        return str(value)
+
+    def _fan_text(val: str) -> str:
+        t = (val or "").strip().upper()
+        if t == "A":
+            return "Auto"
+        if t == "C":
+            return "Circulate"
+        if t == "O":
+            return "On"
+        return val
+
+    def _cooling_text(val: str) -> str:
+        t = (val or "").strip()
+        if not t:
+            return ""
+        if t in ("1", "1.0", "true", "True"):
+            return "Cooling"
+        if t in ("0", "0.0", "false", "False"):
+            return "Idle"
+        try:
+            return "Cooling" if float(t) >= 1 else "Idle"
+        except ValueError:
+            return t
+
+    history_rows: List[List[str]] = []
+    for i in range(row_count):
+        row = [""] * len(headers)
+        # build_dashboard_html always uses row[0] for chart labels.
+        if row:
+            row[0] = _series_value(chart_labels, i)
+        if setpoint_idx is not None and setpoint_idx < len(row):
+            row[setpoint_idx] = _series_value(setpoint_series, i)
+        if actual_idx is not None and actual_idx < len(row):
+            row[actual_idx] = _series_value(actual_series, i)
+        if outside_idx is not None and outside_idx < len(row):
+            row[outside_idx] = _series_value(outside_series, i)
+        if fan_idx is not None and fan_idx < len(row):
+            row[fan_idx] = _fan_text(_series_value(fan_series, i))
+        if cooling_idx is not None and cooling_idx < len(row):
+            row[cooling_idx] = _cooling_text(_series_value(cooling_series, i))
+        if condenser_idx is not None and condenser_idx < len(row):
+            row[condenser_idx] = _series_value(condenser_minutes_series, i)
+        history_rows.append(row)
+
+    return headers, latest_row, history_rows
+
+
+def run_test_mode_dashboard() -> None:
+    # Test mode intentionally avoids spreadsheet access; it regenerates HTML from cached JSON.
+    public_dir = base_dir.parent / "Web"
+    payload_path = public_dir / "dashboard_data.json"
+    if not payload_path.exists():
+        raise SystemExit(f"test_mode expects cached payload at {payload_path}")
+    try:
+        payload = json.loads(payload_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise SystemExit(f"Invalid JSON in cached payload {payload_path}: {exc}") from exc
+
+    headers, latest_row, history_rows = _reconstruct_history_rows_from_payload(payload)
+    TEMP_DIR.mkdir(parents=True, exist_ok=True)
+    target_path = TEMP_DIR / "dashboard.html"
+    build_dashboard_html(headers, latest_row, history_rows, target_path)
+
+    public_dir.mkdir(parents=True, exist_ok=True)
+    public_copy = public_dir / "dashboard_public.html"
+    build_dashboard_html(headers, latest_row, history_rows, public_copy)
+    print(f"Dashboard generated (test_mode) at: {target_path.resolve()}")
+    logger.info("test_mode HTML generated from cached payload %s", payload_path)
 
 
 def _format_archive_label(slug: str) -> str:
@@ -3138,12 +3444,6 @@ def run_projected_range(
 
 def main(argv: Optional[List[str]] = None) -> None:
     parser = argparse.ArgumentParser(description="Thermostat dashboard generator")
-    parser.add_argument(
-        "--mode",
-        choices=("projected", "live"),
-        default="projected",
-        help="Default run mode when no --project-* args are provided (default: projected).",
-    )
     parser.add_argument(
         "--project-date",
         metavar="YYYY-MM-DD",
@@ -3227,19 +3527,7 @@ def main(argv: Optional[List[str]] = None) -> None:
         )
         return
 
-    if args.mode == "live":
-        run_live_dashboard()
-        return
-
-    run_projected_dashboard(
-        date.today(),
-        weather_source=args.weather,
-        simulate_requests=bool(args.simulate_requests),
-        request_every_days=int(args.request_every_days),
-        request_setpoint_delta_f=float(args.request_delta),
-        request_setpoint_deltas_f=request_deltas,
-        request_deltas_mode=str(args.request_deltas_mode),
-    )
+    run_live_dashboard()
 
 
 if __name__ == "__main__":

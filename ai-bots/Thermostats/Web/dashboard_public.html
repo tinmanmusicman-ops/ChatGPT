@@ -6,6 +6,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap">
     <style>
+      html, body {
+        height: 100%;
+      }
       body {
         forced-color-adjust: none;
         -webkit-text-fill-color: initial;
@@ -13,6 +16,10 @@
         margin: 0;
         font-family: 'Inter', system-ui, sans-serif;
         background: linear-gradient(to bottom, #070312, #160d30, #221542, #453082, #5b517a, #71688c, #71688c, #877796, #71688c);
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        background-size: 100% 100%;
+        min-height: 100vh;
         color: #f4f6ff;
       }
       .frame {
@@ -32,40 +39,13 @@
           inset 0 -2px 4px rgba(0,0,0,0.35);
       }
       .container {
-        max-width: 1480px;
+        max-width: 1020px;
         margin: 1px auto;
-        padding: 26px;
+        padding: 22px;
         background: transparent;
-
+        border: 2px solid rgba(255, 255, 255, 0.01);
         border-radius: 12px;
         box-sizing: border-box;
-      }
-      .layout {
-        display: grid;
-        grid-template-columns: minmax(940px, 1.35fr) minmax(640px, 1fr);
-        gap: 18px;
-        align-items: start;
-      }
-      .left-rail,
-      .right-rail {
-        min-width: 0;
-      }
-      body.metrics-hidden .layout {
-        grid-template-columns: 1fr;
-      }
-      body.metrics-hidden .right-rail {
-        display: none;
-      }
-      @media (max-width: 1100px) {
-        .layout {
-          grid-template-columns: 1fr;
-        }
-        .container {
-          padding: 18px;
-        }
-        .card-grid {
-          margin-top: 0;
-        }
       }
       h1 {
         margin: 0 0 16px;
@@ -75,13 +55,13 @@
 
         display: flex;
         justify-content: space-between;
-        align-items: center;
-        margin-bottom: 12px;
+        align-items: flex-start;
+        margin-bottom: 1px;
       }
       .timestamp-row {
-        display: flex;
+        display: none;
         justify-content: flex-end;
-        margin-bottom: 18px;
+        margin-bottom: 0;
       }
       .date-display {
         font-size: 14px;
@@ -103,26 +83,28 @@
       }
       #Company {
 
-        width: 80%;
-        font-size: 60px;
-        text-align: center;
-        padding: 4px 0;
+        width: auto;
+        font-size: 16px;
+        line-height: 1.05;
+        text-align: left;
+        padding: 0;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        opacity: 0.9;
       }
 
 #chart-history-months {
-height: 5px
-padding: 0;
-font-size; 8PX;
-line-height: 1
-height: auto;
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
-#chart-history-months option {
-height: 5px
-padding: 1 3px;
-font-size; 8PX;
-line-height: 1;
+
+  /* Must be visible so the chart-history picker (positioned above) isn't clipped. */
+  overflow: visible;
 }
+
+/* Glossy highlight + specular edge for the TV frame (border only). */
 
 
 .tv-frame {
@@ -130,52 +112,62 @@ line-height: 1;
   isolation: isolate;
   --frame-border: 10px;
   border-radius: 14px;
-  border: var(--frame-border) solid rgba(255, 255, 255, 0.10);
-  box-shadow:
-    0 20px 44px rgba(0, 0, 0, 0.70),
-    inset 0 3px 4px rgba(255, 255, 255, 0.18),
-    inset 0 -3px 6px rgba(0, 0, 0, 0.85),
-    inset 0 0 18px rgba(255, 255, 255, 0.06),
-    inset 0 0 34px rgba(0, 0, 0, 0.70);
+  border: var(--frame-border) solid rgba(255, 255, 255, 0.18);
   background: linear-gradient(
     to bottom,
-    #07050f 0%,
-    #1a1730 45%,
+    #0c0a18 0%,
+    #2a2550 22%,
+    #1a1730 48%,
     #0b0a16 100%
   );
-  /* Must be visible so the chart-history picker (positioned above) isn't clipped. */
-  overflow: visible;
+  box-shadow:
+    0 22px 48px rgba(0, 0, 0, 0.75),
+    0 0 24px rgba(120, 140, 255, 0.14),
+    inset 0 4px 6px rgba(255, 255, 255, 0.32),
+    inset 0 -4px 8px rgba(0, 0, 0, 0.92),
+    inset 0 0 24px rgba(255, 255, 255, 0.12),
+    inset 0 0 38px rgba(0, 0, 0, 0.78);
 }
 
-/* Glossy highlight + specular edge for the TV frame (border only). */
+
 .tv-frame::before {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  padding: var(--frame-border);
+  padding: var(--frame-border, 10px);
   pointer-events: none;
-  z-index: 2;
+  z-index: 50;
   background:
-    radial-gradient(120% 70% at 18% 8%, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0) 55%),
-    linear-gradient(to bottom, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0) 35%, rgba(0,0,0,0.25) 100%);
+    radial-gradient(140% 80% at 20% 6%,
+      rgba(255,255,255,0.42) 0%,
+      rgba(255,255,255,0.18) 26%,
+      rgba(255,255,255,0.00) 56%
+    ),
+    linear-gradient(
+      to bottom,
+      rgba(255,255,255,0.22) 0%,
+      rgba(255,255,255,0.06) 38%,
+      rgba(255,255,255,0.00) 100%
+    );
   mix-blend-mode: screen;
-  opacity: 0.95;
+  opacity: 1;
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
 }
+
 .tv-frame::after {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  padding: var(--frame-border);
+  padding: var(--frame-border, 10px);
   pointer-events: none;
-  z-index: 3;
+  z-index: 51;
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.22),
-    inset 0 -1px 0 rgba(0,0,0,0.55);
+    inset 0 2px 0 rgba(255,255,255,0.42),
+    inset 0 -1px 0 rgba(0,0,0,0.38);
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -185,8 +177,8 @@ line-height: 1;
 
       .logo-placeholder {
 
-        width: 190px;
-        height: 126px;
+        width: 72px;
+        height: 52px;
 
                 border-radius: 0px;
         display: flex;
@@ -202,7 +194,6 @@ line-height: 1;
         object-fit: contain;
       }
       .card-grid {
-        margin-top: 105px;
         padding: 18px 22px;
         border-radius: 12px;
         display: grid;
@@ -353,26 +344,6 @@ line-height: 1;
         flex-direction: column;
         align-items: center;
       }
-      .main-toolbar {
-        width: 100%;
-        display: flex;
-        justify-content: flex-end;
-        align-items: center;
-        gap: 10px;
-        margin-bottom: 10px;
-      }
-      .metrics-toggle {
-        border: 1px solid rgba(255,255,255,0.18);
-        border-radius: 999px;
-        background: rgba(0,0,0,0.35);
-        color: rgba(244,246,255,0.9);
-        padding: 8px 12px;
-        font-size: 12px;
-        cursor: pointer;
-      }
-      .metrics-toggle:hover {
-        background: rgba(0,0,0,0.48);
-      }
       .hands-logo-top {
         width: 195px;
         height: 120px;
@@ -430,64 +401,128 @@ line-height: 1;
       }
       
       #chartcontrols {
-       flex: 1;
-  max-width: 795px;   /* <-- THIS is the width control */
-  width: auto;
-  margin-top: 14px;
-  margin-left: 40px;
-  padding: 1px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 3.3px;
+        margin-top: 5PX;
+        margin-left: 35PX;
+        max-width: none;
+        width: 80%;
+        position: relative;
+        z-index: 30;
+        padding: 1px;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 2px;
+        font-size: 13px;
+        color: #f4f6ff;
 
-  font-size: 13px;
-  color: #f4f6ff;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 12px;
-  background: rgba(0, 0, 0, 0.18);
-  box-sizing: border-box;
- }
+
+
+      }
+      #chartcontrols .chart-control {
+        width: 60%;
+        justify-content: flex-start;
+        padding: 3px 8px;
+        font-size: 12px;
+        line-height: 1;
+      }
+      #chartcontrols #autoplay-toggle {
+        grid-column: 1 / -1;
+      }
       .controls-transport-wrap {
-        height: 280px;
-        margin-top: -330px;
-        margin-left: 280px;
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
+        margin-top: -45px;
+        margin-left: 0;
+        height: auto;
+        display: grid;
+        grid-template-columns: minmax(0, 240px) minmax(0, 320px);
+        grid-template-areas:
+          "controls transport"
+          "history history";
+        align-items: start;
+        column-gap: 14px;
+        row-gap: 10px;
+      }
+      #chartcontrols {
+        grid-area: controls;
+        min-width: 0;
+      }
+      .controls-transport-wrap .chart-history {
+        grid-area: history;
+      }
+      .transport-stack {
+        margin-top: 0;
+        position: relative;
+        z-index: 10;
+        transform: none;
+        grid-area: transport;
+        min-width: 0;
       }
       .transport-panel {
-        height: 120px;
-        flex: 0 0 300px;
-        width: 300px;
-        margin-top: 50px;
-        margin-left: 0;
-        padding: 6px;
+        height: 210px;
+        flex: 0 0 auto;
+        width: 100%;
+        max-width: 320px;
+        margin-top: 0;
+        margin-left: auto;
+        margin-right: auto;
+        transform: none;
+        position: relative;
+        z-index: 1;
+        padding: 12px;
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
+        justify-content: flex-start;
         gap: 6px;
         border-radius: 12px;
-        background: rgba(0, 0, 0, 0.0);
         box-sizing: border-box;
-        pointer-events: none;
+        pointer-events: auto;
+        cursor: pointer;
+      }
+      .transport-history-status {
+        
+        position: relative;
+        z-index: 10;
+        width: 100%;
+        max-width: 320px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 26px;
+        font-size: 14px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        opacity: 0.9;
+        color: white;
+        margin: 1px auto px;
+        padding: 1px 1px;
+        border-radius: 12px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        text-align: center;
+        line-height: .5;
+        margin-top: 0;
       }
       .transport-deck {
-        width: 240px;
-        height: 72px;
-        margin-top: -85px;
+        width: 280px;
+        height: 130px;
+        margin-top: 0px;
         border-radius: 14px;
-        pointer-events: none;
+        pointer-events: auto;
         opacity: 0.98;
       }
       .transport-nav {
-        margin-top: -8px;
+        margin-top: -1px;
         width: 100%;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 6px;
+        gap: 1px;
         pointer-events: auto;
+      }
+      .transport-nav .chart-control {
+        padding: 10px 18px;
+        font-size: 18px;
+        border-radius: 12px;
       }
       .transport-deck svg {
         width: 100%;
@@ -495,6 +530,7 @@ line-height: 1;
         display: block;
       }
       .transport-deck .reel {
+        height: 200px;
         transform-box: fill-box;
         transform-origin: center;
       }
@@ -515,33 +551,70 @@ line-height: 1;
       .chart-top-row {
         max-width: 1120px;
         width: 100%;
-        display: flex;
-        flex-wrap: wrap;
+        display: grid;
+        grid-template-columns: 400px minmax(340px, 1fr);
         align-items: flex-start;
-        justify-content: space-between;
         gap: 14px;
-        margin-top: 35px;
+        margin-top: 20px;
         margin-bottom: 18px;
+        transform: translateX(-15px);
         border: 1px solid rgba(255, 255, 255, 0.18);
       }
       .usage-slot {
-        flex: 0 0 260px;
-        width: 300px;
-        min-width: 260px;
+        width: 400px;
+        min-width: 400px;
         height: 236px;
-        margin-top: -85px;
-        margin-left: -20px;
+        margin-top: -65px;
+        margin-left: 1px;
  
-        border: 2px solid rgba(255, 179, 71, 0.85);
         border-radius: 12px;
-        background: linear-gradient(to bottom, #000000 0%, #1f1f26 100%);
+        background: rgba(0, 0, 0, 0.6);
+
         padding: 10px 12px;
         color: #fff5c7;
         font-size: 12px;
         opacity: 0.9;
-        overflow: hidden;
+        position: relative;
+        overflow: visible;
         display: flex;
         flex-direction: column;
+      }
+      .usage-frame-wrap {
+        position: relative;
+        container-type: inline-size;
+        --usage-legs-overlap: 18px;
+      }
+      .usage-frame-wrap .usage-legs {
+        position: absolute;
+        left: 50%;
+        bottom: 0;
+        transform: translateX(-50%) translateY(calc(100% - var(--usage-legs-overlap)));
+        height: clamp(170px, 92%, 260px);
+        width: min(520px, 95%);
+        z-index: 0;
+        pointer-events: none;
+        opacity: 0.96;
+        background-image: url("../../../Images/Legs2.png");
+        background-repeat: no-repeat;
+        background-position: center bottom;
+        background-size: contain;
+        filter: brightness(1.25) contrast(1.1) saturate(1.15) drop-shadow(0 10px 20px rgba(0,0,0,0.6));
+      }
+      @supports (height: 1cqi) {
+        .usage-frame-wrap .usage-legs {
+          height: clamp(170px, 62cqi, 300px);
+          width: min(520px, 120cqi);
+        }
+      }
+      .usage-frame-wrap .usage-slot {
+        position: relative;
+        z-index: 1;
+      }
+      .usage-slot > .usage-header,
+      .usage-slot > .usage-graphic,
+      .usage-slot > .swap-controls {
+        position: relative;
+        z-index: 1;
       }
       .usage-header {
         display: flex;
@@ -598,6 +671,59 @@ line-height: 1;
         align-items: stretch;
         height: 150px;
       }
+      .swap-controls {
+        margin-top: 8px;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+      }
+      .swap-controls .swap-controls-inner {
+        width: 100%;
+        max-width: 320px;
+        padding: 8px 12px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        background: rgba(0, 0, 0, 0.18);
+        box-shadow: 0 10px 18px rgba(0, 0, 0, 0.35);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        user-select: none;
+        color: rgba(255, 245, 199, 0.95);
+      }
+      .swap-controls .swap-step-btn {
+        flex: 0 0 auto;
+        min-width: 48px;
+        height: 36px;
+        border-radius: 14px;
+        border: 1px solid rgba(255,255,255,0.22);
+        background: rgba(0,0,0,0.35);
+        color: rgba(244, 246, 255, 0.92);
+        font-size: 16px;
+        letter-spacing: 0.08em;
+        cursor: pointer;
+        box-shadow: 0 10px 18px rgba(0, 0, 0, 0.35);
+      }
+      .swap-controls .swap-step-btn:disabled {
+        opacity: 0.35;
+        cursor: default;
+      }
+      .swap-controls .swap-step-label {
+        flex: 1 1 auto;
+        text-align: center;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        opacity: 0.95;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .swap-controls .swap-controls-inner:focus-visible {
+        outline: 2px solid rgba(102, 255, 153, 0.55);
+        outline-offset: 2px;
+      }
       #usage-slot-canvas-slot {
         flex: 1 1 auto;
         min-height: 0;
@@ -652,38 +778,50 @@ line-height: 1;
       }
       @media (max-width: 980px) {
         .chart-top-row {
-          flex-direction: column;
-        }
-        .chart-previews {
           grid-template-columns: 1fr;
-        }
-        #history-preview-canvas-slot > canvas {
-          height: 260px !important;
+          transform: none;
         }
 
         #chartcontrols {
           max-width: none;
           width: 100%;
           box-sizing: border-box;
-          justify-content: center;
+          display: grid;
+          grid-template-columns: 1fr;
           margin-right: 0;
           margin-left: 0;
           padding-right: 1px;
         }
         .controls-transport-wrap {
-          margin-top: 0;
-          margin-left: 0;
+          margin-top: 40;
+          margin-left: 10;
           width: 100%;
-          align-items: center;
+          align-items: start;
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+          grid-template-areas:
+            "controls transport"
+            "history history";
+        }
+        .transport-stack {
+          width: 100%;
+          max-width: 320px;
+          margin-top: 0;
+          transform: none;
         }
         .transport-panel {
           flex: 0 0 auto;
           width: 100%;
           margin-top: 0;
           margin-left: 0;
+          height: auto;
+          transform: none;
         }
         .transport-deck {
           display: none;
+        }
+        .transport-nav {
+          margin-top: 10px;
         }
         .usage-slot {
           min-width: 0;
@@ -719,11 +857,11 @@ line-height: 1;
         color: #ff6666;
       }
       .condenser-runtime {
-        display: block;
+        display: none;
         margin-top: 65px;
         position: absolute;
-        top: 109px;
-        right: 44px;
+        top: 24px;
+        right: 4px;
         text-align: right;
         font-size: 12px;
         color: #b1ffce;
@@ -766,13 +904,13 @@ line-height: 1;
         height: 100% !important;
       }
       .chart-wrap {
-        margin-top: 26px;
         height: 580px;
         margin: -29px auto 0;
         background: linear-gradient(
           to bottom,
-          #000000 0%,
-          #1f1f26 100%
+          #0F0B1A 0%,
+          #2A1E55 40%,
+          #332459 75%
         );
         position: relative;
         max-width: 900px;
@@ -908,32 +1046,327 @@ line-height: 1;
         }
       }
       /* TV stand/legs graphic under the main chart frame. */
-      .chart-wrap.tv-frame {
+      .tv-frame-wrap {
+        position: relative;
+        container-type: inline-size;
+        --tv-legs-overlap: 35px;
         margin-bottom: 48px;
       }
-      .chart-wrap.tv-frame::after {
-        content: "";
+      body.hide-big-chart .tv-frame-wrap {
+        display: none;
+      }
+      .tv-frame-wrap .tv-legs {
         position: absolute;
         left: 50%;
-        transform: translateX(-50%);
-        bottom: -44px;
-        width: min(720px, 92%);
-        height: 84px;
-        pointer-events: none;
+        bottom: 0;
+        transform: translateX(-50%) translateY(calc(100% - var(--tv-legs-overlap)));
+        height: clamp(400px, 95%, 650px);
+        width: min(1100px, 95%);
         z-index: 0;
-        background-image: url("../../../Images/Legs,png");
+        pointer-events: none;
+        opacity: 0.98;
+        background-image: url("../../../Images/Legs2.png");
         background-repeat: no-repeat;
         background-position: center bottom;
         background-size: contain;
-        opacity: 0.92;
-        filter: drop-shadow(0 12px 16px rgba(0,0,0,0.6));
+        filter: brightness(1.25) contrast(1.1) saturate(1.15) drop-shadow(0 18px 26px rgba(0,0,0,0.65));
+      }
+      @supports (height: 1cqi) {
+        .tv-frame-wrap .tv-legs {
+          height: clamp(400px, 62cqi, 700px);
+          width: min(1100px, 140cqi);
+        }
+      }
+      .tv-frame-wrap .chart-wrap.tv-frame {
+        position: relative;
+        z-index: 1;
+      }
+      body.hide-big-chart #toggle-history {
+        display: none;
+      }
+      body.tv-mode {
+        overflow: hidden;
+        background: #07070b;
+      }
+      body.tv-mode .header-row,
+      body.tv-mode .timestamp-row,
+      body.tv-mode #Cards,
+      body.tv-mode .hands-logo-slot,
+      body.tv-mode #toggle-history,
+      body.tv-mode .condenser-runtime,
+      body.tv-mode .chart-top-row,
+      body.tv-mode .note,
+      body.tv-mode #js-log {
+        display: none !important;
+      }
+      body.tv-mode .container.frame {
+        max-width: none;
+        width: 100vw;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        box-shadow: none;
+        border-radius: 0;
+      }
+      body.tv-mode .tv-frame-wrap {
+        display: block !important;
+        position: fixed;
+        inset: 14px 34px 74px 34px;
+        z-index: 9999;
+      }
+      body.tv-mode .tv-frame-wrap .chart-wrap.tv-frame {
+        position: absolute;
+        inset: 0;
+        height: auto;
+        width: auto;
+        max-width: none;
+        margin: 0;
+        border-radius: 22px;
+        padding: 18px 0 18px;
+        --frame-border: 12px;
+        border: var(--frame-border) solid rgba(255, 255, 255, 0.2);
+        background: linear-gradient(to bottom, #050506 0%, #151518 55%, #2b2b2e 100%);
+      }
+      body.tv-mode #history-chart-canvas-slot,
+      body.tv-mode #history-chart {
+        height: 100% !important;
+      }
+      body.tv-mode .tv-frame-wrap .tv-legs {
+        display: block;
+        height: clamp(360px, 72%, 560px);
+      }
+      @supports (height: 1cqi) {
+        body.tv-mode .tv-frame-wrap .tv-legs {
+          height: clamp(360px, 40cqi, 600px);
+        }
+      }
+      /* TV mode chart controls (mode toggles) shown on the right. */
+      .tv-chartcontrols-overlay {
+        display: none;
+      }
+      body.tv-mode .tv-chartcontrols-overlay {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-auto-rows: auto;
+        gap: 6px 6px;
+        padding: 5px;
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.12);
+        background: rgba(0,0,0,0.24);
+        backdrop-filter: blur(8px);
+        width: 300px;
+        justify-content: start;
+
+      }
+      body.tv-mode .tv-chartcontrols-overlay .chart-control {
+        width: 100%;
+        text-align: left;
+        font-size: 11px;
+        padding: 2px 6px;
+        letter-spacing: 0.2px;
+        white-space: nowrap;
+      }
+      .tv-bottom-bar {
+        display: none;
+      }
+      body.tv-mode .tv-bottom-bar {
+        display: flex;
+        position: fixed;
+        left: 34px;
+        right: 34px;
+        bottom: 15px;
+        z-index: 10060;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 12px;
+        pointer-events: auto;
+      }
+      body.tv-mode .tv-bottom-left {
+        display: flex;
+        align-items: flex-end;
+        gap: 12px;
+      }
+      body.tv-mode .tv-file-select {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        padding: 6px 10px;
+        border-radius: 14px;
+        border: 1px solid rgba(255,255,255,0.12);
+        background: rgba(0,0,0,0.24);
+        backdrop-filter: blur(8px);
+        width: 320px;
+        box-sizing: border-box;
+      }
+      body.tv-mode .tv-file-select-title {
+        font-size: 10px;
+        line-height: 1.1;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        opacity: 0.85;
+        user-select: none;
+        width: 100%;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      body.tv-mode .tv-file-select-status {
+        font-size: 11px;
+        line-height: 1.1;
+        opacity: 0.9;
+        letter-spacing: 0.02em;
+        user-select: none;
+        width: 100%;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      body.tv-mode #tv-history-status {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+      }
+      body.tv-mode #tv-history-status .tv-history-month {
+        width: 100%;
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        opacity: 0.9;
+      }
+      body.tv-mode #tv-history-status .tv-history-day {
+        width: 100%;
+        font-size: 18px;
+        letter-spacing: 0.06em;
+        opacity: 0.95;
+      }
+      body.tv-mode #tv-history-status .tv-history-hour {
+        width: 100%;
+        font-size: 14px;
+        letter-spacing: 0.08em;
+        color: #ffb347;
+      }
+      body.tv-mode #tv-file-select {
+        cursor: pointer;
+      }
+      body.tv-mode #tv-file-select .chart-history {
+        max-width: none;
+        margin: 0;
+        height: 0;
+        overflow: visible;
+      }
+      body.tv-mode #tv-file-select .chart-wrap.tv-frame .chart-history,
+      body.tv-mode #tv-file-select .chart-history {
+        position: relative;
+        top: auto;
+        right: auto;
+        background: transparent;
+        border: 0;
+        box-shadow: none;
+        padding: 0;
+        width: 100%;
+        max-height: none;
+        overflow: visible;
+        display: block;
+      }
+      body.tv-mode #tv-file-select .chart-history h4 {
+        display: none;
+      }
+      body.tv-mode #tv-file-select .chart-history-status {
+        display: none !important;
+      }
+      /* TV mode navigation controls (prev/next day) positioned between the legs. */
+      .tv-nav-overlay {
+        display: none;
+      }
+      body.tv-mode .tv-nav-overlay {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 8px;
+        pointer-events: auto;
+        position: fixed;
+        left: 50%;
+        bottom: 22px;
+        transform: translateX(-50%);
+        z-index: 10070;
+      }
+      body.tv-mode .tv-nav-overlay .tv-nav-date {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        text-align: center;
+        user-select: none;
+      }
+      body.tv-mode .tv-nav-overlay .tv-nav-month {
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        opacity: 0.9;
+        color: rgba(244, 246, 255, 0.9);
+      }
+      body.tv-mode .tv-nav-overlay .tv-nav-day {
+        font-size: 18px;
+        letter-spacing: 0.06em;
+        opacity: 0.95;
+        color: rgba(244, 246, 255, 0.95);
+      }
+      body.tv-mode .tv-nav-overlay .tv-nav-hour {
+        font-size: 14px;
+        letter-spacing: 0.08em;
+        color: #ffb347;
+      }
+      body.tv-mode .tv-nav-overlay .tv-nav-buttons {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+      }
+      .tv-nav-btn {
+        flex: 0 0 auto;
+        min-width: 52px;
+        height: 40px;
+        border-radius: 16px;
+        border: 1px solid rgba(255,255,255,0.22);
+        background: rgba(0,0,0,0.35);
+        color: rgba(244, 246, 255, 0.92);
+        font-size: 18px;
+        letter-spacing: 0.08em;
+        cursor: pointer;
+        box-shadow: 0 18px 30px rgba(0,0,0,0.55);
+      }
+      .tv-nav-btn:disabled {
+        opacity: 0.35;
+        cursor: default;
+      }
+      body.hide-chart-history .chart-history {
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: 0;
+        background: transparent;
+        min-height: 0;
+      }
+      body.hide-chart-history .chart-history > h4,
+      body.hide-chart-history .chart-history > .chart-history-status {
+        display: none !important;
+      }
+      body.hide-big-chart .chart-history {
+        position: relative;
+        width: 100%;
+        max-width: 720px;
+        margin: 14px auto 0;
+        box-sizing: border-box;
       }
       @media (max-width: 680px) {
         .chart-wrap.tv-frame {
           margin-bottom: 18px;
-        }
-        .chart-wrap.tv-frame::after {
-          display: none;
         }
       }
       .chart-wrap::before {
@@ -960,146 +1393,6 @@ line-height: 1;
         position: relative;
         z-index: 2;
       }
-
-      /* Preview-first layout + TV zoom mode */
-      .chart-previews {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 16px;
-        align-items: start;
-      }
-      .history-preview {
-        border: 1px solid rgba(255,255,255,0.14);
-        border-radius: 14px;
-        background: rgba(10,10,16,0.85);
-        box-shadow: 0 12px 26px rgba(0,0,0,0.45);
-        overflow: hidden;
-      }
-      .history-preview-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: baseline;
-        gap: 12px;
-        padding: 12px 14px 8px 14px;
-      }
-      .history-preview-header .title {
-        font-weight: 600;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        font-size: 12px;
-      }
-      .history-preview-header .hint {
-        font-size: 11px;
-        opacity: 0.7;
-        white-space: nowrap;
-      }
-      #history-preview-canvas-slot {
-        padding: 0 10px 10px 10px;
-      }
-      #history-preview-canvas-slot > canvas {
-        width: 100% !important;
-        height: 290px !important;
-        display: block;
-      }
-      .history-preview .chart-history {
-        position: static;
-        margin: 0 10px 12px 10px;
-        top: auto;
-        right: auto;
-        width: auto;
-        max-width: none;
-      }
-      .history-preview .chart-history ul {
-        max-height: 220px;
-        overflow: auto;
-      }
-
-      #tv-frame {
-        display: none;
-        position: fixed;
-        inset: 0;
-        z-index: 9999;
-        margin: 0;
-        border-radius: 0;
-        border-width: 0;
-      }
-      body.tv-mode {
-        overflow: hidden;
-      }
-      body.tv-mode .layout {
-        display: none;
-      }
-      body.tv-mode #tv-frame {
-        display: block;
-      }
-      #tv-canvas-slot {
-        position: absolute;
-        inset: 12px;
-      }
-      #tv-canvas-slot > canvas {
-        width: 100% !important;
-        height: 100% !important;
-        display: block;
-      }
-      #tv-controls {
-        position: absolute;
-        top: 12px;
-        right: 12px;
-        display: flex;
-        gap: 10px;
-        align-items: center;
-        z-index: 2;
-      }
-      #tv-controls .tv-btn {
-        border: 1px solid rgba(255,255,255,0.18);
-        border-radius: 999px;
-        background: rgba(0,0,0,0.45);
-        color: rgba(244,246,255,0.9);
-        padding: 8px 12px;
-        font-size: 12px;
-        cursor: pointer;
-      }
-      #tv-controls .tv-btn.active {
-        border-color: rgba(102,255,153,0.75);
-        color: rgba(102,255,153,0.95);
-      }
-      #tv-exit-hint {
-        position: absolute;
-        left: 12px;
-        bottom: 12px;
-        font-size: 12px;
-        opacity: 0.7;
-        z-index: 2;
-        background: rgba(0,0,0,0.35);
-        border: 1px solid rgba(255,255,255,0.10);
-        border-radius: 10px;
-        padding: 8px 10px;
-      }
-
-      /* Debug layout framing: enable with ?debug=1 (adds body.debug-layout) */
-      body.debug-layout .container,
-      body.debug-layout .layout,
-      body.debug-layout .left-rail,
-      body.debug-layout .right-rail,
-      body.debug-layout #history,
-      body.debug-layout .history-panel,
-      body.debug-layout #Cards,
-      body.debug-layout .controls-transport-wrap,
-      body.debug-layout #transport-panel,
-      body.debug-layout #transport-nav,
-      body.debug-layout .chart-previews,
-      body.debug-layout #usage-slot,
-      body.debug-layout #history-preview,
-      body.debug-layout #tv-frame {
-        outline: 2px solid rgba(255, 105, 180, 0.55);
-        outline-offset: 2px;
-      }
-      body.debug-layout #usage-slot-canvas-slot,
-      body.debug-layout #history-preview-canvas-slot,
-      body.debug-layout #tv-canvas-slot {
-        outline: 2px dashed rgba(102, 255, 153, 0.55);
-        outline-offset: 2px;
-      }
       .fan-legend-image {
       }
       #logo2 {
@@ -1116,9 +1409,22 @@ line-height: 1;
         color: #f4f6ff;
       }
       .chart-history {
+        position: relative;
+        width: 100%;
+        max-width: 720px;
+        margin: 14px auto 0;
+        z-index: 40;
+        box-sizing: border-box;
+        padding: 0;
+        background: transparent;
+        border: 0;
+        box-shadow: none;
+        color: #fff5c7;
+      }
+      .chart-wrap.tv-frame .chart-history {
         position: absolute;
         margin-top: 10px;
-        top: -202px;
+        top: -217px;
         right: 55px;
         z-index: 5;
         background: #2f3136;
@@ -1144,8 +1450,6 @@ line-height: 1;
       .history-months {
         flex: 0 0 125px;
         width: 125px;
-        max-height: 140px;
-        overflow-y: auto;
         padding-right: 4px;
         border-right: 1px solid rgba(255, 255, 255, 0.18);
       }
@@ -1164,11 +1468,9 @@ line-height: 1;
         display: none;
         flex-direction: column;
         gap: 2px;
-        max-height: 120px;
-        overflow-y: auto;
       }
-      .history-lists-row:hover .history-months-list,
-      .history-months:focus-within .history-months-list {
+      /* Open months list only when history is expanded (no hover-open). */
+      .chart-history.expanded .history-months-list {
         display: flex;
       }
       .history-months-list li {
@@ -1210,10 +1512,10 @@ line-height: 1;
         transition: max-height 0.2s ease, padding 0.2s ease;
       }
       .history-list-column.expanded {
-        max-height: 220px;
-        overflow-y: auto;
-        padding: 4px 14px 4px 0;
-        margin-right: 71px;
+        max-height: none;
+        overflow: visible;
+        padding: 0;
+        margin-right: 0;
       }
       .history-month {
         margin-bottom: 6px;
@@ -1245,21 +1547,55 @@ line-height: 1;
         display: none;
       }
       .history-lists-row {
-        display: flex;
+        display: none;
         flex-wrap: nowrap;
         gap: 12px;
         align-items: flex-start;
         width: 100%;
       }
+      /* Expand upward (drop-up) without pushing layout down. */
+      .chart-history.expanded .history-lists-row {
+        display: flex;
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: calc(100% + 10px);
+        z-index: 60;
+        background: #2f3136;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 14px;
+        padding: 12px 14px;
+        box-shadow:
+          0 14px 30px rgba(0, 0, 0, 0.45),
+          inset 0 1px 2px rgba(255, 255, 255, 0.15);
+      }
       .chart-history h4 {
-        margin: 0 0 6px;
+        margin: 0;
         font-size: 12px;
         letter-spacing: 0.08em;
         font-weight: 600;
         text-transform: uppercase;
         cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 12px;
+        background: #2f3136;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 10px 18px rgba(0, 0, 0, 0.35);
+      }
+      .chart-history.expanded h4 {
+        border-color: rgba(102, 255, 153, 0.45);
+      }
+      .chart-history {
+        position: relative;
+      }
+      .chart-history:not(.expanded) .chart-history-status {
+        display: none;
       }
       .chart-history-status {
+        display: none;
         font-size: 11px;
         opacity: 0.7;
         letter-spacing: 0.05em;
@@ -1275,12 +1611,15 @@ line-height: 1;
       }
       .chart-history ul button {
         all: unset;
+        display: block;
         width: 100%;
+        box-sizing: border-box;
         text-align: left;
         cursor: pointer;
         color: #33ccff;
         font-size: 11px;
         letter-spacing: 0.04em;
+        padding: 3px 8px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -1317,50 +1656,167 @@ line-height: 1;
       }
     </style>
   </head>
-  <body class="metrics-hidden">
-    <div class="container frame">
-      <div class="layout">
-        <div class="left-rail">
-          <div id="history" class="history-panel">
-
-      <div class="main-toolbar">
-        <button type="button" id="metrics-toggle" class="metrics-toggle">Show Metrics</button>
+  <body class="hide-big-chart hide-chart-history">
+    <div class="container">
+      <div id="Cards" class="card-grid frame2">
+        
+        <div class="metric-card frame2" data-metric="timestamp">
+          <div class="label">Timestamp</div>
+          <div class="value">Tuesday Nov 25 2025 8:11 PM</div>
+        </div>
+        
+        <div class="metric-card frame2" data-metric="type">
+          <div class="label">Type</div>
+          <div class="value">System</div>
+        </div>
+        
+        <div class="metric-card frame2" data-metric="actual">
+          <div class="label">Building Temperature</div>
+          <div class="value">95</div>
+        </div>
+        
+        <div class="metric-card frame2" data-metric="setpoint">
+          <div class="label">Cooling Set Point</div>
+          <div class="value">80</div>
+        </div>
+        
+        <div class="metric-card frame2" data-metric="climate-setting">
+          <div class="label">Climate Setting</div>
+          <div class="value">Cool</div>
+        </div>
+        
+        <div class="metric-card frame2 fan-state-o" data-metric="fan">
+          <div class="label">Fan Setting</div>
+          <div class="value">On</div>
+        </div>
+        
+        <div class="metric-card frame2" data-metric="cooling">
+          <div class="label">Equipment Status</div>
+          <div class="value">Cooling</div>
+        </div>
+        
+        <div class="metric-card frame2">
+          <div class="label">Studio</div>
+          <div class="value"> </div>
+        </div>
+        
+        <div class="metric-card frame2">
+          <div class="label">Request Expires (local time)</div>
+          <div class="value">8:54 PM</div>
+        </div>
+        
+        <div class="metric-card frame2" data-metric="outside">
+          <div class="label">Outside Temp</div>
+          <div class="value">57</div>
+        </div>
+        
+        <div class="metric-card frame2" data-metric="condenser-state">
+          <div class="label">Condenser State</div>
+          <div class="value">On</div>
+        </div>
+        
+        <div class="metric-card frame2" data-metric="condenser-minutes">
+          <div class="label">Condenser Minutes Past Hour</div>
+          <div class="value">500</div>
+        </div>
+        
       </div>
+      <div class="hands-logo-slot" aria-hidden="true">
+        <div class="hands-logo-top"></div>
+      </div>
+        
+      <div id="history" class="history-panel">
 
+      <button id="toggle-history">Show History Chart</button>
       <div class="condenser-runtime">
         <div class="label">Total condenser runtime</div>
-        <div class="value">80 min</div>
+        <div class="value">500 min</div>
         <div class="cost-label">Estimated condenser cost</div>
-        <div class="cost-value cost-ok">$4.00</div>
+        <div class="cost-value cost-red">$25.00</div>
       </div>
 
-      <div class="controls-transport-wrap">
-        <div id="chartcontrols" class="chart-controls">
-          <button type="button" class="chart-control" data-mode="setpoint">Set Point</button>
-          <button type="button" class="chart-control" data-mode="actual">Building Temp</button>
-          <button type="button" class="chart-control" data-mode="outside">Outside Temp</button>
-          <button type="button" class="chart-control" data-mode="cooling">AC Status</button>
-          <button type="button" class="chart-control" data-mode="fan">Fan Mode</button>
-          <button type="button" class="chart-control active" data-mode="both">Combined</button>
-          <span>&nbsp;</span>
-          <button type="button" class="chart-control" id="autoplay-toggle">Auto-play: On</button>
+      <div class="chart-top-row">
+        <div class="usage-frame-wrap">
+          <div class="usage-legs" aria-hidden="true"></div>
+          <div class="usage-slot tv-frame" id="usage-slot">
+            <div class="usage-header">
+              <div class="usage-header-left">
+                <div class="title">Usage Chart</div>
+                <div class="usage-controls" role="group" aria-label="Usage Range">
+                  <button type="button" class="usage-control" data-range="7d">7 Day</button>
+                  <button type="button" class="usage-control" data-range="month">Month</button>
+                  <button type="button" class="usage-control active" data-range="year">Year</button>
+                </div>
+              </div>
+              <div class="usage-stats" id="usage-slot-stats" aria-hidden="true">
+                <div class="k">Total</div><div class="v" id="usage-stat-total">-</div>
+                <div class="k">Avg</div><div class="v" id="usage-stat-avg">-</div>
+                <div class="k">Max</div><div class="v" id="usage-stat-max">-</div>
+                <div class="k">Cost</div><div class="v" id="usage-stat-cost">-</div>
+              </div>
+            </div>
+            <div class="usage-graphic">
+              <div id="usage-slot-canvas-slot">
+                <canvas id="usage-slot-chart"></canvas>
+              </div>
+            </div>
+            <div id="swap-controls" class="swap-controls" aria-hidden="false">
+              <div id="swap-controls-label" class="swap-controls-inner" role="group" aria-label="Step through 24 hour chart">
+                <button type="button" id="chart-step-prev" class="swap-step-btn" aria-label="Previous point">&lt;&lt;</button>
+                <div class="swap-step-label">Step Time</div>
+                <button type="button" id="chart-step-next" class="swap-step-btn" aria-label="Next point">&gt;&gt;</button>
+              </div>
+            </div>
+          </div>
         </div>
-        <div id="transport-panel" class="transport-panel">
-          <div id="transport-deck" class="transport-deck" aria-hidden="true">
+        <div class="controls-transport-wrap">
+          <div id="chartcontrols" class="chart-controls">
+              <button type="button" class="chart-control" data-mode="setpoint">Set Point</button>
+              <button type="button" class="chart-control" data-mode="actual">Building Temp</button>
+              <button type="button" class="chart-control" data-mode="outside">Outside Temp</button>
+              <button type="button" class="chart-control" data-mode="cooling">AC Status</button>
+              <button type="button" class="chart-control" data-mode="fan">Fan Mode</button>
+              <button type="button" class="chart-control active" data-mode="both">Combined</button>
+              <span>&nbsp;</span>
+              <button type="button" class="chart-control" id="autoplay-toggle">Auto-play: On</button>
+            </div>
+          <div class="chart-history" id="chart-history">
+            <h4 id="chart-history-toggle">Chart History</h4>
+            <div id="chart-history-status" class="chart-history-status"></div>
+            <ul id="chart-history-list" class="hidden"></ul>
+          </div>
+          <div class="transport-stack">
+
+      <div id="transport-panel" class="transport-panel">
+            <div id="transport-deck" class="transport-deck" aria-hidden="true">
               <svg viewBox="0 0 240 90" role="img" aria-label="Data deck">
               <defs>
                 <linearGradient id="deck-bg" x1="0" x2="0" y1="0" y2="1">
-                  <stop offset="0" stop-color="#0a0a10" />
-                  <stop offset="1" stop-color="#1f1f26" />
+                  <stop offset="0" stop-color="#1c1c24" />
+                  <stop offset="0.55" stop-color="#0d0d14" />
+                  <stop offset="1" stop-color="#2b2b34" />
                 </linearGradient>
+                <linearGradient id="deck-edge" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0" stop-color="rgba(255,255,255,0.18)" />
+                  <stop offset="1" stop-color="rgba(0,0,0,0.6)" />
+                </linearGradient>
+                <filter id="deck-shadow" x="-20%" y="-40%" width="140%" height="180%">
+                  <feDropShadow dx="0" dy="10" stdDeviation="7" flood-color="rgba(0,0,0,0.7)" />
+                </filter>
               </defs>
-              <rect x="3" y="3" width="234" height="84" rx="14" fill="url(#deck-bg)" />
-              <rect x="12" y="14" width="216" height="40" rx="10" fill="rgba(255,255,255,0.06)" />
-              <rect x="14" y="16" width="212" height="36" rx="9" fill="rgba(0,0,0,0.28)" />
+              <!-- Depth/back plate to make the deck feel like a cassette -->
+              <rect x="6" y="6" width="234" height="84" rx="14" fill="rgba(0,0,0,0.55)" />
+              <!-- Main body -->
+              <rect x="3" y="3" width="234" height="84" rx="14" fill="url(#deck-bg)" stroke="url(#deck-edge)" stroke-width="2" filter="url(#deck-shadow)" />
+              <!-- Bottom lip -->
+              <rect x="10" y="74" width="220" height="10" rx="6" fill="rgba(0,0,0,0.28)" />
+              <!-- Window area -->
+              <rect x="12" y="14" width="216" height="40" rx="10" fill="rgba(255,255,255,0.07)" />
+              <rect x="14" y="16" width="212" height="36" rx="9" fill="rgba(0,0,0,0.30)" />
 
               <g class="reel reel-left">
-                <circle cx="72" cy="34" r="14" fill="rgba(255,255,255,0.06)" />
-                <circle cx="72" cy="34" r="10" fill="rgba(0,0,0,0.35)" />
+                <circle cx="72" cy="34" r="14" fill="rgba(0,0,0,0.0)" stroke="rgba(0,0,0,0.55)" stroke-width="1.5" />
+                <circle cx="72" cy="34" r="10" fill="rgba(0,0,0,0.0)" stroke="rgba(255,255,255,0.14)" stroke-width="1" />
                 <circle cx="72" cy="34" r="2.5" fill="rgba(255,255,255,0.35)" />
                 <path d="M72 24 L74.8 32 L72 34 L69.2 32 Z" fill="rgba(255,255,255,0.35)" />
                 <path d="M62 34 L70 36.8 L72 34 L70 31.2 Z" fill="rgba(255,255,255,0.35)" />
@@ -1369,8 +1825,8 @@ line-height: 1;
               </g>
 
               <g class="reel reel-right">
-                <circle cx="168" cy="34" r="14" fill="rgba(255,255,255,0.06)" />
-                <circle cx="168" cy="34" r="10" fill="rgba(0,0,0,0.35)" />
+                <circle cx="168" cy="34" r="14" fill="rgba(0,0,0,0.0)" stroke="rgba(0,0,0,0.55)" stroke-width="1.5" />
+                <circle cx="168" cy="34" r="10" fill="rgba(0,0,0,0.0)" stroke="rgba(255,255,255,0.14)" stroke-width="1" />
                 <circle cx="168" cy="34" r="2.5" fill="rgba(255,255,255,0.35)" />
                 <path d="M168 24 L170.8 32 L168 34 L165.2 32 Z" fill="rgba(255,255,255,0.35)" />
                 <path d="M158 34 L166 36.8 L168 34 L166 31.2 Z" fill="rgba(255,255,255,0.35)" />
@@ -1391,149 +1847,64 @@ line-height: 1;
               </g>
             </svg>
           </div>
+          <div id="transport-history-status" class="transport-history-status">Current</div>
           <div id="transport-nav" class="transport-nav" role="group" aria-label="History navigation"></div>
         </div>
+        </div>
+        </div>
       </div>
-
-      <div class="chart-previews">
-        <div class="usage-slot" id="usage-slot">
-          <div class="usage-header">
-            <div class="usage-header-left">
-              <div class="title">Usage Chart</div>
-              <div class="usage-controls" role="group" aria-label="Usage Range">
-                <button type="button" class="usage-control" data-range="7d">7 Day</button>
-                <button type="button" class="usage-control" data-range="month">Month</button>
-                <button type="button" class="usage-control active" data-range="year">Year</button>
+        <div class="tv-frame-wrap">
+          <div class="tv-legs" aria-hidden="true"></div>
+          <div class="chart-wrap tv-frame">
+            <div id="usage-pip" aria-hidden="true"></div>
+            <div id="tv-hands-logo" aria-hidden="true"></div>
+            <div>
+            </div>
+            <div id="history-chart-canvas-slot">
+              <canvas id="history-chart"></canvas>
+            </div>
+              <div class="tv-bottom-bar" aria-hidden="true">
+                <div class="tv-bottom-left">
+                <div class="tv-file-select" id="tv-file-select" aria-label="TV file select">
+                  <div class="tv-file-select-title">Chart History</div>
+                  <div id="tv-history-status" class="tv-file-select-status">
+                    <div id="tv-history-month" class="tv-history-month">Current</div>
+                    <div id="tv-history-day" class="tv-history-day"></div>
+                    <div id="tv-history-hour" class="tv-history-hour"></div>
+                  </div>
+                  <div id="tv-history-slot"></div>
+                </div>
+              </div>
+                <div class="tv-nav-overlay" aria-hidden="true">
+                  <div class="tv-nav-date" aria-hidden="true">
+                    <div id="tv-nav-month" class="tv-nav-month"></div>
+                    <div id="tv-nav-day" class="tv-nav-day"></div>
+                    <div id="tv-nav-hour" class="tv-nav-hour"></div>
+                  </div>
+                  <div class="tv-nav-buttons">
+                    <button type="button" id="tv-archive-prev" class="tv-nav-btn" aria-label="Previous day">&lt;&lt;</button>
+                    <button type="button" id="tv-archive-next" class="tv-nav-btn" aria-label="Next day">&gt;&gt;</button>
+                  </div>
+                </div>
+              <div class="tv-chartcontrols-overlay" aria-label="TV chart controls">
+                <button type="button" class="chart-control" data-mode="setpoint">Set Point</button>
+                <button type="button" class="chart-control" data-mode="actual">Building Temp</button>
+                <button type="button" class="chart-control" data-mode="outside">Outside Temp</button>
+                <button type="button" class="chart-control" data-mode="cooling">AC Status</button>
+                <button type="button" class="chart-control" data-mode="fan">Fan Mode</button>
+                <button type="button" class="chart-control" data-mode="both">Combined</button>
               </div>
             </div>
-            <div class="usage-stats" id="usage-slot-stats" aria-hidden="true">
-              <div class="k">Total</div><div class="v" id="usage-stat-total">-</div>
-              <div class="k">Avg</div><div class="v" id="usage-stat-avg">-</div>
-              <div class="k">Max</div><div class="v" id="usage-stat-max">-</div>
-              <div class="k">Cost</div><div class="v" id="usage-stat-cost">-</div>
-            </div>
-          </div>
-          <div class="usage-graphic">
-            <div id="usage-slot-canvas-slot">
-              <canvas id="usage-slot-chart"></canvas>
-            </div>
           </div>
         </div>
-
-        <div class="history-preview" id="history-preview">
-          <div class="history-preview-header">
-            <div class="title">History Chart</div>
-            <div class="hint">Double-click to expand</div>
-          </div>
-          <div id="history-preview-canvas-slot">
-            <canvas id="history-chart"></canvas>
-          </div>
-          <div class="chart-history" id="chart-history">
-            <h4 id="chart-history-toggle">Chart History</h4>
-            <div id="chart-history-status" class="chart-history-status"></div>
-            <ul id="chart-history-list" class="hidden"></ul>
-          </div>
-        </div>
-      </div>
-        <img style="margin-top: -138px; width: 800px; height: 800px;" src="../../../Images/Legs2.png" alt="Logo" />
-
-        <div class="note">Data source: Projected dataset (generated locally; Google Sheet not read).</div>
+        <div class="note">Data source: Google Sheet (last updated when this page was generated).</div>
 
         <pre id="js-log"></pre>
-          </div>
-        </div>
-        <div class="right-rail">
-          <div class="header-row">
-            <div id="Company">Any Company<br>Anywhere USA</div>
-            <div id="Logo"class="logo-placeholder">
-              <img src="../../../Images/Hands.png" alt="Logo" />
-            </div>
-          </div>
-          <div class="timestamp-row">
-            <div id="dashboard-timestamp" class="date-display">Projected Dec 19, 2025 (Open-Meteo)</div>
-          </div>
-          <div id="Cards" class="card-grid frame2">
-            
-        <div class="metric-card frame2" data-metric="timestamp">
-          <div class="label">Timestamp</div>
-          <div class="value">12/19 11:00 PM</div>
-        </div>
-        
-        <div class="metric-card frame2" data-metric="type">
-          <div class="label">Type</div>
-          <div class="value">System</div>
-        </div>
-        
-        <div class="metric-card frame2" data-metric="setpoint">
-          <div class="label">Building Temperature</div>
-          <div class="value">70.0</div>
-        </div>
-        
-        <div class="metric-card frame2">
-          <div class="label">Cooling Set Point</div>
-          <div class="value">75.0</div>
-        </div>
-        
-        <div class="metric-card frame2" data-metric="climate-setting">
-          <div class="label">Climate Setting</div>
-          <div class="value">Cool</div>
-        </div>
-        
-        <div class="metric-card frame2 fan-state-c" data-metric="fan">
-          <div class="label">Fan Setting</div>
-          <div class="value">Circulate</div>
-        </div>
-        
-        <div class="metric-card frame2" data-metric="cooling">
-          <div class="label">Equipment Status</div>
-          <div class="value">Idle</div>
-        </div>
-        
-        <div class="metric-card frame2">
-          <div class="label">Studio</div>
-          <div class="value"></div>
-        </div>
-        
-        <div class="metric-card frame2">
-          <div class="label">Request Expires (local time)</div>
-          <div class="value"></div>
-        </div>
-        
-        <div class="metric-card frame2" data-metric="outside">
-          <div class="label">Outside Temp</div>
-          <div class="value">52.9</div>
-        </div>
-        
-        <div class="metric-card frame2" data-metric="condenser-state">
-          <div class="label">Condenser State</div>
-          <div class="value">Off</div>
-        </div>
-        
-        <div class="metric-card frame2" data-metric="condenser-minutes">
-          <div class="label">Condenser Minutes Past Hour</div>
-          <div class="value">80</div>
-        </div>
-        
-          </div>
-          <div class="hands-logo-slot" aria-hidden="true">
-            <div class="hands-logo-top"></div>
-          </div>
-        </div>
       </div>
-    </div>
-    <div class="chart-wrap tv-frame" id="tv-frame" aria-hidden="true">
-      <div id="usage-pip" aria-hidden="true"></div>
-      <div id="tv-hands-logo" aria-hidden="true"></div>
-      <div id="tv-controls" aria-label="TV controls">
-        <button type="button" id="tv-show-history" class="tv-btn">History</button>
-        <button type="button" id="tv-show-usage" class="tv-btn">Usage</button>
-      </div>
-      <div id="tv-exit-hint">Double-click to exit</div>
-      <div id="tv-canvas-slot"></div>
     </div>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script id="dashboard-data-inline" type="application/json">
-{"headers": ["Timestamp", "Type", "Building Temperature", "Cooling Set Point", "Climate Setting", "Fan Setting", "Equipment Status", "Studio", "Request Expires (local time)", "Outside Temp", "Condenser State", "Condenser Minutes"], "latestRow": ["2025-12-19 23:00", "System", "70.0", "75.0", "Cool", "Circulate", "Idle", "", "", "PN 52.9", "Off", "0"], "history": [{"label": "Fri", "value": 69.16666666666667}, {"label": "Fri", "value": 68.33333333333333}, {"label": "Fri", "value": 67.5}, {"label": "Fri", "value": 66.66666666666667}, {"label": "Fri", "value": 65.83333333333333}, {"label": "Fri", "value": 65.0}, {"label": "Fri", "value": 65.0}, {"label": "Fri", "value": 65.71428571428571}, {"label": "Fri", "value": 66.42857142857143}, {"label": "Fri", "value": 67.14285714285714}, {"label": "Fri", "value": 67.85714285714286}, {"label": "Fri", "value": 68.57142857142857}, {"label": "Fri", "value": 69.28571428571429}, {"label": "Fri", "value": 70.0}, {"label": "Fri", "value": 71.0}, {"label": "Fri", "value": 72.0}, {"label": "Fri", "value": 73.0}, {"label": "Fri", "value": 74.0}, {"label": "Fri", "value": 75.0}, {"label": "Fri", "value": 73.0}, {"label": "Fri", "value": 72.25}, {"label": "Fri", "value": 71.5}, {"label": "Fri", "value": 70.75}, {"label": "Fri", "value": 70.0}], "chartLabels": ["Fri", "Fri", "Fri", "Fri", "Fri", "Fri", "Fri", "Fri", "Fri", "Fri", "Fri", "Fri", "Fri", "Fri", "Fri", "Fri", "Fri", "Fri", "Fri", "Fri", "Fri", "Fri", "Fri", "Fri"], "setpoint": [69.16666666666667, 68.33333333333333, 67.5, 66.66666666666667, 65.83333333333333, 65.0, 65.0, 65.71428571428571, 66.42857142857143, 67.14285714285714, 67.85714285714286, 68.57142857142857, 69.28571428571429, 70.0, 71.0, 72.0, 73.0, 74.0, 75.0, 73.0, 72.25, 71.5, 70.75, 70.0], "actual": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "setpointLabel": "Set Point", "actualLabel": "Building Temperature", "fan": ["A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "A", "O", "O", "O", "O", "O", "O", "C", "C", "C", "C", "C"], "fanLegend": ["Auto", "Circulate", "On"], "outside": [54.6, 53.0, 53.3, 54.4, 55.8, 54.5, 54.0, 53.0, 56.9, 60.6, 65.0, 68.1, 68.6, 67.4, 66.1, 65.1, 63.2, 59.6, 58.5, 56.7, 56.0, 54.7, 54.0, 52.9], "outsideLabel": "Outside Temp", "outsideFlags": ["P", "P", "P", "N", "N", "N", "N", "S", "S", "S", "S", "S", "S", "S", "S", "S", "P", "N", "N", "N", "P", "P", "P", "P"], "outsideFlagDayChars": ["N", "N", "N", "N", "N", "N", "N", "D", "D", "D", "D", "D", "D", "D", "D", "D", "D", "N", "N", "N", "N", "N", "N", "N"], "cooling": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0], "coolingLegend": ["Idle", "Cooling"], "coolingLabel": "Equipment Status", "climateSetting": ["Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool"], "climateSettingLabel": "Climate Setting", "typeSeries": ["System", "System", "System", "System", "System", "System", "System", "System", "System", "System", "System", "System", "System", "System", "System", "System", "System", "System", "System", "System", "System", "System", "System", "System"], "studioSeries": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "requestExpiresLocalSeries": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "condenserMinutes": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 40.0, 40.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "totalCondenserMinutes": "80", "totalCondenserMinutesValue": 80.0, "totalCondenserCost": "$4.00", "totalCondenserCostValue": 4.0, "condenserCostPerMinute": 0.05, "latestActual": null, "latestSetpoint": 70.0, "latestOutside": 52.9, "latestOutsideRaw": "PN 52.9", "latestOutsideDaylight": false, "latestOutsideFlagDayChar": "N", "latestFan": "C", "latestCooling": 0, "latestCondenserState": "Off", "generatedTimestamp": "Projected Dec 19, 2025 (Open-Meteo)", "generatedDateSlug": "2025-12-19", "archiveDates": [{"slug": "2025-12-19", "label": "Dec 19, 2025"}, {"slug": "2025-12-18", "label": "Dec 18, 2025"}, {"slug": "2025-12-17", "label": "Dec 17, 2025"}, {"slug": "2025-12-16", "label": "Dec 16, 2025"}, {"slug": "2025-12-15", "label": "Dec 15, 2025"}, {"slug": "2025-12-14", "label": "Dec 14, 2025"}, {"slug": "2025-12-13", "label": "Dec 13, 2025"}, {"slug": "2025-12-12", "label": "Dec 12, 2025"}, {"slug": "2025-12-11", "label": "Dec 11, 2025"}, {"slug": "2025-12-10", "label": "Dec 10, 2025"}, {"slug": "2025-12-09", "label": "Dec 09, 2025"}, {"slug": "2025-12-08", "label": "Dec 08, 2025"}, {"slug": "2025-12-07", "label": "Dec 07, 2025"}, {"slug": "2025-12-06", "label": "Dec 06, 2025"}, {"slug": "2025-12-05", "label": "Dec 05, 2025"}, {"slug": "2025-12-04", "label": "Dec 04, 2025"}, {"slug": "2025-12-03", "label": "Dec 03, 2025"}, {"slug": "2025-12-02", "label": "Dec 02, 2025"}, {"slug": "2025-12-01", "label": "Dec 01, 2025"}, {"slug": "2025-11-30", "label": "Nov 30, 2025"}, {"slug": "2025-11-29", "label": "Nov 29, 2025"}, {"slug": "2025-11-28", "label": "Nov 28, 2025"}, {"slug": "2025-11-27", "label": "Nov 27, 2025"}, {"slug": "2025-11-26", "label": "Nov 26, 2025"}, {"slug": "2025-11-25", "label": "Nov 25, 2025"}, {"slug": "2025-11-24", "label": "Nov 24, 2025"}, {"slug": "2025-11-23", "label": "Nov 23, 2025"}, {"slug": "2025-11-22", "label": "Nov 22, 2025"}, {"slug": "2025-11-21", "label": "Nov 21, 2025"}, {"slug": "2025-11-20", "label": "Nov 20, 2025"}, {"slug": "2025-11-19", "label": "Nov 19, 2025"}, {"slug": "2025-11-18", "label": "Nov 18, 2025"}, {"slug": "2025-11-17", "label": "Nov 17, 2025"}, {"slug": "2025-11-16", "label": "Nov 16, 2025"}, {"slug": "2025-11-15", "label": "Nov 15, 2025"}, {"slug": "2025-11-14", "label": "Nov 14, 2025"}, {"slug": "2025-11-13", "label": "Nov 13, 2025"}, {"slug": "2025-11-12", "label": "Nov 12, 2025"}, {"slug": "2025-11-11", "label": "Nov 11, 2025"}, {"slug": "2025-11-10", "label": "Nov 10, 2025"}, {"slug": "2025-11-09", "label": "Nov 09, 2025"}, {"slug": "2025-11-08", "label": "Nov 08, 2025"}, {"slug": "2025-11-07", "label": "Nov 07, 2025"}, {"slug": "2025-11-06", "label": "Nov 06, 2025"}, {"slug": "2025-11-05", "label": "Nov 05, 2025"}, {"slug": "2025-11-04", "label": "Nov 04, 2025"}, {"slug": "2025-11-03", "label": "Nov 03, 2025"}, {"slug": "2025-11-02", "label": "Nov 02, 2025"}, {"slug": "2025-11-01", "label": "Nov 01, 2025"}, {"slug": "2025-10-31", "label": "Oct 31, 2025"}, {"slug": "2025-10-30", "label": "Oct 30, 2025"}, {"slug": "2025-10-29", "label": "Oct 29, 2025"}, {"slug": "2025-10-28", "label": "Oct 28, 2025"}, {"slug": "2025-10-27", "label": "Oct 27, 2025"}, {"slug": "2025-10-26", "label": "Oct 26, 2025"}, {"slug": "2025-10-25", "label": "Oct 25, 2025"}, {"slug": "2025-10-24", "label": "Oct 24, 2025"}, {"slug": "2025-10-23", "label": "Oct 23, 2025"}, {"slug": "2025-10-22", "label": "Oct 22, 2025"}, {"slug": "2025-10-21", "label": "Oct 21, 2025"}, {"slug": "2025-10-20", "label": "Oct 20, 2025"}, {"slug": "2025-10-19", "label": "Oct 19, 2025"}, {"slug": "2025-10-18", "label": "Oct 18, 2025"}, {"slug": "2025-10-17", "label": "Oct 17, 2025"}, {"slug": "2025-10-16", "label": "Oct 16, 2025"}, {"slug": "2025-10-15", "label": "Oct 15, 2025"}, {"slug": "2025-10-14", "label": "Oct 14, 2025"}, {"slug": "2025-10-13", "label": "Oct 13, 2025"}, {"slug": "2025-10-12", "label": "Oct 12, 2025"}, {"slug": "2025-10-11", "label": "Oct 11, 2025"}, {"slug": "2025-10-10", "label": "Oct 10, 2025"}, {"slug": "2025-10-09", "label": "Oct 09, 2025"}, {"slug": "2025-10-08", "label": "Oct 08, 2025"}, {"slug": "2025-10-07", "label": "Oct 07, 2025"}, {"slug": "2025-10-06", "label": "Oct 06, 2025"}, {"slug": "2025-10-05", "label": "Oct 05, 2025"}, {"slug": "2025-10-04", "label": "Oct 04, 2025"}, {"slug": "2025-10-03", "label": "Oct 03, 2025"}, {"slug": "2025-10-02", "label": "Oct 02, 2025"}, {"slug": "2025-10-01", "label": "Oct 01, 2025"}, {"slug": "2025-09-30", "label": "Sep 30, 2025"}, {"slug": "2025-09-29", "label": "Sep 29, 2025"}, {"slug": "2025-09-28", "label": "Sep 28, 2025"}, {"slug": "2025-09-27", "label": "Sep 27, 2025"}, {"slug": "2025-09-26", "label": "Sep 26, 2025"}, {"slug": "2025-09-25", "label": "Sep 25, 2025"}, {"slug": "2025-09-24", "label": "Sep 24, 2025"}, {"slug": "2025-09-23", "label": "Sep 23, 2025"}, {"slug": "2025-09-22", "label": "Sep 22, 2025"}, {"slug": "2025-09-21", "label": "Sep 21, 2025"}, {"slug": "2025-09-20", "label": "Sep 20, 2025"}, {"slug": "2025-09-19", "label": "Sep 19, 2025"}, {"slug": "2025-09-18", "label": "Sep 18, 2025"}, {"slug": "2025-09-17", "label": "Sep 17, 2025"}, {"slug": "2025-09-16", "label": "Sep 16, 2025"}, {"slug": "2025-09-15", "label": "Sep 15, 2025"}, {"slug": "2025-09-14", "label": "Sep 14, 2025"}, {"slug": "2025-09-13", "label": "Sep 13, 2025"}, {"slug": "2025-09-12", "label": "Sep 12, 2025"}, {"slug": "2025-09-11", "label": "Sep 11, 2025"}, {"slug": "2025-09-10", "label": "Sep 10, 2025"}, {"slug": "2025-09-09", "label": "Sep 09, 2025"}, {"slug": "2025-09-08", "label": "Sep 08, 2025"}, {"slug": "2025-09-07", "label": "Sep 07, 2025"}, {"slug": "2025-09-06", "label": "Sep 06, 2025"}, {"slug": "2025-09-05", "label": "Sep 05, 2025"}, {"slug": "2025-09-04", "label": "Sep 04, 2025"}, {"slug": "2025-09-03", "label": "Sep 03, 2025"}, {"slug": "2025-09-02", "label": "Sep 02, 2025"}, {"slug": "2025-09-01", "label": "Sep 01, 2025"}, {"slug": "2025-08-31", "label": "Aug 31, 2025"}, {"slug": "2025-08-30", "label": "Aug 30, 2025"}, {"slug": "2025-08-29", "label": "Aug 29, 2025"}, {"slug": "2025-08-28", "label": "Aug 28, 2025"}, {"slug": "2025-08-27", "label": "Aug 27, 2025"}, {"slug": "2025-08-26", "label": "Aug 26, 2025"}, {"slug": "2025-08-25", "label": "Aug 25, 2025"}, {"slug": "2025-08-24", "label": "Aug 24, 2025"}, {"slug": "2025-08-23", "label": "Aug 23, 2025"}, {"slug": "2025-08-22", "label": "Aug 22, 2025"}, {"slug": "2025-08-21", "label": "Aug 21, 2025"}, {"slug": "2025-08-20", "label": "Aug 20, 2025"}, {"slug": "2025-08-19", "label": "Aug 19, 2025"}, {"slug": "2025-08-18", "label": "Aug 18, 2025"}, {"slug": "2025-08-17", "label": "Aug 17, 2025"}, {"slug": "2025-08-16", "label": "Aug 16, 2025"}, {"slug": "2025-08-15", "label": "Aug 15, 2025"}, {"slug": "2025-08-14", "label": "Aug 14, 2025"}, {"slug": "2025-08-13", "label": "Aug 13, 2025"}, {"slug": "2025-08-12", "label": "Aug 12, 2025"}, {"slug": "2025-08-11", "label": "Aug 11, 2025"}, {"slug": "2025-08-10", "label": "Aug 10, 2025"}, {"slug": "2025-08-09", "label": "Aug 09, 2025"}, {"slug": "2025-08-08", "label": "Aug 08, 2025"}, {"slug": "2025-08-07", "label": "Aug 07, 2025"}, {"slug": "2025-08-06", "label": "Aug 06, 2025"}, {"slug": "2025-08-05", "label": "Aug 05, 2025"}, {"slug": "2025-08-04", "label": "Aug 04, 2025"}, {"slug": "2025-08-03", "label": "Aug 03, 2025"}, {"slug": "2025-08-02", "label": "Aug 02, 2025"}, {"slug": "2025-08-01", "label": "Aug 01, 2025"}, {"slug": "2025-07-31", "label": "Jul 31, 2025"}, {"slug": "2025-07-30", "label": "Jul 30, 2025"}, {"slug": "2025-07-29", "label": "Jul 29, 2025"}, {"slug": "2025-07-28", "label": "Jul 28, 2025"}, {"slug": "2025-07-27", "label": "Jul 27, 2025"}, {"slug": "2025-07-26", "label": "Jul 26, 2025"}, {"slug": "2025-07-25", "label": "Jul 25, 2025"}, {"slug": "2025-07-24", "label": "Jul 24, 2025"}, {"slug": "2025-07-23", "label": "Jul 23, 2025"}, {"slug": "2025-07-22", "label": "Jul 22, 2025"}, {"slug": "2025-07-21", "label": "Jul 21, 2025"}, {"slug": "2025-07-20", "label": "Jul 20, 2025"}, {"slug": "2025-07-19", "label": "Jul 19, 2025"}, {"slug": "2025-07-18", "label": "Jul 18, 2025"}, {"slug": "2025-07-17", "label": "Jul 17, 2025"}, {"slug": "2025-07-16", "label": "Jul 16, 2025"}, {"slug": "2025-07-15", "label": "Jul 15, 2025"}, {"slug": "2025-07-14", "label": "Jul 14, 2025"}, {"slug": "2025-07-13", "label": "Jul 13, 2025"}, {"slug": "2025-07-12", "label": "Jul 12, 2025"}, {"slug": "2025-07-11", "label": "Jul 11, 2025"}, {"slug": "2025-07-10", "label": "Jul 10, 2025"}, {"slug": "2025-07-09", "label": "Jul 09, 2025"}, {"slug": "2025-07-08", "label": "Jul 08, 2025"}, {"slug": "2025-07-07", "label": "Jul 07, 2025"}, {"slug": "2025-07-06", "label": "Jul 06, 2025"}, {"slug": "2025-07-05", "label": "Jul 05, 2025"}, {"slug": "2025-07-04", "label": "Jul 04, 2025"}, {"slug": "2025-07-03", "label": "Jul 03, 2025"}, {"slug": "2025-07-02", "label": "Jul 02, 2025"}, {"slug": "2025-07-01", "label": "Jul 01, 2025"}, {"slug": "2025-06-30", "label": "Jun 30, 2025"}, {"slug": "2025-06-29", "label": "Jun 29, 2025"}, {"slug": "2025-06-28", "label": "Jun 28, 2025"}, {"slug": "2025-06-27", "label": "Jun 27, 2025"}, {"slug": "2025-06-26", "label": "Jun 26, 2025"}, {"slug": "2025-06-25", "label": "Jun 25, 2025"}, {"slug": "2025-06-24", "label": "Jun 24, 2025"}, {"slug": "2025-06-23", "label": "Jun 23, 2025"}, {"slug": "2025-06-22", "label": "Jun 22, 2025"}, {"slug": "2025-06-21", "label": "Jun 21, 2025"}, {"slug": "2025-06-20", "label": "Jun 20, 2025"}, {"slug": "2025-06-19", "label": "Jun 19, 2025"}, {"slug": "2025-06-18", "label": "Jun 18, 2025"}, {"slug": "2025-06-17", "label": "Jun 17, 2025"}, {"slug": "2025-06-16", "label": "Jun 16, 2025"}, {"slug": "2025-06-15", "label": "Jun 15, 2025"}, {"slug": "2025-06-14", "label": "Jun 14, 2025"}, {"slug": "2025-06-13", "label": "Jun 13, 2025"}, {"slug": "2025-06-12", "label": "Jun 12, 2025"}, {"slug": "2025-06-11", "label": "Jun 11, 2025"}, {"slug": "2025-06-10", "label": "Jun 10, 2025"}, {"slug": "2025-06-09", "label": "Jun 09, 2025"}, {"slug": "2025-06-08", "label": "Jun 08, 2025"}, {"slug": "2025-06-07", "label": "Jun 07, 2025"}, {"slug": "2025-06-06", "label": "Jun 06, 2025"}, {"slug": "2025-06-05", "label": "Jun 05, 2025"}, {"slug": "2025-06-04", "label": "Jun 04, 2025"}, {"slug": "2025-06-03", "label": "Jun 03, 2025"}, {"slug": "2025-06-02", "label": "Jun 02, 2025"}, {"slug": "2025-06-01", "label": "Jun 01, 2025"}, {"slug": "2025-05-31", "label": "May 31, 2025"}, {"slug": "2025-05-30", "label": "May 30, 2025"}, {"slug": "2025-05-29", "label": "May 29, 2025"}, {"slug": "2025-05-28", "label": "May 28, 2025"}, {"slug": "2025-05-27", "label": "May 27, 2025"}, {"slug": "2025-05-26", "label": "May 26, 2025"}, {"slug": "2025-05-25", "label": "May 25, 2025"}, {"slug": "2025-05-24", "label": "May 24, 2025"}, {"slug": "2025-05-23", "label": "May 23, 2025"}, {"slug": "2025-05-22", "label": "May 22, 2025"}, {"slug": "2025-05-21", "label": "May 21, 2025"}, {"slug": "2025-05-20", "label": "May 20, 2025"}, {"slug": "2025-05-19", "label": "May 19, 2025"}, {"slug": "2025-05-18", "label": "May 18, 2025"}, {"slug": "2025-05-17", "label": "May 17, 2025"}, {"slug": "2025-05-16", "label": "May 16, 2025"}, {"slug": "2025-05-15", "label": "May 15, 2025"}, {"slug": "2025-05-14", "label": "May 14, 2025"}, {"slug": "2025-05-13", "label": "May 13, 2025"}, {"slug": "2025-05-12", "label": "May 12, 2025"}, {"slug": "2025-05-11", "label": "May 11, 2025"}, {"slug": "2025-05-10", "label": "May 10, 2025"}, {"slug": "2025-05-09", "label": "May 09, 2025"}, {"slug": "2025-05-08", "label": "May 08, 2025"}, {"slug": "2025-05-07", "label": "May 07, 2025"}, {"slug": "2025-05-06", "label": "May 06, 2025"}, {"slug": "2025-05-05", "label": "May 05, 2025"}, {"slug": "2025-05-04", "label": "May 04, 2025"}, {"slug": "2025-05-03", "label": "May 03, 2025"}, {"slug": "2025-05-02", "label": "May 02, 2025"}, {"slug": "2025-05-01", "label": "May 01, 2025"}, {"slug": "2025-04-30", "label": "Apr 30, 2025"}, {"slug": "2025-04-29", "label": "Apr 29, 2025"}, {"slug": "2025-04-28", "label": "Apr 28, 2025"}, {"slug": "2025-04-27", "label": "Apr 27, 2025"}, {"slug": "2025-04-26", "label": "Apr 26, 2025"}, {"slug": "2025-04-25", "label": "Apr 25, 2025"}, {"slug": "2025-04-24", "label": "Apr 24, 2025"}, {"slug": "2025-04-23", "label": "Apr 23, 2025"}, {"slug": "2025-04-22", "label": "Apr 22, 2025"}, {"slug": "2025-04-21", "label": "Apr 21, 2025"}, {"slug": "2025-04-20", "label": "Apr 20, 2025"}, {"slug": "2025-04-19", "label": "Apr 19, 2025"}, {"slug": "2025-04-18", "label": "Apr 18, 2025"}, {"slug": "2025-04-17", "label": "Apr 17, 2025"}, {"slug": "2025-04-16", "label": "Apr 16, 2025"}, {"slug": "2025-04-15", "label": "Apr 15, 2025"}, {"slug": "2025-04-14", "label": "Apr 14, 2025"}, {"slug": "2025-04-13", "label": "Apr 13, 2025"}, {"slug": "2025-04-12", "label": "Apr 12, 2025"}, {"slug": "2025-04-11", "label": "Apr 11, 2025"}, {"slug": "2025-04-10", "label": "Apr 10, 2025"}, {"slug": "2025-04-09", "label": "Apr 09, 2025"}, {"slug": "2025-04-08", "label": "Apr 08, 2025"}, {"slug": "2025-04-07", "label": "Apr 07, 2025"}, {"slug": "2025-04-06", "label": "Apr 06, 2025"}, {"slug": "2025-04-05", "label": "Apr 05, 2025"}, {"slug": "2025-04-04", "label": "Apr 04, 2025"}, {"slug": "2025-04-03", "label": "Apr 03, 2025"}, {"slug": "2025-04-02", "label": "Apr 02, 2025"}, {"slug": "2025-04-01", "label": "Apr 01, 2025"}, {"slug": "2025-03-31", "label": "Mar 31, 2025"}, {"slug": "2025-03-30", "label": "Mar 30, 2025"}, {"slug": "2025-03-29", "label": "Mar 29, 2025"}, {"slug": "2025-03-28", "label": "Mar 28, 2025"}, {"slug": "2025-03-27", "label": "Mar 27, 2025"}, {"slug": "2025-03-26", "label": "Mar 26, 2025"}, {"slug": "2025-03-25", "label": "Mar 25, 2025"}, {"slug": "2025-03-24", "label": "Mar 24, 2025"}, {"slug": "2025-03-23", "label": "Mar 23, 2025"}, {"slug": "2025-03-22", "label": "Mar 22, 2025"}, {"slug": "2025-03-21", "label": "Mar 21, 2025"}, {"slug": "2025-03-20", "label": "Mar 20, 2025"}, {"slug": "2025-03-19", "label": "Mar 19, 2025"}, {"slug": "2025-03-18", "label": "Mar 18, 2025"}, {"slug": "2025-03-17", "label": "Mar 17, 2025"}, {"slug": "2025-03-16", "label": "Mar 16, 2025"}, {"slug": "2025-03-15", "label": "Mar 15, 2025"}, {"slug": "2025-03-14", "label": "Mar 14, 2025"}, {"slug": "2025-03-13", "label": "Mar 13, 2025"}, {"slug": "2025-03-12", "label": "Mar 12, 2025"}, {"slug": "2025-03-11", "label": "Mar 11, 2025"}, {"slug": "2025-03-10", "label": "Mar 10, 2025"}, {"slug": "2025-03-09", "label": "Mar 09, 2025"}, {"slug": "2025-03-08", "label": "Mar 08, 2025"}, {"slug": "2025-03-07", "label": "Mar 07, 2025"}, {"slug": "2025-03-06", "label": "Mar 06, 2025"}, {"slug": "2025-03-05", "label": "Mar 05, 2025"}, {"slug": "2025-03-04", "label": "Mar 04, 2025"}, {"slug": "2025-03-03", "label": "Mar 03, 2025"}, {"slug": "2025-03-02", "label": "Mar 02, 2025"}, {"slug": "2025-03-01", "label": "Mar 01, 2025"}, {"slug": "2025-02-28", "label": "Feb 28, 2025"}, {"slug": "2025-02-27", "label": "Feb 27, 2025"}, {"slug": "2025-02-26", "label": "Feb 26, 2025"}, {"slug": "2025-02-25", "label": "Feb 25, 2025"}, {"slug": "2025-02-24", "label": "Feb 24, 2025"}, {"slug": "2025-02-23", "label": "Feb 23, 2025"}, {"slug": "2025-02-22", "label": "Feb 22, 2025"}, {"slug": "2025-02-21", "label": "Feb 21, 2025"}, {"slug": "2025-02-20", "label": "Feb 20, 2025"}, {"slug": "2025-02-19", "label": "Feb 19, 2025"}, {"slug": "2025-02-18", "label": "Feb 18, 2025"}, {"slug": "2025-02-17", "label": "Feb 17, 2025"}, {"slug": "2025-02-16", "label": "Feb 16, 2025"}, {"slug": "2025-02-15", "label": "Feb 15, 2025"}, {"slug": "2025-02-14", "label": "Feb 14, 2025"}, {"slug": "2025-02-13", "label": "Feb 13, 2025"}, {"slug": "2025-02-12", "label": "Feb 12, 2025"}, {"slug": "2025-02-11", "label": "Feb 11, 2025"}, {"slug": "2025-02-10", "label": "Feb 10, 2025"}, {"slug": "2025-02-09", "label": "Feb 09, 2025"}, {"slug": "2025-02-08", "label": "Feb 08, 2025"}, {"slug": "2025-02-07", "label": "Feb 07, 2025"}, {"slug": "2025-02-06", "label": "Feb 06, 2025"}, {"slug": "2025-02-05", "label": "Feb 05, 2025"}, {"slug": "2025-02-04", "label": "Feb 04, 2025"}, {"slug": "2025-02-03", "label": "Feb 03, 2025"}, {"slug": "2025-02-02", "label": "Feb 02, 2025"}, {"slug": "2025-02-01", "label": "Feb 01, 2025"}, {"slug": "2025-01-31", "label": "Jan 31, 2025"}, {"slug": "2025-01-30", "label": "Jan 30, 2025"}, {"slug": "2025-01-29", "label": "Jan 29, 2025"}, {"slug": "2025-01-28", "label": "Jan 28, 2025"}, {"slug": "2025-01-27", "label": "Jan 27, 2025"}, {"slug": "2025-01-26", "label": "Jan 26, 2025"}, {"slug": "2025-01-25", "label": "Jan 25, 2025"}, {"slug": "2025-01-24", "label": "Jan 24, 2025"}, {"slug": "2025-01-23", "label": "Jan 23, 2025"}, {"slug": "2025-01-22", "label": "Jan 22, 2025"}, {"slug": "2025-01-21", "label": "Jan 21, 2025"}, {"slug": "2025-01-20", "label": "Jan 20, 2025"}, {"slug": "2025-01-19", "label": "Jan 19, 2025"}, {"slug": "2025-01-18", "label": "Jan 18, 2025"}, {"slug": "2025-01-17", "label": "Jan 17, 2025"}, {"slug": "2025-01-16", "label": "Jan 16, 2025"}, {"slug": "2025-01-15", "label": "Jan 15, 2025"}, {"slug": "2025-01-14", "label": "Jan 14, 2025"}, {"slug": "2025-01-13", "label": "Jan 13, 2025"}, {"slug": "2025-01-12", "label": "Jan 12, 2025"}, {"slug": "2025-01-11", "label": "Jan 11, 2025"}, {"slug": "2025-01-10", "label": "Jan 10, 2025"}, {"slug": "2025-01-09", "label": "Jan 09, 2025"}, {"slug": "2025-01-08", "label": "Jan 08, 2025"}, {"slug": "2025-01-07", "label": "Jan 07, 2025"}, {"slug": "2025-01-06", "label": "Jan 06, 2025"}, {"slug": "2025-01-05", "label": "Jan 05, 2025"}, {"slug": "2025-01-04", "label": "Jan 04, 2025"}, {"slug": "2025-01-03", "label": "Jan 03, 2025"}, {"slug": "2025-01-02", "label": "Jan 02, 2025"}, {"slug": "2025-01-01", "label": "Jan 01, 2025"}], "archivePath": "chart hist"}
+{"headers": ["Timestamp", "Type", "Current Temperature", "Cooling Set Point", "Climate Setting", "Fan Setting", "Equipment Status", "Studio", "Request Expires (local time)", "Outside Temp", "Condenser State", "Condenser Minutes"], "latestRow": ["Tuesday Nov 25 2025 8:11 PM", "System", "95", "80", "Cool", "On", "Cooling", " ", "8:54 PM", "NN57.0 | Mostly Cloudy", "On", "500"], "history": [{"label": "Sunday Nov 23      ", "value": 70.0}, {"label": "Sunday Nov 23      ", "value": 75.0}, {"label": "Sunday Nov 23      ", "value": 75.0}, {"label": "Sunday Nov 23      ", "value": 75.0}, {"label": "Sunday Nov 23      ", "value": 75.0}, {"label": "Sunday Nov 23      ", "value": 75.0}, {"label": "Sunday Nov 23      ", "value": 75.0}, {"label": "Tuesday Nov 25      ", "value": 72.0}, {"label": "Tuesday Nov 25      ", "value": 74.0}, {"label": "Tuesday Nov 25      ", "value": 74.0}, {"label": "Tuesday Nov 25      ", "value": 74.0}, {"label": "Tuesday Nov 25      ", "value": 74.0}, {"label": "Friday Nov 21      ", "value": 74.0}, {"label": "Sunday Nov 23      ", "value": 75.0}, {"label": "Sunday Nov 23      ", "value": 75.0}, {"label": "Sunday Nov 23      ", "value": 75.0}, {"label": "Sunday Nov 23      ", "value": 75.0}, {"label": "Sunday Nov 23      ", "value": 75.0}, {"label": "Sunday Nov 23      ", "value": 75.0}, {"label": "Sunday Nov 23      ", "value": 74.0}, {"label": "Tuesday Nov 25      ", "value": 72.0}, {"label": "Tuesday Nov 25      ", "value": 74.0}, {"label": "Tuesday Nov 25      ", "value": 74.0}, {"label": "Tuesday Nov 25      ", "value": 80.0}], "chartLabels": ["Sunday Nov 23      ", "Sunday Nov 23      ", "Sunday Nov 23      ", "Sunday Nov 23      ", "Sunday Nov 23      ", "Sunday Nov 23      ", "Sunday Nov 23      ", "Tuesday Nov 25      ", "Tuesday Nov 25      ", "Tuesday Nov 25      ", "Tuesday Nov 25      ", "Tuesday Nov 25      ", "Friday Nov 21      ", "Sunday Nov 23      ", "Sunday Nov 23      ", "Sunday Nov 23      ", "Sunday Nov 23      ", "Sunday Nov 23      ", "Sunday Nov 23      ", "Sunday Nov 23      ", "Tuesday Nov 25      ", "Tuesday Nov 25      ", "Tuesday Nov 25      ", "Tuesday Nov 25      "], "setpoint": [70.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 72.0, 74.0, 74.0, 74.0, 74.0, 74.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 74.0, 72.0, 74.0, 74.0, 80.0], "actual": [45.0, 71.0, 72.0, 73.0, 74.0, 75.0, 75.0, 75.0, 75.0, 73.0, 72.0, 71.0, 70.0, 68.0, 65.0, 61.0, 64.0, 63.0, 65.0, 65.0, 70.0, 88.0, 90.0, 95.0], "setpointLabel": "Set Point", "actualLabel": "Current Temperature", "fan": ["A", "A", "O", "O", "O", "O", "O", "C", "C", "C", "C", "A", "A", "A", "A", "A", "A", "A", "A", "A", "C", "C", "C", "O"], "fanLegend": ["Auto", "Circulate", "On"], "outside": [55.0, 65.0, 65.0, 65.0, 62.0, 59.0, 57.0, 53.0, 52.0, 50.0, 49.0, 49.0, 48.0, 48.0, 47.0, 46.0, 46.0, 47.0, 48.0, 54.0, 58.0, 61.0, 63.0, 57.0], "outsideLabel": "Outside Temp", "outsideFlags": ["5", "6", "6", "6", "6", "5", "5", "5", "5", "5", "4", "4", "4", "4", "4", "4", "4", "4", "4", "5", "5", "6", "6", "5"], "outsideFlagDayChars": ["5", "5", "5", "5", "2", "9", "7", "3", "2", "0", "9", "9", "8", "8", "7", "6", "6", "7", "8", "4", "8", "1", "3", "7"], "cooling": [0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1], "coolingLegend": ["Idle", "Cooling"], "coolingLabel": "Equipment Status", "climateSetting": ["Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool"], "climateSettingLabel": "Climate Setting", "condenserMinutes": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 500.0], "totalCondenserMinutes": "500", "totalCondenserMinutesValue": 500.0, "totalCondenserCost": "$25.00", "totalCondenserCostValue": 25.0, "condenserCostPerMinute": 0.05, "latestActual": 95.0, "latestSetpoint": 80.0, "latestOutside": 57.0, "latestOutsideRaw": "NN57.0 | Mostly Cloudy", "latestOutsideDaylight": false, "latestOutsideFlagDayChar": "N", "latestFan": "O", "latestCooling": 1, "latestCondenserState": "On", "generatedTimestamp": "Saturday Dec 20 2025 10:57:18 PM", "generatedDateSlug": "2025-12-20", "archiveDates": [{"slug": "2025-12-20", "label": "Dec 20, 2025"}, {"slug": "2025-12-19", "label": "Dec 19, 2025"}, {"slug": "2025-12-18", "label": "Dec 18, 2025"}, {"slug": "2025-12-17", "label": "Dec 17, 2025"}, {"slug": "2025-12-16", "label": "Dec 16, 2025"}, {"slug": "2025-12-15", "label": "Dec 15, 2025"}, {"slug": "2025-12-14", "label": "Dec 14, 2025"}, {"slug": "2025-12-13", "label": "Dec 13, 2025"}, {"slug": "2025-12-12", "label": "Dec 12, 2025"}, {"slug": "2025-12-11", "label": "Dec 11, 2025"}, {"slug": "2025-12-10", "label": "Dec 10, 2025"}, {"slug": "2025-12-09", "label": "Dec 09, 2025"}, {"slug": "2025-12-08", "label": "Dec 08, 2025"}, {"slug": "2025-12-07", "label": "Dec 07, 2025"}, {"slug": "2025-12-06", "label": "Dec 06, 2025"}, {"slug": "2025-12-05", "label": "Dec 05, 2025"}, {"slug": "2025-12-04", "label": "Dec 04, 2025"}, {"slug": "2025-12-03", "label": "Dec 03, 2025"}, {"slug": "2025-12-02", "label": "Dec 02, 2025"}, {"slug": "2025-12-01", "label": "Dec 01, 2025"}, {"slug": "2025-11-30", "label": "Nov 30, 2025"}, {"slug": "2025-11-29", "label": "Nov 29, 2025"}, {"slug": "2025-11-28", "label": "Nov 28, 2025"}, {"slug": "2025-11-27", "label": "Nov 27, 2025"}, {"slug": "2025-11-26", "label": "Nov 26, 2025"}, {"slug": "2025-11-25", "label": "Nov 25, 2025"}, {"slug": "2025-11-24", "label": "Nov 24, 2025"}, {"slug": "2025-11-23", "label": "Nov 23, 2025"}, {"slug": "2025-11-22", "label": "Nov 22, 2025"}, {"slug": "2025-11-21", "label": "Nov 21, 2025"}, {"slug": "2025-11-20", "label": "Nov 20, 2025"}, {"slug": "2025-11-19", "label": "Nov 19, 2025"}, {"slug": "2025-11-18", "label": "Nov 18, 2025"}, {"slug": "2025-11-17", "label": "Nov 17, 2025"}, {"slug": "2025-11-16", "label": "Nov 16, 2025"}, {"slug": "2025-11-15", "label": "Nov 15, 2025"}, {"slug": "2025-11-14", "label": "Nov 14, 2025"}, {"slug": "2025-11-13", "label": "Nov 13, 2025"}, {"slug": "2025-11-12", "label": "Nov 12, 2025"}, {"slug": "2025-11-11", "label": "Nov 11, 2025"}, {"slug": "2025-11-10", "label": "Nov 10, 2025"}, {"slug": "2025-11-09", "label": "Nov 09, 2025"}, {"slug": "2025-11-08", "label": "Nov 08, 2025"}, {"slug": "2025-11-07", "label": "Nov 07, 2025"}, {"slug": "2025-11-06", "label": "Nov 06, 2025"}, {"slug": "2025-11-05", "label": "Nov 05, 2025"}, {"slug": "2025-11-04", "label": "Nov 04, 2025"}, {"slug": "2025-11-03", "label": "Nov 03, 2025"}, {"slug": "2025-11-02", "label": "Nov 02, 2025"}, {"slug": "2025-11-01", "label": "Nov 01, 2025"}, {"slug": "2025-10-31", "label": "Oct 31, 2025"}, {"slug": "2025-10-30", "label": "Oct 30, 2025"}, {"slug": "2025-10-29", "label": "Oct 29, 2025"}, {"slug": "2025-10-28", "label": "Oct 28, 2025"}, {"slug": "2025-10-27", "label": "Oct 27, 2025"}, {"slug": "2025-10-26", "label": "Oct 26, 2025"}, {"slug": "2025-10-25", "label": "Oct 25, 2025"}, {"slug": "2025-10-24", "label": "Oct 24, 2025"}, {"slug": "2025-10-23", "label": "Oct 23, 2025"}, {"slug": "2025-10-22", "label": "Oct 22, 2025"}, {"slug": "2025-10-21", "label": "Oct 21, 2025"}, {"slug": "2025-10-20", "label": "Oct 20, 2025"}, {"slug": "2025-10-19", "label": "Oct 19, 2025"}, {"slug": "2025-10-18", "label": "Oct 18, 2025"}, {"slug": "2025-10-17", "label": "Oct 17, 2025"}, {"slug": "2025-10-16", "label": "Oct 16, 2025"}, {"slug": "2025-10-15", "label": "Oct 15, 2025"}, {"slug": "2025-10-14", "label": "Oct 14, 2025"}, {"slug": "2025-10-13", "label": "Oct 13, 2025"}, {"slug": "2025-10-12", "label": "Oct 12, 2025"}, {"slug": "2025-10-11", "label": "Oct 11, 2025"}, {"slug": "2025-10-10", "label": "Oct 10, 2025"}, {"slug": "2025-10-09", "label": "Oct 09, 2025"}, {"slug": "2025-10-08", "label": "Oct 08, 2025"}, {"slug": "2025-10-07", "label": "Oct 07, 2025"}, {"slug": "2025-10-06", "label": "Oct 06, 2025"}, {"slug": "2025-10-05", "label": "Oct 05, 2025"}, {"slug": "2025-10-04", "label": "Oct 04, 2025"}, {"slug": "2025-10-03", "label": "Oct 03, 2025"}, {"slug": "2025-10-02", "label": "Oct 02, 2025"}, {"slug": "2025-10-01", "label": "Oct 01, 2025"}, {"slug": "2025-09-30", "label": "Sep 30, 2025"}, {"slug": "2025-09-29", "label": "Sep 29, 2025"}, {"slug": "2025-09-28", "label": "Sep 28, 2025"}, {"slug": "2025-09-27", "label": "Sep 27, 2025"}, {"slug": "2025-09-26", "label": "Sep 26, 2025"}, {"slug": "2025-09-25", "label": "Sep 25, 2025"}, {"slug": "2025-09-24", "label": "Sep 24, 2025"}, {"slug": "2025-09-23", "label": "Sep 23, 2025"}, {"slug": "2025-09-22", "label": "Sep 22, 2025"}, {"slug": "2025-09-21", "label": "Sep 21, 2025"}, {"slug": "2025-09-20", "label": "Sep 20, 2025"}, {"slug": "2025-09-19", "label": "Sep 19, 2025"}, {"slug": "2025-09-18", "label": "Sep 18, 2025"}, {"slug": "2025-09-17", "label": "Sep 17, 2025"}, {"slug": "2025-09-16", "label": "Sep 16, 2025"}, {"slug": "2025-09-15", "label": "Sep 15, 2025"}, {"slug": "2025-09-14", "label": "Sep 14, 2025"}, {"slug": "2025-09-13", "label": "Sep 13, 2025"}, {"slug": "2025-09-12", "label": "Sep 12, 2025"}, {"slug": "2025-09-11", "label": "Sep 11, 2025"}, {"slug": "2025-09-10", "label": "Sep 10, 2025"}, {"slug": "2025-09-09", "label": "Sep 09, 2025"}, {"slug": "2025-09-08", "label": "Sep 08, 2025"}, {"slug": "2025-09-07", "label": "Sep 07, 2025"}, {"slug": "2025-09-06", "label": "Sep 06, 2025"}, {"slug": "2025-09-05", "label": "Sep 05, 2025"}, {"slug": "2025-09-04", "label": "Sep 04, 2025"}, {"slug": "2025-09-03", "label": "Sep 03, 2025"}, {"slug": "2025-09-02", "label": "Sep 02, 2025"}, {"slug": "2025-09-01", "label": "Sep 01, 2025"}, {"slug": "2025-08-31", "label": "Aug 31, 2025"}, {"slug": "2025-08-30", "label": "Aug 30, 2025"}, {"slug": "2025-08-29", "label": "Aug 29, 2025"}, {"slug": "2025-08-28", "label": "Aug 28, 2025"}, {"slug": "2025-08-27", "label": "Aug 27, 2025"}, {"slug": "2025-08-26", "label": "Aug 26, 2025"}, {"slug": "2025-08-25", "label": "Aug 25, 2025"}, {"slug": "2025-08-24", "label": "Aug 24, 2025"}, {"slug": "2025-08-23", "label": "Aug 23, 2025"}, {"slug": "2025-08-22", "label": "Aug 22, 2025"}, {"slug": "2025-08-21", "label": "Aug 21, 2025"}, {"slug": "2025-08-20", "label": "Aug 20, 2025"}, {"slug": "2025-08-19", "label": "Aug 19, 2025"}, {"slug": "2025-08-18", "label": "Aug 18, 2025"}, {"slug": "2025-08-17", "label": "Aug 17, 2025"}, {"slug": "2025-08-16", "label": "Aug 16, 2025"}, {"slug": "2025-08-15", "label": "Aug 15, 2025"}, {"slug": "2025-08-14", "label": "Aug 14, 2025"}, {"slug": "2025-08-13", "label": "Aug 13, 2025"}, {"slug": "2025-08-12", "label": "Aug 12, 2025"}, {"slug": "2025-08-11", "label": "Aug 11, 2025"}, {"slug": "2025-08-10", "label": "Aug 10, 2025"}, {"slug": "2025-08-09", "label": "Aug 09, 2025"}, {"slug": "2025-08-08", "label": "Aug 08, 2025"}, {"slug": "2025-08-07", "label": "Aug 07, 2025"}, {"slug": "2025-08-06", "label": "Aug 06, 2025"}, {"slug": "2025-08-05", "label": "Aug 05, 2025"}, {"slug": "2025-08-04", "label": "Aug 04, 2025"}, {"slug": "2025-08-03", "label": "Aug 03, 2025"}, {"slug": "2025-08-02", "label": "Aug 02, 2025"}, {"slug": "2025-08-01", "label": "Aug 01, 2025"}, {"slug": "2025-07-31", "label": "Jul 31, 2025"}, {"slug": "2025-07-30", "label": "Jul 30, 2025"}, {"slug": "2025-07-29", "label": "Jul 29, 2025"}, {"slug": "2025-07-28", "label": "Jul 28, 2025"}, {"slug": "2025-07-27", "label": "Jul 27, 2025"}, {"slug": "2025-07-26", "label": "Jul 26, 2025"}, {"slug": "2025-07-25", "label": "Jul 25, 2025"}, {"slug": "2025-07-24", "label": "Jul 24, 2025"}, {"slug": "2025-07-23", "label": "Jul 23, 2025"}, {"slug": "2025-07-22", "label": "Jul 22, 2025"}, {"slug": "2025-07-21", "label": "Jul 21, 2025"}, {"slug": "2025-07-20", "label": "Jul 20, 2025"}, {"slug": "2025-07-19", "label": "Jul 19, 2025"}, {"slug": "2025-07-18", "label": "Jul 18, 2025"}, {"slug": "2025-07-17", "label": "Jul 17, 2025"}, {"slug": "2025-07-16", "label": "Jul 16, 2025"}, {"slug": "2025-07-15", "label": "Jul 15, 2025"}, {"slug": "2025-07-14", "label": "Jul 14, 2025"}, {"slug": "2025-07-13", "label": "Jul 13, 2025"}, {"slug": "2025-07-12", "label": "Jul 12, 2025"}, {"slug": "2025-07-11", "label": "Jul 11, 2025"}, {"slug": "2025-07-10", "label": "Jul 10, 2025"}, {"slug": "2025-07-09", "label": "Jul 09, 2025"}, {"slug": "2025-07-08", "label": "Jul 08, 2025"}, {"slug": "2025-07-07", "label": "Jul 07, 2025"}, {"slug": "2025-07-06", "label": "Jul 06, 2025"}, {"slug": "2025-07-05", "label": "Jul 05, 2025"}, {"slug": "2025-07-04", "label": "Jul 04, 2025"}, {"slug": "2025-07-03", "label": "Jul 03, 2025"}, {"slug": "2025-07-02", "label": "Jul 02, 2025"}, {"slug": "2025-07-01", "label": "Jul 01, 2025"}, {"slug": "2025-06-30", "label": "Jun 30, 2025"}, {"slug": "2025-06-29", "label": "Jun 29, 2025"}, {"slug": "2025-06-28", "label": "Jun 28, 2025"}, {"slug": "2025-06-27", "label": "Jun 27, 2025"}, {"slug": "2025-06-26", "label": "Jun 26, 2025"}, {"slug": "2025-06-25", "label": "Jun 25, 2025"}, {"slug": "2025-06-24", "label": "Jun 24, 2025"}, {"slug": "2025-06-23", "label": "Jun 23, 2025"}, {"slug": "2025-06-22", "label": "Jun 22, 2025"}, {"slug": "2025-06-21", "label": "Jun 21, 2025"}, {"slug": "2025-06-20", "label": "Jun 20, 2025"}, {"slug": "2025-06-19", "label": "Jun 19, 2025"}, {"slug": "2025-06-18", "label": "Jun 18, 2025"}, {"slug": "2025-06-17", "label": "Jun 17, 2025"}, {"slug": "2025-06-16", "label": "Jun 16, 2025"}, {"slug": "2025-06-15", "label": "Jun 15, 2025"}, {"slug": "2025-06-14", "label": "Jun 14, 2025"}, {"slug": "2025-06-13", "label": "Jun 13, 2025"}, {"slug": "2025-06-12", "label": "Jun 12, 2025"}, {"slug": "2025-06-11", "label": "Jun 11, 2025"}, {"slug": "2025-06-10", "label": "Jun 10, 2025"}, {"slug": "2025-06-09", "label": "Jun 09, 2025"}, {"slug": "2025-06-08", "label": "Jun 08, 2025"}, {"slug": "2025-06-07", "label": "Jun 07, 2025"}, {"slug": "2025-06-06", "label": "Jun 06, 2025"}, {"slug": "2025-06-05", "label": "Jun 05, 2025"}, {"slug": "2025-06-04", "label": "Jun 04, 2025"}, {"slug": "2025-06-03", "label": "Jun 03, 2025"}, {"slug": "2025-06-02", "label": "Jun 02, 2025"}, {"slug": "2025-06-01", "label": "Jun 01, 2025"}, {"slug": "2025-05-31", "label": "May 31, 2025"}, {"slug": "2025-05-30", "label": "May 30, 2025"}, {"slug": "2025-05-29", "label": "May 29, 2025"}, {"slug": "2025-05-28", "label": "May 28, 2025"}, {"slug": "2025-05-27", "label": "May 27, 2025"}, {"slug": "2025-05-26", "label": "May 26, 2025"}, {"slug": "2025-05-25", "label": "May 25, 2025"}, {"slug": "2025-05-24", "label": "May 24, 2025"}, {"slug": "2025-05-23", "label": "May 23, 2025"}, {"slug": "2025-05-22", "label": "May 22, 2025"}, {"slug": "2025-05-21", "label": "May 21, 2025"}, {"slug": "2025-05-20", "label": "May 20, 2025"}, {"slug": "2025-05-19", "label": "May 19, 2025"}, {"slug": "2025-05-18", "label": "May 18, 2025"}, {"slug": "2025-05-17", "label": "May 17, 2025"}, {"slug": "2025-05-16", "label": "May 16, 2025"}, {"slug": "2025-05-15", "label": "May 15, 2025"}, {"slug": "2025-05-14", "label": "May 14, 2025"}, {"slug": "2025-05-13", "label": "May 13, 2025"}, {"slug": "2025-05-12", "label": "May 12, 2025"}, {"slug": "2025-05-11", "label": "May 11, 2025"}, {"slug": "2025-05-10", "label": "May 10, 2025"}, {"slug": "2025-05-09", "label": "May 09, 2025"}, {"slug": "2025-05-08", "label": "May 08, 2025"}, {"slug": "2025-05-07", "label": "May 07, 2025"}, {"slug": "2025-05-06", "label": "May 06, 2025"}, {"slug": "2025-05-05", "label": "May 05, 2025"}, {"slug": "2025-05-04", "label": "May 04, 2025"}, {"slug": "2025-05-03", "label": "May 03, 2025"}, {"slug": "2025-05-02", "label": "May 02, 2025"}, {"slug": "2025-05-01", "label": "May 01, 2025"}, {"slug": "2025-04-30", "label": "Apr 30, 2025"}, {"slug": "2025-04-29", "label": "Apr 29, 2025"}, {"slug": "2025-04-28", "label": "Apr 28, 2025"}, {"slug": "2025-04-27", "label": "Apr 27, 2025"}, {"slug": "2025-04-26", "label": "Apr 26, 2025"}, {"slug": "2025-04-25", "label": "Apr 25, 2025"}, {"slug": "2025-04-24", "label": "Apr 24, 2025"}, {"slug": "2025-04-23", "label": "Apr 23, 2025"}, {"slug": "2025-04-22", "label": "Apr 22, 2025"}, {"slug": "2025-04-21", "label": "Apr 21, 2025"}, {"slug": "2025-04-20", "label": "Apr 20, 2025"}, {"slug": "2025-04-19", "label": "Apr 19, 2025"}, {"slug": "2025-04-18", "label": "Apr 18, 2025"}, {"slug": "2025-04-17", "label": "Apr 17, 2025"}, {"slug": "2025-04-16", "label": "Apr 16, 2025"}, {"slug": "2025-04-15", "label": "Apr 15, 2025"}, {"slug": "2025-04-14", "label": "Apr 14, 2025"}, {"slug": "2025-04-13", "label": "Apr 13, 2025"}, {"slug": "2025-04-12", "label": "Apr 12, 2025"}, {"slug": "2025-04-11", "label": "Apr 11, 2025"}, {"slug": "2025-04-10", "label": "Apr 10, 2025"}, {"slug": "2025-04-09", "label": "Apr 09, 2025"}, {"slug": "2025-04-08", "label": "Apr 08, 2025"}, {"slug": "2025-04-07", "label": "Apr 07, 2025"}, {"slug": "2025-04-06", "label": "Apr 06, 2025"}, {"slug": "2025-04-05", "label": "Apr 05, 2025"}, {"slug": "2025-04-04", "label": "Apr 04, 2025"}, {"slug": "2025-04-03", "label": "Apr 03, 2025"}, {"slug": "2025-04-02", "label": "Apr 02, 2025"}, {"slug": "2025-04-01", "label": "Apr 01, 2025"}, {"slug": "2025-03-31", "label": "Mar 31, 2025"}, {"slug": "2025-03-30", "label": "Mar 30, 2025"}, {"slug": "2025-03-29", "label": "Mar 29, 2025"}, {"slug": "2025-03-28", "label": "Mar 28, 2025"}, {"slug": "2025-03-27", "label": "Mar 27, 2025"}, {"slug": "2025-03-26", "label": "Mar 26, 2025"}, {"slug": "2025-03-25", "label": "Mar 25, 2025"}, {"slug": "2025-03-24", "label": "Mar 24, 2025"}, {"slug": "2025-03-23", "label": "Mar 23, 2025"}, {"slug": "2025-03-22", "label": "Mar 22, 2025"}, {"slug": "2025-03-21", "label": "Mar 21, 2025"}, {"slug": "2025-03-20", "label": "Mar 20, 2025"}, {"slug": "2025-03-19", "label": "Mar 19, 2025"}, {"slug": "2025-03-18", "label": "Mar 18, 2025"}, {"slug": "2025-03-17", "label": "Mar 17, 2025"}, {"slug": "2025-03-16", "label": "Mar 16, 2025"}, {"slug": "2025-03-15", "label": "Mar 15, 2025"}, {"slug": "2025-03-14", "label": "Mar 14, 2025"}, {"slug": "2025-03-13", "label": "Mar 13, 2025"}, {"slug": "2025-03-12", "label": "Mar 12, 2025"}, {"slug": "2025-03-11", "label": "Mar 11, 2025"}, {"slug": "2025-03-10", "label": "Mar 10, 2025"}, {"slug": "2025-03-09", "label": "Mar 09, 2025"}, {"slug": "2025-03-08", "label": "Mar 08, 2025"}, {"slug": "2025-03-07", "label": "Mar 07, 2025"}, {"slug": "2025-03-06", "label": "Mar 06, 2025"}, {"slug": "2025-03-05", "label": "Mar 05, 2025"}, {"slug": "2025-03-04", "label": "Mar 04, 2025"}, {"slug": "2025-03-03", "label": "Mar 03, 2025"}, {"slug": "2025-03-02", "label": "Mar 02, 2025"}, {"slug": "2025-03-01", "label": "Mar 01, 2025"}, {"slug": "2025-02-28", "label": "Feb 28, 2025"}, {"slug": "2025-02-27", "label": "Feb 27, 2025"}, {"slug": "2025-02-26", "label": "Feb 26, 2025"}, {"slug": "2025-02-25", "label": "Feb 25, 2025"}, {"slug": "2025-02-24", "label": "Feb 24, 2025"}, {"slug": "2025-02-23", "label": "Feb 23, 2025"}, {"slug": "2025-02-22", "label": "Feb 22, 2025"}, {"slug": "2025-02-21", "label": "Feb 21, 2025"}, {"slug": "2025-02-20", "label": "Feb 20, 2025"}, {"slug": "2025-02-19", "label": "Feb 19, 2025"}, {"slug": "2025-02-18", "label": "Feb 18, 2025"}, {"slug": "2025-02-17", "label": "Feb 17, 2025"}, {"slug": "2025-02-16", "label": "Feb 16, 2025"}, {"slug": "2025-02-15", "label": "Feb 15, 2025"}, {"slug": "2025-02-14", "label": "Feb 14, 2025"}, {"slug": "2025-02-13", "label": "Feb 13, 2025"}, {"slug": "2025-02-12", "label": "Feb 12, 2025"}, {"slug": "2025-02-11", "label": "Feb 11, 2025"}, {"slug": "2025-02-10", "label": "Feb 10, 2025"}, {"slug": "2025-02-09", "label": "Feb 09, 2025"}, {"slug": "2025-02-08", "label": "Feb 08, 2025"}, {"slug": "2025-02-07", "label": "Feb 07, 2025"}, {"slug": "2025-02-06", "label": "Feb 06, 2025"}, {"slug": "2025-02-05", "label": "Feb 05, 2025"}, {"slug": "2025-02-04", "label": "Feb 04, 2025"}, {"slug": "2025-02-03", "label": "Feb 03, 2025"}, {"slug": "2025-02-02", "label": "Feb 02, 2025"}, {"slug": "2025-02-01", "label": "Feb 01, 2025"}, {"slug": "2025-01-31", "label": "Jan 31, 2025"}, {"slug": "2025-01-30", "label": "Jan 30, 2025"}, {"slug": "2025-01-29", "label": "Jan 29, 2025"}, {"slug": "2025-01-28", "label": "Jan 28, 2025"}, {"slug": "2025-01-27", "label": "Jan 27, 2025"}, {"slug": "2025-01-26", "label": "Jan 26, 2025"}, {"slug": "2025-01-25", "label": "Jan 25, 2025"}, {"slug": "2025-01-24", "label": "Jan 24, 2025"}, {"slug": "2025-01-23", "label": "Jan 23, 2025"}, {"slug": "2025-01-22", "label": "Jan 22, 2025"}, {"slug": "2025-01-21", "label": "Jan 21, 2025"}, {"slug": "2025-01-20", "label": "Jan 20, 2025"}, {"slug": "2025-01-19", "label": "Jan 19, 2025"}, {"slug": "2025-01-18", "label": "Jan 18, 2025"}, {"slug": "2025-01-17", "label": "Jan 17, 2025"}, {"slug": "2025-01-16", "label": "Jan 16, 2025"}, {"slug": "2025-01-15", "label": "Jan 15, 2025"}, {"slug": "2025-01-14", "label": "Jan 14, 2025"}, {"slug": "2025-01-13", "label": "Jan 13, 2025"}, {"slug": "2025-01-12", "label": "Jan 12, 2025"}, {"slug": "2025-01-11", "label": "Jan 11, 2025"}, {"slug": "2025-01-10", "label": "Jan 10, 2025"}, {"slug": "2025-01-09", "label": "Jan 09, 2025"}, {"slug": "2025-01-08", "label": "Jan 08, 2025"}, {"slug": "2025-01-07", "label": "Jan 07, 2025"}, {"slug": "2025-01-06", "label": "Jan 06, 2025"}, {"slug": "2025-01-05", "label": "Jan 05, 2025"}, {"slug": "2025-01-04", "label": "Jan 04, 2025"}, {"slug": "2025-01-03", "label": "Jan 03, 2025"}, {"slug": "2025-01-02", "label": "Jan 02, 2025"}, {"slug": "2025-01-01", "label": "Jan 01, 2025"}], "archivePath": "chart hist"}
     </script>
     <script id="dashboard-client" data-archive-path="chart hist">
 (() => {
@@ -1574,6 +1945,25 @@ line-height: 1;
   const chartHistoryList = document.getElementById("chart-history-list");
   const chartHistoryToggle = document.getElementById("chart-history-toggle");
   const chartHistoryStatus = document.getElementById("chart-history-status");
+  const transportHistoryStatus = document.getElementById("transport-history-status");
+  const tvControls = document.getElementById("tv-controls");
+  const tvControlsLabel = document.getElementById("tv-controls-label");
+  const tvControlsSwap = document.getElementById("tv-controls-swap");
+  const tvArchivePrevButton = document.getElementById("tv-archive-prev");
+  const tvArchiveNextButton = document.getElementById("tv-archive-next");
+  const chartStepPrevButton = document.getElementById("chart-step-prev");
+  const chartStepNextButton = document.getElementById("chart-step-next");
+  const tvHistorySlot = document.getElementById("tv-history-slot");
+  const tvFileSelect = document.getElementById("tv-file-select");
+  const tvHistoryStatus = document.getElementById("tv-history-status");
+  const tvHistoryMonth = document.getElementById("tv-history-month");
+  const tvHistoryDay = document.getElementById("tv-history-day");
+  const tvHistoryHour = document.getElementById("tv-history-hour");
+  const tvNavMonth = document.getElementById("tv-nav-month");
+  const tvNavDay = document.getElementById("tv-nav-day");
+  const tvNavHour = document.getElementById("tv-nav-hour");
+  const isChartHistoryUiHidden = () =>
+    document.body && document.body.classList.contains("hide-chart-history");
   const chartArea = document.getElementById("history");
   const autoplayToggle = document.getElementById("autoplay-toggle");
   const AUTOPLAY_IDLE_MS = 60_000;
@@ -1603,18 +1993,27 @@ line-height: 1;
   let chartHistoryHoverBound = false;
   let chartHistoryListHoverBound = false;
   let chartPointPickerBound = false;
-  const showHistoryFiles = () => {
-    chartHistoryList.classList.remove("hidden");
+  let historyExpanded = false;
+  const setHistoryExpanded = (open) => {
+    historyExpanded = Boolean(open);
+    if (chartHistory) {
+      chartHistory.classList.toggle("expanded", historyExpanded);
+    }
+    if (chartHistoryList) {
+      chartHistoryList.classList.toggle("hidden", !historyExpanded);
+    }
+    if (chartHistoryToggle) {
+      chartHistoryToggle.classList.toggle("history-visible", historyExpanded);
+    }
     if (chartHistoryListColumn) {
-      chartHistoryListColumn.classList.add("expanded");
+      chartHistoryListColumn.classList.toggle("expanded", historyExpanded);
+    }
+    if (chartHistoryListsRow) {
+      chartHistoryListsRow.classList.toggle("expanded", historyExpanded);
     }
   };
-  const hideHistoryFiles = () => {
-    chartHistoryList.classList.add("hidden");
-    if (chartHistoryListColumn) {
-      chartHistoryListColumn.classList.remove("expanded");
-    }
-  };
+  const showHistoryFiles = () => setHistoryExpanded(true);
+  const hideHistoryFiles = () => setHistoryExpanded(false);
   let currentMonthKey =
     (dashboardData.generatedDateSlug || "").slice(0, 7) || "";
   // Reference chart controls, canvas, and state flags used throughout the script.
@@ -1628,126 +2027,36 @@ line-height: 1;
   const usageSlotCanvas = document.getElementById("usage-slot-chart");
   const usageSlotCtx = usageSlotCanvas ? usageSlotCanvas.getContext("2d") : null;
   const usageSlotCanvasSlot = document.getElementById("usage-slot-canvas-slot");
-  const historyPreviewCanvasSlot = document.getElementById("history-preview-canvas-slot");
-  const tvFrame = document.getElementById("tv-frame");
-  const tvCanvasSlot = document.getElementById("tv-canvas-slot");
-  const tvShowHistoryBtn = document.getElementById("tv-show-history");
-  const tvShowUsageBtn = document.getElementById("tv-show-usage");
+  const historyChartCanvasSlot = document.getElementById("history-chart-canvas-slot");
   let chart = null;
   let usageSlotChart = null;
   let cardsInitialized = false;
   let hoverPointIndex = null;
   let pinnedPointIndex = null;
+  let suppressHoverUntilMouseLeave = false;
+  const suppressHoverUntilLeave = () => {
+    suppressHoverUntilMouseLeave = true;
+  };
   let selectionIndicatorEl = null;
   let clearPinButtonEl = null;
   let hourPickerEl = null;
   let prevDayButtonEl = null;
   let nextDayButtonEl = null;
   let usageSlotBound = false;
-  let tvZoomBound = false;
-  let tvMode = false;
-  let tvActiveChart = "history"; // "history" | "usage"
-  let autoplayEnabledBeforeTv = null;
+  let chartSwapBound = false;
+  let chartsSwapped = false;
   const usageSlotEl = document.getElementById("usage-slot");
   const usageHeaderEl = document.querySelector("#usage-slot .usage-header");
   const usagePipEl = document.getElementById("usage-pip");
   let usageRangeKey = "year"; // 7d | month | year
 
   const STORAGE_KEY = "thermostatDashboard.ui.v1";
-  const LAYOUT_KEY = "thermostatDashboard.layout.v1";
   let savedUiState = null;
-
-  const setMetricsHidden = (hidden) => {
-    document.body.classList.toggle("metrics-hidden", Boolean(hidden));
-    const btn = document.getElementById("metrics-toggle");
-    if (btn) {
-      btn.textContent = hidden ? "Show Metrics" : "Hide Metrics";
+  const updateSwapLabels = () => {
+    const mainLabel = chartsSwapped ? "Usage Chart" : "History Chart";
+    if (tvControlsLabel) {
+      tvControlsLabel.textContent = `Click here to swap chart (now showing: ${mainLabel})`;
     }
-  };
-
-  const loadLayoutPrefs = () => {
-    try {
-      const raw = localStorage.getItem(LAYOUT_KEY);
-      if (!raw) {
-        return null;
-      }
-      const parsed = JSON.parse(raw);
-      return parsed && typeof parsed === "object" ? parsed : null;
-    } catch (err) {
-      return null;
-    }
-  };
-
-  const saveLayoutPrefs = (prefs) => {
-    try {
-      localStorage.setItem(LAYOUT_KEY, JSON.stringify(prefs || {}));
-    } catch (err) {
-      // ignore
-    }
-  };
-
-  const applyLayoutFromUrlOrStorage = () => {
-    let metricsHidden = true;
-    try {
-      const params = new URLSearchParams(window.location.search || "");
-      const metrics = (params.get("metrics") || "").trim().toLowerCase();
-      if (metrics === "1" || metrics === "true" || metrics === "yes" || metrics === "show") {
-        metricsHidden = false;
-      } else if (metrics === "0" || metrics === "false" || metrics === "no" || metrics === "hide") {
-        metricsHidden = true;
-      } else {
-        const saved = loadLayoutPrefs();
-        if (saved && typeof saved.metricsHidden === "boolean") {
-          metricsHidden = saved.metricsHidden;
-        }
-      }
-    } catch (err) {
-      const saved = loadLayoutPrefs();
-      if (saved && typeof saved.metricsHidden === "boolean") {
-        metricsHidden = saved.metricsHidden;
-      }
-    }
-    setMetricsHidden(metricsHidden);
-  };
-
-  const bindMetricsToggle = () => {
-    const btn = document.getElementById("metrics-toggle");
-    if (!btn) {
-      return;
-    }
-    btn.addEventListener("click", () => {
-      const hidden = document.body.classList.contains("metrics-hidden");
-      const nextHidden = !hidden;
-      setMetricsHidden(nextHidden);
-      saveLayoutPrefs({ metricsHidden: nextHidden });
-      // When layout changes, Chart.js needs a re-measure.
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          void refreshChartsForRelayout();
-        });
-      });
-    });
-  };
-
-  const applyDebugLayoutFromUrl = () => {
-    try {
-      const params = new URLSearchParams(window.location.search || "");
-      const enabled = params.get("debug");
-      if (enabled === "1" || enabled === "true" || enabled === "yes") {
-        document.body.classList.add("debug-layout");
-      }
-    } catch (err) {
-      // ignore
-    }
-  };
-
-  const bindDebugLayoutHotkey = () => {
-    document.addEventListener("keydown", (event) => {
-      if (event.ctrlKey && event.altKey && String(event.key || "").toLowerCase() === "d") {
-        event.preventDefault();
-        document.body.classList.toggle("debug-layout");
-      }
-    });
   };
 
   const getDashboardData = () => dashboardData || {};
@@ -1835,17 +2144,27 @@ line-height: 1;
   };
 
   const syncArchiveNavButtons = () => {
-    if (!prevDayButtonEl || !nextDayButtonEl) {
+    const hasInlineNav = Boolean(prevDayButtonEl && nextDayButtonEl);
+    const hasTvNav = Boolean(tvArchivePrevButton && tvArchiveNextButton);
+    if (!hasInlineNav && !hasTvNav) {
       return;
     }
     const slugs = getSortedArchiveSlugs();
     const idx = getCurrentArchiveIndex(slugs);
     const hasPrev = idx > 0;
     const hasNext = idx >= 0 && idx < slugs.length - 1;
-    prevDayButtonEl.disabled = !hasPrev;
-    nextDayButtonEl.disabled = !hasNext;
-    prevDayButtonEl.style.opacity = hasPrev ? "1" : "0.5";
-    nextDayButtonEl.style.opacity = hasNext ? "1" : "0.5";
+    if (hasInlineNav) {
+      prevDayButtonEl.disabled = !hasPrev;
+      nextDayButtonEl.disabled = !hasNext;
+      prevDayButtonEl.style.opacity = hasPrev ? "1" : "0.5";
+      nextDayButtonEl.style.opacity = hasNext ? "1" : "0.5";
+    }
+    if (hasTvNav) {
+      tvArchivePrevButton.disabled = !hasPrev;
+      tvArchiveNextButton.disabled = !hasNext;
+      tvArchivePrevButton.style.opacity = hasPrev ? "1" : "0.5";
+      tvArchiveNextButton.style.opacity = hasNext ? "1" : "0.5";
+    }
   };
 
   const navigateArchiveByDays = (delta) => {
@@ -1865,6 +2184,90 @@ line-height: 1;
     updateHistoryStatus(slug);
     currentArchiveSlug = slug;
     loadDashboardData(slug);
+  };
+
+  let tvChartHistoryHomeParent = null;
+  let tvChartHistoryHomeNextSibling = null;
+  const mountTvHistory = () => {
+    if (!tvHistorySlot || !chartHistory) {
+      return;
+    }
+    if (tvHistorySlot.contains(chartHistory)) {
+      return;
+    }
+    tvChartHistoryHomeParent = chartHistory.parentElement;
+    tvChartHistoryHomeNextSibling = chartHistory.nextSibling;
+    tvHistorySlot.appendChild(chartHistory);
+  };
+
+  const unmountTvHistory = () => {
+    if (!chartHistory || !tvChartHistoryHomeParent) {
+      return;
+    }
+    const parent = tvChartHistoryHomeParent;
+    const next = tvChartHistoryHomeNextSibling;
+    if (next && next.parentNode === parent) {
+      parent.insertBefore(chartHistory, next);
+    } else {
+      parent.appendChild(chartHistory);
+    }
+    tvChartHistoryHomeParent = null;
+    tvChartHistoryHomeNextSibling = null;
+  };
+
+  let tvHistoryToggleBound = false;
+  const bindTvHistoryToggle = () => {
+    if (!tvFileSelect || tvHistoryToggleBound) {
+      return;
+    }
+    tvHistoryToggleBound = true;
+    tvFileSelect.addEventListener("click", (event) => {
+      const target = event.target;
+      if (target && target.closest && target.closest("button,select,a,input,textarea")) {
+        return;
+      }
+      event.preventDefault();
+      toggleHistoryList();
+    });
+  };
+
+  let archiveKeyHandlerBound = false;
+  const isEditableTarget = (target) => {
+    const el = target;
+    if (!el) return false;
+    if (el.isContentEditable) return true;
+    const tag = String(el.tagName || "").toLowerCase();
+    return tag === "input" || tag === "textarea" || tag === "select";
+  };
+  const bindArchiveKeyboardShortcuts = () => {
+    if (archiveKeyHandlerBound) {
+      return;
+    }
+    archiveKeyHandlerBound = true;
+    window.addEventListener("keydown", (event) => {
+      if (event.defaultPrevented) {
+        return;
+      }
+      if (event.altKey || event.ctrlKey || event.metaKey) {
+        return;
+      }
+      if (isEditableTarget(event.target)) {
+        return;
+      }
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        if (tvModeActive) {
+          showTvControlsHint(6000);
+        }
+        navigateArchiveByDays(-1);
+      } else if (event.key === "ArrowRight") {
+        event.preventDefault();
+        if (tvModeActive) {
+          showTvControlsHint(6000);
+        }
+        navigateArchiveByDays(1);
+      }
+    });
   };
 
   const buildUsageRangeSlugs = (rangeKey) => {
@@ -2053,7 +2456,7 @@ line-height: 1;
     destroyUsageSlotChart();
     const monthTickStep =
       usageRangeKey === "month" ? Math.max(1, Math.ceil(labels.length / 8)) : 1;
-    const usageOnBigScreen = Boolean(tvMode && tvActiveChart === "usage");
+    const usageOnBigScreen = Boolean(chartsSwapped);
     usageSlotChart = new Chart(usageSlotCtx, {
       type: "bar",
       data: {
@@ -2130,151 +2533,272 @@ line-height: 1;
     });
   };
 
-  const updateTvButtons = () => {
-    if (tvShowHistoryBtn) {
-      tvShowHistoryBtn.classList.toggle("active", tvMode && tvActiveChart === "history");
+  const applyChartSwap = (nextSwapped) => {
+    if (!canvas || !usageSlotCanvas || !usageSlotCanvasSlot || !historyChartCanvasSlot) {
+      return;
     }
-    if (tvShowUsageBtn) {
-      tvShowUsageBtn.classList.toggle("active", tvMode && tvActiveChart === "usage");
+    const next = Boolean(nextSwapped);
+    if (chartsSwapped === next) {
+      return;
     }
+    if (next) {
+      historyChartCanvasSlot.appendChild(usageSlotCanvas);
+      usageSlotCanvasSlot.appendChild(canvas);
+      document.body.classList.add("charts-swapped");
+      if (usagePipEl && usageHeaderEl) {
+        usagePipEl.appendChild(usageHeaderEl);
+        usagePipEl.setAttribute("aria-hidden", "false");
+      }
+    } else {
+      historyChartCanvasSlot.appendChild(canvas);
+      usageSlotCanvasSlot.appendChild(usageSlotCanvas);
+      document.body.classList.remove("charts-swapped");
+      if (usageSlotEl && usageHeaderEl) {
+        usageSlotEl.insertBefore(usageHeaderEl, usageSlotEl.firstChild);
+      }
+      if (usagePipEl) {
+        usagePipEl.setAttribute("aria-hidden", "true");
+      }
+    }
+    chartsSwapped = next;
+    updateSwapLabels();
+    // Let layout settle, then fully refresh both charts so Chart.js re-measures its new parent.
+    const refreshAfterSwap = async () => {
+      try {
+        destroyUsageSlotChart();
+      } catch (err) {
+        // ignore
+      }
+      await renderUsageSlotChart();
+      try {
+        destroyChart();
+      } catch (err) {
+        // ignore
+      }
+      try {
+        createChart();
+      } catch (err) {
+        // ignore
+      }
+      try {
+        showChart();
+      } catch (err) {
+        // ignore
+      }
+    };
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        void refreshAfterSwap();
+      });
+    });
   };
 
-  const syncCanvasPlacement = () => {
-    if (!canvas || !usageSlotCanvas) {
+  const isTvHidden = () =>
+    document.body && document.body.classList.contains("hide-big-chart");
+
+  let tvModeActive = false;
+  let tvPrevHideBig = true;
+  let tvPrevSwapped = false;
+  let tvKeyHandlerBound = false;
+  let tvMouseHintBound = false;
+  let tvControlsAutoHideTimer = null;
+
+  const showTvControlsHint = (hideAfterMs = 30000) => {
+    if (!tvControlsSwap) {
       return;
     }
-    if (!usageSlotCanvasSlot || !historyPreviewCanvasSlot) {
-      return;
+    tvControlsSwap.classList.remove("auto-hidden");
+    if (tvControlsAutoHideTimer) {
+      clearTimeout(tvControlsAutoHideTimer);
+      tvControlsAutoHideTimer = null;
     }
-    if (tvMode) {
-      if (!tvCanvasSlot) {
+    tvControlsAutoHideTimer = setTimeout(() => {
+      if (!tvModeActive || !tvControlsSwap) {
         return;
       }
-      if (tvActiveChart === "usage") {
-        tvCanvasSlot.appendChild(usageSlotCanvas);
-        historyPreviewCanvasSlot.appendChild(canvas);
-      } else {
-        tvCanvasSlot.appendChild(canvas);
-        usageSlotCanvasSlot.appendChild(usageSlotCanvas);
-      }
-      if (tvFrame) {
-        tvFrame.setAttribute("aria-hidden", "false");
-      }
-      document.body.classList.add("tv-mode");
-      updateTvButtons();
+      tvControlsSwap.classList.add("auto-hidden");
+    }, hideAfterMs);
+  };
+
+  const enterTvMode = () => {
+    if (!document.body || tvModeActive) {
       return;
     }
+    tvPrevHideBig = isTvHidden();
+    tvPrevSwapped = chartsSwapped;
 
-    // Normal mode: both charts live in their preview slots.
-    historyPreviewCanvasSlot.appendChild(canvas);
-    usageSlotCanvasSlot.appendChild(usageSlotCanvas);
-    if (tvFrame) {
-      tvFrame.setAttribute("aria-hidden", "true");
+    // Reveal the TV frame and move the currently visible small chart into it.
+    document.body.classList.remove("hide-big-chart");
+    // Default TV mode to the thermostat/history chart (usage remains available via swap).
+    if (chartsSwapped) {
+      applyChartSwap(false);
+    }
+
+    document.body.classList.add("tv-mode");
+    tvModeActive = true;
+    updateSwapLabels();
+    showTvControlsHint(10000);
+    mountTvHistory();
+    bindTvHistoryToggle();
+
+    if (!tvKeyHandlerBound) {
+      tvKeyHandlerBound = true;
+      window.addEventListener("keydown", (event) => {
+        if (!tvModeActive) {
+          return;
+        }
+        if (event.key === "Escape") {
+          event.preventDefault();
+          exitTvMode();
+        }
+      });
+    }
+
+    if (!tvMouseHintBound) {
+      tvMouseHintBound = true;
+      window.addEventListener("mousemove", (event) => {
+        if (!tvModeActive) {
+          return;
+        }
+        const y = Number(event?.clientY);
+        if (!Number.isFinite(y)) {
+          return;
+        }
+        if (y > window.innerHeight - 140) {
+          showTvControlsHint(6000);
+        }
+      });
+    }
+  };
+
+  const exitTvMode = () => {
+    if (!document.body || !tvModeActive) {
+      return;
     }
     document.body.classList.remove("tv-mode");
-    updateTvButtons();
-  };
+    tvModeActive = false;
+    unmountTvHistory();
+    if (tvControlsSwap) {
+      tvControlsSwap.classList.remove("auto-hidden");
+    }
+    if (tvControlsAutoHideTimer) {
+      clearTimeout(tvControlsAutoHideTimer);
+      tvControlsAutoHideTimer = null;
+    }
 
-  const refreshChartsForRelayout = async () => {
-    try {
-      destroyUsageSlotChart();
-    } catch (err) {
-      // ignore
+    if (chartsSwapped !== tvPrevSwapped) {
+      applyChartSwap(tvPrevSwapped);
     }
-    await renderUsageSlotChart();
-    try {
-      destroyChart();
-    } catch (err) {
-      // ignore
-    }
-    try {
-      createChart();
-    } catch (err) {
-      // ignore
-    }
-    try {
-      showChart();
-    } catch (err) {
-      // ignore
+    if (tvPrevHideBig) {
+      document.body.classList.add("hide-big-chart");
+    } else {
+      document.body.classList.remove("hide-big-chart");
     }
   };
 
-  const enterTvMode = async (chartKey = "history") => {
-    tvMode = true;
-    tvActiveChart = chartKey === "usage" ? "usage" : "history";
-
-    if (autoplayEnabledBeforeTv === null) {
-      autoplayEnabledBeforeTv = autoplayEnabled;
-    }
-    autoplayEnabled = false;
-    try {
-      stopAutoplay();
-    } catch {
-      // ignore
-    }
-    updateAutoplayToggle();
-
-    syncCanvasPlacement();
-    requestAnimationFrame(() => {
-      void refreshChartsForRelayout();
-    });
-  };
-
-  const exitTvMode = async () => {
-    tvMode = false;
-    syncCanvasPlacement();
-    requestAnimationFrame(() => {
-      void refreshChartsForRelayout();
-    });
-
-    if (autoplayEnabledBeforeTv !== null) {
-      autoplayEnabled = autoplayEnabledBeforeTv;
-      autoplayEnabledBeforeTv = null;
-    }
-    updateAutoplayToggle();
-    if (autoplayEnabled) {
-      ensureAutoplayScheduled();
-    }
-  };
-
-  const bindTvZoomControls = () => {
-    if (tvZoomBound) {
+  const bindChartSwapControls = () => {
+    if (chartSwapBound) {
       return;
     }
     if (!canvas || !usageSlotCanvas) {
       return;
     }
-    tvZoomBound = true;
+    chartSwapBound = true;
 
-    canvas.addEventListener("dblclick", () => void enterTvMode("history"));
-    usageSlotCanvas.addEventListener("dblclick", () => void enterTvMode("usage"));
-
-    if (tvFrame) {
-      tvFrame.addEventListener("dblclick", (event) => {
-        event.preventDefault();
-        void exitTvMode();
-      });
-    }
-    if (tvShowHistoryBtn) {
-      tvShowHistoryBtn.addEventListener("click", (event) => {
-        event.preventDefault();
-        void enterTvMode("history");
-      });
-    }
-    if (tvShowUsageBtn) {
-      tvShowUsageBtn.addEventListener("click", (event) => {
-        event.preventDefault();
-        void enterTvMode("usage");
-      });
+    const usageTitle = document.querySelector("#usage-slot .title");
+    if (usageTitle) {
+      usageTitle.title = "Swap charts";
+      usageTitle.addEventListener("click", () => applyChartSwap(!chartsSwapped));
     }
 
-    document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape" && tvMode) {
-        event.preventDefault();
-        void exitTvMode();
+    // Double-click behaviour:
+    // - When TV is hidden: enter full-screen TV mode using the current small view.
+    // - When in TV mode: exit back to the dashboard.
+    // - Otherwise: swap charts.
+    canvas.addEventListener("dblclick", () => {
+      if (tvModeActive) {
+        exitTvMode();
+        return;
       }
+      enterTvMode();
     });
+    usageSlotCanvas.addEventListener("dblclick", () => {
+      if (tvModeActive) {
+        exitTvMode();
+        return;
+      }
+      enterTvMode();
+    });
+
+    // In TV mode, clicking the X-axis label area swaps charts.
+    if (usageSlotCanvas.dataset.boundAxisSwap !== "1") {
+      usageSlotCanvas.dataset.boundAxisSwap = "1";
+      usageSlotCanvas.addEventListener("click", (event) => {
+        if (!usageSlotChart) {
+          return;
+        }
+        const y = Number(event?.offsetY);
+        if (!Number.isFinite(y)) {
+          return;
+        }
+        const bottom = usageSlotChart?.chartArea?.bottom;
+        if (!Number.isFinite(Number(bottom))) {
+          return;
+        }
+        if (y < Number(bottom)) {
+          return;
+        }
+        event.preventDefault();
+        if (tvModeActive) {
+          showTvControlsHint(6000);
+        }
+        applyChartSwap(!chartsSwapped);
+      });
+    }
   };
+
+  const bindTvControls = () => {
+    if (tvControlsSwap && tvControlsSwap.dataset.boundClick !== "1") {
+      tvControlsSwap.dataset.boundClick = "1";
+      const activate = () => {
+        if (!tvModeActive) {
+          return;
+        }
+        showTvControlsHint(6000);
+        applyChartSwap(!chartsSwapped);
+      };
+      tvControlsSwap.addEventListener("click", (event) => {
+        event.preventDefault();
+        activate();
+      });
+      tvControlsSwap.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          activate();
+        }
+      });
+    }
+
+    if (tvArchivePrevButton && tvArchivePrevButton.dataset.boundClick !== "1") {
+      tvArchivePrevButton.dataset.boundClick = "1";
+      tvArchivePrevButton.addEventListener("click", () => {
+        if (tvModeActive) {
+          showTvControlsHint(6000);
+        }
+        navigateArchiveByDays(-1);
+      });
+    }
+    if (tvArchiveNextButton && tvArchiveNextButton.dataset.boundClick !== "1") {
+      tvArchiveNextButton.dataset.boundClick = "1";
+      tvArchiveNextButton.addEventListener("click", () => {
+        if (tvModeActive) {
+          showTvControlsHint(6000);
+        }
+        navigateArchiveByDays(1);
+      });
+    }
+  };
+
 
   const bindUsageSlotControls = () => {
     if (usageSlotBound) {
@@ -2379,6 +2903,25 @@ line-height: 1;
   };
   const getFanLegend = () => getDashboardValue("fanLegend", ["On", "Circulate", "Auto"]);
   const getCoolingLegend = () => getDashboardValue("coolingLegend", ["Idle", "Cooling"]);
+  const abbreviateFanLabel = (label) => {
+    const raw = String(label || "").trim();
+    if (!raw) return "";
+    const key = raw.toLowerCase();
+    if (key === "circulate" || key === "circulation") return "Cir.";
+    if (key === "auto" || key === "automatic") return "Aut";
+    if (key === "on") return "On";
+    if (key === "off") return "Off";
+    return raw.length <= 4 ? raw : `${raw.slice(0, 3)}.`;
+  };
+  const abbreviateCoolingLabel = (label) => {
+    const raw = String(label || "").trim();
+    if (!raw) return "";
+    const key = raw.toLowerCase();
+    if (key === "cooling" || key === "cool") return "Cool";
+    if (key === "idle") return "Idle";
+    if (key === "off") return "Off";
+    return raw.length <= 4 ? raw : raw.slice(0, 4);
+  };
   const getCondenserMinutes = () => getDashboardValue("condenserMinutes", []);
   const getTotalCondenserMinutesValue = () => getDashboardValue("totalCondenserMinutesValue", null);
   const getTotalCondenserMinutesDisplay = () => getDashboardValue("totalCondenserMinutes", "");
@@ -3259,7 +3802,7 @@ line-height: 1;
             max: 2,
             ticks: {
               stepSize: 1,
-              callback: (value) => getFanLegend()[Math.round(value)] || "",
+              callback: (value) => abbreviateFanLabel(getFanLegend()[Math.round(value)] || ""),
               color: (ctxValue) => {
                 const tickValue = ctxValue.tick?.value ?? ctxValue.parsed ?? null;
                 return fanColorForValue(tickValue);
@@ -3278,7 +3821,7 @@ line-height: 1;
             max: 2,
             ticks: {
               stepSize: 1,
-              callback: (value) => getCoolingLegend()[Math.round(value)] || "",
+              callback: (value) => abbreviateCoolingLabel(getCoolingLegend()[Math.round(value)] || ""),
               color: (ctxValue) => {
                 const numeric = Number(ctxValue.tick.value);
                 return Number.isNaN(numeric) || numeric <= 0 ? "#ffd000" : "#32d15c";
@@ -3368,6 +3911,21 @@ line-height: 1;
     }
     chartPointPickerBound = true;
 
+    const isXAxisClickForSwap = (event) => {
+      if (!chart) {
+        return false;
+      }
+      const y = Number(event?.offsetY);
+      if (!Number.isFinite(y)) {
+        return false;
+      }
+      const bottom = chart?.chartArea?.bottom;
+      if (!Number.isFinite(Number(bottom))) {
+        return false;
+      }
+      return y >= Number(bottom);
+    };
+
     const pickIndexFromEvent = (event) => {
       if (!chart) {
         return null;
@@ -3393,6 +3951,9 @@ line-height: 1;
       if (pinnedPointIndex !== null) {
         return;
       }
+      if (suppressHoverUntilMouseLeave) {
+        return;
+      }
       const idx = pickIndexFromEvent(event);
       if (idx === null) {
         return;
@@ -3404,6 +3965,7 @@ line-height: 1;
     });
 
     canvas.addEventListener("mouseleave", () => {
+      suppressHoverUntilMouseLeave = false;
       if (pinnedPointIndex !== null) {
         return;
       }
@@ -3414,9 +3976,18 @@ line-height: 1;
     });
 
     canvas.addEventListener("click", (event) => {
+      if (isXAxisClickForSwap(event)) {
+        event.preventDefault();
+        if (tvModeActive) {
+          showTvControlsHint(6000);
+        }
+        applyChartSwap(!chartsSwapped);
+        return;
+      }
       const idx = pickIndexFromEvent(event);
       if (idx === null) {
         setSelectedPoint(null, null, true);
+        suppressHoverUntilLeave();
         return;
       }
       if (pinnedPointIndex === idx) {
@@ -3435,6 +4006,7 @@ line-height: 1;
         const raw = String(hourPickerEl.value || "").trim();
         if (!raw) {
           setSelectedPoint(null, null, true);
+          suppressHoverUntilLeave();
           hourPickerEl.style.color = "#ffb347";
           return;
         }
@@ -3459,12 +4031,22 @@ line-height: 1;
         }
         if (chosenIdx === null) {
           setSelectedPoint(null, null, true);
+          suppressHoverUntilLeave();
           return;
         }
         setSelectedPoint(chosenIdx, chosenIdx, true);
       });
     }
   };
+
+  if (chartStepPrevButton && chartStepPrevButton.dataset.boundClick !== "1") {
+    chartStepPrevButton.dataset.boundClick = "1";
+    chartStepPrevButton.addEventListener("click", () => stepPinnedPoint(-1));
+  }
+  if (chartStepNextButton && chartStepNextButton.dataset.boundClick !== "1") {
+    chartStepNextButton.dataset.boundClick = "1";
+    chartStepNextButton.addEventListener("click", () => stepPinnedPoint(1));
+  }
 
   // Re-render all front-panel cards when the data changes (actual, fan, condenser, etc.).
   const updateMetricCards = () => {
@@ -3911,33 +4493,101 @@ line-height: 1;
   };
 
   const closeHistoryList = () => {
-    if (chartHistoryList) {
-      chartHistoryList.classList.add("hidden");
-    }
-    if (chartHistoryToggle && chartHistoryToggle.classList.contains("history-visible")) {
-      chartHistoryToggle.classList.remove("history-visible");
-    }
+    hideHistoryFiles();
   };
 
   const toggleHistoryList = () => {
-    if (!chartHistoryList) {
-      return;
-    }
-    chartHistoryList.classList.toggle("hidden");
-    if (chartHistoryToggle) {
-      const visible = !chartHistoryList.classList.contains("hidden");
-      chartHistoryToggle.classList.toggle("history-visible", visible);
-    }
+    setHistoryExpanded(!historyExpanded);
   };
 
   const updateHistoryStatus = (slug) => {
-    if (!chartHistoryStatus) {
+    const label = slug ? archiveLabelMap.get(slug) : null;
+    const text = label || (slug ? String(slug) : "Current");
+    const compactMonthDay = (value) => {
+      const trimmed = String(value || "").trim();
+      if (!trimmed) {
+        return trimmed;
+      }
+      const match = trimmed.match(/^([A-Za-z]{3,9})\s+(\d{1,2})(?:st|nd|rd|th)?(?:,\s*\d{4})?$/);
+      if (!match) {
+        return trimmed;
+      }
+      return `${match[1]} ${match[2]}`;
+    };
+    const mainDisplay = document.body && document.body.classList.contains("tv-mode")
+      ? text
+      : compactMonthDay(text);
+    if (chartHistoryStatus) {
+      chartHistoryStatus.textContent = mainDisplay;
+    }
+    if (transportHistoryStatus) {
+      transportHistoryStatus.textContent = mainDisplay;
+    }
+    if (tvHistoryMonth || tvHistoryDay) {
+      const trimmed = String(text || "").trim();
+      const match = trimmed.match(/^([A-Za-z]{3,9})\s+(\d{1,2})(?:st|nd|rd|th)?(?:,\s*\d{4})?$/);
+      if (match) {
+        if (tvHistoryMonth) {
+          tvHistoryMonth.textContent = String(match[1] || "").toUpperCase();
+        } else if (tvHistoryStatus) {
+          tvHistoryStatus.textContent = String(match[1] || "").toUpperCase();
+        }
+        if (tvHistoryDay) {
+          tvHistoryDay.textContent = String(match[2] || "");
+        }
+        if (tvNavMonth) {
+          tvNavMonth.textContent = String(match[1] || "").toUpperCase();
+        }
+        if (tvNavDay) {
+          tvNavDay.textContent = String(match[2] || "");
+        }
+      } else {
+        if (tvHistoryMonth) {
+          tvHistoryMonth.textContent = trimmed || "Current";
+        } else if (tvHistoryStatus) {
+          tvHistoryStatus.textContent = trimmed || "Current";
+        }
+        if (tvHistoryDay) {
+          tvHistoryDay.textContent = "";
+        }
+        if (tvNavMonth) {
+          tvNavMonth.textContent = trimmed || "";
+        }
+        if (tvNavDay) {
+          tvNavDay.textContent = "";
+        }
+      }
+    } else if (tvHistoryStatus) {
+      tvHistoryStatus.textContent = text;
+    }
+  };
+
+  const bindTransportHistoryToggle = () => {
+    const transportPanel = document.getElementById("transport-panel");
+    if (!transportPanel || transportPanel.dataset.boundHistoryToggle === "1") {
       return;
     }
-    const label = slug ? archiveLabelMap.get(slug) : null;
-    chartHistoryStatus.textContent = label
-      ? `History: ${label}`
-      : "History: current data";
+    transportPanel.dataset.boundHistoryToggle = "1";
+    transportPanel.title = "Click to select a history file";
+    transportPanel.addEventListener("click", (event) => {
+      // Don't interfere with actual navigation controls inside the transport panel.
+      const target = event.target;
+      if (target && target.closest && target.closest("button,select,a,input,textarea")) {
+        return;
+      }
+      event.preventDefault();
+      if (chartHistoryList && chartHistoryList.classList.contains("hidden")) {
+        showHistoryFiles();
+        if (chartHistoryToggle) {
+          chartHistoryToggle.classList.add("history-visible");
+        }
+      } else {
+        hideHistoryFiles();
+        if (chartHistoryToggle) {
+          chartHistoryToggle.classList.remove("history-visible");
+        }
+      }
+    });
   };
 
   const updateTimestampDisplay = (text) => {
@@ -3957,6 +4607,14 @@ line-height: 1;
       const label = valueAt(labels, idx, null);
       if (label) {
         updateTimestampDisplay(String(label));
+        if (tvHistoryHour) {
+          const hour24 = roundedUpHour24FromLabel(label);
+          tvHistoryHour.textContent = hour24 === null ? "" : formatHourOnly(hour24);
+        }
+        if (tvNavHour) {
+          const hour24 = roundedUpHour24FromLabel(label);
+          tvNavHour.textContent = hour24 === null ? "" : formatHourOnly(hour24);
+        }
         return;
       }
     }
@@ -3965,6 +4623,12 @@ line-height: 1;
       (currentArchiveSlug ? archiveLabelMap.get(currentArchiveSlug) : null) ||
       "History: current data";
     updateTimestampDisplay(fallback);
+    if (tvHistoryHour) {
+      tvHistoryHour.textContent = "";
+    }
+    if (tvNavHour) {
+      tvNavHour.textContent = "";
+    }
   };
 
   const formatHourLabel = (label) => {
@@ -4143,7 +4807,7 @@ line-height: 1;
       selectionIndicatorEl.style.opacity = "0.9";
       selectionIndicatorEl.style.userSelect = "none";
       selectionIndicatorEl.textContent = "";
-      selectionIndicatorEl.title = "Hover the chart to preview a reading. Click to pin. Use Clear Pin or select Latest to reset.";
+      selectionIndicatorEl.title = "Hover the chart to preview a reading. Click to pin. Use Clear Pin to reset.";
       appendControl(selectionIndicatorEl);
     }
 
@@ -4161,22 +4825,16 @@ line-height: 1;
       clearPinButtonEl.dataset.boundClick = "1";
       clearPinButtonEl.addEventListener("click", () => {
         setSelectedPoint(null, null, true);
+        suppressHoverUntilLeave();
       });
     }
 
-    if (!hourPickerEl) {
-      hourPickerEl = document.createElement("select");
-      hourPickerEl.id = "hour-picker";
-      hourPickerEl.style.marginLeft = "10px";
-      hourPickerEl.style.borderRadius = "8px";
-      hourPickerEl.style.padding = "6px 10px";
-      hourPickerEl.style.border = "1px solid #1a1a20";
-      hourPickerEl.style.background = "#0d0d12";
-      hourPickerEl.style.color = "#f4f6ff";
-      hourPickerEl.style.maxWidth = "220px";
-      hourPickerEl.title = "Pick a specific reading to pin.";
-      appendControl(hourPickerEl);
+    // Hour picker removed (the old "Latest" control lived here).
+    const existingHourPicker = document.getElementById("hour-picker");
+    if (existingHourPicker) {
+      existingHourPicker.remove();
     }
+    hourPickerEl = null;
 
     if (!prevDayButtonEl) {
       prevDayButtonEl = document.createElement("button");
@@ -4207,6 +4865,41 @@ line-height: 1;
     syncArchiveNavButtons();
   };
 
+  const syncStepButtons = () => {
+    if (!chartStepPrevButton && !chartStepNextButton) {
+      return;
+    }
+    const labels = getChartLabels();
+    const length = Array.isArray(labels) ? labels.length : 0;
+    const current = clampIndex(
+      pinnedPointIndex !== null ? pinnedPointIndex : hoverPointIndex,
+      length
+    );
+    const hasData = length > 0;
+    if (chartStepPrevButton) {
+      chartStepPrevButton.disabled = !hasData || current === null || current <= 0;
+    }
+    if (chartStepNextButton) {
+      chartStepNextButton.disabled = !hasData || current === null || current >= length - 1;
+    }
+  };
+
+  const stepPinnedPoint = (delta) => {
+    const labels = getChartLabels();
+    const length = Array.isArray(labels) ? labels.length : 0;
+    if (length <= 0) {
+      return;
+    }
+    const base =
+      clampIndex(pinnedPointIndex, length) ??
+      clampIndex(hoverPointIndex, length) ??
+      (length - 1);
+    const next = Math.max(0, Math.min(length - 1, base + delta));
+    setSelectedPoint(next, next, true);
+    suppressHoverUntilLeave();
+    syncStepButtons();
+  };
+
   const syncHourPickerOptions = () => {
     ensureSelectionUi();
     if (!hourPickerEl) {
@@ -4215,23 +4908,16 @@ line-height: 1;
     const labels = getChartLabels();
     if (!Array.isArray(labels) || labels.length === 0) {
       hourPickerEl.innerHTML = "";
-      const opt = document.createElement("option");
-      opt.value = "";
-      opt.textContent = "Latest";
-      hourPickerEl.appendChild(opt);
       hourPickerEl.disabled = true;
+      hourPickerEl.style.display = "none";
       return;
     }
 
     hourPickerEl.disabled = false;
+    hourPickerEl.style.display = "";
     hourPickerEl.innerHTML = "";
-    const latestOpt = document.createElement("option");
-    latestOpt.value = "";
     const lastLabel = labels[labels.length - 1];
     const lastHour24 = roundedUpHour24FromLabel(lastLabel);
-    const lastHourText = lastHour24 === null ? "" : formatHourOnly(lastHour24);
-    latestOpt.textContent = lastHourText ? `Latest (${lastHourText})` : "Latest";
-    hourPickerEl.appendChild(latestOpt);
 
     const byHour = new Map();
     labels.forEach((label, idx) => {
@@ -4242,6 +4928,18 @@ line-height: 1;
       // Keep the latest point in that rounded-up hour.
       byHour.set(hour24, idx);
     });
+
+    const defaultHour24 = (() => {
+      if (lastHour24 !== null && byHour.has(lastHour24)) {
+        return lastHour24;
+      }
+      for (let hour24 = 23; hour24 >= 0; hour24 -= 1) {
+        if (byHour.has(hour24)) {
+          return hour24;
+        }
+      }
+      return 0;
+    })();
 
     for (let hour24 = 0; hour24 <= 23; hour24 += 1) {
       const opt = document.createElement("option");
@@ -4256,13 +4954,14 @@ line-height: 1;
     const selectedPinned = clampIndex(pinnedPointIndex, labels.length);
     if (selectedPinned !== null) {
       const hour24 = roundedUpHour24FromLabel(labels[selectedPinned]);
-      hourPickerEl.value = hour24 === null ? "" : `H${hour24}`;
+      hourPickerEl.value =
+        hour24 !== null && byHour.has(hour24) ? `H${hour24}` : `H${defaultHour24}`;
     } else {
-      hourPickerEl.value = "";
+      hourPickerEl.value = `H${defaultHour24}`;
     }
 
-    // Make the "Latest" selection match the orange selection accents.
-    hourPickerEl.style.color = hourPickerEl.value === "" ? "#ffb347" : "#f4f6ff";
+    // Match the orange selection accents when no pin is set.
+    hourPickerEl.style.color = selectedPinned === null ? "#ffb347" : "#f4f6ff";
     syncArchiveNavButtons();
   };
 
@@ -4287,16 +4986,19 @@ line-height: 1;
       const label = valueAt(labels, pinned, "");
       selectionIndicatorEl.textContent = `Pinned: ${formatHourLabel(label)}`;
       selectionIndicatorEl.style.color = "#ffb347";
+      syncStepButtons();
       return;
     }
     if (hovered !== null) {
       const label = valueAt(labels, hovered, "");
       selectionIndicatorEl.textContent = `Hover: ${formatHourLabel(label)}`;
       selectionIndicatorEl.style.color = "#ffb347";
+      syncStepButtons();
       return;
     }
     selectionIndicatorEl.textContent = "";
     selectionIndicatorEl.style.color = "";
+    syncStepButtons();
     syncHourPickerOptions();
   };
 
@@ -4417,21 +5119,28 @@ line-height: 1;
   };
 
   function renderArchiveList() {
+    const archiveDates = getArchiveDates();
+    archiveLabelMap.clear();
+    if (Array.isArray(archiveDates)) {
+      archiveDates.forEach((entry) => {
+        const label = entry?.label || entry?.slug || "Unknown";
+        const slug = entry?.slug || "";
+        if (slug) {
+          archiveLabelMap.set(slug, label);
+        }
+      });
+    }
+
     if (!chartHistoryList) {
       return;
     }
     hideHistoryFiles();
-    const archiveDates = getArchiveDates();
     chartHistoryList.innerHTML = "";
-    archiveLabelMap.clear();
     const monthGroups = new Map();
     const monthLabels = new Map();
-    archiveDates.forEach((entry) => {
+    (Array.isArray(archiveDates) ? archiveDates : []).forEach((entry) => {
       const label = entry.label || entry.slug || "Unknown";
       const slug = entry.slug || "";
-      if (slug) {
-        archiveLabelMap.set(slug, label);
-      }
       const monthKey = getMonthKeyFromSlug(slug) || getMonthKeyFromLabel(label);
       const monthLabel = getMonthLabel(monthKey);
       if (!monthGroups.has(monthKey)) {
@@ -4460,17 +5169,11 @@ line-height: 1;
       chartHistoryListsRow.appendChild(chartHistoryMonthPicker);
       chartHistoryListsRow.appendChild(chartHistoryListColumn);
       chartHistory.appendChild(chartHistoryListsRow);
-      chartHistoryListsRow.addEventListener("mouseenter", showHistoryFiles);
-      chartHistoryListsRow.addEventListener("mouseleave", hideHistoryFiles);
-      if (!chartHistoryHoverBound) {
-        chartHistory.addEventListener("mouseleave", hideHistoryFiles);
-        chartHistoryHoverBound = true;
-      }
-      if (!chartHistoryListHoverBound) {
-        chartHistoryListColumn.addEventListener("mouseenter", showHistoryFiles);
-        chartHistoryListColumn.addEventListener("mouseleave", hideHistoryFiles);
-        chartHistoryListHoverBound = true;
-      }
+
+      // Click-to-expand behavior: start collapsed, expand when interacting with months/files.
+      chartHistoryMonthPicker.addEventListener("click", () => showHistoryFiles());
+      chartHistoryListColumn.addEventListener("click", () => showHistoryFiles());
+      setHistoryExpanded(false);
     }
 
     // Render month picker
@@ -4491,7 +5194,7 @@ line-height: 1;
         button.addEventListener("click", () => {
           currentMonthKey = key;
           renderArchiveList();
-          hideHistoryFiles();
+          showHistoryFiles();
         });
         item.appendChild(button);
         monthListEl.appendChild(item);
@@ -4537,7 +5240,6 @@ line-height: 1;
             currentArchiveSlug = entry.slug;
             loadDashboardData(entry.slug);
           }
-          hideHistoryFiles();
           closeHistoryList();
         });
         entryItem.appendChild(button);
@@ -4594,8 +5296,7 @@ line-height: 1;
     updateTimestampFromSelection();
     updateSelectionIndicator();
     bindUsageSlotControls();
-    bindTvZoomControls();
-    syncCanvasPlacement();
+    bindChartSwapControls();
     renderUsageSlotChart();
     destroyChart();
     createChart();
@@ -4672,17 +5373,16 @@ line-height: 1;
     });
   }
 
-  if (chartHistoryToggle && chartHistoryList) {
+  if (!isChartHistoryUiHidden() && chartHistoryToggle && chartHistoryList) {
     chartHistoryToggle.addEventListener("click", () => {
       toggleHistoryList();
     });
   }
 
   applyDashboardData(dashboardData);
-  applyLayoutFromUrlOrStorage();
-  bindMetricsToggle();
-  applyDebugLayoutFromUrl();
-  bindDebugLayoutHotkey();
+  bindTransportHistoryToggle();
+  bindArchiveKeyboardShortcuts();
+  bindTvControls();
   bindAutoplayInteractions();
   updateAutoplayToggle();
   ensureAutoplayScheduled();

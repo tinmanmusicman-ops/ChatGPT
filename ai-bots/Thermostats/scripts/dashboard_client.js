@@ -36,6 +36,25 @@
   const chartHistoryList = document.getElementById("chart-history-list");
   const chartHistoryToggle = document.getElementById("chart-history-toggle");
   const chartHistoryStatus = document.getElementById("chart-history-status");
+  const transportHistoryStatus = document.getElementById("transport-history-status");
+  const tvControls = document.getElementById("tv-controls");
+  const tvControlsLabel = document.getElementById("tv-controls-label");
+  const tvControlsSwap = document.getElementById("tv-controls-swap");
+  const tvArchivePrevButton = document.getElementById("tv-archive-prev");
+  const tvArchiveNextButton = document.getElementById("tv-archive-next");
+  const chartStepPrevButton = document.getElementById("chart-step-prev");
+  const chartStepNextButton = document.getElementById("chart-step-next");
+  const tvHistorySlot = document.getElementById("tv-history-slot");
+  const tvFileSelect = document.getElementById("tv-file-select");
+  const tvHistoryStatus = document.getElementById("tv-history-status");
+  const tvHistoryMonth = document.getElementById("tv-history-month");
+  const tvHistoryDay = document.getElementById("tv-history-day");
+  const tvHistoryHour = document.getElementById("tv-history-hour");
+  const tvNavMonth = document.getElementById("tv-nav-month");
+  const tvNavDay = document.getElementById("tv-nav-day");
+  const tvNavHour = document.getElementById("tv-nav-hour");
+  const isChartHistoryUiHidden = () =>
+    document.body && document.body.classList.contains("hide-chart-history");
   const chartArea = document.getElementById("history");
   const autoplayToggle = document.getElementById("autoplay-toggle");
   const AUTOPLAY_IDLE_MS = 60_000;
@@ -65,18 +84,27 @@
   let chartHistoryHoverBound = false;
   let chartHistoryListHoverBound = false;
   let chartPointPickerBound = false;
-  const showHistoryFiles = () => {
-    chartHistoryList.classList.remove("hidden");
+  let historyExpanded = false;
+  const setHistoryExpanded = (open) => {
+    historyExpanded = Boolean(open);
+    if (chartHistory) {
+      chartHistory.classList.toggle("expanded", historyExpanded);
+    }
+    if (chartHistoryList) {
+      chartHistoryList.classList.toggle("hidden", !historyExpanded);
+    }
+    if (chartHistoryToggle) {
+      chartHistoryToggle.classList.toggle("history-visible", historyExpanded);
+    }
     if (chartHistoryListColumn) {
-      chartHistoryListColumn.classList.add("expanded");
+      chartHistoryListColumn.classList.toggle("expanded", historyExpanded);
+    }
+    if (chartHistoryListsRow) {
+      chartHistoryListsRow.classList.toggle("expanded", historyExpanded);
     }
   };
-  const hideHistoryFiles = () => {
-    chartHistoryList.classList.add("hidden");
-    if (chartHistoryListColumn) {
-      chartHistoryListColumn.classList.remove("expanded");
-    }
-  };
+  const showHistoryFiles = () => setHistoryExpanded(true);
+  const hideHistoryFiles = () => setHistoryExpanded(false);
   let currentMonthKey =
     (dashboardData.generatedDateSlug || "").slice(0, 7) || "";
   // Reference chart controls, canvas, and state flags used throughout the script.
@@ -90,126 +118,36 @@
   const usageSlotCanvas = document.getElementById("usage-slot-chart");
   const usageSlotCtx = usageSlotCanvas ? usageSlotCanvas.getContext("2d") : null;
   const usageSlotCanvasSlot = document.getElementById("usage-slot-canvas-slot");
-  const historyPreviewCanvasSlot = document.getElementById("history-preview-canvas-slot");
-  const tvFrame = document.getElementById("tv-frame");
-  const tvCanvasSlot = document.getElementById("tv-canvas-slot");
-  const tvShowHistoryBtn = document.getElementById("tv-show-history");
-  const tvShowUsageBtn = document.getElementById("tv-show-usage");
+  const historyChartCanvasSlot = document.getElementById("history-chart-canvas-slot");
   let chart = null;
   let usageSlotChart = null;
   let cardsInitialized = false;
   let hoverPointIndex = null;
   let pinnedPointIndex = null;
+  let suppressHoverUntilMouseLeave = false;
+  const suppressHoverUntilLeave = () => {
+    suppressHoverUntilMouseLeave = true;
+  };
   let selectionIndicatorEl = null;
   let clearPinButtonEl = null;
   let hourPickerEl = null;
   let prevDayButtonEl = null;
   let nextDayButtonEl = null;
   let usageSlotBound = false;
-  let tvZoomBound = false;
-  let tvMode = false;
-  let tvActiveChart = "history"; // "history" | "usage"
-  let autoplayEnabledBeforeTv = null;
+  let chartSwapBound = false;
+  let chartsSwapped = false;
   const usageSlotEl = document.getElementById("usage-slot");
   const usageHeaderEl = document.querySelector("#usage-slot .usage-header");
   const usagePipEl = document.getElementById("usage-pip");
   let usageRangeKey = "year"; // 7d | month | year
 
   const STORAGE_KEY = "thermostatDashboard.ui.v1";
-  const LAYOUT_KEY = "thermostatDashboard.layout.v1";
   let savedUiState = null;
-
-  const setMetricsHidden = (hidden) => {
-    document.body.classList.toggle("metrics-hidden", Boolean(hidden));
-    const btn = document.getElementById("metrics-toggle");
-    if (btn) {
-      btn.textContent = hidden ? "Show Metrics" : "Hide Metrics";
+  const updateSwapLabels = () => {
+    const mainLabel = chartsSwapped ? "Usage Chart" : "History Chart";
+    if (tvControlsLabel) {
+      tvControlsLabel.textContent = `Click here to swap chart (now showing: ${mainLabel})`;
     }
-  };
-
-  const loadLayoutPrefs = () => {
-    try {
-      const raw = localStorage.getItem(LAYOUT_KEY);
-      if (!raw) {
-        return null;
-      }
-      const parsed = JSON.parse(raw);
-      return parsed && typeof parsed === "object" ? parsed : null;
-    } catch (err) {
-      return null;
-    }
-  };
-
-  const saveLayoutPrefs = (prefs) => {
-    try {
-      localStorage.setItem(LAYOUT_KEY, JSON.stringify(prefs || {}));
-    } catch (err) {
-      // ignore
-    }
-  };
-
-  const applyLayoutFromUrlOrStorage = () => {
-    let metricsHidden = true;
-    try {
-      const params = new URLSearchParams(window.location.search || "");
-      const metrics = (params.get("metrics") || "").trim().toLowerCase();
-      if (metrics === "1" || metrics === "true" || metrics === "yes" || metrics === "show") {
-        metricsHidden = false;
-      } else if (metrics === "0" || metrics === "false" || metrics === "no" || metrics === "hide") {
-        metricsHidden = true;
-      } else {
-        const saved = loadLayoutPrefs();
-        if (saved && typeof saved.metricsHidden === "boolean") {
-          metricsHidden = saved.metricsHidden;
-        }
-      }
-    } catch (err) {
-      const saved = loadLayoutPrefs();
-      if (saved && typeof saved.metricsHidden === "boolean") {
-        metricsHidden = saved.metricsHidden;
-      }
-    }
-    setMetricsHidden(metricsHidden);
-  };
-
-  const bindMetricsToggle = () => {
-    const btn = document.getElementById("metrics-toggle");
-    if (!btn) {
-      return;
-    }
-    btn.addEventListener("click", () => {
-      const hidden = document.body.classList.contains("metrics-hidden");
-      const nextHidden = !hidden;
-      setMetricsHidden(nextHidden);
-      saveLayoutPrefs({ metricsHidden: nextHidden });
-      // When layout changes, Chart.js needs a re-measure.
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          void refreshChartsForRelayout();
-        });
-      });
-    });
-  };
-
-  const applyDebugLayoutFromUrl = () => {
-    try {
-      const params = new URLSearchParams(window.location.search || "");
-      const enabled = params.get("debug");
-      if (enabled === "1" || enabled === "true" || enabled === "yes") {
-        document.body.classList.add("debug-layout");
-      }
-    } catch (err) {
-      // ignore
-    }
-  };
-
-  const bindDebugLayoutHotkey = () => {
-    document.addEventListener("keydown", (event) => {
-      if (event.ctrlKey && event.altKey && String(event.key || "").toLowerCase() === "d") {
-        event.preventDefault();
-        document.body.classList.toggle("debug-layout");
-      }
-    });
   };
 
   const getDashboardData = () => dashboardData || {};
@@ -297,17 +235,27 @@
   };
 
   const syncArchiveNavButtons = () => {
-    if (!prevDayButtonEl || !nextDayButtonEl) {
+    const hasInlineNav = Boolean(prevDayButtonEl && nextDayButtonEl);
+    const hasTvNav = Boolean(tvArchivePrevButton && tvArchiveNextButton);
+    if (!hasInlineNav && !hasTvNav) {
       return;
     }
     const slugs = getSortedArchiveSlugs();
     const idx = getCurrentArchiveIndex(slugs);
     const hasPrev = idx > 0;
     const hasNext = idx >= 0 && idx < slugs.length - 1;
-    prevDayButtonEl.disabled = !hasPrev;
-    nextDayButtonEl.disabled = !hasNext;
-    prevDayButtonEl.style.opacity = hasPrev ? "1" : "0.5";
-    nextDayButtonEl.style.opacity = hasNext ? "1" : "0.5";
+    if (hasInlineNav) {
+      prevDayButtonEl.disabled = !hasPrev;
+      nextDayButtonEl.disabled = !hasNext;
+      prevDayButtonEl.style.opacity = hasPrev ? "1" : "0.5";
+      nextDayButtonEl.style.opacity = hasNext ? "1" : "0.5";
+    }
+    if (hasTvNav) {
+      tvArchivePrevButton.disabled = !hasPrev;
+      tvArchiveNextButton.disabled = !hasNext;
+      tvArchivePrevButton.style.opacity = hasPrev ? "1" : "0.5";
+      tvArchiveNextButton.style.opacity = hasNext ? "1" : "0.5";
+    }
   };
 
   const navigateArchiveByDays = (delta) => {
@@ -327,6 +275,90 @@
     updateHistoryStatus(slug);
     currentArchiveSlug = slug;
     loadDashboardData(slug);
+  };
+
+  let tvChartHistoryHomeParent = null;
+  let tvChartHistoryHomeNextSibling = null;
+  const mountTvHistory = () => {
+    if (!tvHistorySlot || !chartHistory) {
+      return;
+    }
+    if (tvHistorySlot.contains(chartHistory)) {
+      return;
+    }
+    tvChartHistoryHomeParent = chartHistory.parentElement;
+    tvChartHistoryHomeNextSibling = chartHistory.nextSibling;
+    tvHistorySlot.appendChild(chartHistory);
+  };
+
+  const unmountTvHistory = () => {
+    if (!chartHistory || !tvChartHistoryHomeParent) {
+      return;
+    }
+    const parent = tvChartHistoryHomeParent;
+    const next = tvChartHistoryHomeNextSibling;
+    if (next && next.parentNode === parent) {
+      parent.insertBefore(chartHistory, next);
+    } else {
+      parent.appendChild(chartHistory);
+    }
+    tvChartHistoryHomeParent = null;
+    tvChartHistoryHomeNextSibling = null;
+  };
+
+  let tvHistoryToggleBound = false;
+  const bindTvHistoryToggle = () => {
+    if (!tvFileSelect || tvHistoryToggleBound) {
+      return;
+    }
+    tvHistoryToggleBound = true;
+    tvFileSelect.addEventListener("click", (event) => {
+      const target = event.target;
+      if (target && target.closest && target.closest("button,select,a,input,textarea")) {
+        return;
+      }
+      event.preventDefault();
+      toggleHistoryList();
+    });
+  };
+
+  let archiveKeyHandlerBound = false;
+  const isEditableTarget = (target) => {
+    const el = target;
+    if (!el) return false;
+    if (el.isContentEditable) return true;
+    const tag = String(el.tagName || "").toLowerCase();
+    return tag === "input" || tag === "textarea" || tag === "select";
+  };
+  const bindArchiveKeyboardShortcuts = () => {
+    if (archiveKeyHandlerBound) {
+      return;
+    }
+    archiveKeyHandlerBound = true;
+    window.addEventListener("keydown", (event) => {
+      if (event.defaultPrevented) {
+        return;
+      }
+      if (event.altKey || event.ctrlKey || event.metaKey) {
+        return;
+      }
+      if (isEditableTarget(event.target)) {
+        return;
+      }
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        if (tvModeActive) {
+          showTvControlsHint(6000);
+        }
+        navigateArchiveByDays(-1);
+      } else if (event.key === "ArrowRight") {
+        event.preventDefault();
+        if (tvModeActive) {
+          showTvControlsHint(6000);
+        }
+        navigateArchiveByDays(1);
+      }
+    });
   };
 
   const buildUsageRangeSlugs = (rangeKey) => {
@@ -515,7 +547,7 @@
     destroyUsageSlotChart();
     const monthTickStep =
       usageRangeKey === "month" ? Math.max(1, Math.ceil(labels.length / 8)) : 1;
-    const usageOnBigScreen = Boolean(tvMode && tvActiveChart === "usage");
+    const usageOnBigScreen = Boolean(chartsSwapped);
     usageSlotChart = new Chart(usageSlotCtx, {
       type: "bar",
       data: {
@@ -592,151 +624,272 @@
     });
   };
 
-  const updateTvButtons = () => {
-    if (tvShowHistoryBtn) {
-      tvShowHistoryBtn.classList.toggle("active", tvMode && tvActiveChart === "history");
+  const applyChartSwap = (nextSwapped) => {
+    if (!canvas || !usageSlotCanvas || !usageSlotCanvasSlot || !historyChartCanvasSlot) {
+      return;
     }
-    if (tvShowUsageBtn) {
-      tvShowUsageBtn.classList.toggle("active", tvMode && tvActiveChart === "usage");
+    const next = Boolean(nextSwapped);
+    if (chartsSwapped === next) {
+      return;
     }
+    if (next) {
+      historyChartCanvasSlot.appendChild(usageSlotCanvas);
+      usageSlotCanvasSlot.appendChild(canvas);
+      document.body.classList.add("charts-swapped");
+      if (usagePipEl && usageHeaderEl) {
+        usagePipEl.appendChild(usageHeaderEl);
+        usagePipEl.setAttribute("aria-hidden", "false");
+      }
+    } else {
+      historyChartCanvasSlot.appendChild(canvas);
+      usageSlotCanvasSlot.appendChild(usageSlotCanvas);
+      document.body.classList.remove("charts-swapped");
+      if (usageSlotEl && usageHeaderEl) {
+        usageSlotEl.insertBefore(usageHeaderEl, usageSlotEl.firstChild);
+      }
+      if (usagePipEl) {
+        usagePipEl.setAttribute("aria-hidden", "true");
+      }
+    }
+    chartsSwapped = next;
+    updateSwapLabels();
+    // Let layout settle, then fully refresh both charts so Chart.js re-measures its new parent.
+    const refreshAfterSwap = async () => {
+      try {
+        destroyUsageSlotChart();
+      } catch (err) {
+        // ignore
+      }
+      await renderUsageSlotChart();
+      try {
+        destroyChart();
+      } catch (err) {
+        // ignore
+      }
+      try {
+        createChart();
+      } catch (err) {
+        // ignore
+      }
+      try {
+        showChart();
+      } catch (err) {
+        // ignore
+      }
+    };
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        void refreshAfterSwap();
+      });
+    });
   };
 
-  const syncCanvasPlacement = () => {
-    if (!canvas || !usageSlotCanvas) {
+  const isTvHidden = () =>
+    document.body && document.body.classList.contains("hide-big-chart");
+
+  let tvModeActive = false;
+  let tvPrevHideBig = true;
+  let tvPrevSwapped = false;
+  let tvKeyHandlerBound = false;
+  let tvMouseHintBound = false;
+  let tvControlsAutoHideTimer = null;
+
+  const showTvControlsHint = (hideAfterMs = 30000) => {
+    if (!tvControlsSwap) {
       return;
     }
-    if (!usageSlotCanvasSlot || !historyPreviewCanvasSlot) {
-      return;
+    tvControlsSwap.classList.remove("auto-hidden");
+    if (tvControlsAutoHideTimer) {
+      clearTimeout(tvControlsAutoHideTimer);
+      tvControlsAutoHideTimer = null;
     }
-    if (tvMode) {
-      if (!tvCanvasSlot) {
+    tvControlsAutoHideTimer = setTimeout(() => {
+      if (!tvModeActive || !tvControlsSwap) {
         return;
       }
-      if (tvActiveChart === "usage") {
-        tvCanvasSlot.appendChild(usageSlotCanvas);
-        historyPreviewCanvasSlot.appendChild(canvas);
-      } else {
-        tvCanvasSlot.appendChild(canvas);
-        usageSlotCanvasSlot.appendChild(usageSlotCanvas);
-      }
-      if (tvFrame) {
-        tvFrame.setAttribute("aria-hidden", "false");
-      }
-      document.body.classList.add("tv-mode");
-      updateTvButtons();
+      tvControlsSwap.classList.add("auto-hidden");
+    }, hideAfterMs);
+  };
+
+  const enterTvMode = () => {
+    if (!document.body || tvModeActive) {
       return;
     }
+    tvPrevHideBig = isTvHidden();
+    tvPrevSwapped = chartsSwapped;
 
-    // Normal mode: both charts live in their preview slots.
-    historyPreviewCanvasSlot.appendChild(canvas);
-    usageSlotCanvasSlot.appendChild(usageSlotCanvas);
-    if (tvFrame) {
-      tvFrame.setAttribute("aria-hidden", "true");
+    // Reveal the TV frame and move the currently visible small chart into it.
+    document.body.classList.remove("hide-big-chart");
+    // Default TV mode to the thermostat/history chart (usage remains available via swap).
+    if (chartsSwapped) {
+      applyChartSwap(false);
+    }
+
+    document.body.classList.add("tv-mode");
+    tvModeActive = true;
+    updateSwapLabels();
+    showTvControlsHint(10000);
+    mountTvHistory();
+    bindTvHistoryToggle();
+
+    if (!tvKeyHandlerBound) {
+      tvKeyHandlerBound = true;
+      window.addEventListener("keydown", (event) => {
+        if (!tvModeActive) {
+          return;
+        }
+        if (event.key === "Escape") {
+          event.preventDefault();
+          exitTvMode();
+        }
+      });
+    }
+
+    if (!tvMouseHintBound) {
+      tvMouseHintBound = true;
+      window.addEventListener("mousemove", (event) => {
+        if (!tvModeActive) {
+          return;
+        }
+        const y = Number(event?.clientY);
+        if (!Number.isFinite(y)) {
+          return;
+        }
+        if (y > window.innerHeight - 140) {
+          showTvControlsHint(6000);
+        }
+      });
+    }
+  };
+
+  const exitTvMode = () => {
+    if (!document.body || !tvModeActive) {
+      return;
     }
     document.body.classList.remove("tv-mode");
-    updateTvButtons();
-  };
+    tvModeActive = false;
+    unmountTvHistory();
+    if (tvControlsSwap) {
+      tvControlsSwap.classList.remove("auto-hidden");
+    }
+    if (tvControlsAutoHideTimer) {
+      clearTimeout(tvControlsAutoHideTimer);
+      tvControlsAutoHideTimer = null;
+    }
 
-  const refreshChartsForRelayout = async () => {
-    try {
-      destroyUsageSlotChart();
-    } catch (err) {
-      // ignore
+    if (chartsSwapped !== tvPrevSwapped) {
+      applyChartSwap(tvPrevSwapped);
     }
-    await renderUsageSlotChart();
-    try {
-      destroyChart();
-    } catch (err) {
-      // ignore
-    }
-    try {
-      createChart();
-    } catch (err) {
-      // ignore
-    }
-    try {
-      showChart();
-    } catch (err) {
-      // ignore
+    if (tvPrevHideBig) {
+      document.body.classList.add("hide-big-chart");
+    } else {
+      document.body.classList.remove("hide-big-chart");
     }
   };
 
-  const enterTvMode = async (chartKey = "history") => {
-    tvMode = true;
-    tvActiveChart = chartKey === "usage" ? "usage" : "history";
-
-    if (autoplayEnabledBeforeTv === null) {
-      autoplayEnabledBeforeTv = autoplayEnabled;
-    }
-    autoplayEnabled = false;
-    try {
-      stopAutoplay();
-    } catch {
-      // ignore
-    }
-    updateAutoplayToggle();
-
-    syncCanvasPlacement();
-    requestAnimationFrame(() => {
-      void refreshChartsForRelayout();
-    });
-  };
-
-  const exitTvMode = async () => {
-    tvMode = false;
-    syncCanvasPlacement();
-    requestAnimationFrame(() => {
-      void refreshChartsForRelayout();
-    });
-
-    if (autoplayEnabledBeforeTv !== null) {
-      autoplayEnabled = autoplayEnabledBeforeTv;
-      autoplayEnabledBeforeTv = null;
-    }
-    updateAutoplayToggle();
-    if (autoplayEnabled) {
-      ensureAutoplayScheduled();
-    }
-  };
-
-  const bindTvZoomControls = () => {
-    if (tvZoomBound) {
+  const bindChartSwapControls = () => {
+    if (chartSwapBound) {
       return;
     }
     if (!canvas || !usageSlotCanvas) {
       return;
     }
-    tvZoomBound = true;
+    chartSwapBound = true;
 
-    canvas.addEventListener("dblclick", () => void enterTvMode("history"));
-    usageSlotCanvas.addEventListener("dblclick", () => void enterTvMode("usage"));
-
-    if (tvFrame) {
-      tvFrame.addEventListener("dblclick", (event) => {
-        event.preventDefault();
-        void exitTvMode();
-      });
-    }
-    if (tvShowHistoryBtn) {
-      tvShowHistoryBtn.addEventListener("click", (event) => {
-        event.preventDefault();
-        void enterTvMode("history");
-      });
-    }
-    if (tvShowUsageBtn) {
-      tvShowUsageBtn.addEventListener("click", (event) => {
-        event.preventDefault();
-        void enterTvMode("usage");
-      });
+    const usageTitle = document.querySelector("#usage-slot .title");
+    if (usageTitle) {
+      usageTitle.title = "Swap charts";
+      usageTitle.addEventListener("click", () => applyChartSwap(!chartsSwapped));
     }
 
-    document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape" && tvMode) {
-        event.preventDefault();
-        void exitTvMode();
+    // Double-click behaviour:
+    // - When TV is hidden: enter full-screen TV mode using the current small view.
+    // - When in TV mode: exit back to the dashboard.
+    // - Otherwise: swap charts.
+    canvas.addEventListener("dblclick", () => {
+      if (tvModeActive) {
+        exitTvMode();
+        return;
       }
+      enterTvMode();
     });
+    usageSlotCanvas.addEventListener("dblclick", () => {
+      if (tvModeActive) {
+        exitTvMode();
+        return;
+      }
+      enterTvMode();
+    });
+
+    // In TV mode, clicking the X-axis label area swaps charts.
+    if (usageSlotCanvas.dataset.boundAxisSwap !== "1") {
+      usageSlotCanvas.dataset.boundAxisSwap = "1";
+      usageSlotCanvas.addEventListener("click", (event) => {
+        if (!usageSlotChart) {
+          return;
+        }
+        const y = Number(event?.offsetY);
+        if (!Number.isFinite(y)) {
+          return;
+        }
+        const bottom = usageSlotChart?.chartArea?.bottom;
+        if (!Number.isFinite(Number(bottom))) {
+          return;
+        }
+        if (y < Number(bottom)) {
+          return;
+        }
+        event.preventDefault();
+        if (tvModeActive) {
+          showTvControlsHint(6000);
+        }
+        applyChartSwap(!chartsSwapped);
+      });
+    }
   };
+
+  const bindTvControls = () => {
+    if (tvControlsSwap && tvControlsSwap.dataset.boundClick !== "1") {
+      tvControlsSwap.dataset.boundClick = "1";
+      const activate = () => {
+        if (!tvModeActive) {
+          return;
+        }
+        showTvControlsHint(6000);
+        applyChartSwap(!chartsSwapped);
+      };
+      tvControlsSwap.addEventListener("click", (event) => {
+        event.preventDefault();
+        activate();
+      });
+      tvControlsSwap.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          activate();
+        }
+      });
+    }
+
+    if (tvArchivePrevButton && tvArchivePrevButton.dataset.boundClick !== "1") {
+      tvArchivePrevButton.dataset.boundClick = "1";
+      tvArchivePrevButton.addEventListener("click", () => {
+        if (tvModeActive) {
+          showTvControlsHint(6000);
+        }
+        navigateArchiveByDays(-1);
+      });
+    }
+    if (tvArchiveNextButton && tvArchiveNextButton.dataset.boundClick !== "1") {
+      tvArchiveNextButton.dataset.boundClick = "1";
+      tvArchiveNextButton.addEventListener("click", () => {
+        if (tvModeActive) {
+          showTvControlsHint(6000);
+        }
+        navigateArchiveByDays(1);
+      });
+    }
+  };
+
 
   const bindUsageSlotControls = () => {
     if (usageSlotBound) {
@@ -841,6 +994,25 @@
   };
   const getFanLegend = () => getDashboardValue("fanLegend", ["On", "Circulate", "Auto"]);
   const getCoolingLegend = () => getDashboardValue("coolingLegend", ["Idle", "Cooling"]);
+  const abbreviateFanLabel = (label) => {
+    const raw = String(label || "").trim();
+    if (!raw) return "";
+    const key = raw.toLowerCase();
+    if (key === "circulate" || key === "circulation") return "Cir.";
+    if (key === "auto" || key === "automatic") return "Aut";
+    if (key === "on") return "On";
+    if (key === "off") return "Off";
+    return raw.length <= 4 ? raw : `${raw.slice(0, 3)}.`;
+  };
+  const abbreviateCoolingLabel = (label) => {
+    const raw = String(label || "").trim();
+    if (!raw) return "";
+    const key = raw.toLowerCase();
+    if (key === "cooling" || key === "cool") return "Cool";
+    if (key === "idle") return "Idle";
+    if (key === "off") return "Off";
+    return raw.length <= 4 ? raw : raw.slice(0, 4);
+  };
   const getCondenserMinutes = () => getDashboardValue("condenserMinutes", []);
   const getTotalCondenserMinutesValue = () => getDashboardValue("totalCondenserMinutesValue", null);
   const getTotalCondenserMinutesDisplay = () => getDashboardValue("totalCondenserMinutes", "");
@@ -1721,7 +1893,7 @@
             max: 2,
             ticks: {
               stepSize: 1,
-              callback: (value) => getFanLegend()[Math.round(value)] || "",
+              callback: (value) => abbreviateFanLabel(getFanLegend()[Math.round(value)] || ""),
               color: (ctxValue) => {
                 const tickValue = ctxValue.tick?.value ?? ctxValue.parsed ?? null;
                 return fanColorForValue(tickValue);
@@ -1740,7 +1912,7 @@
             max: 2,
             ticks: {
               stepSize: 1,
-              callback: (value) => getCoolingLegend()[Math.round(value)] || "",
+              callback: (value) => abbreviateCoolingLabel(getCoolingLegend()[Math.round(value)] || ""),
               color: (ctxValue) => {
                 const numeric = Number(ctxValue.tick.value);
                 return Number.isNaN(numeric) || numeric <= 0 ? "#ffd000" : "#32d15c";
@@ -1830,6 +2002,21 @@
     }
     chartPointPickerBound = true;
 
+    const isXAxisClickForSwap = (event) => {
+      if (!chart) {
+        return false;
+      }
+      const y = Number(event?.offsetY);
+      if (!Number.isFinite(y)) {
+        return false;
+      }
+      const bottom = chart?.chartArea?.bottom;
+      if (!Number.isFinite(Number(bottom))) {
+        return false;
+      }
+      return y >= Number(bottom);
+    };
+
     const pickIndexFromEvent = (event) => {
       if (!chart) {
         return null;
@@ -1855,6 +2042,9 @@
       if (pinnedPointIndex !== null) {
         return;
       }
+      if (suppressHoverUntilMouseLeave) {
+        return;
+      }
       const idx = pickIndexFromEvent(event);
       if (idx === null) {
         return;
@@ -1866,6 +2056,7 @@
     });
 
     canvas.addEventListener("mouseleave", () => {
+      suppressHoverUntilMouseLeave = false;
       if (pinnedPointIndex !== null) {
         return;
       }
@@ -1876,9 +2067,18 @@
     });
 
     canvas.addEventListener("click", (event) => {
+      if (isXAxisClickForSwap(event)) {
+        event.preventDefault();
+        if (tvModeActive) {
+          showTvControlsHint(6000);
+        }
+        applyChartSwap(!chartsSwapped);
+        return;
+      }
       const idx = pickIndexFromEvent(event);
       if (idx === null) {
         setSelectedPoint(null, null, true);
+        suppressHoverUntilLeave();
         return;
       }
       if (pinnedPointIndex === idx) {
@@ -1897,6 +2097,7 @@
         const raw = String(hourPickerEl.value || "").trim();
         if (!raw) {
           setSelectedPoint(null, null, true);
+          suppressHoverUntilLeave();
           hourPickerEl.style.color = "#ffb347";
           return;
         }
@@ -1921,12 +2122,22 @@
         }
         if (chosenIdx === null) {
           setSelectedPoint(null, null, true);
+          suppressHoverUntilLeave();
           return;
         }
         setSelectedPoint(chosenIdx, chosenIdx, true);
       });
     }
   };
+
+  if (chartStepPrevButton && chartStepPrevButton.dataset.boundClick !== "1") {
+    chartStepPrevButton.dataset.boundClick = "1";
+    chartStepPrevButton.addEventListener("click", () => stepPinnedPoint(-1));
+  }
+  if (chartStepNextButton && chartStepNextButton.dataset.boundClick !== "1") {
+    chartStepNextButton.dataset.boundClick = "1";
+    chartStepNextButton.addEventListener("click", () => stepPinnedPoint(1));
+  }
 
   // Re-render all front-panel cards when the data changes (actual, fan, condenser, etc.).
   const updateMetricCards = () => {
@@ -2373,33 +2584,101 @@
   };
 
   const closeHistoryList = () => {
-    if (chartHistoryList) {
-      chartHistoryList.classList.add("hidden");
-    }
-    if (chartHistoryToggle && chartHistoryToggle.classList.contains("history-visible")) {
-      chartHistoryToggle.classList.remove("history-visible");
-    }
+    hideHistoryFiles();
   };
 
   const toggleHistoryList = () => {
-    if (!chartHistoryList) {
-      return;
-    }
-    chartHistoryList.classList.toggle("hidden");
-    if (chartHistoryToggle) {
-      const visible = !chartHistoryList.classList.contains("hidden");
-      chartHistoryToggle.classList.toggle("history-visible", visible);
-    }
+    setHistoryExpanded(!historyExpanded);
   };
 
   const updateHistoryStatus = (slug) => {
-    if (!chartHistoryStatus) {
+    const label = slug ? archiveLabelMap.get(slug) : null;
+    const text = label || (slug ? String(slug) : "Current");
+    const compactMonthDay = (value) => {
+      const trimmed = String(value || "").trim();
+      if (!trimmed) {
+        return trimmed;
+      }
+      const match = trimmed.match(/^([A-Za-z]{3,9})\s+(\d{1,2})(?:st|nd|rd|th)?(?:,\s*\d{4})?$/);
+      if (!match) {
+        return trimmed;
+      }
+      return `${match[1]} ${match[2]}`;
+    };
+    const mainDisplay = document.body && document.body.classList.contains("tv-mode")
+      ? text
+      : compactMonthDay(text);
+    if (chartHistoryStatus) {
+      chartHistoryStatus.textContent = mainDisplay;
+    }
+    if (transportHistoryStatus) {
+      transportHistoryStatus.textContent = mainDisplay;
+    }
+    if (tvHistoryMonth || tvHistoryDay) {
+      const trimmed = String(text || "").trim();
+      const match = trimmed.match(/^([A-Za-z]{3,9})\s+(\d{1,2})(?:st|nd|rd|th)?(?:,\s*\d{4})?$/);
+      if (match) {
+        if (tvHistoryMonth) {
+          tvHistoryMonth.textContent = String(match[1] || "").toUpperCase();
+        } else if (tvHistoryStatus) {
+          tvHistoryStatus.textContent = String(match[1] || "").toUpperCase();
+        }
+        if (tvHistoryDay) {
+          tvHistoryDay.textContent = String(match[2] || "");
+        }
+        if (tvNavMonth) {
+          tvNavMonth.textContent = String(match[1] || "").toUpperCase();
+        }
+        if (tvNavDay) {
+          tvNavDay.textContent = String(match[2] || "");
+        }
+      } else {
+        if (tvHistoryMonth) {
+          tvHistoryMonth.textContent = trimmed || "Current";
+        } else if (tvHistoryStatus) {
+          tvHistoryStatus.textContent = trimmed || "Current";
+        }
+        if (tvHistoryDay) {
+          tvHistoryDay.textContent = "";
+        }
+        if (tvNavMonth) {
+          tvNavMonth.textContent = trimmed || "";
+        }
+        if (tvNavDay) {
+          tvNavDay.textContent = "";
+        }
+      }
+    } else if (tvHistoryStatus) {
+      tvHistoryStatus.textContent = text;
+    }
+  };
+
+  const bindTransportHistoryToggle = () => {
+    const transportPanel = document.getElementById("transport-panel");
+    if (!transportPanel || transportPanel.dataset.boundHistoryToggle === "1") {
       return;
     }
-    const label = slug ? archiveLabelMap.get(slug) : null;
-    chartHistoryStatus.textContent = label
-      ? `History: ${label}`
-      : "History: current data";
+    transportPanel.dataset.boundHistoryToggle = "1";
+    transportPanel.title = "Click to select a history file";
+    transportPanel.addEventListener("click", (event) => {
+      // Don't interfere with actual navigation controls inside the transport panel.
+      const target = event.target;
+      if (target && target.closest && target.closest("button,select,a,input,textarea")) {
+        return;
+      }
+      event.preventDefault();
+      if (chartHistoryList && chartHistoryList.classList.contains("hidden")) {
+        showHistoryFiles();
+        if (chartHistoryToggle) {
+          chartHistoryToggle.classList.add("history-visible");
+        }
+      } else {
+        hideHistoryFiles();
+        if (chartHistoryToggle) {
+          chartHistoryToggle.classList.remove("history-visible");
+        }
+      }
+    });
   };
 
   const updateTimestampDisplay = (text) => {
@@ -2419,6 +2698,14 @@
       const label = valueAt(labels, idx, null);
       if (label) {
         updateTimestampDisplay(String(label));
+        if (tvHistoryHour) {
+          const hour24 = roundedUpHour24FromLabel(label);
+          tvHistoryHour.textContent = hour24 === null ? "" : formatHourOnly(hour24);
+        }
+        if (tvNavHour) {
+          const hour24 = roundedUpHour24FromLabel(label);
+          tvNavHour.textContent = hour24 === null ? "" : formatHourOnly(hour24);
+        }
         return;
       }
     }
@@ -2427,6 +2714,12 @@
       (currentArchiveSlug ? archiveLabelMap.get(currentArchiveSlug) : null) ||
       "History: current data";
     updateTimestampDisplay(fallback);
+    if (tvHistoryHour) {
+      tvHistoryHour.textContent = "";
+    }
+    if (tvNavHour) {
+      tvNavHour.textContent = "";
+    }
   };
 
   const formatHourLabel = (label) => {
@@ -2605,7 +2898,7 @@
       selectionIndicatorEl.style.opacity = "0.9";
       selectionIndicatorEl.style.userSelect = "none";
       selectionIndicatorEl.textContent = "";
-      selectionIndicatorEl.title = "Hover the chart to preview a reading. Click to pin. Use Clear Pin or select Latest to reset.";
+      selectionIndicatorEl.title = "Hover the chart to preview a reading. Click to pin. Use Clear Pin to reset.";
       appendControl(selectionIndicatorEl);
     }
 
@@ -2623,22 +2916,16 @@
       clearPinButtonEl.dataset.boundClick = "1";
       clearPinButtonEl.addEventListener("click", () => {
         setSelectedPoint(null, null, true);
+        suppressHoverUntilLeave();
       });
     }
 
-    if (!hourPickerEl) {
-      hourPickerEl = document.createElement("select");
-      hourPickerEl.id = "hour-picker";
-      hourPickerEl.style.marginLeft = "10px";
-      hourPickerEl.style.borderRadius = "8px";
-      hourPickerEl.style.padding = "6px 10px";
-      hourPickerEl.style.border = "1px solid #1a1a20";
-      hourPickerEl.style.background = "#0d0d12";
-      hourPickerEl.style.color = "#f4f6ff";
-      hourPickerEl.style.maxWidth = "220px";
-      hourPickerEl.title = "Pick a specific reading to pin.";
-      appendControl(hourPickerEl);
+    // Hour picker removed (the old "Latest" control lived here).
+    const existingHourPicker = document.getElementById("hour-picker");
+    if (existingHourPicker) {
+      existingHourPicker.remove();
     }
+    hourPickerEl = null;
 
     if (!prevDayButtonEl) {
       prevDayButtonEl = document.createElement("button");
@@ -2669,6 +2956,41 @@
     syncArchiveNavButtons();
   };
 
+  const syncStepButtons = () => {
+    if (!chartStepPrevButton && !chartStepNextButton) {
+      return;
+    }
+    const labels = getChartLabels();
+    const length = Array.isArray(labels) ? labels.length : 0;
+    const current = clampIndex(
+      pinnedPointIndex !== null ? pinnedPointIndex : hoverPointIndex,
+      length
+    );
+    const hasData = length > 0;
+    if (chartStepPrevButton) {
+      chartStepPrevButton.disabled = !hasData || current === null || current <= 0;
+    }
+    if (chartStepNextButton) {
+      chartStepNextButton.disabled = !hasData || current === null || current >= length - 1;
+    }
+  };
+
+  const stepPinnedPoint = (delta) => {
+    const labels = getChartLabels();
+    const length = Array.isArray(labels) ? labels.length : 0;
+    if (length <= 0) {
+      return;
+    }
+    const base =
+      clampIndex(pinnedPointIndex, length) ??
+      clampIndex(hoverPointIndex, length) ??
+      (length - 1);
+    const next = Math.max(0, Math.min(length - 1, base + delta));
+    setSelectedPoint(next, next, true);
+    suppressHoverUntilLeave();
+    syncStepButtons();
+  };
+
   const syncHourPickerOptions = () => {
     ensureSelectionUi();
     if (!hourPickerEl) {
@@ -2677,23 +2999,16 @@
     const labels = getChartLabels();
     if (!Array.isArray(labels) || labels.length === 0) {
       hourPickerEl.innerHTML = "";
-      const opt = document.createElement("option");
-      opt.value = "";
-      opt.textContent = "Latest";
-      hourPickerEl.appendChild(opt);
       hourPickerEl.disabled = true;
+      hourPickerEl.style.display = "none";
       return;
     }
 
     hourPickerEl.disabled = false;
+    hourPickerEl.style.display = "";
     hourPickerEl.innerHTML = "";
-    const latestOpt = document.createElement("option");
-    latestOpt.value = "";
     const lastLabel = labels[labels.length - 1];
     const lastHour24 = roundedUpHour24FromLabel(lastLabel);
-    const lastHourText = lastHour24 === null ? "" : formatHourOnly(lastHour24);
-    latestOpt.textContent = lastHourText ? `Latest (${lastHourText})` : "Latest";
-    hourPickerEl.appendChild(latestOpt);
 
     const byHour = new Map();
     labels.forEach((label, idx) => {
@@ -2704,6 +3019,18 @@
       // Keep the latest point in that rounded-up hour.
       byHour.set(hour24, idx);
     });
+
+    const defaultHour24 = (() => {
+      if (lastHour24 !== null && byHour.has(lastHour24)) {
+        return lastHour24;
+      }
+      for (let hour24 = 23; hour24 >= 0; hour24 -= 1) {
+        if (byHour.has(hour24)) {
+          return hour24;
+        }
+      }
+      return 0;
+    })();
 
     for (let hour24 = 0; hour24 <= 23; hour24 += 1) {
       const opt = document.createElement("option");
@@ -2718,13 +3045,14 @@
     const selectedPinned = clampIndex(pinnedPointIndex, labels.length);
     if (selectedPinned !== null) {
       const hour24 = roundedUpHour24FromLabel(labels[selectedPinned]);
-      hourPickerEl.value = hour24 === null ? "" : `H${hour24}`;
+      hourPickerEl.value =
+        hour24 !== null && byHour.has(hour24) ? `H${hour24}` : `H${defaultHour24}`;
     } else {
-      hourPickerEl.value = "";
+      hourPickerEl.value = `H${defaultHour24}`;
     }
 
-    // Make the "Latest" selection match the orange selection accents.
-    hourPickerEl.style.color = hourPickerEl.value === "" ? "#ffb347" : "#f4f6ff";
+    // Match the orange selection accents when no pin is set.
+    hourPickerEl.style.color = selectedPinned === null ? "#ffb347" : "#f4f6ff";
     syncArchiveNavButtons();
   };
 
@@ -2749,16 +3077,19 @@
       const label = valueAt(labels, pinned, "");
       selectionIndicatorEl.textContent = `Pinned: ${formatHourLabel(label)}`;
       selectionIndicatorEl.style.color = "#ffb347";
+      syncStepButtons();
       return;
     }
     if (hovered !== null) {
       const label = valueAt(labels, hovered, "");
       selectionIndicatorEl.textContent = `Hover: ${formatHourLabel(label)}`;
       selectionIndicatorEl.style.color = "#ffb347";
+      syncStepButtons();
       return;
     }
     selectionIndicatorEl.textContent = "";
     selectionIndicatorEl.style.color = "";
+    syncStepButtons();
     syncHourPickerOptions();
   };
 
@@ -2879,21 +3210,28 @@
   };
 
   function renderArchiveList() {
+    const archiveDates = getArchiveDates();
+    archiveLabelMap.clear();
+    if (Array.isArray(archiveDates)) {
+      archiveDates.forEach((entry) => {
+        const label = entry?.label || entry?.slug || "Unknown";
+        const slug = entry?.slug || "";
+        if (slug) {
+          archiveLabelMap.set(slug, label);
+        }
+      });
+    }
+
     if (!chartHistoryList) {
       return;
     }
     hideHistoryFiles();
-    const archiveDates = getArchiveDates();
     chartHistoryList.innerHTML = "";
-    archiveLabelMap.clear();
     const monthGroups = new Map();
     const monthLabels = new Map();
-    archiveDates.forEach((entry) => {
+    (Array.isArray(archiveDates) ? archiveDates : []).forEach((entry) => {
       const label = entry.label || entry.slug || "Unknown";
       const slug = entry.slug || "";
-      if (slug) {
-        archiveLabelMap.set(slug, label);
-      }
       const monthKey = getMonthKeyFromSlug(slug) || getMonthKeyFromLabel(label);
       const monthLabel = getMonthLabel(monthKey);
       if (!monthGroups.has(monthKey)) {
@@ -2922,17 +3260,11 @@
       chartHistoryListsRow.appendChild(chartHistoryMonthPicker);
       chartHistoryListsRow.appendChild(chartHistoryListColumn);
       chartHistory.appendChild(chartHistoryListsRow);
-      chartHistoryListsRow.addEventListener("mouseenter", showHistoryFiles);
-      chartHistoryListsRow.addEventListener("mouseleave", hideHistoryFiles);
-      if (!chartHistoryHoverBound) {
-        chartHistory.addEventListener("mouseleave", hideHistoryFiles);
-        chartHistoryHoverBound = true;
-      }
-      if (!chartHistoryListHoverBound) {
-        chartHistoryListColumn.addEventListener("mouseenter", showHistoryFiles);
-        chartHistoryListColumn.addEventListener("mouseleave", hideHistoryFiles);
-        chartHistoryListHoverBound = true;
-      }
+
+      // Click-to-expand behavior: start collapsed, expand when interacting with months/files.
+      chartHistoryMonthPicker.addEventListener("click", () => showHistoryFiles());
+      chartHistoryListColumn.addEventListener("click", () => showHistoryFiles());
+      setHistoryExpanded(false);
     }
 
     // Render month picker
@@ -2953,7 +3285,7 @@
         button.addEventListener("click", () => {
           currentMonthKey = key;
           renderArchiveList();
-          hideHistoryFiles();
+          showHistoryFiles();
         });
         item.appendChild(button);
         monthListEl.appendChild(item);
@@ -2999,7 +3331,6 @@
             currentArchiveSlug = entry.slug;
             loadDashboardData(entry.slug);
           }
-          hideHistoryFiles();
           closeHistoryList();
         });
         entryItem.appendChild(button);
@@ -3056,8 +3387,7 @@
     updateTimestampFromSelection();
     updateSelectionIndicator();
     bindUsageSlotControls();
-    bindTvZoomControls();
-    syncCanvasPlacement();
+    bindChartSwapControls();
     renderUsageSlotChart();
     destroyChart();
     createChart();
@@ -3134,17 +3464,16 @@
     });
   }
 
-  if (chartHistoryToggle && chartHistoryList) {
+  if (!isChartHistoryUiHidden() && chartHistoryToggle && chartHistoryList) {
     chartHistoryToggle.addEventListener("click", () => {
       toggleHistoryList();
     });
   }
 
   applyDashboardData(dashboardData);
-  applyLayoutFromUrlOrStorage();
-  bindMetricsToggle();
-  applyDebugLayoutFromUrl();
-  bindDebugLayoutHotkey();
+  bindTransportHistoryToggle();
+  bindArchiveKeyboardShortcuts();
+  bindTvControls();
   bindAutoplayInteractions();
   updateAutoplayToggle();
   ensureAutoplayScheduled();
