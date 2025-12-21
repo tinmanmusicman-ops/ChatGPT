@@ -2354,25 +2354,41 @@ def build_dashboard_html(
       }}
       /* TV stand/legs graphic under the main chart frame. */
       .chart-wrap.tv-frame {{
+        container-type: inline-size;
+        --tv-legs-overlap: 25px;
         margin-bottom: 48px;
       }}
       body.hide-big-chart .chart-wrap.tv-frame {{
         display: none;
       }}
-      body.hide-big-chart #tv-legs {{
+      body.hide-big-chart .chart-wrap.tv-frame .tv-legs {{
         display: none;
       }}
-      #tv-legs {{
-        display: block;
+      .chart-wrap.tv-frame .tv-legs {{
         position: absolute;
         left: 50%;
-        bottom: -10px;
-        transform: translateX(-50%) translateY(calc(78% + 130px));
-        height: clamp(400px, 52vh, 650px);
-        width: auto;
-        max-width: min(1100px, 95vw);
+        bottom: 0;
+        transform: translateX(-50%) translateY(calc(100% - var(--tv-legs-overlap)));
+        height: clamp(400px, 95%, 650px);
+        width: min(1100px, 95%);
         z-index: 0;
         pointer-events: none;
+        opacity: 0.98;
+        background-image: url("../../../Images/Legs2.png");
+        background-repeat: no-repeat;
+        background-position: center bottom;
+        background-size: contain;
+        filter: brightness(1.25) contrast(1.1) saturate(1.15) drop-shadow(0 18px 26px rgba(0,0,0,0.65));
+      }}
+      @supports (height: 1cqi) {{
+        .chart-wrap.tv-frame .tv-legs {{
+          height: clamp(400px, 62cqi, 700px);
+          width: min(1100px, 140cqi);
+        }}
+      }}
+      .chart-wrap.tv-frame > #history-chart-canvas-slot {{
+        position: relative;
+        z-index: 1;
       }}
       body.hide-big-chart #toggle-history {{
         display: none;
@@ -2420,12 +2436,14 @@ def build_dashboard_html(
       body.tv-mode #history-chart {{
         height: 100% !important;
       }}
-      body.tv-mode #tv-legs {{
-        display: block !important;
-        height: clamp(525px, 65vh, 800px);
-        z-index: 10001;
-        filter: brightness(1.25) contrast(1.1) saturate(1.15) drop-shadow(0 18px 26px rgba(0,0,0,0.65));
-        opacity: 0.98;
+      body.tv-mode .chart-wrap.tv-frame .tv-legs {{
+        display: block;
+        height: clamp(520px, 95%, 800px);
+      }}
+      @supports (height: 1cqi) {{
+        body.tv-mode .chart-wrap.tv-frame .tv-legs {{
+          height: clamp(520px, 52cqi, 880px);
+        }}
       }}
       /* TV mode chart controls (mode toggles) shown on the right. */
       .tv-chartcontrols-overlay {{
@@ -3009,6 +3027,7 @@ def build_dashboard_html(
         </div>
       </div>
         <div class="chart-wrap tv-frame">
+          <div class="tv-legs" aria-hidden="true"></div>
           <div id="usage-pip" aria-hidden="true"></div>
           <div id="tv-hands-logo" aria-hidden="true"></div>
           <div>
@@ -3037,7 +3056,6 @@ def build_dashboard_html(
               <button type="button" class="chart-control" data-mode="both">Combined</button>
             </div>
           </div>
-          <img id="tv-legs" src="../../../Images/Legs2.png" alt="TV stand" />
         </div>
         <div class="note">Data source: Google Sheet (last updated when this page was generated).</div>
 
