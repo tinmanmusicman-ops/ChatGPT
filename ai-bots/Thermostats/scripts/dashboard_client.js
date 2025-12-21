@@ -171,6 +171,23 @@
   // re-pin to the opposite edge to create a continuous "scrolling" feel.
   let pendingPinnedIndexAfterArchiveLoad = null;
 
+  const DECK_SPIN_DURATION_MS = 4_000;
+  let deckSpinTimerId = null;
+  const triggerDeckSpin = () => {
+    const deck = document.getElementById("transport-deck");
+    if (!deck) {
+      return;
+    }
+    deck.classList.add("playing");
+    if (deckSpinTimerId) {
+      clearTimeout(deckSpinTimerId);
+    }
+    deckSpinTimerId = setTimeout(() => {
+      deck.classList.remove("playing");
+      deckSpinTimerId = null;
+    }, DECK_SPIN_DURATION_MS);
+  };
+
   const HOLD_REPEAT_DELAY_MS = 1000;
   const HOLD_REPEAT_INTERVAL_MS = 160;
   const holdRepeatSuppressClickUntil = new WeakMap();
@@ -455,6 +472,7 @@
     if (!slug) {
       return;
     }
+    triggerDeckSpin();
     updateHistoryStatus(slug);
     currentArchiveSlug = slug;
     loadDashboardData(slug);
@@ -477,6 +495,7 @@
     pendingPinnedIndexAfterArchiveLoad = Number.isFinite(Number(pinIndexAfterLoad))
       ? Math.floor(Number(pinIndexAfterLoad))
       : null;
+    triggerDeckSpin();
     updateHistoryStatus(slug);
     currentArchiveSlug = slug;
     loadDashboardData(slug);
@@ -512,6 +531,7 @@
     }
     candidates.sort();
     const slug = candidates[candidates.length - 1]; // latest day in that month
+    triggerDeckSpin();
     updateHistoryStatus(slug);
     currentArchiveSlug = slug;
     loadDashboardData(slug);
@@ -3853,6 +3873,7 @@
         button.addEventListener("click", (event) => {
           event.preventDefault();
           if (entry.slug) {
+            triggerDeckSpin();
             updateHistoryStatus(entry.slug);
             currentArchiveSlug = entry.slug;
             loadDashboardData(entry.slug);
@@ -3945,10 +3966,6 @@
     autoplayToggle.classList.toggle("active", autoplayEnabled);
     autoplayToggle.classList.toggle("off", !autoplayEnabled);
     autoplayToggle.textContent = autoplayEnabled ? "Auto-play: On" : "Auto-play: Off";
-    const deck = document.getElementById("transport-deck");
-    if (deck) {
-      deck.classList.toggle("playing", Boolean(autoplayEnabled));
-    }
   };
 
   const bindAutoplayInteractions = () => {
