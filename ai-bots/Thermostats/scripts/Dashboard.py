@@ -1907,6 +1907,7 @@ def build_dashboard_html(
         margin-top: -65px;
         margin-left: 1px;
  
+        --legs-overlap: 25px;
 
         border-radius: 12px;
         background: rgba(0, 0, 0, 0.6);
@@ -1919,19 +1920,29 @@ def build_dashboard_html(
         overflow: visible;
         display: flex;
         flex-direction: column;
+        container-type: inline-size;
       }}
-      .tv-legs-small {{
+      .usage-slot .usage-legs {{
         position: absolute;
         left: 50%;
-        bottom: -215px;
-        transform: translateX(-50%);
-        height: clamp(170px, 24vh, 260px);
-        width: auto;
-        max-width: min(520px, 95%);
+        bottom: 0;
+        transform: translateX(-50%) translateY(calc(100% - var(--legs-overlap)));
+        height: clamp(170px, 92%, 260px);
+        width: min(520px, 95%);
         z-index: 0;
         pointer-events: none;
         opacity: 0.96;
+        background-image: url("../../../Images/Legs2.png");
+        background-repeat: no-repeat;
+        background-position: center bottom;
+        background-size: contain;
         filter: brightness(1.25) contrast(1.1) saturate(1.15) drop-shadow(0 10px 20px rgba(0,0,0,0.6));
+      }}
+      @supports (height: 1cqi) {{
+        .usage-slot .usage-legs {{
+          height: clamp(170px, 62cqi, 300px);
+          width: min(520px, 120cqi);
+        }}
       }}
       .usage-slot > .usage-header,
       .usage-slot > .usage-graphic,
@@ -2352,7 +2363,7 @@ def build_dashboard_html(
         display: none;
       }}
       #tv-legs {{
-        display: none;
+        display: block;
         position: absolute;
         left: 50%;
         bottom: -10px;
@@ -2410,15 +2421,11 @@ def build_dashboard_html(
         height: 100% !important;
       }}
       body.tv-mode #tv-legs {{
-        display: none !important;
+        display: block !important;
         height: clamp(525px, 65vh, 800px);
         z-index: 10001;
         filter: brightness(1.25) contrast(1.1) saturate(1.15) drop-shadow(0 18px 26px rgba(0,0,0,0.65));
         opacity: 0.98;
-      }}
-      /* Temporarily disable the TV legs/feet graphics while we finalize layout. */
-      .tv-legs-small {{
-        display: none !important;
       }}
       /* TV mode chart controls (mode toggles) shown on the right. */
       .tv-chartcontrols-overlay {{
@@ -2888,7 +2895,7 @@ def build_dashboard_html(
 
       <div class="chart-top-row">
         <div class="usage-slot tv-frame" id="usage-slot">
-          <img class="tv-legs-small" src="../../../Images/Legs2.png" alt="TV stand" />
+          <div class="usage-legs" aria-hidden="true"></div>
           <div class="usage-header">
             <div class="usage-header-left">
               <div class="title">Usage Chart</div>
@@ -2910,12 +2917,6 @@ def build_dashboard_html(
               <canvas id="usage-slot-chart"></canvas>
             </div>
           </div>
-                    <img
-            src="../../../Images/Legs2.png"
-            class="tv-legs-small"
-            alt=""
-            aria-hidden="true"
-          />
 
 <div id="swap-controls" class="swap-controls" aria-hidden="false">
             <div id="swap-controls-label" class="swap-controls-inner" role="button" tabindex="0" aria-label="Swap chart">
