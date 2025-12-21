@@ -194,7 +194,7 @@ TEST_MODE = _normalize_flag(
     cfg_payload.get("test_mode", cfg_payload.get("testMode", cfg_payload.get("test", False))),
     default=False,
 )
-logger.info("Dashboard test_mode=%s (disables git autopush)", TEST_MODE)
+logger.info("Dashboard test_mode=%s (generates HTML from cached JSON)", TEST_MODE)
 
 HISTORY_WINDOW = 24
 CHART_METRIC_INDEX = 1  # Fallback index; overridden to "Current Temperature" if present
@@ -1741,29 +1741,28 @@ def build_dashboard_html(
       }}
       
       #chartcontrols {{
-        margin-top: 20PX;
-        margin-left: 70PX;
+        margin-top: 5PX;
+        margin-left: 35PX;
         max-width: none;
-        width: 50%;
+        width: 80%;
         position: relative;
         z-index: 30;
-        padding: 6px;
+        padding: 1px;
         display: grid;
         grid-template-columns: 1fr;
-        gap: 3px;
+        gap: 2px;
         font-size: 13px;
         color: #f4f6ff;
-        border: 1px solid rgba(255, 255, 255, 0.38);
-        border-radius: 12px;
-        background: rgba(0, 0, 0, 0.18);
-        box-sizing: border-box;
+
+
+
       }}
       #chartcontrols .chart-control {{
-        width: 100%;
+        width: 60%;
         justify-content: flex-start;
         padding: 3px 8px;
         font-size: 12px;
-        line-height: 1.1;
+        line-height: 1;
       }}
       #chartcontrols #autoplay-toggle {{
         grid-column: 1 / -1;
@@ -2823,12 +2822,15 @@ def build_dashboard_html(
       }}
       .chart-history ul button {{
         all: unset;
+        display: block;
         width: 100%;
+        box-sizing: border-box;
         text-align: left;
         cursor: pointer;
         color: #33ccff;
         font-size: 11px;
         letter-spacing: 0.04em;
+        padding: 3px 8px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -3052,6 +3054,9 @@ def build_dashboard_html(
 
 
 def run_live_dashboard() -> None:
+    if TEST_MODE:
+        run_test_mode_dashboard()
+        return
     headers, latest_row, history_rows = fetch_sheet_data()
     if not headers:
         raise SystemExit("Sheet returned no data; set GOOGLE_SHEET_ID and DATA_RANGE.")
@@ -3074,6 +3079,7 @@ def run_live_dashboard() -> None:
             public_html = public_html.replace(temp_script_src, web_script_src, 1)
         public_copy.write_text(public_html, encoding="utf-8")
         logger.info("Wrote public copy to %s", public_copy)
+
         archive_dir = ARCHIVE_DIR
         archive_dir.mkdir(parents=True, exist_ok=True)
         archive_target = archive_dir / f"{generated_suffix}.html"
@@ -3103,6 +3109,127 @@ def run_live_dashboard() -> None:
             logger.info("Dashboard uploaded to Drive (file id %s); kept local copy at %s", file_id, target_path)
     except Exception as exc:
         logger.error("Failed to upload dashboard to Drive: %s", exc)
+
+
+def _find_index_in_headers(headers: List[str], keywords: Tuple[str, ...]) -> Optional[int]:
+    for idx, header in enumerate(headers):
+        if not header:
+            continue
+        value = str(header).strip().lower()
+        for keyword in keywords:
+            if keyword in value:
+                return idx
+    return None
+
+
+def _reconstruct_history_rows_from_payload(payload: dict) -> Tuple[List[str], List[str], List[List[str]]]:
+    headers = list(payload.get("headers") or [])
+    latest_row = list(payload.get("latestRow") or [])
+
+    chart_labels = list(payload.get("chartLabels") or [])
+    setpoint_series = list(payload.get("setpoint") or [])
+    actual_series = list(payload.get("actual") or [])
+    outside_series = list(payload.get("outside") or [])
+    fan_series = list(payload.get("fan") or [])
+    cooling_series = list(payload.get("cooling") or [])
+    condenser_minutes_series = list(payload.get("condenserMinutes") or [])
+
+    row_count = max(
+        len(chart_labels),
+        len(setpoint_series),
+        len(actual_series),
+        len(outside_series),
+        len(fan_series),
+        len(cooling_series),
+        len(condenser_minutes_series),
+    )
+    if row_count == 0:
+        raise SystemExit("Cached payload missing chart series; cannot reconstruct history rows.")
+
+    setpoint_idx = _find_index_in_headers(
+        headers, ("cooling set point", "cooling setpoint", "set point", "d")
+    )
+    actual_idx = _find_index_in_headers(headers, ("building temperature", "actual temperature", "temperature"))
+    outside_idx = _find_index_in_headers(headers, ("outside temperature", "outside temp", "exterior temperature", "outdoor temp"))
+    fan_idx = _find_index_in_headers(headers, ("fan", "fan setting", "fan mode"))
+    cooling_idx = _find_index_in_headers(headers, ("equipment status", "status", "equipment", "cooling status"))
+    condenser_idx = _find_index_in_headers(headers, ("condenser minutes", "condenser runtime"))
+
+    def _series_value(series: List, idx: int) -> str:
+        if idx < 0 or idx >= len(series):
+            return ""
+        value = series[idx]
+        if value is None:
+            return ""
+        return str(value)
+
+    def _fan_text(val: str) -> str:
+        t = (val or "").strip().upper()
+        if t == "A":
+            return "Auto"
+        if t == "C":
+            return "Circulate"
+        if t == "O":
+            return "On"
+        return val
+
+    def _cooling_text(val: str) -> str:
+        t = (val or "").strip()
+        if not t:
+            return ""
+        if t in ("1", "1.0", "true", "True"):
+            return "Cooling"
+        if t in ("0", "0.0", "false", "False"):
+            return "Idle"
+        try:
+            return "Cooling" if float(t) >= 1 else "Idle"
+        except ValueError:
+            return t
+
+    history_rows: List[List[str]] = []
+    for i in range(row_count):
+        row = [""] * len(headers)
+        # build_dashboard_html always uses row[0] for chart labels.
+        if row:
+            row[0] = _series_value(chart_labels, i)
+        if setpoint_idx is not None and setpoint_idx < len(row):
+            row[setpoint_idx] = _series_value(setpoint_series, i)
+        if actual_idx is not None and actual_idx < len(row):
+            row[actual_idx] = _series_value(actual_series, i)
+        if outside_idx is not None and outside_idx < len(row):
+            row[outside_idx] = _series_value(outside_series, i)
+        if fan_idx is not None and fan_idx < len(row):
+            row[fan_idx] = _fan_text(_series_value(fan_series, i))
+        if cooling_idx is not None and cooling_idx < len(row):
+            row[cooling_idx] = _cooling_text(_series_value(cooling_series, i))
+        if condenser_idx is not None and condenser_idx < len(row):
+            row[condenser_idx] = _series_value(condenser_minutes_series, i)
+        history_rows.append(row)
+
+    return headers, latest_row, history_rows
+
+
+def run_test_mode_dashboard() -> None:
+    # Test mode intentionally avoids spreadsheet access; it regenerates HTML from cached JSON.
+    public_dir = base_dir.parent / "Web"
+    payload_path = public_dir / "dashboard_data.json"
+    if not payload_path.exists():
+        raise SystemExit(f"test_mode expects cached payload at {payload_path}")
+    try:
+        payload = json.loads(payload_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise SystemExit(f"Invalid JSON in cached payload {payload_path}: {exc}") from exc
+
+    headers, latest_row, history_rows = _reconstruct_history_rows_from_payload(payload)
+    TEMP_DIR.mkdir(parents=True, exist_ok=True)
+    target_path = TEMP_DIR / "dashboard.html"
+    build_dashboard_html(headers, latest_row, history_rows, target_path)
+
+    public_dir.mkdir(parents=True, exist_ok=True)
+    public_copy = public_dir / "dashboard_public.html"
+    build_dashboard_html(headers, latest_row, history_rows, public_copy)
+    print(f"Dashboard generated (test_mode) at: {target_path.resolve()}")
+    logger.info("test_mode HTML generated from cached payload %s", payload_path)
 
 
 def _format_archive_label(slug: str) -> str:
