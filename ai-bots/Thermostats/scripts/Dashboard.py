@@ -1824,23 +1824,81 @@ def build_dashboard_html(
         width: 100%;
         max-width: 320px;
         display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
         min-height: 26px;
-        font-size: 14px;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
+        gap: 2px;
         opacity: 0.9;
         color: white;
-        margin: 1px auto px;
+        margin: 1px auto 0;
         padding: 1px 1px;
         border-radius: 12px;
-        white-space: nowrap;
+        white-space: normal;
         overflow: hidden;
         text-overflow: ellipsis;
         text-align: center;
-        line-height: .5;
+        line-height: 1.1;
         margin-top: 0;
+      }}
+      .transport-history-status .transport-history-month {{
+        width: 100%;
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        opacity: 0.9;
+      }}
+      .transport-history-status .transport-history-day {{
+        width: 100%;
+        font-size: 18px;
+        letter-spacing: 0.06em;
+        opacity: 0.98;
+      }}
+      .transport-step-modes {{
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0;
+        padding: 4px;
+        border-radius: 14px;
+        border: 1px solid rgba(255,255,255,0.12);
+        background: rgba(0,0,0,0.18);
+        backdrop-filter: blur(6px);
+      }}
+      .transport-step-modes label {{
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        user-select: none;
+        cursor: pointer;
+      }}
+      .transport-step-modes input[type="radio"] {{
+        position: absolute;
+        opacity: 0;
+      }}
+      .transport-step-modes span {{
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(255,255,255,0.10);
+        background: rgba(255,255,255,0.04);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: rgba(244, 246, 255, 0.82);
+        transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+      }}
+      .transport-step-modes input[type="radio"]:checked + span {{
+        background: rgba(255, 179, 71, 0.28);
+        border-color: rgba(255, 179, 71, 0.65);
+        color: rgba(255, 255, 255, 0.95);
+      }}
+      .transport-step-modes input[type="radio"]:focus-visible + span {{
+        outline: 2px solid rgba(255, 179, 71, 0.85);
+        outline-offset: 2px;
       }}
       .transport-deck {{
         width: 280px;
@@ -1869,12 +1927,47 @@ def build_dashboard_html(
         height: 100%;
         display: block;
       }}
-      .transport-deck .reel {{
+      .transport-deck .deck-cassette {{
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }}
+      .transport-deck.cassette-skin .deck-cassette {{
+        opacity: 1;
+      }}
+      .transport-deck.cassette-skin .deck-ui {{
+        opacity: 0;
+      }}
+      .transport-deck {{
+        --cassette-reel-scale: 1.05;
+        --cassette-reel-left-x: 20px;
+        --cassette-reel-left-y: -10px;
+        --cassette-reel-right-x: -20px;
+        --cassette-reel-right-y: -10px;
+        --cassette-image-scale: 1.05;
+        --cassette-image-x: 0px;
+        --cassette-image-y: 5px;
+      }}
+      .transport-deck .reel-wrap {{
+        transform-box: fill-box;
+        transform-origin: center;
+      }}
+      .transport-deck .reel-wrap.reel-left {{
+        transform: translate(var(--cassette-reel-left-x), var(--cassette-reel-left-y)) scale(var(--cassette-reel-scale));
+      }}
+      .transport-deck .reel-wrap.reel-right {{
+        transform: translate(var(--cassette-reel-right-x), var(--cassette-reel-right-y)) scale(var(--cassette-reel-scale));
+      }}
+      .transport-deck .reel-spin {{
         height: 200px;
         transform-box: fill-box;
         transform-origin: center;
       }}
-      .transport-deck.playing .reel {{
+      .transport-deck .deck-cassette {{
+        transform-box: fill-box;
+        transform-origin: center;
+        transform: translate(var(--cassette-image-x), var(--cassette-image-y)) scale(var(--cassette-image-scale));
+      }}
+      .transport-deck.playing .reel-spin {{
         animation: deck-spin 1.35s linear infinite;
       }}
       .transport-deck .led-dot {{
@@ -2639,28 +2732,47 @@ def build_dashboard_html(
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: 12px;
-        padding: 6px 10px;
+        gap: 0;
+        padding: 4px;
         border-radius: 14px;
         border: 1px solid rgba(255,255,255,0.12);
         background: rgba(0,0,0,0.18);
         backdrop-filter: blur(6px);
       }}
       body.tv-mode .tv-nav-overlay .tv-step-modes label {{
+        position: relative;
         display: inline-flex;
         align-items: center;
-        gap: 8px;
+        justify-content: center;
+        user-select: none;
+        cursor: pointer;
+      }}
+      body.tv-mode .tv-nav-overlay .tv-step-modes input[type="radio"] {{
+        position: absolute;
+        opacity: 0;
+      }}
+      body.tv-mode .tv-nav-overlay .tv-step-modes span {{
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(255,255,255,0.10);
+        background: rgba(255,255,255,0.04);
         font-size: 11px;
         letter-spacing: 0.08em;
         text-transform: uppercase;
         color: rgba(244, 246, 255, 0.82);
-        user-select: none;
-        cursor: pointer;
+        transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
       }}
-      body.tv-mode .tv-nav-overlay .tv-step-modes input[type="checkbox"] {{
-        width: 16px;
-        height: 16px;
-        accent-color: #ffb347;
+      body.tv-mode .tv-nav-overlay .tv-step-modes input[type="radio"]:checked + span {{
+        background: rgba(255, 179, 71, 0.28);
+        border-color: rgba(255, 179, 71, 0.65);
+        color: rgba(255, 255, 255, 0.95);
+      }}
+      body.tv-mode .tv-nav-overlay .tv-step-modes input[type="radio"]:focus-visible + span {{
+        outline: 2px solid rgba(255, 179, 71, 0.85);
+        outline-offset: 2px;
       }}
       body.tv-mode .tv-nav-overlay .tv-nav-row {{
         display: flex;
@@ -3052,7 +3164,7 @@ def build_dashboard_html(
             <div id="swap-controls" class="swap-controls" aria-hidden="false">
               <div id="swap-controls-label" class="swap-controls-inner" role="group" aria-label="Step through 24 hour chart">
                 <button type="button" id="chart-step-prev" class="swap-step-btn" aria-label="Previous point">&lt;&lt;</button>
-                <div class="swap-step-label">Step Time</div>
+                <div id="chart-step-value" class="swap-step-label">Step Time</div>
                 <button type="button" id="chart-step-next" class="swap-step-btn" aria-label="Next point">&gt;&gt;</button>
               </div>
             </div>
@@ -3077,7 +3189,7 @@ def build_dashboard_html(
           <div class="transport-stack">
 
       <div id="transport-panel" class="transport-panel">
-            <div id="transport-deck" class="transport-deck" aria-hidden="true">
+            <div id="transport-deck" class="transport-deck cassette-skin" aria-hidden="true">
               <svg viewBox="0 0 240 90" role="img" aria-label="Data deck">
               <defs>
                 <linearGradient id="deck-bg" x1="0" x2="0" y1="0" y2="1">
@@ -3093,50 +3205,68 @@ def build_dashboard_html(
                   <feDropShadow dx="0" dy="10" stdDeviation="7" flood-color="rgba(0,0,0,0.7)" />
                 </filter>
               </defs>
-              <!-- Depth/back plate to make the deck feel like a cassette -->
-              <rect x="6" y="6" width="234" height="84" rx="14" fill="rgba(0,0,0,0.55)" />
-              <!-- Main body -->
-              <rect x="3" y="3" width="234" height="84" rx="14" fill="url(#deck-bg)" stroke="url(#deck-edge)" stroke-width="2" filter="url(#deck-shadow)" />
-              <!-- Bottom lip -->
-              <rect x="10" y="74" width="220" height="10" rx="6" fill="rgba(0,0,0,0.28)" />
-              <!-- Window area -->
-              <rect x="12" y="14" width="216" height="40" rx="10" fill="rgba(255,255,255,0.07)" />
-              <rect x="14" y="16" width="212" height="36" rx="9" fill="rgba(0,0,0,0.30)" />
-
-              <g class="reel reel-left">
-                <circle cx="72" cy="34" r="14" fill="rgba(0,0,0,0.0)" stroke="rgba(0,0,0,0.55)" stroke-width="1.5" />
-                <circle cx="72" cy="34" r="10" fill="rgba(0,0,0,0.0)" stroke="rgba(255,255,255,0.14)" stroke-width="1" />
-                <circle cx="72" cy="34" r="2.5" fill="rgba(255,255,255,0.35)" />
-                <path d="M72 24 L74.8 32 L72 34 L69.2 32 Z" fill="rgba(255,255,255,0.35)" />
-                <path d="M62 34 L70 36.8 L72 34 L70 31.2 Z" fill="rgba(255,255,255,0.35)" />
-                <path d="M72 44 L74.8 36 L72 34 L69.2 36 Z" fill="rgba(255,255,255,0.35)" />
-                <path d="M82 34 L74 36.8 L72 34 L74 31.2 Z" fill="rgba(255,255,255,0.35)" />
+              <g class="deck-ui">
+                <!-- Depth/back plate to make the deck feel like a cassette -->
+                <rect x="6" y="6" width="234" height="84" rx="14" fill="rgba(0,0,0,0.55)" />
+                <!-- Main body -->
+                <rect x="3" y="3" width="234" height="84" rx="14" fill="url(#deck-bg)" stroke="url(#deck-edge)" stroke-width="2" filter="url(#deck-shadow)" />
+                <!-- Bottom lip -->
+                <rect x="10" y="74" width="220" height="10" rx="6" fill="rgba(0,0,0,0.28)" />
+                <!-- Window area -->
+                <rect x="12" y="14" width="216" height="40" rx="10" fill="rgba(255,255,255,0.07)" />
+                <rect x="14" y="16" width="212" height="36" rx="9" fill="rgba(0,0,0,0.30)" />
               </g>
 
-              <g class="reel reel-right">
-                <circle cx="168" cy="34" r="14" fill="rgba(0,0,0,0.0)" stroke="rgba(0,0,0,0.55)" stroke-width="1.5" />
-                <circle cx="168" cy="34" r="10" fill="rgba(0,0,0,0.0)" stroke="rgba(255,255,255,0.14)" stroke-width="1" />
-                <circle cx="168" cy="34" r="2.5" fill="rgba(255,255,255,0.35)" />
-                <path d="M168 24 L170.8 32 L168 34 L165.2 32 Z" fill="rgba(255,255,255,0.35)" />
-                <path d="M158 34 L166 36.8 L168 34 L166 31.2 Z" fill="rgba(255,255,255,0.35)" />
-                <path d="M168 44 L170.8 36 L168 34 L165.2 36 Z" fill="rgba(255,255,255,0.35)" />
-                <path d="M178 34 L170 36.8 L168 34 L170 31.2 Z" fill="rgba(255,255,255,0.35)" />
+              <!-- Cassette overlay (RGBA). Place behind reels so the animated reels are visible. -->
+              <image class="deck-cassette" href="../../../Images/Casette2.png" x="0" y="0" width="240" height="90" preserveAspectRatio="xMidYMid meet" />
+
+              <g class="reel-wrap reel-left" aria-hidden="true">
+                <g class="reel-spin">
+                  <circle cx="72" cy="34" r="14" fill="rgba(0,0,0,0.0)" stroke="rgba(0,0,0,0.55)" stroke-width="1.5" />
+                  <circle cx="72" cy="34" r="10" fill="rgba(0,0,0,0.0)" stroke="rgba(255,255,255,0.14)" stroke-width="1" />
+                  <circle cx="72" cy="34" r="2.5" fill="rgba(255,255,255,0.35)" />
+                  <path d="M72 24 L74.8 32 L72 34 L69.2 32 Z" fill="rgba(255,255,255,0.35)" />
+                  <path d="M62 34 L70 36.8 L72 34 L70 31.2 Z" fill="rgba(255,255,255,0.35)" />
+                  <path d="M72 44 L74.8 36 L72 34 L69.2 36 Z" fill="rgba(255,255,255,0.35)" />
+                  <path d="M82 34 L74 36.8 L72 34 L74 31.2 Z" fill="rgba(255,255,255,0.35)" />
+                </g>
               </g>
 
-              <path d="M86 34 C104 28, 136 28, 154 34" stroke="rgba(255,255,255,0.18)" stroke-width="2" fill="none" />
-              <path d="M86 38 C104 44, 136 44, 154 38" stroke="rgba(255,255,255,0.10)" stroke-width="2" fill="none" />
+              <g class="reel-wrap reel-right" aria-hidden="true">
+                <g class="reel-spin">
+                  <circle cx="168" cy="34" r="14" fill="rgba(0,0,0,0.0)" stroke="rgba(0,0,0,0.55)" stroke-width="1.5" />
+                  <circle cx="168" cy="34" r="10" fill="rgba(0,0,0,0.0)" stroke="rgba(255,255,255,0.14)" stroke-width="1" />
+                  <circle cx="168" cy="34" r="2.5" fill="rgba(255,255,255,0.35)" />
+                  <path d="M168 24 L170.8 32 L168 34 L165.2 32 Z" fill="rgba(255,255,255,0.35)" />
+                  <path d="M158 34 L166 36.8 L168 34 L166 31.2 Z" fill="rgba(255,255,255,0.35)" />
+                  <path d="M168 44 L170.8 36 L168 34 L165.2 36 Z" fill="rgba(255,255,255,0.35)" />
+                  <path d="M178 34 L170 36.8 L168 34 L170 31.2 Z" fill="rgba(255,255,255,0.35)" />
+                </g>
+              </g>
 
-              <text x="120" y="70" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="12" fill="rgba(244,246,255,0.72)" letter-spacing="0.18em">
-                DATA TRANSPORT
-              </text>
+              <g class="deck-ui">
+                <path d="M86 34 C104 28, 136 28, 154 34" stroke="rgba(255,255,255,0.18)" stroke-width="2" fill="none" />
+                <path d="M86 38 C104 44, 136 44, 154 38" stroke="rgba(255,255,255,0.10)" stroke-width="2" fill="none" />
+
+                <text x="120" y="70" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="12" fill="rgba(244,246,255,0.72)" letter-spacing="0.18em">
+                  DATA TRANSPORT
+                </text>
+              </g>
 
               <g class="deck-led">
-                <circle cx="220" cy="70" r="5.5" fill="rgba(0,0,0,0.35)" />
-                <circle class="led-dot" cx="220" cy="70" r="3.5" fill="rgba(255,102,102,0.25)" />
+                <circle cx="178" cy="50" r="5.5" fill="rgba(0,0,0,0.35)" />
+                <circle class="led-dot" cx="178" cy="50" r="3.5" fill="rgba(255,102,102,0.25)" />
               </g>
             </svg>
           </div>
-          <div id="transport-history-status" class="transport-history-status">Current</div>
+          <div id="transport-history-status" class="transport-history-status">
+            <div id="transport-history-month" class="transport-history-month">Current</div>
+            <div id="transport-history-day" class="transport-history-day"></div>
+          </div>
+          <div class="transport-step-modes" aria-label="Step size" role="radiogroup">
+            <label><input type="radio" name="transport-step-mode" id="transport-step-month" value="month" /><span>Month</span></label>
+            <label><input type="radio" name="transport-step-mode" id="transport-step-day" value="day" checked /><span>Day</span></label>
+          </div>
           <div id="transport-nav" class="transport-nav" role="group" aria-label="History navigation"></div>
         </div>
         </div>
@@ -3165,10 +3295,10 @@ def build_dashboard_html(
                 </div>
               </div>
                 <div class="tv-nav-overlay" aria-hidden="true">
-                  <div class="tv-step-modes" aria-label="Step size">
-                    <label><input type="checkbox" id="tv-step-month" />Month</label>
-                    <label><input type="checkbox" id="tv-step-day" checked />Day</label>
-                    <label><input type="checkbox" id="tv-step-hour" />Hour</label>
+                  <div class="tv-step-modes" aria-label="Step size" role="radiogroup">
+                    <label><input type="radio" name="tv-step-mode" id="tv-step-month" value="month" /><span>Month</span></label>
+                    <label><input type="radio" name="tv-step-mode" id="tv-step-day" value="day" checked /><span>Day</span></label>
+                    <label><input type="radio" name="tv-step-mode" id="tv-step-hour" value="hour" /><span>Hour</span></label>
                   </div>
                   <div class="tv-nav-row" aria-hidden="true">
                     <button type="button" id="tv-archive-prev" class="tv-nav-btn" aria-label="Previous">&lt;&lt;</button>

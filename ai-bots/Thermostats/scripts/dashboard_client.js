@@ -37,6 +37,10 @@
   const chartHistoryToggle = document.getElementById("chart-history-toggle");
   const chartHistoryStatus = document.getElementById("chart-history-status");
   const transportHistoryStatus = document.getElementById("transport-history-status");
+  const transportHistoryMonth = document.getElementById("transport-history-month");
+  const transportHistoryDay = document.getElementById("transport-history-day");
+  const transportStepMonth = document.getElementById("transport-step-month");
+  const transportStepDay = document.getElementById("transport-step-day");
   const tvControls = document.getElementById("tv-controls");
   const tvControlsLabel = document.getElementById("tv-controls-label");
   const tvControlsSwap = document.getElementById("tv-controls-swap");
@@ -44,6 +48,7 @@
   const tvArchiveNextButton = document.getElementById("tv-archive-next");
   const chartStepPrevButton = document.getElementById("chart-step-prev");
   const chartStepNextButton = document.getElementById("chart-step-next");
+  const chartStepValueEl = document.getElementById("chart-step-value");
   const tvHistorySlot = document.getElementById("tv-history-slot");
   const tvFileSelect = document.getElementById("tv-file-select");
   const tvHistoryStatus = document.getElementById("tv-history-status");
@@ -148,6 +153,92 @@
     return "day";
   })(); // month | day | hour
 
+  let transportStepMode = (() => {
+    if (transportStepMonth?.checked) return "month";
+    return "day";
+  })(); // month | day
+
+  // When stepping across the first/last point, we can load the adjacent day and
+  // re-pin to the opposite edge to create a continuous "scrolling" feel.
+  let pendingPinnedIndexAfterArchiveLoad = null;
+
+  const HOLD_REPEAT_DELAY_MS = 2000;
+  const HOLD_REPEAT_INTERVAL_MS = 160;
+  const holdRepeatSuppressClickUntil = new WeakMap();
+  const holdRepeatTimers = new WeakMap(); // el -> { timeoutId, intervalId }
+
+  const clearHoldRepeatTimers = (el) => {
+    const entry = holdRepeatTimers.get(el);
+    if (!entry) {
+      return;
+    }
+    if (entry.timeoutId) {
+      clearTimeout(entry.timeoutId);
+    }
+    if (entry.intervalId) {
+      clearInterval(entry.intervalId);
+    }
+    holdRepeatTimers.delete(el);
+  };
+
+  const bindHoldRepeat = (el, action) => {
+    if (!el || typeof action !== "function" || el.dataset.boundHoldRepeat === "1") {
+      return;
+    }
+    el.dataset.boundHoldRepeat = "1";
+
+    const stop = () => clearHoldRepeatTimers(el);
+
+    const start = (event) => {
+      // Only primary button for mouse; always allow touch/pen.
+      if (event && event.type === "pointerdown") {
+        const btn = Number(event.button);
+        if (Number.isFinite(btn) && btn !== 0) {
+          return;
+        }
+      }
+      stop();
+      // Fire immediately, then begin repeating after a delay.
+      action();
+      holdRepeatSuppressClickUntil.set(el, Date.now() + 500);
+      const timeoutId = setTimeout(() => {
+        const intervalId = setInterval(() => action(), HOLD_REPEAT_INTERVAL_MS);
+        const current = holdRepeatTimers.get(el) || {};
+        holdRepeatTimers.set(el, { ...current, intervalId });
+      }, HOLD_REPEAT_DELAY_MS);
+      holdRepeatTimers.set(el, { timeoutId, intervalId: null });
+    };
+
+    el.addEventListener("pointerdown", (event) => {
+      try {
+        el.setPointerCapture?.(event.pointerId);
+      } catch (err) {
+        // ignore
+      }
+      start(event);
+    });
+    el.addEventListener("pointerup", stop);
+    el.addEventListener("pointercancel", stop);
+    el.addEventListener("pointerleave", stop);
+    window.addEventListener("blur", stop);
+
+    // Keyboard hold on focused button (Space/Enter).
+    el.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") {
+        return;
+      }
+      event.preventDefault();
+      start(event);
+    });
+    el.addEventListener("keyup", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") {
+        return;
+      }
+      event.preventDefault();
+      stop();
+    });
+  };
+
   const setTvStepMode = (mode) => {
     const normalized = mode === "month" || mode === "hour" ? mode : "day";
     tvStepMode = normalized;
@@ -158,6 +249,15 @@
     // Refresh the displayed value between the arrows.
     updateHistoryStatus(currentArchiveSlug || dashboardData.generatedDateSlug || "");
     updateTimestampFromSelection();
+  };
+
+  const setTransportStepMode = (mode) => {
+    const normalized = mode === "month" ? "month" : "day";
+    transportStepMode = normalized;
+    if (transportStepMonth) transportStepMonth.checked = normalized === "month";
+    if (transportStepDay) transportStepDay.checked = normalized === "day";
+    syncArchiveNavButtons();
+    updateHistoryStatus(currentArchiveSlug || dashboardData.generatedDateSlug || "");
   };
 
   const STORAGE_KEY = "thermostatDashboard.ui.v1";
@@ -261,43 +361,74 @@
     }
     const slugs = getSortedArchiveSlugs();
     const idx = getCurrentArchiveIndex(slugs);
-    let hasPrev = idx > 0;
-    let hasNext = idx >= 0 && idx < slugs.length - 1;
+    const baseHasPrevDay = idx > 0;
+    const baseHasNextDay = idx >= 0 && idx < slugs.length - 1;
 
-    if (tvStepMode === "hour") {
-      const labels = getChartLabels();
-      const length = Array.isArray(labels) ? labels.length : 0;
-      const currentPoint =
-        clampIndex(pinnedPointIndex, length) ?? clampIndex(hoverPointIndex, length);
-      hasPrev = currentPoint !== null && currentPoint > 0;
-      hasNext = currentPoint !== null && currentPoint < length - 1;
-    } else if (tvStepMode === "month") {
-      const currentSlug = currentArchiveSlug || dashboardData.generatedDateSlug || "";
-      const currentDate = parseSlugDateUtc(currentSlug);
-      if (currentDate) {
-        const currentMonthIndex =
-          currentDate.getUTCFullYear() * 12 + currentDate.getUTCMonth();
-        const availableMonthIndexes = new Set();
-        getAvailableArchiveSlugs().forEach((slug) => {
-          const d = parseSlugDateUtc(slug);
-          if (!d) return;
-          availableMonthIndexes.add(d.getUTCFullYear() * 12 + d.getUTCMonth());
-        });
-        hasPrev = availableMonthIndexes.has(currentMonthIndex - 1);
-        hasNext = availableMonthIndexes.has(currentMonthIndex + 1);
+    const computeMonthAvailability = (slug) => {
+      const currentDate = parseSlugDateUtc(slug);
+      if (!currentDate) {
+        return { hasPrev: baseHasPrevDay, hasNext: baseHasNextDay };
       }
-    }
+      const currentMonthIndex = currentDate.getUTCFullYear() * 12 + currentDate.getUTCMonth();
+      const availableMonthIndexes = new Set();
+      getAvailableArchiveSlugs().forEach((availableSlug) => {
+        const d = parseSlugDateUtc(availableSlug);
+        if (!d) return;
+        availableMonthIndexes.add(d.getUTCFullYear() * 12 + d.getUTCMonth());
+      });
+      return {
+        hasPrev: availableMonthIndexes.has(currentMonthIndex - 1),
+        hasNext: availableMonthIndexes.has(currentMonthIndex + 1),
+      };
+    };
+
+    const tvAvailability = (() => {
+      if (!hasTvNav) {
+        return { hasPrev: baseHasPrevDay, hasNext: baseHasNextDay };
+      }
+      if (tvStepMode === "hour") {
+        const labels = getChartLabels();
+        const length = Array.isArray(labels) ? labels.length : 0;
+        const currentPoint =
+          clampIndex(pinnedPointIndex, length) ?? clampIndex(hoverPointIndex, length);
+        if (currentPoint === null || length <= 0) {
+          return { hasPrev: baseHasPrevDay, hasNext: baseHasNextDay };
+        }
+        return {
+          hasPrev: currentPoint > 0 || (currentPoint <= 0 && baseHasPrevDay),
+          hasNext: currentPoint < length - 1 || (currentPoint >= length - 1 && baseHasNextDay),
+        };
+      }
+      if (tvStepMode === "month") {
+        const currentSlug = currentArchiveSlug || dashboardData.generatedDateSlug || "";
+        return computeMonthAvailability(currentSlug);
+      }
+      return { hasPrev: baseHasPrevDay, hasNext: baseHasNextDay };
+    })();
+
+    const inlineAvailability = (() => {
+      if (!hasInlineNav) {
+        return { hasPrev: baseHasPrevDay, hasNext: baseHasNextDay };
+      }
+      const stepModeForInline = transportStepMode || "day";
+      if (stepModeForInline === "month") {
+        const currentSlug = currentArchiveSlug || dashboardData.generatedDateSlug || "";
+        return computeMonthAvailability(currentSlug);
+      }
+      return { hasPrev: baseHasPrevDay, hasNext: baseHasNextDay };
+    })();
+
     if (hasInlineNav) {
-      prevDayButtonEl.disabled = !hasPrev;
-      nextDayButtonEl.disabled = !hasNext;
-      prevDayButtonEl.style.opacity = hasPrev ? "1" : "0.5";
-      nextDayButtonEl.style.opacity = hasNext ? "1" : "0.5";
+      prevDayButtonEl.disabled = !inlineAvailability.hasPrev;
+      nextDayButtonEl.disabled = !inlineAvailability.hasNext;
+      prevDayButtonEl.style.opacity = inlineAvailability.hasPrev ? "1" : "0.5";
+      nextDayButtonEl.style.opacity = inlineAvailability.hasNext ? "1" : "0.5";
     }
     if (hasTvNav) {
-      tvArchivePrevButton.disabled = !hasPrev;
-      tvArchiveNextButton.disabled = !hasNext;
-      tvArchivePrevButton.style.opacity = hasPrev ? "1" : "0.5";
-      tvArchiveNextButton.style.opacity = hasNext ? "1" : "0.5";
+      tvArchivePrevButton.disabled = !tvAvailability.hasPrev;
+      tvArchiveNextButton.disabled = !tvAvailability.hasNext;
+      tvArchivePrevButton.style.opacity = tvAvailability.hasPrev ? "1" : "0.5";
+      tvArchiveNextButton.style.opacity = tvAvailability.hasNext ? "1" : "0.5";
     }
   };
 
@@ -318,6 +449,29 @@
     updateHistoryStatus(slug);
     currentArchiveSlug = slug;
     loadDashboardData(slug);
+  };
+
+  const navigateArchiveByDaysWithPinnedIndex = (delta, pinIndexAfterLoad) => {
+    const slugs = getSortedArchiveSlugs();
+    const idx = getCurrentArchiveIndex(slugs);
+    if (idx < 0) {
+      return false;
+    }
+    const nextIdx = idx + Number(delta || 0);
+    if (nextIdx < 0 || nextIdx >= slugs.length) {
+      return false;
+    }
+    const slug = slugs[nextIdx];
+    if (!slug) {
+      return false;
+    }
+    pendingPinnedIndexAfterArchiveLoad = Number.isFinite(Number(pinIndexAfterLoad))
+      ? Math.floor(Number(pinIndexAfterLoad))
+      : null;
+    updateHistoryStatus(slug);
+    currentArchiveSlug = slug;
+    loadDashboardData(slug);
+    return true;
   };
 
   const navigateArchiveByMonths = (delta) => {
@@ -961,7 +1115,7 @@
 
     if (tvArchivePrevButton && tvArchivePrevButton.dataset.boundClick !== "1") {
       tvArchivePrevButton.dataset.boundClick = "1";
-      tvArchivePrevButton.addEventListener("click", () => {
+      const action = () => {
         if (tvModeActive) {
           showTvControlsHint(6000);
         }
@@ -972,11 +1126,20 @@
         } else {
           navigateArchiveByDays(-1);
         }
+      };
+      tvArchivePrevButton.addEventListener("click", (event) => {
+        const until = holdRepeatSuppressClickUntil.get(tvArchivePrevButton) || 0;
+        if (until > Date.now()) {
+          event.preventDefault();
+          return;
+        }
+        action();
       });
+      bindHoldRepeat(tvArchivePrevButton, action);
     }
     if (tvArchiveNextButton && tvArchiveNextButton.dataset.boundClick !== "1") {
       tvArchiveNextButton.dataset.boundClick = "1";
-      tvArchiveNextButton.addEventListener("click", () => {
+      const action = () => {
         if (tvModeActive) {
           showTvControlsHint(6000);
         }
@@ -987,7 +1150,16 @@
         } else {
           navigateArchiveByDays(1);
         }
+      };
+      tvArchiveNextButton.addEventListener("click", (event) => {
+        const until = holdRepeatSuppressClickUntil.get(tvArchiveNextButton) || 0;
+        if (until > Date.now()) {
+          event.preventDefault();
+          return;
+        }
+        action();
       });
+      bindHoldRepeat(tvArchiveNextButton, action);
     }
   };
 
@@ -2233,11 +2405,29 @@
 
   if (chartStepPrevButton && chartStepPrevButton.dataset.boundClick !== "1") {
     chartStepPrevButton.dataset.boundClick = "1";
-    chartStepPrevButton.addEventListener("click", () => stepPinnedPoint(-1));
+    const action = () => stepPinnedPoint(-1);
+    chartStepPrevButton.addEventListener("click", (event) => {
+      const until = holdRepeatSuppressClickUntil.get(chartStepPrevButton) || 0;
+      if (until > Date.now()) {
+        event.preventDefault();
+        return;
+      }
+      action();
+    });
+    bindHoldRepeat(chartStepPrevButton, action);
   }
   if (chartStepNextButton && chartStepNextButton.dataset.boundClick !== "1") {
     chartStepNextButton.dataset.boundClick = "1";
-    chartStepNextButton.addEventListener("click", () => stepPinnedPoint(1));
+    const action = () => stepPinnedPoint(1);
+    chartStepNextButton.addEventListener("click", (event) => {
+      const until = holdRepeatSuppressClickUntil.get(chartStepNextButton) || 0;
+      if (until > Date.now()) {
+        event.preventDefault();
+        return;
+      }
+      action();
+    });
+    bindHoldRepeat(chartStepNextButton, action);
   }
   const bindTvStepMode = (el, mode) => {
     if (!el || el.dataset.boundChange === "1") {
@@ -2255,6 +2445,22 @@
   bindTvStepMode(tvStepMonth, "month");
   bindTvStepMode(tvStepDay, "day");
   bindTvStepMode(tvStepHour, "hour");
+
+  const bindTransportStepMode = (el, mode) => {
+    if (!el || el.dataset.boundChange === "1") {
+      return;
+    }
+    el.dataset.boundChange = "1";
+    el.addEventListener("change", () => {
+      if (el.checked) {
+        setTransportStepMode(mode);
+      } else if (transportStepMode === mode) {
+        setTransportStepMode("day");
+      }
+    });
+  };
+  bindTransportStepMode(transportStepMonth, "month");
+  bindTransportStepMode(transportStepDay, "day");
 
   // Re-render all front-panel cards when the data changes (actual, fan, condenser, etc.).
   const updateMetricCards = () => {
@@ -2731,6 +2937,27 @@
     if (transportHistoryStatus) {
       transportHistoryStatus.textContent = mainDisplay;
     }
+    if (transportHistoryMonth || transportHistoryDay) {
+      const trimmed = String(text || "").trim();
+      const match = trimmed.match(/^([A-Za-z]{3,9})\s+(\d{1,2})(?:st|nd|rd|th)?(?:,\s*\d{4})?$/);
+      if (match) {
+        const month = String(match[1] || "").slice(0, 3).toUpperCase();
+        const day = String(match[2] || "");
+        if (transportHistoryMonth) {
+          transportHistoryMonth.textContent = month;
+        }
+        if (transportHistoryDay) {
+          transportHistoryDay.textContent = day;
+        }
+      } else {
+        if (transportHistoryMonth) {
+          transportHistoryMonth.textContent = compactMonthDay(trimmed) || "Current";
+        }
+        if (transportHistoryDay) {
+          transportHistoryDay.textContent = "";
+        }
+      }
+    }
     if (tvHistoryMonth || tvHistoryDay) {
       const trimmed = String(text || "").trim();
       const match = trimmed.match(/^([A-Za-z]{3,9})\s+(\d{1,2})(?:st|nd|rd|th)?(?:,\s*\d{4})?$/);
@@ -2778,7 +3005,11 @@
     transportPanel.addEventListener("click", (event) => {
       // Don't interfere with actual navigation controls inside the transport panel.
       const target = event.target;
-      if (target && target.closest && target.closest("button,select,a,input,textarea")) {
+      if (
+        target &&
+        target.closest &&
+        target.closest("button,select,a,input,textarea,label,.transport-step-modes")
+      ) {
         return;
       }
       event.preventDefault();
@@ -2808,11 +3039,126 @@
     const length = Array.isArray(labels) ? labels.length : 0;
     const hasPinned = clampIndex(pinnedPointIndex, length) !== null;
     const hasHover = clampIndex(hoverPointIndex, length) !== null;
+    const updateStepValue = (labelValue, idxHint = null) => {
+      if (!chartStepValueEl) {
+        return;
+      }
+      const raw = String(labelValue || "").trim();
+      if (!raw) {
+        chartStepValueEl.textContent = "Step Time";
+        return;
+      }
+
+      const formatTimeFromParsed = (parsed, includeMinutes) => {
+        if (!parsed) {
+          return "";
+        }
+        const hour24 = Number(parsed.hour24);
+        const minute = Number(parsed.minute);
+        if (!Number.isFinite(hour24) || hour24 < 0 || hour24 > 23) {
+          return "";
+        }
+        const ap = hour24 < 12 ? "AM" : "PM";
+        let hour12 = hour24 % 12;
+        if (hour12 === 0) {
+          hour12 = 12;
+        }
+        if (!includeMinutes || !Number.isFinite(minute)) {
+          return `${hour12} ${ap}`;
+        }
+        const mm = Math.max(0, Math.min(59, Math.floor(minute)));
+        return `${hour12}:${String(mm).padStart(2, "0")} ${ap}`;
+      };
+
+      const resolveYear = () => {
+        const yearMatch = raw.match(/\b(20\d{2})\b/);
+        if (yearMatch) {
+          const parsed = Number(yearMatch[1]);
+          return Number.isFinite(parsed) ? parsed : null;
+        }
+        const currentSlug = currentArchiveSlug || dashboardData.generatedDateSlug || "";
+        const d = parseSlugDateUtc(currentSlug);
+        return d ? d.getUTCFullYear() : null;
+      };
+
+      const resolveHourText = () => {
+        const includeMinutes = /:\s*\d{2}\b/.test(raw);
+        const parsed = parseLabelTime(raw);
+        if (parsed) {
+          return formatTimeFromParsed(parsed, includeMinutes);
+        }
+        const hour24 = roundedUpHour24FromLabel(raw);
+        if (hour24 !== null) {
+          return formatHourOnly(hour24);
+        }
+        const idxNumeric = Number(idxHint);
+        if (Number.isFinite(idxNumeric)) {
+          const hourFromIdx = Math.max(0, Math.min(23, Math.floor(idxNumeric)));
+          return formatHourOnly(hourFromIdx);
+        }
+        return "";
+      };
+
+      const resolveDateParts = () => {
+        const year = resolveYear();
+
+        // Prefer explicit YYYY-MM-DD.
+        const iso = raw.match(/\b(20\d{2})-(\d{2})-(\d{2})\b/);
+        if (iso) {
+          const mm = Number(iso[2]);
+          const dd = Number(iso[3]);
+          const monthName =
+            Number.isFinite(mm) && mm >= 1 && mm <= 12 ? MONTH_LABELS_SHORT[mm - 1].toUpperCase() : "";
+          const dayText = Number.isFinite(dd) ? String(dd).padStart(2, "0") : "";
+          const yearText = String(iso[1]);
+          return { monthName, dayText, yearText };
+        }
+
+        // Month name + day (optional weekday).
+        const nameMatch = raw.match(
+          /\b([A-Za-z]{3,9})\s+(\d{1,2})(?:st|nd|rd|th)?(?:,\s*(20\d{2}))?\b/
+        );
+        if (nameMatch) {
+          const monthName = String(nameMatch[1] || "").slice(0, 3).toUpperCase();
+          const dd = Number(nameMatch[2]);
+          const dayText = Number.isFinite(dd) ? String(dd).padStart(2, "0") : "";
+          const yearText = nameMatch[3] ? String(nameMatch[3]) : year ? String(year) : "";
+          return { monthName, dayText, yearText };
+        }
+
+        // Numeric month/day.
+        const mdMatch = raw.match(/\b(\d{1,2})[\/-](\d{1,2})\b/);
+        if (mdMatch) {
+          const mm = Number(mdMatch[1]);
+          const dd = Number(mdMatch[2]);
+          const monthName =
+            Number.isFinite(mm) && mm >= 1 && mm <= 12 ? MONTH_LABELS_SHORT[mm - 1].toUpperCase() : "";
+          const dayText = Number.isFinite(dd) ? String(dd).padStart(2, "0") : "";
+          const yearText = year ? String(year) : "";
+          return { monthName, dayText, yearText };
+        }
+
+        return null;
+      };
+
+      const hourText = resolveHourText();
+      const dateParts = resolveDateParts();
+      if (dateParts && (dateParts.monthName || dateParts.dayText || dateParts.yearText)) {
+        const dateText = `${dateParts.monthName} ${dateParts.dayText} ${dateParts.yearText}`.trim();
+        chartStepValueEl.textContent = hourText ? `${hourText}, ${dateText}` : dateText;
+        return;
+      }
+
+      // Fall back to something readable if we can't parse date components.
+      chartStepValueEl.textContent = hourText ? `${hourText}, ${raw}` : raw;
+    };
+
     if (hasPinned || hasHover) {
       const idx = getSelectedIndex();
       const label = valueAt(labels, idx, null);
       if (label) {
         updateTimestampDisplay(String(label));
+        updateStepValue(label, idx);
         if (tvHistoryHour) {
           const hour24 = roundedUpHour24FromLabel(label);
           tvHistoryHour.textContent = hour24 === null ? "" : formatHourOnly(hour24);
@@ -2824,6 +3170,9 @@
         return;
       }
     }
+    // No selection: show default (latest) timepoint for the step label.
+    const defaultIdx = getDefaultSelectedIndex();
+    updateStepValue(valueAt(labels, defaultIdx, ""), defaultIdx);
     const fallback =
       dashboardData.generatedTimestamp ||
       (currentArchiveSlug ? archiveLabelMap.get(currentArchiveSlug) : null) ||
@@ -3050,7 +3399,22 @@
       prevDayButtonEl.textContent = "<<";
       prevDayButtonEl.style.marginLeft = "10px";
       prevDayButtonEl.title = "Previous day";
-      prevDayButtonEl.addEventListener("click", () => navigateArchiveByDays(-1));
+      const action = () => {
+        if (transportStepMode === "month") {
+          navigateArchiveByMonths(-1);
+        } else {
+          navigateArchiveByDays(-1);
+        }
+      };
+      prevDayButtonEl.addEventListener("click", (event) => {
+        const until = holdRepeatSuppressClickUntil.get(prevDayButtonEl) || 0;
+        if (until > Date.now()) {
+          event.preventDefault();
+          return;
+        }
+        action();
+      });
+      bindHoldRepeat(prevDayButtonEl, action);
       prevDayButtonEl.style.marginLeft = "0";
       appendNavControl(prevDayButtonEl);
     }
@@ -3063,7 +3427,22 @@
       nextDayButtonEl.textContent = ">>";
       nextDayButtonEl.style.marginLeft = "6px";
       nextDayButtonEl.title = "Next day";
-      nextDayButtonEl.addEventListener("click", () => navigateArchiveByDays(1));
+      const action = () => {
+        if (transportStepMode === "month") {
+          navigateArchiveByMonths(1);
+        } else {
+          navigateArchiveByDays(1);
+        }
+      };
+      nextDayButtonEl.addEventListener("click", (event) => {
+        const until = holdRepeatSuppressClickUntil.get(nextDayButtonEl) || 0;
+        if (until > Date.now()) {
+          event.preventDefault();
+          return;
+        }
+        action();
+      });
+      bindHoldRepeat(nextDayButtonEl, action);
       nextDayButtonEl.style.marginLeft = "0";
       appendNavControl(nextDayButtonEl);
     }
@@ -3082,11 +3461,28 @@
       length
     );
     const hasData = length > 0;
+
+    const hasAdjacentDay = (delta) => {
+      const slugs = getSortedArchiveSlugs();
+      const idx = getCurrentArchiveIndex(slugs);
+      if (idx < 0) {
+        return false;
+      }
+      const nextIdx = idx + Number(delta || 0);
+      return nextIdx >= 0 && nextIdx < slugs.length && Boolean(slugs[nextIdx]);
+    };
+
     if (chartStepPrevButton) {
-      chartStepPrevButton.disabled = !hasData || current === null || current <= 0;
+      // Keep enabled at the left edge if a previous day exists so we can "scroll" across days.
+      const canStepPrevPoint = hasData && current !== null && current > 0;
+      const canWrapPrevDay = hasData && current !== null && current <= 0 && hasAdjacentDay(-1);
+      chartStepPrevButton.disabled = !(canStepPrevPoint || canWrapPrevDay);
     }
     if (chartStepNextButton) {
-      chartStepNextButton.disabled = !hasData || current === null || current >= length - 1;
+      // Keep enabled at the right edge if a next day exists so we can "scroll" across days.
+      const canStepNextPoint = hasData && current !== null && current < length - 1;
+      const canWrapNextDay = hasData && current !== null && current >= length - 1 && hasAdjacentDay(1);
+      chartStepNextButton.disabled = !(canStepNextPoint || canWrapNextDay);
     }
   };
 
@@ -3100,7 +3496,22 @@
       clampIndex(pinnedPointIndex, length) ??
       clampIndex(hoverPointIndex, length) ??
       (length - 1);
-    const next = Math.max(0, Math.min(length - 1, base + delta));
+    const desired = base + Number(delta || 0);
+    if (desired < 0) {
+      const moved = navigateArchiveByDaysWithPinnedIndex(-1, length - 1);
+      if (moved) {
+        suppressHoverUntilLeave();
+      }
+      return;
+    }
+    if (desired >= length) {
+      const moved = navigateArchiveByDaysWithPinnedIndex(1, 0);
+      if (moved) {
+        suppressHoverUntilLeave();
+      }
+      return;
+    }
+    const next = Math.max(0, Math.min(length - 1, desired));
     setSelectedPoint(next, next, true);
     suppressHoverUntilLeave();
     syncStepButtons();
@@ -3495,12 +3906,19 @@
     }
     pinnedPointIndex = clampIndex(pinnedPointIndex, length);
     hoverPointIndex = pinnedPointIndex;
+    if (pendingPinnedIndexAfterArchiveLoad !== null) {
+      pinnedPointIndex = clampIndex(pendingPinnedIndexAfterArchiveLoad, length);
+      hoverPointIndex = pinnedPointIndex;
+      pendingPinnedIndexAfterArchiveLoad = null;
+      saveUiState();
+    }
     const isArchiveLoad = Boolean(slugHint);
     renderArchiveList();
     updateHistoryStatus(currentArchiveSlug);
     syncArchiveNavButtons();
     updateTimestampFromSelection();
     updateSelectionIndicator();
+    syncStepButtons();
     bindUsageSlotControls();
     bindChartSwapControls();
     renderUsageSlotChart();
