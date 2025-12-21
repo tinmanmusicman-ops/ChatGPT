@@ -2631,58 +2631,51 @@ def build_dashboard_html(
         pointer-events: auto;
         position: fixed;
         left: 50%;
-        bottom: 22px;
+        bottom: 34px;
         transform: translateX(-50%);
         z-index: 10070;
       }}
-      body.tv-mode .tv-nav-overlay .tv-nav-date {{
-        display: flex;
-        flex-direction: column;
+      body.tv-mode .tv-nav-overlay .tv-step-modes {{
+        display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: 2px;
-        text-align: center;
-        user-select: none;
+        gap: 12px;
+        padding: 6px 10px;
+        border-radius: 14px;
+        border: 1px solid rgba(255,255,255,0.12);
+        background: rgba(0,0,0,0.18);
+        backdrop-filter: blur(6px);
       }}
-      body.tv-mode .tv-nav-overlay .tv-nav-autoscroll {{
+      body.tv-mode .tv-nav-overlay .tv-step-modes label {{
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        margin-top: 4px;
         font-size: 11px;
         letter-spacing: 0.08em;
         text-transform: uppercase;
-        color: rgba(244, 246, 255, 0.78);
+        color: rgba(244, 246, 255, 0.82);
         user-select: none;
+        cursor: pointer;
       }}
-      body.tv-mode .tv-nav-overlay .tv-nav-autoscroll input[type="checkbox"] {{
+      body.tv-mode .tv-nav-overlay .tv-step-modes input[type="checkbox"] {{
         width: 16px;
         height: 16px;
         accent-color: #ffb347;
       }}
-      body.tv-mode .tv-nav-overlay .tv-nav-month {{
-        font-size: 11px;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        opacity: 0.9;
-        color: rgba(244, 246, 255, 0.9);
-      }}
-      body.tv-mode .tv-nav-overlay .tv-nav-day {{
-        font-size: 18px;
-        letter-spacing: 0.06em;
-        opacity: 0.95;
-        color: rgba(244, 246, 255, 0.95);
-      }}
-      body.tv-mode .tv-nav-overlay .tv-nav-hour {{
-        font-size: 14px;
-        letter-spacing: 0.08em;
-        color: #ffb347;
-      }}
-      body.tv-mode .tv-nav-overlay .tv-nav-buttons {{
+      body.tv-mode .tv-nav-overlay .tv-nav-row {{
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 10px;
+        gap: 28px;
+      }}
+      body.tv-mode .tv-nav-overlay .tv-step-value {{
+        min-width: 140px;
+        text-align: center;
+        font-size: 22px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: rgba(244, 246, 255, 0.92);
+        user-select: none;
       }}
       .tv-nav-btn {{
         flex: 0 0 auto;
@@ -3172,18 +3165,15 @@ def build_dashboard_html(
                 </div>
               </div>
                 <div class="tv-nav-overlay" aria-hidden="true">
-                  <div class="tv-nav-date" aria-hidden="true">
-                    <div id="tv-nav-month" class="tv-nav-month"></div>
-                    <div id="tv-nav-day" class="tv-nav-day"></div>
-                    <div id="tv-nav-hour" class="tv-nav-hour"></div>
-                    <label class="tv-nav-autoscroll">
-                      <input type="checkbox" id="tv-nav-autoscroll" />
-                      Auto Scroll
-                    </label>
+                  <div class="tv-step-modes" aria-label="Step size">
+                    <label><input type="checkbox" id="tv-step-month" />Month</label>
+                    <label><input type="checkbox" id="tv-step-day" checked />Day</label>
+                    <label><input type="checkbox" id="tv-step-hour" />Hour</label>
                   </div>
-                  <div class="tv-nav-buttons">
-                    <button type="button" id="tv-archive-prev" class="tv-nav-btn" aria-label="Previous day">&lt;&lt;</button>
-                    <button type="button" id="tv-archive-next" class="tv-nav-btn" aria-label="Next day">&gt;&gt;</button>
+                  <div class="tv-nav-row" aria-hidden="true">
+                    <button type="button" id="tv-archive-prev" class="tv-nav-btn" aria-label="Previous">&lt;&lt;</button>
+                    <div id="tv-step-value" class="tv-step-value"></div>
+                    <button type="button" id="tv-archive-next" class="tv-nav-btn" aria-label="Next">&gt;&gt;</button>
                   </div>
                 </div>
               <div class="tv-chartcontrols-overlay" aria-label="TV chart controls">

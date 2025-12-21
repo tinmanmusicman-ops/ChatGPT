@@ -50,10 +50,10 @@
   const tvHistoryMonth = document.getElementById("tv-history-month");
   const tvHistoryDay = document.getElementById("tv-history-day");
   const tvHistoryHour = document.getElementById("tv-history-hour");
-  const tvNavMonth = document.getElementById("tv-nav-month");
-  const tvNavDay = document.getElementById("tv-nav-day");
-  const tvNavHour = document.getElementById("tv-nav-hour");
-  const tvNavAutoscroll = document.getElementById("tv-nav-autoscroll");
+  const tvStepMonth = document.getElementById("tv-step-month");
+  const tvStepDay = document.getElementById("tv-step-day");
+  const tvStepHour = document.getElementById("tv-step-hour");
+  const tvStepValue = document.getElementById("tv-step-value");
   const isChartHistoryUiHidden = () =>
     document.body && document.body.classList.contains("hide-chart-history");
   const chartArea = document.getElementById("history");
@@ -142,15 +142,22 @@
   const usagePipEl = document.getElementById("usage-pip");
   let usageRangeKey = "year"; // 7d | month | year
 
-  let tvNavAutoscrollTimer = null;
-  const stopTvNavAutoscroll = () => {
-    if (tvNavAutoscrollTimer) {
-      clearInterval(tvNavAutoscrollTimer);
-      tvNavAutoscrollTimer = null;
-    }
-    if (tvNavAutoscroll) {
-      tvNavAutoscroll.checked = false;
-    }
+  let tvStepMode = (() => {
+    if (tvStepMonth?.checked) return "month";
+    if (tvStepHour?.checked) return "hour";
+    return "day";
+  })(); // month | day | hour
+
+  const setTvStepMode = (mode) => {
+    const normalized = mode === "month" || mode === "hour" ? mode : "day";
+    tvStepMode = normalized;
+    if (tvStepMonth) tvStepMonth.checked = normalized === "month";
+    if (tvStepDay) tvStepDay.checked = normalized === "day";
+    if (tvStepHour) tvStepHour.checked = normalized === "hour";
+    syncArchiveNavButtons();
+    // Refresh the displayed value between the arrows.
+    updateHistoryStatus(currentArchiveSlug || dashboardData.generatedDateSlug || "");
+    updateTimestampFromSelection();
   };
 
   const STORAGE_KEY = "thermostatDashboard.ui.v1";
@@ -254,8 +261,32 @@
     }
     const slugs = getSortedArchiveSlugs();
     const idx = getCurrentArchiveIndex(slugs);
-    const hasPrev = idx > 0;
-    const hasNext = idx >= 0 && idx < slugs.length - 1;
+    let hasPrev = idx > 0;
+    let hasNext = idx >= 0 && idx < slugs.length - 1;
+
+    if (tvStepMode === "hour") {
+      const labels = getChartLabels();
+      const length = Array.isArray(labels) ? labels.length : 0;
+      const currentPoint =
+        clampIndex(pinnedPointIndex, length) ?? clampIndex(hoverPointIndex, length);
+      hasPrev = currentPoint !== null && currentPoint > 0;
+      hasNext = currentPoint !== null && currentPoint < length - 1;
+    } else if (tvStepMode === "month") {
+      const currentSlug = currentArchiveSlug || dashboardData.generatedDateSlug || "";
+      const currentDate = parseSlugDateUtc(currentSlug);
+      if (currentDate) {
+        const currentMonthIndex =
+          currentDate.getUTCFullYear() * 12 + currentDate.getUTCMonth();
+        const availableMonthIndexes = new Set();
+        getAvailableArchiveSlugs().forEach((slug) => {
+          const d = parseSlugDateUtc(slug);
+          if (!d) return;
+          availableMonthIndexes.add(d.getUTCFullYear() * 12 + d.getUTCMonth());
+        });
+        hasPrev = availableMonthIndexes.has(currentMonthIndex - 1);
+        hasNext = availableMonthIndexes.has(currentMonthIndex + 1);
+      }
+    }
     if (hasInlineNav) {
       prevDayButtonEl.disabled = !hasPrev;
       nextDayButtonEl.disabled = !hasNext;
@@ -284,6 +315,40 @@
     if (!slug) {
       return;
     }
+    updateHistoryStatus(slug);
+    currentArchiveSlug = slug;
+    loadDashboardData(slug);
+  };
+
+  const navigateArchiveByMonths = (delta) => {
+    const current = currentArchiveSlug || dashboardData.generatedDateSlug || "";
+    const currentDate = parseSlugDateUtc(current);
+    if (!currentDate) {
+      return;
+    }
+    const months = Number(delta || 0);
+    if (!Number.isFinite(months) || months === 0) {
+      return;
+    }
+
+    const desiredMonthIndex =
+      currentDate.getUTCFullYear() * 12 + currentDate.getUTCMonth() + months;
+
+    const candidates = [];
+    getAvailableArchiveSlugs().forEach((slug) => {
+      const d = parseSlugDateUtc(slug);
+      if (!d) return;
+      const idx = d.getUTCFullYear() * 12 + d.getUTCMonth();
+      if (idx === desiredMonthIndex) {
+        candidates.push(slug);
+      }
+    });
+
+    if (!candidates.length) {
+      return;
+    }
+    candidates.sort();
+    const slug = candidates[candidates.length - 1]; // latest day in that month
     updateHistoryStatus(slug);
     currentArchiveSlug = slug;
     loadDashboardData(slug);
@@ -362,13 +427,25 @@
         if (tvModeActive) {
           showTvControlsHint(6000);
         }
-        navigateArchiveByDays(-1);
+        if (tvStepMode === "hour") {
+          stepPinnedPoint(-1);
+        } else if (tvStepMode === "month") {
+          navigateArchiveByMonths(-1);
+        } else {
+          navigateArchiveByDays(-1);
+        }
       } else if (event.key === "ArrowRight") {
         event.preventDefault();
         if (tvModeActive) {
           showTvControlsHint(6000);
         }
-        navigateArchiveByDays(1);
+        if (tvStepMode === "hour") {
+          stepPinnedPoint(1);
+        } else if (tvStepMode === "month") {
+          navigateArchiveByMonths(1);
+        } else {
+          navigateArchiveByDays(1);
+        }
       }
     });
   };
@@ -888,7 +965,13 @@
         if (tvModeActive) {
           showTvControlsHint(6000);
         }
-        navigateArchiveByDays(-1);
+        if (tvStepMode === "hour") {
+          stepPinnedPoint(-1);
+        } else if (tvStepMode === "month") {
+          navigateArchiveByMonths(-1);
+        } else {
+          navigateArchiveByDays(-1);
+        }
       });
     }
     if (tvArchiveNextButton && tvArchiveNextButton.dataset.boundClick !== "1") {
@@ -897,7 +980,13 @@
         if (tvModeActive) {
           showTvControlsHint(6000);
         }
-        navigateArchiveByDays(1);
+        if (tvStepMode === "hour") {
+          stepPinnedPoint(1);
+        } else if (tvStepMode === "month") {
+          navigateArchiveByMonths(1);
+        } else {
+          navigateArchiveByDays(1);
+        }
       });
     }
   };
@@ -2150,16 +2239,22 @@
     chartStepNextButton.dataset.boundClick = "1";
     chartStepNextButton.addEventListener("click", () => stepPinnedPoint(1));
   }
-  if (tvNavAutoscroll && tvNavAutoscroll.dataset.boundChange !== "1") {
-    tvNavAutoscroll.dataset.boundChange = "1";
-    tvNavAutoscroll.addEventListener("change", () => {
-      if (tvNavAutoscroll.checked) {
-        startTvNavAutoscroll();
-      } else {
-        stopTvNavAutoscroll();
+  const bindTvStepMode = (el, mode) => {
+    if (!el || el.dataset.boundChange === "1") {
+      return;
+    }
+    el.dataset.boundChange = "1";
+    el.addEventListener("change", () => {
+      if (el.checked) {
+        setTvStepMode(mode);
+      } else if (tvStepMode === mode) {
+        setTvStepMode("day");
       }
     });
-  }
+  };
+  bindTvStepMode(tvStepMonth, "month");
+  bindTvStepMode(tvStepDay, "day");
+  bindTvStepMode(tvStepHour, "hour");
 
   // Re-render all front-panel cards when the data changes (actual, fan, condenser, etc.).
   const updateMetricCards = () => {
@@ -2648,11 +2743,12 @@
         if (tvHistoryDay) {
           tvHistoryDay.textContent = String(match[2] || "");
         }
-        if (tvNavMonth) {
-          tvNavMonth.textContent = String(match[1] || "").toUpperCase();
-        }
-        if (tvNavDay) {
-          tvNavDay.textContent = String(match[2] || "");
+        if (tvStepValue) {
+          if (tvStepMode === "month") {
+            tvStepValue.textContent = String(match[1] || "").toUpperCase();
+          } else if (tvStepMode === "day") {
+            tvStepValue.textContent = String(match[2] || "");
+          }
         }
       } else {
         if (tvHistoryMonth) {
@@ -2663,11 +2759,8 @@
         if (tvHistoryDay) {
           tvHistoryDay.textContent = "";
         }
-        if (tvNavMonth) {
-          tvNavMonth.textContent = trimmed || "";
-        }
-        if (tvNavDay) {
-          tvNavDay.textContent = "";
+        if (tvStepValue && tvStepMode !== "hour") {
+          tvStepValue.textContent = trimmed || "";
         }
       }
     } else if (tvHistoryStatus) {
@@ -2724,9 +2817,9 @@
           const hour24 = roundedUpHour24FromLabel(label);
           tvHistoryHour.textContent = hour24 === null ? "" : formatHourOnly(hour24);
         }
-        if (tvNavHour) {
+        if (tvStepValue && tvStepMode === "hour") {
           const hour24 = roundedUpHour24FromLabel(label);
-          tvNavHour.textContent = hour24 === null ? "" : formatHourOnly(hour24);
+          tvStepValue.textContent = hour24 === null ? "" : formatHourOnly(hour24);
         }
         return;
       }
@@ -2739,8 +2832,8 @@
     if (tvHistoryHour) {
       tvHistoryHour.textContent = "";
     }
-    if (tvNavHour) {
-      tvNavHour.textContent = "";
+    if (tvStepValue && tvStepMode === "hour") {
+      tvStepValue.textContent = "";
     }
   };
 
@@ -3011,39 +3104,6 @@
     setSelectedPoint(next, next, true);
     suppressHoverUntilLeave();
     syncStepButtons();
-  };
-
-  const startTvNavAutoscroll = () => {
-    stopTvNavAutoscroll();
-    const labels = getChartLabels();
-    const length = Array.isArray(labels) ? labels.length : 0;
-    if (length <= 0) {
-      return;
-    }
-    if (tvNavAutoscroll) {
-      tvNavAutoscroll.checked = true;
-    }
-    // If nothing is pinned yet, start from the current selection or last point.
-    const base =
-      clampIndex(pinnedPointIndex, length) ??
-      clampIndex(hoverPointIndex, length) ??
-      (length - 1);
-    setSelectedPoint(base, base, true);
-    suppressHoverUntilLeave();
-
-    // Advance at a readable cadence; stop once we hit the end.
-    tvNavAutoscrollTimer = setInterval(() => {
-      const current = clampIndex(pinnedPointIndex, length);
-      if (current === null) {
-        stopTvNavAutoscroll();
-        return;
-      }
-      if (current >= length - 1) {
-        stopTvNavAutoscroll();
-        return;
-      }
-      stepPinnedPoint(1);
-    }, 900);
   };
 
   const syncHourPickerOptions = () => {
