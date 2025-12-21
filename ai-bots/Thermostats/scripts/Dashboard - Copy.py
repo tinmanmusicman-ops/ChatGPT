@@ -1741,8 +1741,8 @@ def build_dashboard_html(
       }}
       
       #chartcontrols {{
-        margin-top: 20PX;
-        margin-left: 70PX;
+        margin-top: 22px;
+        margin-left: 47px;
         max-width: none;
         width: 50%;
         position: relative;
@@ -1753,8 +1753,6 @@ def build_dashboard_html(
         gap: 3px;
         font-size: 13px;
         color: #f4f6ff;
-        border: 1px solid rgba(255, 255, 255, 0.38);
-        border-radius: 12px;
         background: rgba(0, 0, 0, 0.18);
         box-sizing: border-box;
       }}
@@ -1768,33 +1766,11 @@ def build_dashboard_html(
       #chartcontrols #autoplay-toggle {{
         grid-column: 1 / -1;
       }}
-      .controls-transport-wrap {{
-        margin-top: -45px;
-        margin-left: 0;
-        height: auto;
-        display: grid;
-        grid-template-columns: minmax(0, 240px) minmax(0, 320px);
-        grid-template-areas:
-          "controls transport"
-          "history history";
-        align-items: start;
-        column-gap: 14px;
-        row-gap: 10px;
-      }}
-      #chartcontrols {{
-        grid-area: controls;
-        min-width: 0;
-      }}
-      .controls-transport-wrap .chart-history {{
-        grid-area: history;
-      }}
       .transport-stack {{
-        margin-top: 0;
+        margin-top: 10px;
         position: relative;
         z-index: 10;
-        transform: none;
-        grid-area: transport;
-        min-width: 0;
+        transform: translateX(-75px);
       }}
       .transport-panel {{
         height: 210px;
@@ -1890,16 +1866,29 @@ def build_dashboard_html(
         to {{ transform: rotate(360deg); }}
       }}
       .chart-top-row {{
-        max-width: 1120px;
+        max-width: 1240px;
         width: 100%;
         display: grid;
-        grid-template-columns: 400px minmax(340px, 1fr);
+        grid-template-columns: 400px minmax(260px, 1fr) 340px;
         align-items: flex-start;
         gap: 14px;
         margin-top: 20px;
         margin-bottom: 18px;
         transform: translateX(-15px);
         border: 1px solid rgba(255, 255, 255, 0.18);
+      }}
+      .controls-col,
+      .transport-col {{
+        margin-top: -65px;
+        height: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+      }}
+      .transport-col .chart-history {{
+        margin: 0;
+        max-width: none;
       }}
       .usage-slot {{
         width: 400px;
@@ -1924,11 +1913,11 @@ def build_dashboard_html(
       .tv-legs-small {{
         position: absolute;
         left: 50%;
-        bottom: -215px;
-        transform: translateX(-50%);
-        height: clamp(170px, 24vh, 260px);
-        width: auto;
-        max-width: min(520px, 95%);
+        top: 100%;
+        bottom: auto;
+        transform: translateX(-50%) translateY(-10px);
+        width: min(520px, 92%);
+        height: auto;
         z-index: 0;
         pointer-events: none;
         opacity: 0.96;
@@ -1998,7 +1987,7 @@ def build_dashboard_html(
       .swap-controls {{
         margin-top: 8px;
         width: 100%;
-        display: flex;
+        display: none !important;
         justify-content: center;
       }}
       .swap-controls .swap-controls-inner {{
@@ -2083,27 +2072,19 @@ def build_dashboard_html(
           max-width: none;
           width: 100%;
           box-sizing: border-box;
-          display: grid;
-          grid-template-columns: 1fr;
+          justify-content: center;
           margin-right: 0;
           margin-left: 0;
           padding-right: 1px;
         }}
-        .controls-transport-wrap {{
-          margin-top: 40;
-          margin-left: 10;
+        .controls-col,
+        .transport-col {{
+          margin-top: 0;
+          margin-left: 0;
           width: 100%;
-          align-items: start;
-          display: grid;
-          grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-          grid-template-areas:
-            "controls transport"
-            "history history";
+          align-items: center;
         }}
         .transport-stack {{
-          width: 100%;
-          max-width: 320px;
-          margin-top: 0;
           transform: none;
         }}
         .transport-panel {{
@@ -2354,14 +2335,14 @@ def build_dashboard_html(
       }}
       #tv-legs {{
         display: none;
-        position: absolute;
+        position: fixed;
         left: 50%;
-        bottom: -10px;
-        transform: translateX(-50%) translateY(calc(78% + 130px));
-        height: clamp(400px, 52vh, 650px);
-        width: auto;
-        max-width: min(1100px, 95vw);
-        z-index: 0;
+        top: 0;
+        transform: translateX(-50%);
+        width: min(990px, 80%);
+        height: auto;
+        max-width: 100%;
+        z-index: -1;
         pointer-events: none;
       }}
       body.hide-big-chart #toggle-history {{
@@ -2370,6 +2351,7 @@ def build_dashboard_html(
       body.tv-mode {{
         overflow: hidden;
         background: #07070b;
+        --tv-inset-bottom: 84px;
       }}
       body.tv-mode .header-row,
       body.tv-mode .timestamp-row,
@@ -2394,7 +2376,7 @@ def build_dashboard_html(
       body.tv-mode .chart-wrap.tv-frame {{
         display: block !important;
         position: fixed;
-        inset: 14px 34px 74px 34px;
+        inset: 24px 44px 84px 44px;
         z-index: 9999;
         height: auto;
         width: auto;
@@ -2405,21 +2387,20 @@ def build_dashboard_html(
         --frame-border: 12px;
         border: var(--frame-border) solid rgba(255, 255, 255, 0.2);
         background: linear-gradient(to bottom, #050506 0%, #151518 55%, #2b2b2e 100%);
+        overflow: visible;
       }}
       body.tv-mode #history-chart-canvas-slot,
       body.tv-mode #history-chart {{
         height: 100% !important;
       }}
       body.tv-mode #tv-legs {{
-        display: none !important;
-        height: clamp(525px, 65vh, 800px);
-        z-index: 10001;
+        display: block !important;
+        top: calc(100vh - var(--tv-inset-bottom, 84px));
+        transform: translateX(-50%) translateY(-30px);
+        width: min(990px, 80%);
+        max-width: 100%;
         filter: brightness(1.25) contrast(1.1) saturate(1.15) drop-shadow(0 18px 26px rgba(0,0,0,0.65));
         opacity: 0.98;
-      }}
-      /* Temporarily disable the TV legs/feet graphics while we finalize layout. */
-      .tv-legs-small {{
-        display: none !important;
       }}
       /* TV mode chart controls (mode toggles) shown on the right. */
       .tv-chartcontrols-overlay {{
@@ -2539,6 +2520,8 @@ def build_dashboard_html(
         justify-content: center;
         gap: 10px;
         pointer-events: auto;
+        margin-left: 70px;
+        
       }}
       .tv-nav-btn {{
         flex: 0 0 auto;
@@ -2817,9 +2800,9 @@ def build_dashboard_html(
         list-style: none;
         margin: 0;
         padding: 0;
-        font-size: 11px;
+        font-size: 10px;
         color: #f4f6ff;
-        line-height: 1.4;
+        line-height: 1.15;
       }}
       .chart-history ul button {{
         all: unset;
@@ -2827,8 +2810,9 @@ def build_dashboard_html(
         text-align: left;
         cursor: pointer;
         color: #33ccff;
-        font-size: 11px;
-        letter-spacing: 0.04em;
+        font-size: 10px;
+        line-height: 1.15;
+        letter-spacing: 0.03em;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -2886,7 +2870,6 @@ def build_dashboard_html(
 
       <div class="chart-top-row">
         <div class="usage-slot tv-frame" id="usage-slot">
-          <img class="tv-legs-small" src="../../../Images/Legs2.png" alt="TV stand" />
           <div class="usage-header">
             <div class="usage-header-left">
               <div class="title">Usage Chart</div>
@@ -2908,20 +2891,13 @@ def build_dashboard_html(
               <canvas id="usage-slot-chart"></canvas>
             </div>
           </div>
-                    <img
-            src="../../../Images/Legs2.png"
-            class="tv-legs-small"
-            alt=""
-            aria-hidden="true"
-          />
-
-<div id="swap-controls" class="swap-controls" aria-hidden="false">
+          <div id="swap-controls" class="swap-controls" aria-hidden="false">
             <div id="swap-controls-label" class="swap-controls-inner" role="button" tabindex="0" aria-label="Swap chart">
               Swap Chart
             </div>
           </div>
         </div>
-        <div class="controls-transport-wrap">
+        <div class="controls-col">
           <div id="chartcontrols" class="chart-controls">
               <button type="button" class="chart-control" data-mode="setpoint">Set Point</button>
               <button type="button" class="chart-control" data-mode="actual">Building Temp</button>
@@ -2929,9 +2905,10 @@ def build_dashboard_html(
               <button type="button" class="chart-control" data-mode="cooling">AC Status</button>
               <button type="button" class="chart-control" data-mode="fan">Fan Mode</button>
               <button type="button" class="chart-control active" data-mode="both">Combined</button>
-              <span>&nbsp;</span>
               <button type="button" class="chart-control" id="autoplay-toggle">Auto-play: On</button>
             </div>
+        </div>
+        <div class="transport-col">
           <div class="chart-history" id="chart-history">
             <h4 id="chart-history-toggle">Chart History</h4>
             <div id="chart-history-status" class="chart-history-status"></div>
@@ -3012,19 +2989,22 @@ def build_dashboard_html(
           </div>
           <div id="history-chart-canvas-slot">
             <canvas id="history-chart"></canvas>
+  
           </div>
-            <div class="tv-bottom-bar" aria-hidden="true">
-              <div class="tv-bottom-left">
+
+          
+          <div class="tv-bottom-bar" aria-hidden="true">
+            <div class="tv-bottom-left">
               <div class="tv-file-select" id="tv-file-select" aria-label="TV file select">
                 <div class="tv-file-select-title">Chart History</div>
                 <div id="tv-history-status" class="tv-file-select-status">Current</div>
                 <div id="tv-history-slot"></div>
               </div>
             </div>
-              <div class="tv-nav-overlay" aria-hidden="true">
-                <button type="button" id="tv-archive-prev" class="tv-nav-btn" aria-label="Previous day">&lt;&lt;</button>
-                <button type="button" id="tv-archive-next" class="tv-nav-btn" aria-label="Next day">&gt;&gt;</button>
-              </div>
+            <div class="tv-nav-overlay" aria-hidden="true">
+              <button type="button" id="tv-archive-prev" class="tv-nav-btn" aria-label="Previous day">&lt;&lt;</button>
+              <button type="button" id="tv-archive-next" class="tv-nav-btn" aria-label="Next day">&gt;&gt;</button>
+            </div>
             <div class="tv-chartcontrols-overlay" aria-label="TV chart controls">
               <button type="button" class="chart-control" data-mode="setpoint">Set Point</button>
               <button type="button" class="chart-control" data-mode="actual">Building Temp</button>
@@ -3034,7 +3014,6 @@ def build_dashboard_html(
               <button type="button" class="chart-control" data-mode="both">Combined</button>
             </div>
           </div>
-          <img id="tv-legs" src="../../../Images/Legs2.png" alt="TV stand" />
         </div>
         <div class="note">Data source: Google Sheet (last updated when this page was generated).</div>
 
