@@ -2356,6 +2356,7 @@ def build_dashboard_html(
       .chart-wrap.tv-frame {{
         container-type: inline-size;
         --tv-legs-overlap: 25px;
+        isolation: isolate;
         margin-bottom: 48px;
       }}
       body.hide-big-chart .chart-wrap.tv-frame {{
@@ -2371,7 +2372,7 @@ def build_dashboard_html(
         transform: translateX(-50%) translateY(calc(100% - var(--tv-legs-overlap)));
         height: clamp(400px, 95%, 650px);
         width: min(1100px, 95%);
-        z-index: 0;
+        z-index: -1;
         pointer-events: none;
         opacity: 0.98;
         background-image: url("../../../Images/Legs2.png");
@@ -2438,11 +2439,11 @@ def build_dashboard_html(
       }}
       body.tv-mode .chart-wrap.tv-frame .tv-legs {{
         display: block;
-        height: clamp(520px, 95%, 800px);
+        height: clamp(360px, 72%, 560px);
       }}
       @supports (height: 1cqi) {{
         body.tv-mode .chart-wrap.tv-frame .tv-legs {{
-          height: clamp(520px, 52cqi, 880px);
+          height: clamp(360px, 40cqi, 600px);
         }}
       }}
       /* TV mode chart controls (mode toggles) shown on the right. */
@@ -2563,6 +2564,11 @@ def build_dashboard_html(
         justify-content: center;
         gap: 10px;
         pointer-events: auto;
+        position: fixed;
+        left: 50%;
+        bottom: 22px;
+        transform: translateX(-50%);
+        z-index: 10070;
       }}
       .tv-nav-btn {{
         flex: 0 0 auto;
