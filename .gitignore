@@ -28,6 +28,7 @@ __pycache__/
 *.txt
 !/bridge/**
 !/ai-bots/Thermostats/Web/dashboard_operator_manual.txt
+!/ai-bots/Thermostats/scripts/help_chat_requirements.txt
 
 # Local folders in this repo
 /Images/
