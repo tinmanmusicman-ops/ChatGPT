@@ -1,252 +1,383 @@
-# Thermostat Dashboard — Operator Manual
+# Thermostat Dashboard — Operator Manual (Primary Source of Truth)
 
-This manual is written for a first-time operator. It explains how the dashboard behaves **based on the shipped UI structure and source code**.
+This file is the **primary documentation source of truth** for the thermostat dashboard. It is written to be consumed by both humans and an embedded help chat system.
 
-**Source of truth files:**
-- `C:/ChatGPT/ai-bots/Thermostats/scripts/Dashboard.py` (Python generator)
-- `C:/ChatGPT/ai-bots/Thermostats/scripts/dashboard_client.js` (Browser UI logic)
-- `ai-bots/Thermostats/Web/dashboard_public.html` (generated output)
+- **Primary manual (this file):** `ai-bots/Thermostats/Web/dashboard_operator_manual.md`
+- **Derived artifacts:** `ai-bots/Thermostats/Web/dashboard_operator_manual.pdf`, `ai-bots/Thermostats/Web/dashboard_operator_manual.txt`
 
-> Note: This dashboard runs as static HTML + JavaScript in the browser. Clicking controls does **not** execute Python on a server.
+## Source of truth (code + UI)
+
+This manual is grounded in these files:
+
+- `ai-bots/Thermostats/scripts/Dashboard.py` — Python generator (builds `dashboard_public.html`)
+- `ai-bots/Thermostats/scripts/dashboard_client.js` — browser UI logic (all interactive behavior)
+- `ai-bots/Thermostats/Web/dashboard_public.html` — generated output (HTML/CSS structure)
+
+Important: the dashboard UI runs as **static HTML + JavaScript in the browser**. Clicking UI controls does **not** execute Python on a server.
+
+---
 
 ## 1. What This Dashboard Is
 
-- **What system it controls/monitors:** a thermostat/HVAC telemetry dataset (project folder name: `Thermostats`). The Python script reads rows from a Google Sheet and generates a dashboard page.
-- **What problem it solves:** converts raw rows (timestamps, temperatures, modes, runtime) into a readable “front panel” plus charts, and lets the operator load prior days as archived snapshots.
-- **Who it is designed for:** someone operating/monitoring the system who needs to understand current status and trends without reading the raw sheet.
+### 1.1 What system it monitors
+
+This dashboard monitors a thermostat/HVAC telemetry dataset stored as spreadsheet rows. The generator reads a Google Sheet and renders the dashboard page.
+
+### 1.2 What problem it solves
+
+It converts row-based readings into:
+
+- a “front panel” of current values (cards)
+- interactive charts (history chart + usage chart)
+- a day-by-day archive navigation mechanism (the “data cassette/transport”)
+
+### 1.3 Who it is designed for
+
+An operator who needs to understand **what is happening now** and **how things changed over time**, without reading raw spreadsheet data.
+
+---
 
 ## 2. Mental Model of the System
 
-Think of the dashboard as a **data player** with a cassette deck:
+### 2.1 The “cassette” metaphor
 
-- A **cassette** represents **one day of saved data** (an “archive day”).
-- The **transport** moves **between days** (loads a different archive JSON file).
-- The **chart cursor** moves **within a day** (picks a point index).
-- The **front-panel cards** show values for the currently selected point (hover/pin).
+Treat the dashboard like a **data player**:
 
-### What the cassette represents in real terms
+- A **cassette** = a **single day** of saved readings (an archive day).
+- The **transport** = how you move **between days** (load a different archive day).
+- The **chart cursor** = how you move **within a day** (choose a point index).
+- The **cards** = show values for the selected point (hover/pin).
 
-- **Current data** is embedded into the HTML in a `<script id="dashboard-data-inline" type="application/json">…</script>` block.
-- **Archive data** is loaded from `ai-bots/Thermostats/Web/chart hist/<YYYY-MM-DD>.json` using `fetch()` in the browser.
-- **Time indexing** is array-based: a point index selects aligned values across arrays like `chartLabels[]`, `actual[]`, `setpoint[]`, `outside[]`, `cooling[]`, `fan[]`, etc.
+### 2.2 What the cassette represents (real terms)
 
-### What the spinning cassette means
+- **Current dataset** is embedded directly in the HTML as JSON in:
+  - `<script id="dashboard-data-inline" type="application/json">…</script>`
+- **Archive datasets** are fetched by the browser from:
+  - `ai-bots/Thermostats/Web/chart hist/<YYYY-MM-DD>.json`
+- **Time/indexing model**:
+  - arrays are aligned by index (same index = same moment)
+  - key arrays include `chartLabels[]`, `actual[]`, `setpoint[]`, `outside[]`, `cooling[]`, `fan[]`, `condenserMinutes[]`
 
-- The reels spin when the deck element has CSS class `playing`.
-- Direction and speed are controlled by CSS variables `--deck-spin-direction` and `--deck-spin-duration` that the JavaScript sets before scheduling the archive load.
+### 2.3 What “cassette spinning” means (exactly)
 
-## 3. Layout Overview
+- The cassette reels spin when the deck element has CSS class `playing`.
+- JavaScript sets these CSS variables on the deck before starting the timer:
+  - `--deck-spin-direction` (`normal` or `reverse`)
+  - `--deck-spin-duration` (e.g., `1.35s`)
+- After the spin timer, the UI loads the target archive JSON and redraws the dashboard.
 
-### Major areas (small mode)
+---
 
-- **A. Front-panel cards** (`#Cards`): current values (temps, modes, etc.).
-- **B. Usage chart** (`#usage-slot`): bar chart of condenser runtime totals across a selected range (7 days / month / year).
-- **C. Controls + history + transport**: series toggles, auto-play, step buttons, and a cassette transport panel used to navigate archived days.
+## 3. Layout Overview (Small Mode vs TV Mode)
 
-### TV mode (big/full-screen mode)
+### 3.1 Small mode major areas
 
-- **TV frame** shows the main history chart full-screen.
-- **Bottom bar** shows a history selector and a tape reader deck.
-- **Overlay controls** provide chart mode buttons and navigation.
+1. **Front-panel cards** (`#Cards`)
+   - shows current/selected values (temperature, setpoint, modes, request metadata)
+2. **Usage chart panel** (`#usage-slot`)
+   - bar chart summarizing condenser runtime (range selectable)
+3. **History/controls/transport block**
+   - chart series toggles (`.chart-control[data-mode]`)
+   - auto-play toggle (`#autoplay-toggle`)
+   - chart step controls (`#chart-step-prev`, `#chart-step-next`, `#chart-step-value`)
+   - history selector (`#chart-history`, `#chart-history-list`)
+   - cassette deck/transport (`#transport-panel`, `#transport-deck`, injected `#archive-prev`/`#archive-next` buttons)
 
-## 4. Data Cassette
+### 3.2 TV mode major areas
 
-### What happens when a cassette (archive day) is loaded
+TV mode is a full-screen presentation mode driven by CSS class `tv-mode` on `<body>`.
 
-From `dashboard_client.js`:
+In TV mode:
 
-1. The UI chooses an archive **slug** (format `YYYY-MM-DD`).
-2. The UI starts the tape animation (`triggerDeckSpin(...)`).
-3. After the spin timer, it calls `loadDashboardData(slug)` which fetches `chart hist/<slug>.json`.
-4. On success, it calls `applyDashboardData(data, slug)` which replaces in-memory state and redraws charts/cards.
+- the main chart is shown full-screen inside the TV frame
+- the bottom bar shows history status and a tape reader deck (`#tv-transport-deck`)
+- TV navigation overlay provides step mode and archive prev/next (`#tv-archive-prev`, `#tv-archive-next`)
+- most small-mode elements are hidden by CSS
 
-### Transport controls vs. time navigation
+---
 
-- **Between-day navigation:** uses archive slugs (`navigateArchiveByDays(...)`, `navigateArchiveByMonths(...)`, plus the history list).
-- **Within-day navigation:** uses the selected point index (`stepPinnedPoint(...)` and chart hover/pin).
-- **Edge behavior:** stepping past the first/last point can load an adjacent day and pin to the opposite edge (continuous “scrolling” feel).
+## 4. Data Cassette & Archive Loading
 
-## 5. Buttons and Controls
+### 4.1 What happens when an archive day is loaded
 
-> Important: buttons trigger JavaScript functions in `dashboard_client.js`. They do **not** call Python functions directly.
+The UI uses a date slug in the format `YYYY-MM-DD`.
 
-### 5.1 Chat Help link
+Sequence:
 
-- **Control:** `#help-chat-link` (“Chat Help”)
-- **Click behavior:** opens the configured chatbot URL in a new tab.
-- **Python function triggered:** none (static HTML link).
-- **State changes:** none in the dashboard.
+1. UI chooses a target slug.
+2. UI starts tape animation (`triggerDeckSpin(...)`).
+3. UI fetches archive JSON (`loadDashboardData(slug)` -> `fetch("chart hist/<slug>.json")`).
+4. UI applies payload and redraws (`applyDashboardData(data, slug)`).
 
-### 5.2 Main history chart controls (series visibility)
+### 4.2 Tape animation rules (how motion relates to time)
 
-Controls: `.chart-control[data-mode=…]`
+The UI tries to make navigation feel like a tape deck:
 
-- `setpoint`, `actual`, `outside`, `cooling`, `fan`: toggles each dataset via `toggleMode(mode)`; redraws the chart and saves mode state to localStorage.
-- `both` (“Combined”): toggles all datasets on/off as a group in `toggleMode("both")`.
+- next day (`deltaDays == 1`): short “fast spin”
+- forward jump (`deltaDays > 1`): “fast-forward” phase then a short “play” phase
+- backward jump (`deltaDays <= 0`): “rewind” phase then a short “play” phase
 
-### 5.3 Auto-play
+### 4.3 Archive list pruning (missing files)
+
+The UI validates whether archive JSON files exist and removes missing entries from the in-memory history list:
+
+- if a fetch returns 404, it removes that date from `dashboardData.archiveDates` and re-renders the list
+
+---
+
+## 5. Operator Controls (Complete Index)
+
+This section is intentionally literal and maps each visible control to its behavior.
+
+### 5.1 Embedded Help Chat (in-dashboard)
+
+- **Open button:** `#help-chat-toggle` (“Help Chat”)
+- **Panel:** `#help-chat-panel`
+- **Close:** `#help-chat-close` (×)
+- **Messages container:** `#help-chat-messages`
+- **Input:** `#help-chat-input`
+- **Submit:** `#help-chat-form` / `#help-chat-send`
+- **Behavior:**
+  - opens/closes a panel (no page navigation)
+  - sends `POST` to the backend endpoint defined by `#help-chat-panel[data-endpoint]`
+  - payload includes `{ question, state }` where `state` includes view mode, chart swap state, archive slug, pinned selection, and enabled modes
+
+### 5.2 Main history chart series toggles (datasets)
+
+Buttons: `.chart-control[data-mode]`
+
+- `data-mode="setpoint"`: show/hide setpoint dataset
+- `data-mode="actual"`: show/hide building temperature dataset
+- `data-mode="outside"`: show/hide outside temperature dataset
+- `data-mode="cooling"`: show/hide AC status dataset (Idle/Cooling)
+- `data-mode="fan"`: show/hide fan mode dataset (Auto/Circulate/On)
+- `data-mode="both"` (“Combined”): toggles all datasets as a group
+
+Implementation:
+
+- handler: `toggleMode(mode)`
+- state: `enabledModes` Set
+- persistence: saved to `localStorage` (see section 8)
+
+### 5.3 Auto-play toggle
 
 - **Control:** `#autoplay-toggle`
-- **Click behavior:** toggles auto-play on/off (managed by `bindAutoplayInteractions()`, `startAutoplay()`, `stopAutoplay()`).
-- **What changes:** after idle time, auto-play cycles series combinations and highlights points; user interaction stops and reschedules auto-play.
+- **Behavior:**
+  - toggles a mode where, after idle time, the UI cycles through modes and highlights points
+  - user interaction stops auto-play and re-schedules it
+- Implementation:
+  - `bindAutoplayInteractions()`, `scheduleAutoplay()`, `startAutoplay()`, `stopAutoplay()`
 
-### 5.4 Show/Hide History chart
+### 5.4 Show/Hide history chart (canvas visibility)
 
 - **Control:** `#toggle-history`
-- **Click behavior:** toggles the main chart canvas display using `showChart()` / `hideChart()`.
-- **What changes:** chart canvas visibility and button label (`Show History Chart` ↔ `Hide History Chart`).
+- **Behavior:**
+  - `Show History Chart` -> makes canvas visible
+  - `Hide History Chart` -> hides canvas
+- Implementation: `showChart()` / `hideChart()`
 
-### 5.5 Step controls (within-day point navigation)
+### 5.5 Chart point selection (hover, pin, clear pin)
 
-- **Controls:** `#chart-step-prev` and `#chart-step-next`
-- **Click behavior:** calls `stepPinnedPoint(-1)` or `stepPinnedPoint(1)`.
-- **Hold behavior:** buttons support hold-to-repeat (`bindHoldRepeat(...)`) after a delay.
-- **State changes:** updates pinned selection and the card readouts; may load adjacent days when stepping beyond edges.
+#### Hover
 
-### 5.6 Usage chart controls (runtime aggregation)
+- event: `mousemove` on main chart canvas (`#history-chart`)
+- behavior: if nothing is pinned, hovering updates the selection and card values
 
-- **Controls:** `.usage-control[data-range="7d"|"month"|"year"]`
-- **Click behavior:** sets `usageRangeKey` and calls `renderUsageSlotChart()`.
-- **Click on a bar:** loads that day’s archive via `loadDashboardData(slug)`.
+#### Pin/unpin
 
-### 5.7 Transport panel and history list (between-day navigation)
+- event: `click` on main chart canvas (`#history-chart`)
+- behavior:
+  - click a point -> pin it
+  - click the same pinned point again -> unpin it
+  - click away (no point) -> clears pin and suppresses hover until mouseleave
 
-- **History list UI:** `#chart-history` / `#chart-history-toggle` / `#chart-history-list` plus dynamic month picker built by `renderArchiveList()`.
-- **Open/close history list:** controlled by `setHistoryExpanded(...)`, `showHistoryFiles()`, `hideHistoryFiles()`.
-- **Selecting a day:** clicking a history entry schedules an archive load via `scheduleArchiveLoadWithTapeRules(slug)`.
-- **Transport panel click:** `bindTransportHistoryToggle()` toggles the history list; it also supports “load by clicking the deck” when a pending selection is armed.
+#### Clear Pin button
 
-### 5.8 Keyboard shortcuts
+- control: `#clear-pin` (created dynamically by JS in `ensureSelectionUi()`)
+- visibility: only shown when a point is pinned
+- behavior: clears pin and persists state
 
-- **Left/Right arrows:** handled by `bindArchiveKeyboardShortcuts()` to navigate (in TV mode, they respect TV step mode).
-- **Escape (TV mode):** exits TV mode.
+#### Selection indicator
 
-## 6. Click and Double-Click Behavior
+- element: `#selection-indicator` (created dynamically)
+- shows `Pinned: <time>` or `Hover: <time>`
 
-### 6.1 Single-click selection behavior (main chart)
+### 5.6 Step through points (within-day)
 
-- Hover a point (mousemove): previews the point (updates cards) when nothing is pinned.
-- Click a point: pins it (click again on same point unpins).
-- Click empty area: clears pin and suppresses hover updates until the mouse leaves and re-enters.
-- `Clear Pin` button appears only while pinned (created/managed in `ensureSelectionUi()` and updated by `updateSelectionIndicator()`).
+- **Prev:** `#chart-step-prev` (<<)
+- **Next:** `#chart-step-next` (>>)
+- **Readout:** `#chart-step-value`
 
-### 6.2 Double-click behavior
+Behavior:
 
-- Double-click the main chart OR the usage chart: enter TV mode (`enterTvMode()`).
-- Double-click while in TV mode: exit TV mode (`exitTvMode()`).
+- steps by one point index (`stepPinnedPoint(delta)`)
+- if stepping beyond the first/last point:
+  - loads the adjacent day (if available)
+  - pins to the opposite edge (index 0 or last)
+- supports hold-to-repeat (press-and-hold)
 
-### 6.3 State preserved across view changes
+### 5.7 Usage chart (runtime summary)
 
-- UI state is stored in localStorage key `thermostatDashboard.ui.v1` via `saveUiState()` and restored by `loadUiState()`.
-- Saved items include: pinned point (or pinned hour label) and enabled series modes.
+#### Range buttons
+
+Buttons: `.usage-control[data-range]`
+
+- `data-range="7d"`: last 7 days (based on available archives)
+- `data-range="month"`: current month (based on archive slug UTC month)
+- `data-range="year"`: aggregates by month for the current year (UTC)
+
+Implementation: `bindUsageSlotControls()` sets `usageRangeKey` then calls `renderUsageSlotChart()`.
+
+#### Clicking a bar
+
+Clicking a bar in the usage chart loads the archive day associated with that bar by calling `loadDashboardData(slug)`.
+
+### 5.8 History list (archive picker)
+
+Core elements:
+
+- container: `#chart-history`
+- toggle header: `#chart-history-toggle`
+- status label: `#chart-history-status`
+- list: `#chart-history-list`
+
+Behavior:
+
+- archive list is built by `renderArchiveList()` and includes:
+  - a month picker (last 12 months)
+  - day entries for the selected month
+- selecting a day:
+  - closes the history panel
+  - schedules a tape animation and then loads the day (`scheduleArchiveLoadWithTapeRules(slug)`)
+
+### 5.9 Transport panel (deck + day/month stepping)
+
+Elements:
+
+- panel: `#transport-panel`
+- deck: `#transport-deck`
+- step mode radios: `#transport-step-month` / `#transport-step-day`
+- nav container: `#transport-nav` (JS injects buttons here)
+
+Behavior:
+
+- clicking the panel toggles the history list (unless you clicked on an interactive element inside)
+- injected nav buttons:
+  - `#archive-prev` / `#archive-next` (created by JS)
+  - behavior depends on transport step mode (day vs month)
+
+### 5.10 Keyboard shortcuts
+
+Handled by `bindArchiveKeyboardShortcuts()`:
+
+- `ArrowLeft`: navigate back (day/month, or hour stepping when TV step mode is “Time”)
+- `ArrowRight`: navigate forward
+- In TV mode:
+  - `Escape`: exits TV mode
+
+---
+
+## 6. Click & Double-Click Behavior (Global Rules)
+
+### 6.1 Double-click enters/exits TV mode
+
+- double-click main chart (`#history-chart`) OR usage chart (`#usage-slot-chart`) -> enter TV mode
+- double-click while in TV mode -> exit TV mode
+- `Escape` exits TV mode
+
+### 6.2 Axis click swaps charts (special click zone)
+
+The UI treats clicks in the X-axis label area as “swap charts”:
+
+- clicking below the chart area boundary can swap which chart appears in the TV frame vs usage slot (`applyChartSwap(...)`)
+
+---
 
 ## 7. Display Modes
 
-### 7.1 Small dashboard mode
+### 7.1 Small mode
 
-- Default mode. Most components are visible (cards, usage chart, controls/transport).
-- The big TV frame is hidden by the body class `hide-big-chart` and shown by removing it.
+Default. Most components visible.
 
-### 7.2 Big TV / full-screen mode
+### 7.2 TV mode
 
-- Enabled by adding `tv-mode` to `document.body`.
-- Many small-mode elements are hidden by CSS in TV mode.
-- Navigation and controls are provided through the overlay and bottom bar.
+Enabled by adding `tv-mode` to `<body>`.
 
-### 7.3 Enter/exit
+In TV mode, CSS hides many small-mode elements and shows TV overlays/bottom bar.
 
-- Enter: double-click either chart.
-- Exit: press `Escape` or double-click again.
+---
 
-## 8. Form Behavior
+## 8. State & Persistence (What is remembered)
 
-There is no form submission. This is a single-page UI with state stored in memory and localStorage.
+### 8.1 Local storage key
 
-- **Updates dynamically:** cards, totals, chart visibility, tooltips, selection indicators, history status.
-- **Does not reset unless changed:** selected series modes and pinned selection (persisted).
-- **Resets on archive load:** chart datasets/labels are replaced, then the UI attempts to re-apply saved pin/modes.
+The UI persists state to:
 
-## 9. Chatbot Interaction
+- `localStorage["thermostatDashboard.ui.v1"]`
 
-From the dashboard code, the chatbot is accessed via a link and is not embedded in the dashboard.
+### 8.2 What is saved
 
-- **Used for:** explaining what is on screen and guiding the operator through the UI.
-- **Allowed actions (based on dashboard code):** the dashboard itself exposes no server endpoints; the chatbot cannot directly change thermostat settings through this page.
-- **What it can realistically do:** instruct the operator to click specific dashboard controls and interpret the resulting state.
+Saved in `saveUiState()`:
 
-## 10. Function Reference (Critical Section)
+- pinned point index (when available)
+- pinned hour label (used for matching after archive loads)
+- enabled dataset modes (`enabledModes`)
 
-### 10.1 Python generator functions
+### 8.3 What happens on archive load
 
-46 functions found in `C:/ChatGPT/ai-bots/Thermostats/scripts/Dashboard.py`.
+When loading a new archive:
 
-| Function | Docstring | Called by | Returns value |
-|---|---|---|---|
-| `_baseline_anchor_temps(target: date, *, full_sun: bool) -> dict[int, float]` | — | build_projected_dashboard_payload | Yes |
-| `_classify_condition_from_weather(flags: List[str], precip: List[float]) -> str` | — | build_projected_dashboard_payload | Yes |
-| `_col_to_index(col: str) -> int` | — | _ensure_range_includes | Yes |
-| `_daterange_inclusive(start: date, end: date) -> Iterable[date]` | — | run_projected_range | No/None |
-| `_day_condition(target: date) -> str` | Deterministic day condition from date only (no external/weather dependencies). Returns: "full_sun", "mixed", or "rainy". | build_projected_dashboard_payload | Yes |
-| `_daylight_char_for_hour(hour: int) -> str` | — | build_projected_dashboard_payload | Yes |
-| `_ensure_range_includes(range_value: str, column: str) -> str` | — | — | Yes |
-| `_extract_letters(cell: str) -> str` | — | _ensure_range_includes | Yes |
-| `_extract_open_meteo_day_hourly(payload: dict, target_day: date) -> tuple[List[float], List[int], List[int], List[float]]` | — | _fetch_open_meteo_hourly_for_day | Yes |
-| `_fan_mode_for_hour(target: date, hour: int) -> str` | — | build_projected_dashboard_payload | Yes |
-| `_fetch_open_meteo_hourly_for_day(target_day: date, tz: str, lat: float, lon: float) -> tuple[List[float], List[int], List[int], List[float]]` | — | build_projected_dashboard_payload | Yes |
-| `_filter_hourly_rows(rows: List[List[str]], step: int = 12) -> List[List[str]]` | Keep roughly hourly samples (every `step` rows) plus the latest row. | — | Yes |
-| `_find_index_in_headers(headers: List[str], keywords: Tuple[str, ...]) -> Optional[int]` | — | _reconstruct_history_rows_from_payload | Yes |
-| `_fmt_open_meteo_outside_raw(flag: str, dayc: str, temp_f: float) -> str` | — | build_projected_dashboard_payload | Yes |
-| `_format_archive_label(slug: str) -> str` | — | build_dashboard_html, run_projected_range | Yes |
-| `_hourly_drop_for_condition(condition: str) -> float` | — | build_projected_dashboard_payload | Yes |
-| `_http_get_json(url: str, params: dict) -> dict` | — | _fetch_open_meteo_hourly_for_day | Yes |
-| `_interpolate_hourly_from_anchors(anchors: dict[int, float]) -> List[float]` | — | build_projected_dashboard_payload | Yes |
-| `_load_credentials() -> Credentials` | — | get_drive_service, get_sheets_service | Yes |
-| `_load_dash_config() -> dict` | Load sheet config from Thermostats config.json, then bot-assets/config.json, then defaults. | — | Yes |
-| `_load_drive_credentials() -> Credentials` | Load user OAuth credentials from shared Tokens.json for Drive uploads. | get_drive_upload_service | Yes |
-| `_load_float(value, default: float) -> float` | — | — | Yes |
-| `_load_global_root() -> Path` | — | — | Yes |
-| `_load_shared_config() -> dict` | — | — | Yes |
-| `_next_version_name(desired: str, existing_names: List[str]) -> str` | — | — | Yes |
-| `_normalize_flag(value, default = True) -> bool` | — | — | Yes |
-| `_open_meteo_day_char(is_day_flag: int) -> str` | — | build_projected_dashboard_payload | Yes |
-| `_open_meteo_flag(code: int, is_day_flag: int) -> str` | — | build_projected_dashboard_payload | Yes |
-| `_parse_date_only(value: str) -> date` | — | main | Yes |
-| `_reconstruct_history_rows_from_payload(payload: dict) -> Tuple[List[str], List[str], List[List[str]]]` | — | run_test_mode_dashboard | Yes |
-| `_setpoint_for_hour(target: date, hour: int) -> float` | — | build_projected_dashboard_payload | Yes |
-| `build_dashboard_html(headers: List[str], latest_row: List[str], history_rows: List[List[str]], output_path: Path) -> str` | — | run_live_dashboard, run_test_mode_dashboard | Yes |
-| `build_projected_dashboard_payload(target: date, archive_dates: List[dict], *, weather_source: str = 'auto', simulate_requests: bool = False, request_every_days: int = 3, request_setpoint_delta_f: float = 2.0, request_setpoint_deltas_f: Optional[List[float]] = None, request_deltas_mode: str = 'random') -> tuple[dict, dict]` | Create a full dashboard payload JSON for the archive viewer, generated from date only. Returns (payload, summary). | run_projected_range | Yes |
-| `fetch_sheet_data() -> Tuple[List[str], List[str], List[List[str]]]` | Return headers, latest row, and history rows. | run_live_dashboard | Yes |
-| `get_drive_service()` | — | resolve_sheet_id | Yes |
-| `get_drive_upload_service()` | — | push_dashboard_to_drive | Yes |
-| `get_or_create_drive_folder(service, folder_name: str) -> str` | — | push_dashboard_to_drive | Yes |
-| `get_sheets_service()` | — | fetch_sheet_data | Yes |
-| `git_autopush(html_path: Path, extra_paths: Optional[List[Path]] = None) -> None` | Stage, commit, and push the generated dashboard copy. | run_live_dashboard | No/None |
-| `main(argv: Optional[List[str]] = None) -> None` | — | — | No/None |
-| `push_dashboard_to_drive(html_path: Path, timestamp_suffix: Optional[str] = None) -> str` | — | run_live_dashboard | Yes |
-| `resolve_sheet_id() -> str` | Prefer explicit ID; otherwise resolve by file name. | fetch_sheet_data | Yes |
-| `run_live_dashboard() -> None` | — | main | No/None |
-| `run_projected_range(start: date, end: date, *, weather_source: str = 'auto', simulate_requests: bool = False, request_every_days: int = 3, request_setpoint_delta_f: float = 2.0, request_setpoint_deltas_f: Optional[List[float]] = None, request_deltas_mode: str = 'random') -> List[dict]` | Generate/overwrite archive JSON datasets for each day in [start, end]. Returns the per-day summaries printed during generation. | main | Yes |
-| `run_test_mode_dashboard() -> None` | — | run_live_dashboard | No/None |
-| `upload_or_version_file(service, folder_id: str, filename: str, content: bytes, mime_type: str) -> Tuple[str, str]` | — | push_dashboard_to_drive | Yes |
+- the UI tries to restore your pinned selection by matching the saved pinned hour label to the new day’s labels
+- if a pending pin index is specified (edge-wrapping behavior), it applies that instead
 
-### 10.2 JavaScript UI functions (key operators)
+---
 
-This manual references these primary UI functions in `dashboard_client.js` (not exhaustive):
+## 9. Help Chat Contract (No hallucinations)
 
-- `applyDashboardData(data, slugHint)` — apply new payload and redraw UI
-- `loadDashboardData(slug)` — fetch an archive JSON file
+The embedded help chat must follow these rules:
+
+- Answers must be grounded only in this manual’s text.
+- If this manual does not contain the requested information, the response must be:
+
+`That information is not available in the documentation.`
+
+---
+
+## 10. Function Reference (Operator-Relevant)
+
+### 10.1 Python generator (Dashboard.py)
+
+The Python script generates the HTML and may also stage/commit/push generated artifacts depending on configuration.
+
+Key outputs:
+
+- `ai-bots/Temp/dashboard.html` (temp build output)
+- `ai-bots/Thermostats/Web/dashboard_public.html` (published copy)
+- `ai-bots/Thermostats/Web/chart hist/<YYYY-MM-DD>.{html,json}` (archive snapshots)
+- `ai-bots/Thermostats/Web/dashboard_data.json` (latest payload)
+
+### 10.2 JavaScript UI (dashboard_client.js)
+
+Primary operator-facing functions:
+
+- `applyDashboardData(data, slugHint)` — replace payload and redraw UI
+- `loadDashboardData(slug)` — fetch an archive JSON payload
 - `scheduleArchiveLoadWithTapeRules(slug, pinIndexAfterLoad)` — animate tape then load
-- `toggleMode(mode)` / `setModeSet(modes)` — control which datasets are visible
-- `bindChartPointPicker()` / `setSelectedPoint(...)` — hover/pin point selection
-- `renderUsageSlotChart()` — build the runtime aggregation bar chart
-- `enterTvMode()` / `exitTvMode()` — full-screen display mode
+- `toggleMode(mode)` / `setModeSet(modes)` — dataset visibility
+- `bindChartPointPicker()` / `setSelectedPoint(...)` — hover/pin logic
+- `renderUsageSlotChart()` — runtime aggregation chart
+- `enterTvMode()` / `exitTvMode()` — TV mode transitions
 
-## 11. Typical Usage Flow
+---
 
-1. Open the dashboard page; it initializes from embedded JSON.
-2. If Auto-play starts and you want manual control, move the mouse or click to stop it.
-3. Use the front-panel cards to read current status; show/hide series for clarity.
-4. Show the main chart and hover to preview points; click to pin a moment in time.
-5. Use history navigation (history list, transport nav, arrow keys) to load a prior day; watch for the tape spin then redraw.
-6. Use << / >> to step within the day (and optionally across days via edge wrapping).
-7. Double-click to enter TV mode for a big-screen view; navigate with overlays; press Escape to exit.
+## 11. Typical Operator Walkthrough
+
+1. Open the dashboard page. It initializes from embedded JSON.
+2. If Auto-play is running and you want manual control, move the mouse or click the page to stop it.
+3. Read the cards to understand current state.
+4. Click dataset buttons to simplify the view (e.g., only Set Point + Building Temp).
+5. Show the history chart and hover points to preview values; click to pin a time.
+6. Use the history list or transport nav to load another day; watch the tape animation and wait for the redraw.
+7. Use << / >> to step point-by-point; note edge wrapping can load adjacent days.
+8. Double-click to enter TV mode for big-screen viewing; use TV controls; press Escape to exit.
+

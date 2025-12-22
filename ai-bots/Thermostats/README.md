@@ -7,7 +7,8 @@ Hosts the thermostat automation model, including configuration helpers and refer
 The dashboard includes an embedded help chat panel that answers questions using only the operator manual PDF.
 
 - Backend API: `ai-bots/Thermostats/scripts/dashboard_help_api.py`
-- Operator manual PDF: `ai-bots/Thermostats/Web/dashboard_operator_manual.pdf`
+- Operator manual (primary): `ai-bots/Thermostats/Web/dashboard_operator_manual.md`
+- Operator manual PDF (derived): `ai-bots/Thermostats/Web/dashboard_operator_manual.pdf`
 - Dashboard HTML: `ai-bots/Thermostats/Web/dashboard_public.html`
 
 ### Run the help API locally
@@ -25,5 +26,5 @@ The dashboard chat calls `http://localhost:8000/api/help-chat` by default.
 
 - Dashboard generator env var: `HELP_CHAT_ENDPOINT` (used as the chat panel `data-endpoint`)
 - API env vars:
-  - `DASHBOARD_HELP_PDF` (override PDF path)
+  - `DASHBOARD_HELP_MANUAL` (override manual path)
   - `DASHBOARD_HELP_MODEL` (default: `gpt-4o-mini`)

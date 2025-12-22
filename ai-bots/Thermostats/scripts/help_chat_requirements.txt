@@ -1,5 +1,3 @@
 fastapi
 uvicorn
-pdfminer.six
 openai
-

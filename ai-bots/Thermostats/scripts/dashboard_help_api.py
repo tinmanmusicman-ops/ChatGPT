@@ -13,11 +13,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 try:
-    from pdfminer.high_level import extract_text as pdf_extract_text
-except Exception:  # pragma: no cover
-    pdf_extract_text = None  # type: ignore[assignment]
-
-try:
     from openai import OpenAI
 except Exception:  # pragma: no cover
     OpenAI = None  # type: ignore[assignment]
@@ -218,15 +213,50 @@ def _build_user_message(question: str, state: Optional[Dict[str, Any]], doc_text
     )
 
 
-def _load_pdf_text(pdf_path: Path) -> str:
-    if pdf_extract_text is None:
-        raise RuntimeError("pdfminer.six is required to extract text from the PDF.")
-    return (pdf_extract_text(str(pdf_path)) or "").strip()
-
-
-def _default_pdf_path() -> Path:
+def _default_manual_path() -> Path:
     here = Path(__file__).resolve()
-    return here.parent.parent / "Web" / "dashboard_operator_manual.pdf"
+    return here.parent.parent / "Web" / "dashboard_operator_manual.md"
+
+
+def _load_manual_text(path: Path) -> str:
+    text = path.read_text(encoding="utf-8", errors="replace")
+    return text.strip()
+
+
+def _extract_evidence_quotes(answer_text: str) -> List[str]:
+    # Expect a strict structure:
+    # Evidence:
+    # "quote"
+    # Answer:
+    lower = answer_text.lower()
+    if "evidence:" not in lower or "answer:" not in lower:
+        return []
+    try:
+        evidence_part = answer_text.split("Evidence:", 1)[1]
+        evidence_part = evidence_part.split("Answer:", 1)[0]
+    except Exception:
+        return []
+    evidence_part = evidence_part.strip()
+    if not evidence_part:
+        return []
+    quotes = re.findall(r"\"([^\"]{8,320})\"", evidence_part)
+    return [q.strip() for q in quotes if q.strip()]
+
+
+def _enforce_grounding(answer_text: str, doc_context: str) -> Optional[str]:
+    text = (answer_text or "").strip()
+    if not text:
+        return NOT_AVAILABLE
+    if text == NOT_AVAILABLE:
+        return text
+    quotes = _extract_evidence_quotes(text)
+    if not quotes:
+        return NOT_AVAILABLE
+    # Require that every quote appears verbatim in the provided documentation context.
+    for q in quotes[:3]:
+        if q not in doc_context:
+            return NOT_AVAILABLE
+    return text
 
 
 def create_app() -> FastAPI:
@@ -239,9 +269,13 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
-    pdf_path = Path(os.environ.get("DASHBOARD_HELP_PDF", "")).expanduser().resolve() if os.environ.get("DASHBOARD_HELP_PDF") else _default_pdf_path()
-    pdf_text = _load_pdf_text(pdf_path)
-    chunk_texts = _chunk_text(pdf_text)
+    manual_path = (
+        Path(os.environ.get("DASHBOARD_HELP_MANUAL", "")).expanduser().resolve()
+        if os.environ.get("DASHBOARD_HELP_MANUAL")
+        else _default_manual_path()
+    )
+    manual_text = _load_manual_text(manual_path)
+    chunk_texts = _chunk_text(manual_text)
     chunks = [Chunk(i, t, _tokenize(t)) for i, t in enumerate(chunk_texts)]
 
     openai_client = OpenAI() if OpenAI is not None and os.environ.get("OPENAI_API_KEY") else None
@@ -251,8 +285,8 @@ def create_app() -> FastAPI:
     def healthz() -> Dict[str, Any]:
         return {
             "ok": True,
-            "pdf": str(pdf_path),
-            "pdf_chars": len(pdf_text),
+            "manual": str(manual_path),
+            "manual_chars": len(manual_text),
             "chunks": len(chunks),
             "llm_ready": bool(openai_client),
             "model": model if openai_client else None,
@@ -283,14 +317,15 @@ def create_app() -> FastAPI:
             temperature=0,
             max_output_tokens=450,
         )
-        text = (resp.output_text or "").strip()
-        if not text:
-            return HelpChatResponse(answer=NOT_AVAILABLE)
+        raw = (resp.output_text or "").strip()
+        enforced = _enforce_grounding(raw, doc_context)
+        if enforced is None:
+            enforced = NOT_AVAILABLE
         # Enforce the exact fallback string if the model is unsure.
-        lowered = text.strip().lower()
-        if "not available in the documentation" in lowered and text.strip() != NOT_AVAILABLE:
-            return HelpChatResponse(answer=NOT_AVAILABLE)
-        return HelpChatResponse(answer=text)
+        lowered = enforced.strip().lower()
+        if "not available in the documentation" in lowered and enforced.strip() != NOT_AVAILABLE:
+            enforced = NOT_AVAILABLE
+        return HelpChatResponse(answer=enforced)
 
     return app
 
@@ -306,4 +341,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
