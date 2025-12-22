@@ -27,6 +27,7 @@ __pycache__/
 !/ai-bots/Thermostats/Web/chart hist/*.json
 *.txt
 !/bridge/**
+!/ai-bots/Thermostats/Web/dashboard_operator_manual.txt
 
 # Local folders in this repo
 /Images/
