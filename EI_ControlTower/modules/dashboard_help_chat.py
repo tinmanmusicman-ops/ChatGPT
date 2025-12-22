@@ -330,8 +330,40 @@ def answer_help_question(
     if not q:
         return NOT_AVAILABLE
 
-    path = manual_path or Path(os.environ.get("DASHBOARD_HELP_MANUAL", "")).expanduser() if os.environ.get("DASHBOARD_HELP_MANUAL") else _default_manual_path()
-    _, chunks = _load_manual(path)
+    path = (
+        manual_path
+        or Path(os.environ.get("DASHBOARD_HELP_MANUAL", "")).expanduser()
+        if os.environ.get("DASHBOARD_HELP_MANUAL")
+        else _default_manual_path()
+    )
+    manual_text, chunks = _load_manual(path)
+
+    # Deterministic FAQs (answer from documentation without relying on model formatting).
+    lowered = q.lower()
+    if "chart" in lowered:
+        intent = lowered.replace("chartrs", "charts").replace("chartr", "chart")
+        if "what do the chart" in intent or "what do chart" in intent or "charts do" in intent:
+            excerpt_lines: List[str] = []
+            in_section = False
+            for line in manual_text.splitlines():
+                if line.strip().startswith("### 5.11 Quick answer: “What do the charts do?”"):
+                    in_section = True
+                    continue
+                if in_section and line.startswith("### "):
+                    break
+                if in_section:
+                    excerpt_lines.append(line.rstrip())
+            excerpt = "\n".join(excerpt_lines).strip()
+            if excerpt:
+                bullets: List[str] = []
+                for ln in excerpt.splitlines():
+                    t = ln.strip()
+                    if t.startswith("- "):
+                        bullets.append(t[2:].strip())
+                if bullets:
+                    evidence = "\n".join(f"\"{b}\"" for b in bullets[:3])
+                    answer = "\n".join(f"- {b}" for b in bullets[:3])
+                    return f"Evidence:\n{evidence}\n\nAnswer:\n{answer}"
     selected = _select_chunks(chunks, q, k=4)
     if not selected:
         return NOT_AVAILABLE

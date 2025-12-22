@@ -318,6 +318,32 @@ def _enforce_grounding(answer_text: str, doc_context: str) -> Optional[str]:
     return text
 
 
+def _answer_charts_faq(manual_text: str) -> Optional[str]:
+    excerpt_lines: List[str] = []
+    in_section = False
+    for line in (manual_text or "").splitlines():
+        if line.strip().startswith("### 5.11 Quick answer: “What do the charts do?”"):
+            in_section = True
+            continue
+        if in_section and line.startswith("### "):
+            break
+        if in_section:
+            excerpt_lines.append(line.rstrip())
+    excerpt = "\n".join(excerpt_lines).strip()
+    if not excerpt:
+        return None
+    bullets: List[str] = []
+    for ln in excerpt.splitlines():
+        t = ln.strip()
+        if t.startswith("- "):
+            bullets.append(t[2:].strip())
+    if not bullets:
+        return None
+    evidence = "\n".join(f"\"{b}\"" for b in bullets[:3])
+    answer = "\n".join(f"- {b}" for b in bullets[:3])
+    return f"Evidence:\n{evidence}\n\nAnswer:\n{answer}"
+
+
 def create_app() -> FastAPI:
     app = FastAPI(title="Thermostat Dashboard Help API", version="1.0")
     app.add_middleware(
@@ -356,6 +382,14 @@ def create_app() -> FastAPI:
         question = (payload.question or "").strip()
         if not question:
             return HelpChatResponse(answer=NOT_AVAILABLE)
+
+        lowered = question.lower()
+        if "chart" in lowered:
+            intent = lowered.replace("chartrs", "charts").replace("chartr", "chart")
+            if "what do the chart" in intent or "what do chart" in intent or "charts do" in intent:
+                direct = _answer_charts_faq(manual_text)
+                if direct:
+                    return HelpChatResponse(answer=direct)
 
         selected = _select_chunks(chunks, question, k=4)
         if not selected:
