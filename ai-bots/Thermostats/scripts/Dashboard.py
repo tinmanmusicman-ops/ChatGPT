@@ -1819,7 +1819,7 @@ def build_dashboard_html(
         grid-area: history;
       }}
       .transport-stack {{
-        margin-top: -68px;
+        margin-top: -40px;
         margin-left: 0;
         position: relative;
         z-index: 10;
@@ -2001,7 +2001,8 @@ def build_dashboard_html(
         transform: translate(var(--cassette-image-x), var(--cassette-image-y)) scale(var(--cassette-image-scale));
       }}
       .transport-deck.playing .reel-spin {{
-        animation: deck-spin 1.35s linear infinite;
+        animation: deck-spin var(--deck-spin-duration, 1.35s) linear infinite;
+        animation-direction: var(--deck-spin-direction, normal);
       }}
       .transport-deck .led-dot {{
         transition: fill 0.25s ease, filter 0.25s ease;
@@ -2666,6 +2667,18 @@ def build_dashboard_html(
         align-items: flex-end;
         gap: 12px;
       }}
+      /* TV-mode tape reader (shows cassette spin in the bottom bar). */
+      .tv-transport-deck {{
+        display: none;
+      }}
+      body.tv-mode #tv-transport-deck.transport-deck {{
+        display: block;
+        width: 260px;
+        height: 122px;
+        border-radius: 14px;
+        pointer-events: none;
+        opacity: 0.98;
+      }}
       body.tv-mode .tv-file-select {{
         display: flex;
         flex-direction: column;
@@ -3095,7 +3108,7 @@ def build_dashboard_html(
       .chart-history.expanded .history-lists-row {{
         display: flex;
         position: absolute;
-        left: 0;
+        left: 140px;
         right: 0;
         bottom: calc(100% + 10px);
         z-index: 600;
@@ -3375,6 +3388,58 @@ def build_dashboard_html(
                     <div id="tv-history-hour" class="tv-history-hour"></div>
                   </div>
                   <div id="tv-history-slot"></div>
+                </div>
+                <div id="tv-transport-deck" class="transport-deck cassette-skin tv-transport-deck" aria-hidden="true">
+                  <svg viewBox="0 0 240 90" role="img" aria-label="Tape reader">
+                    <defs>
+                      <linearGradient id="tv-deck-bg" x1="0" x2="0" y1="0" y2="1">
+                        <stop offset="0" stop-color="#1c1c24" />
+                        <stop offset="0.55" stop-color="#0d0d14" />
+                        <stop offset="1" stop-color="#2b2b34" />
+                      </linearGradient>
+                      <linearGradient id="tv-deck-edge" x1="0" x2="0" y1="0" y2="1">
+                        <stop offset="0" stop-color="rgba(255,255,255,0.18)" />
+                        <stop offset="1" stop-color="rgba(0,0,0,0.6)" />
+                      </linearGradient>
+                      <filter id="tv-deck-shadow" x="-20%" y="-40%" width="140%" height="180%">
+                        <feDropShadow dx="0" dy="10" stdDeviation="7" flood-color="rgba(0,0,0,0.7)" />
+                      </filter>
+                    </defs>
+                    <g class="deck-ui">
+                      <rect x="6" y="6" width="234" height="84" rx="14" fill="rgba(0,0,0,0.55)" />
+                      <rect x="3" y="3" width="234" height="84" rx="14" fill="url(#tv-deck-bg)" stroke="url(#tv-deck-edge)" stroke-width="2" filter="url(#tv-deck-shadow)" />
+                      <rect x="10" y="74" width="220" height="10" rx="6" fill="rgba(0,0,0,0.28)" />
+                      <rect x="12" y="14" width="216" height="40" rx="10" fill="rgba(255,255,255,0.07)" />
+                      <rect x="14" y="16" width="212" height="36" rx="9" fill="rgba(0,0,0,0.30)" />
+                    </g>
+                    <image class="deck-cassette" href="../../../Images/Casette2.png" x="0" y="0" width="240" height="90" preserveAspectRatio="xMidYMid meet" />
+                    <g class="reel-wrap reel-left" aria-hidden="true">
+                      <g class="reel-spin">
+                        <circle cx="72" cy="34" r="14" fill="rgba(0,0,0,0.0)" stroke="rgba(0,0,0,0.55)" stroke-width="1.5" />
+                        <circle cx="72" cy="34" r="10" fill="rgba(0,0,0,0.0)" stroke="rgba(255,255,255,0.14)" stroke-width="1" />
+                        <circle cx="72" cy="34" r="2.5" fill="rgba(255,255,255,0.35)" />
+                        <path d="M72 24 L74.8 32 L72 34 L69.2 32 Z" fill="rgba(255,255,255,0.35)" />
+                        <path d="M62 34 L70 36.8 L72 34 L70 31.2 Z" fill="rgba(255,255,255,0.35)" />
+                        <path d="M72 44 L74.8 36 L72 34 L69.2 36 Z" fill="rgba(255,255,255,0.35)" />
+                        <path d="M82 34 L74 36.8 L72 34 L74 31.2 Z" fill="rgba(255,255,255,0.35)" />
+                      </g>
+                    </g>
+                    <g class="reel-wrap reel-right" aria-hidden="true">
+                      <g class="reel-spin">
+                        <circle cx="168" cy="34" r="14" fill="rgba(0,0,0,0.0)" stroke="rgba(0,0,0,0.55)" stroke-width="1.5" />
+                        <circle cx="168" cy="34" r="10" fill="rgba(0,0,0,0.0)" stroke="rgba(255,255,255,0.14)" stroke-width="1" />
+                        <circle cx="168" cy="34" r="2.5" fill="rgba(255,255,255,0.35)" />
+                        <path d="M168 24 L170.8 32 L168 34 L165.2 32 Z" fill="rgba(255,255,255,0.35)" />
+                        <path d="M158 34 L166 36.8 L168 34 L166 31.2 Z" fill="rgba(255,255,255,0.35)" />
+                        <path d="M168 44 L170.8 36 L168 34 L165.2 36 Z" fill="rgba(255,255,255,0.35)" />
+                        <path d="M178 34 L170 36.8 L168 34 L170 31.2 Z" fill="rgba(255,255,255,0.35)" />
+                      </g>
+                    </g>
+                    <g class="deck-led">
+                      <circle cx="178" cy="50" r="5.5" fill="rgba(0,0,0,0.35)" />
+                      <circle class="led-dot" cx="178" cy="50" r="3.5" fill="rgba(255,102,102,0.25)" />
+                    </g>
+                  </svg>
                 </div>
               </div>
                 <div class="tv-nav-overlay" aria-hidden="true">
