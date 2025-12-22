@@ -337,6 +337,7 @@ When loading a new archive:
 The embedded help chat must follow these rules:
 
 - Answers must be grounded only in this manual’s text.
+- If a behavior is not described in this manual, it must not be explained by the help chat.
 - If this manual does not contain the requested information, the response must be:
 
 `That information is not available in the documentation.`
@@ -380,4 +381,3 @@ Primary operator-facing functions:
 6. Use the history list or transport nav to load another day; watch the tape animation and wait for the redraw.
 7. Use << / >> to step point-by-point; note edge wrapping can load adjacent days.
 8. Double-click to enter TV mode for big-screen viewing; use TV controls; press Escape to exit.
-
