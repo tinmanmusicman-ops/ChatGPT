@@ -1315,9 +1315,25 @@ def build_dashboard_html(
           <div class="label">{display_label}</div>
           <div class="value">{value}</div>
         </div>
-        """
+    """
     script_path = SCRIPT_DIR / "dashboard_client.js"
     web_output_dir = base_dir.parent / "Web"
+    help_chat_manual_inline = ""
+    manual_path = web_output_dir / "dashboard_operator_manual.md"
+    if manual_path.exists():
+        try:
+            manual_text = manual_path.read_text(encoding="utf-8", errors="replace")
+            help_chat_manual_inline = json.dumps({"text": manual_text}, ensure_ascii=False).replace(
+                "</", "<\\/"
+            )
+        except Exception as exc:
+            logger.warning("Unable to inline help manual from %s (%s)", manual_path, exc)
+            help_chat_manual_inline = ""
+    help_chat_manual_script = (
+        f'    <script id="help-chat-manual-inline" type="application/json">{help_chat_manual_inline}</script>\\n'
+        if help_chat_manual_inline
+        else ""
+    )
     if output_path.parent == web_output_dir:
         # HTML generated for the public Web directory should reference the script in the sibling scripts folder.
         script_src_url = "../scripts/dashboard_client.js"
@@ -1331,19 +1347,19 @@ def build_dashboard_html(
         script_block = f"""    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
-    <script id="dashboard-data-inline" type="application/json">
-{data_json}
+{help_chat_manual_script}    <script id="dashboard-data-inline" type="application/json">
+ {data_json}
     </script>
     <script id="dashboard-client" data-archive-path="{ARCHIVE_DIR_NAME}">
-{client_js}
+ {client_js}
     </script>
     """
     else:
         script_block = f"""    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
-    <script id="dashboard-data-inline" type="application/json">
-{data_json}
+{help_chat_manual_script}    <script id="dashboard-data-inline" type="application/json">
+ {data_json}
     </script>
     <script id="dashboard-client" data-archive-path="{ARCHIVE_DIR_NAME}" src="{script_src_url}"></script>
     """

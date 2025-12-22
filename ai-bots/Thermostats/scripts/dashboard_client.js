@@ -113,7 +113,23 @@
       return;
     }
 
-    const manualUrl = helpChatPanel?.dataset?.manualUrl || "dashboard_operator_manual.md";
+    const inlineEl = document.getElementById("help-chat-manual-inline");
+    if (inlineEl) {
+      try {
+        const payload = JSON.parse(inlineEl.textContent || "{}");
+        const inlineText = typeof payload?.text === "string" ? payload.text : "";
+        if (inlineText.trim()) {
+          helpChatManualText = inlineText;
+          helpChatManualSections = parseHelpManualSections(inlineText);
+          return;
+        }
+      } catch (err) {
+        // Fall back to fetching the manual URL.
+      }
+    }
+
+    const manualUrlRaw = helpChatPanel?.dataset?.manualUrl || "dashboard_operator_manual.md";
+    const manualUrl = new URL(manualUrlRaw, window.location.href).toString();
     helpChatManualLoadPromise = (async () => {
       const resp = await fetch(manualUrl, { cache: "no-store" });
       if (!resp.ok) {
@@ -4516,7 +4532,9 @@
           appendHelpChatMessage("assistant", text);
         }
       } catch (err) {
-        const msg = "Help manual is not reachable. Ensure the manual file is hosted next to the dashboard.";
+        const manualUrlRaw = helpChatPanel?.dataset?.manualUrl || "dashboard_operator_manual.md";
+        const manualUrl = new URL(manualUrlRaw, window.location.href).toString();
+        const msg = `Help manual is not reachable (${manualUrl}). Ensure the manual file is hosted at that URL.`;
         if (placeholder) {
           setHelpChatMessageContent(placeholder, "assistant", msg);
         } else {
