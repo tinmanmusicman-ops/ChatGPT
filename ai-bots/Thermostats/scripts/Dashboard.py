@@ -1,5 +1,4 @@
-from  __future__ import annotations
-from  __future__ import annotations
+from __future__ import annotations
 
 import argparse
 import subprocess
@@ -191,6 +190,9 @@ INLINE_CLIENT_SCRIPT = _normalize_flag(
     os.environ.get("INLINE_CLIENT_SCRIPT", inline_flag_cfg),
     default=INLINE_CLIENT_SCRIPT_DEFAULT,
 )
+HELP_CHAT_ENDPOINT = str(
+    os.environ.get("HELP_CHAT_ENDPOINT", cfg_payload.get("help_chat_endpoint") or "http://localhost:8000/api/help-chat")
+).strip()
 TEST_MODE = _normalize_flag(
     cfg_payload.get("test_mode", cfg_payload.get("testMode", cfg_payload.get("test", False))),
     default=False,
@@ -1388,38 +1390,6 @@ def build_dashboard_html(
         border-radius: 12px;
         box-sizing: border-box;
         position: relative;
-      }}
-      #help-chat-link {{
-        position: absolute;
-        top: 14px;
-        right: 14px;
-        z-index: 500;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 12px;
-        border-radius: 999px;
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        background: rgba(0, 0, 0, 0.25);
-        color: rgba(244, 246, 255, 0.92);
-        text-decoration: none;
-        font-size: 12px;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        backdrop-filter: blur(8px);
-      }}
-      #help-chat-link:hover,
-      #help-chat-link:focus-visible {{
-        border-color: rgba(102, 255, 153, 0.6);
-        background: rgba(102, 255, 153, 0.12);
-        color: rgba(255, 255, 255, 0.98);
-      }}
-      #help-chat-link:focus-visible {{
-        outline: 2px solid rgba(102, 255, 153, 0.8);
-        outline-offset: 2px;
-      }}
-      body.tv-mode #help-chat-link {{
-        display: none !important;
       }}
       h1 {{
         margin: 0 0 16px;
@@ -3206,11 +3176,180 @@ def build_dashboard_html(
         white-space: pre-wrap;
         width: 100%;
       }}
+
+      /* Embedded help chat (operator manual only). */
+      #help-chat-toggle {{
+        position: fixed;
+        right: 18px;
+        bottom: 18px;
+        z-index: 2500;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        border-radius: 999px;
+        border: 1px solid rgba(255,255,255,0.18);
+        background: rgba(0,0,0,0.55);
+        color: rgba(244,246,255,0.92);
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        backdrop-filter: blur(8px);
+        cursor: pointer;
+      }}
+      #help-chat-toggle:hover,
+      #help-chat-toggle:focus-visible {{
+        border-color: rgba(102, 255, 153, 0.6);
+        background: rgba(102, 255, 153, 0.14);
+        color: rgba(255,255,255,0.98);
+      }}
+      #help-chat-toggle:focus-visible {{
+        outline: 2px solid rgba(102, 255, 153, 0.85);
+        outline-offset: 2px;
+      }}
+      body.tv-mode #help-chat-toggle {{
+        display: none !important;
+      }}
+
+      #help-chat-panel {{
+        position: fixed;
+        right: 18px;
+        bottom: 64px;
+        width: min(420px, calc(100vw - 36px));
+        height: min(520px, calc(100vh - 110px));
+        z-index: 2600;
+        border-radius: 14px;
+        border: 1px solid rgba(255,255,255,0.14);
+        background: rgba(10, 14, 20, 0.96);
+        box-shadow: 0 22px 60px rgba(0,0,0,0.65);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }}
+      #help-chat-panel.hidden {{
+        display: none;
+      }}
+      .help-chat-header {{
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 12px 10px;
+        border-bottom: 1px solid rgba(255,255,255,0.10);
+      }}
+      .help-chat-title {{
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        opacity: 0.92;
+      }}
+      .help-chat-subtitle {{
+        font-size: 11px;
+        opacity: 0.68;
+        margin-top: 2px;
+      }}
+      #help-chat-close {{
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        border: 1px solid rgba(255,255,255,0.16);
+        background: rgba(0,0,0,0.25);
+        color: rgba(244,246,255,0.92);
+        cursor: pointer;
+      }}
+      #help-chat-close:hover,
+      #help-chat-close:focus-visible {{
+        border-color: rgba(102, 255, 153, 0.6);
+        background: rgba(102, 255, 153, 0.12);
+      }}
+      #help-chat-messages {{
+        flex: 1;
+        padding: 12px;
+        overflow: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }}
+      .help-msg {{
+        max-width: 100%;
+        padding: 10px 10px;
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.10);
+        background: rgba(255,255,255,0.04);
+        font-size: 13px;
+        line-height: 1.35;
+        white-space: pre-wrap;
+      }}
+      .help-msg.user {{
+        border-color: rgba(102, 255, 153, 0.28);
+        background: rgba(102, 255, 153, 0.08);
+      }}
+      .help-msg.assistant {{
+        border-color: rgba(154, 215, 255, 0.18);
+        background: rgba(154, 215, 255, 0.06);
+      }}
+      .help-chat-form {{
+        display: flex;
+        gap: 10px;
+        padding: 10px 12px 12px;
+        border-top: 1px solid rgba(255,255,255,0.10);
+        background: rgba(0,0,0,0.20);
+      }}
+      #help-chat-input {{
+        flex: 1;
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.14);
+        background: rgba(0,0,0,0.25);
+        color: rgba(244,246,255,0.95);
+        padding: 10px 10px;
+        font-size: 13px;
+        outline: none;
+      }}
+      #help-chat-input:focus-visible {{
+        border-color: rgba(154, 215, 255, 0.55);
+        outline: 2px solid rgba(154, 215, 255, 0.35);
+        outline-offset: 2px;
+      }}
+      #help-chat-send {{
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.14);
+        background: rgba(0,0,0,0.25);
+        color: rgba(244,246,255,0.92);
+        padding: 10px 12px;
+        font-size: 13px;
+        cursor: pointer;
+        white-space: nowrap;
+      }}
+      #help-chat-send:hover,
+      #help-chat-send:focus-visible {{
+        border-color: rgba(154, 215, 255, 0.55);
+        background: rgba(154, 215, 255, 0.10);
+      }}
+      #help-chat-status {{
+        padding: 0 12px 10px;
+        font-size: 11px;
+        opacity: 0.7;
+      }}
     </style>
   </head>
   <body class="hide-big-chart hide-chart-history">
     <div class="container">
-      <a id="help-chat-link" href="https://cdn.botpress.cloud/webchat/v3.4/shareable.html?configUrl=https://files.bpcontent.cloud/2025/11/23/04/20251123044527-N8XXQ6V7.json" target="_blank" rel="noopener noreferrer">Chat Help</a>
+      <button id="help-chat-toggle" type="button" aria-haspopup="dialog" aria-controls="help-chat-panel">Help Chat</button>
+      <div id="help-chat-panel" class="hidden" role="dialog" aria-label="Dashboard Help Chat" data-endpoint="{HELP_CHAT_ENDPOINT}">
+        <div class="help-chat-header">
+          <div>
+            <div class="help-chat-title">Dashboard Help</div>
+            <div class="help-chat-subtitle">Answers come only from the operator manual.</div>
+          </div>
+          <button id="help-chat-close" type="button" aria-label="Close help chat">×</button>
+        </div>
+        <div id="help-chat-messages" aria-live="polite"></div>
+        <div id="help-chat-status">Tip: ask about the cassette/transport, chart modes, TV mode, or a specific button.</div>
+        <form id="help-chat-form" class="help-chat-form" autocomplete="off">
+          <input id="help-chat-input" type="text" placeholder="Ask a question…" aria-label="Ask a dashboard question" />
+          <button id="help-chat-send" type="submit">Send</button>
+        </form>
+      </div>
       <div id="Cards" class="card-grid frame2">
         {cards}
       </div>

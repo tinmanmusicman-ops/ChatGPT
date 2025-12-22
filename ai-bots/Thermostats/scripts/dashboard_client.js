@@ -32,6 +32,36 @@
     console[level](message);
   };
 
+  // Embedded help chat (server-backed; operator manual only).
+  const helpChatToggle = document.getElementById("help-chat-toggle");
+  const helpChatPanel = document.getElementById("help-chat-panel");
+  const helpChatClose = document.getElementById("help-chat-close");
+  const helpChatMessages = document.getElementById("help-chat-messages");
+  const helpChatForm = document.getElementById("help-chat-form");
+  const helpChatInput = document.getElementById("help-chat-input");
+  const helpChatSend = document.getElementById("help-chat-send");
+  let helpChatBusy = false;
+  const appendHelpChatMessage = (role, text) => {
+    if (!helpChatMessages) {
+      return null;
+    }
+    const msg = document.createElement("div");
+    msg.className = `help-msg ${role || ""}`.trim();
+    msg.textContent = String(text || "");
+    helpChatMessages.appendChild(msg);
+    helpChatMessages.scrollTop = helpChatMessages.scrollHeight;
+    return msg;
+  };
+  const setHelpChatOpen = (open) => {
+    if (!helpChatPanel) {
+      return;
+    }
+    helpChatPanel.classList.toggle("hidden", !open);
+    if (open && helpChatInput) {
+      setTimeout(() => helpChatInput.focus(), 0);
+    }
+  };
+
   const chartHistory = document.getElementById("chart-history");
   const chartHistoryList = document.getElementById("chart-history-list");
   const chartHistoryToggle = document.getElementById("chart-history-toggle");
@@ -4222,6 +4252,126 @@
     }
   };
 
+  const getHelpChatState = () => {
+    const labels = getChartLabels();
+    const length = Array.isArray(labels) ? labels.length : 0;
+    const pinned = clampIndex(pinnedPointIndex, length);
+    const pinnedLabel = pinned !== null ? valueAt(labels, pinned, "") : "";
+    const modes = typeof enabledModes !== "undefined" ? Array.from(enabledModes || []) : [];
+    const archiveSlug = currentArchiveSlug || dashboardData.generatedDateSlug || "";
+    const isTvMode = Boolean(document.body && document.body.classList.contains("tv-mode"));
+    const chartsAreSwapped = Boolean(document.body && document.body.classList.contains("charts-swapped"));
+    const historyVisible = Boolean(canvas && canvas.style.display !== "none");
+    return {
+      viewMode: isTvMode ? "tv" : "normal",
+      chartsSwapped: chartsAreSwapped,
+      historyChartVisible: historyVisible,
+      archiveSlug,
+      pinnedIndex: pinned,
+      pinnedLabel,
+      enabledModes: modes,
+    };
+  };
+
+  const bindHelpChat = () => {
+    if (!helpChatPanel || !helpChatToggle || !helpChatForm) {
+      return;
+    }
+    if (helpChatPanel.dataset.bound === "1") {
+      return;
+    }
+    helpChatPanel.dataset.bound = "1";
+
+    helpChatToggle.addEventListener("click", () => {
+      const isHidden = helpChatPanel.classList.contains("hidden");
+      setHelpChatOpen(isHidden);
+      if (isHidden && (!helpChatMessages || helpChatMessages.childElementCount === 0)) {
+        appendHelpChatMessage(
+          "assistant",
+          "Ask me how to use the dashboard. I can only answer using the operator manual."
+        );
+      }
+    });
+    if (helpChatClose) {
+      helpChatClose.addEventListener("click", () => setHelpChatOpen(false));
+    }
+
+    // Close on Escape when chat is open and focus is inside it.
+    window.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape") {
+        return;
+      }
+      if (!helpChatPanel || helpChatPanel.classList.contains("hidden")) {
+        return;
+      }
+      const active = document.activeElement;
+      if (active && helpChatPanel.contains(active)) {
+        event.preventDefault();
+        setHelpChatOpen(false);
+      }
+    });
+
+    helpChatForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (helpChatBusy) {
+        return;
+      }
+      const question = String(helpChatInput?.value || "").trim();
+      if (!question) {
+        return;
+      }
+      if (helpChatInput) {
+        helpChatInput.value = "";
+      }
+      appendHelpChatMessage("user", question);
+      const placeholder = appendHelpChatMessage("assistant", "…");
+
+      const endpoint =
+        helpChatPanel.dataset.endpoint || "http://localhost:8000/api/help-chat";
+      helpChatBusy = true;
+      if (helpChatInput) helpChatInput.disabled = true;
+      if (helpChatSend) helpChatSend.disabled = true;
+      try {
+        const resp = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question, state: getHelpChatState() }),
+        });
+        let text = "";
+        try {
+          const data = await resp.json();
+          text = data && typeof data.answer === "string" ? data.answer : "";
+        } catch (err) {
+          text = "";
+        }
+        if (!resp.ok) {
+          const statusText = resp.status ? ` (HTTP ${resp.status})` : "";
+          text = text || `Help service error${statusText}.`;
+        }
+        if (!text) {
+          text = "Help service returned an empty response.";
+        }
+        if (placeholder) {
+          placeholder.textContent = text;
+        } else {
+          appendHelpChatMessage("assistant", text);
+        }
+      } catch (err) {
+        const msg = "Help service is not reachable. Start the local help API and try again.";
+        if (placeholder) {
+          placeholder.textContent = msg;
+        } else {
+          appendHelpChatMessage("assistant", msg);
+        }
+      } finally {
+        helpChatBusy = false;
+        if (helpChatInput) helpChatInput.disabled = false;
+        if (helpChatSend) helpChatSend.disabled = false;
+        if (helpChatInput) helpChatInput.focus();
+      }
+    });
+  };
+
   if (chartControlButtons) {
     chartControlButtons.forEach((button) => {
       button.addEventListener("click", () => {
@@ -4251,6 +4401,7 @@
   bindArchiveKeyboardShortcuts();
   bindTvControls();
   bindAutoplayInteractions();
+  bindHelpChat();
   updateAutoplayToggle();
   ensureAutoplayScheduled();
 })();
