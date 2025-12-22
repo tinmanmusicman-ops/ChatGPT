@@ -3391,6 +3391,42 @@ def build_dashboard_html(
       .help-msg.assistant .doc-section-body {{
         margin-top: 8px;
       }}
+      .help-msg.assistant details.doc-subsection {{
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.03);
+        margin-top: 6px;
+        margin-left: 12px;
+        padding: 4px 6px;
+      }}
+      .help-msg.assistant summary.doc-subsection-summary {{
+        cursor: pointer;
+        list-style: none;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-weight: 600;
+        font-size: 13px;
+        color: rgba(244, 246, 255, 0.96);
+        outline: none;
+      }}
+      .help-msg.assistant summary.doc-subsection-summary::before {{
+        content: ">";
+        font-weight: 700;
+        opacity: 0.85;
+      }}
+      .help-msg.assistant details.doc-subsection[open] summary.doc-subsection-summary::before {{
+        content: "v";
+      }}
+      .help-msg.assistant summary.doc-subsection-summary:focus-visible {{
+        outline: 2px solid rgba(154, 215, 255, 0.55);
+        outline-offset: 2px;
+        border-radius: 8px;
+      }}
+      .help-msg.assistant .doc-subsection-body {{
+        margin-top: 6px;
+        padding-left: 10px;
+      }}
       .help-chat-form {{
         display: flex;
         gap: 10px;

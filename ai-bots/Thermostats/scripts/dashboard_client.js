@@ -51,22 +51,65 @@
     if (!container || container.dataset.docEnhanced === "1") {
       return;
     }
+    const wrapHeadingSections = (
+      root,
+      headingTag,
+      detailClass,
+      summaryClass,
+      bodyClass
+    ) => {
+      const headings = Array.from(root.querySelectorAll(headingTag));
+      headings.forEach((heading) => {
+        if (!heading.parentNode) {
+          return;
+        }
+        if (heading.closest(`.${detailClass}`)) {
+          return;
+        }
+        const titleText = String(heading.textContent || "").trim();
+        if (!titleText) {
+          return;
+        }
+        const details = document.createElement("details");
+        details.className = detailClass;
+        const summary = document.createElement("summary");
+        summary.className = summaryClass;
+        summary.textContent = titleText;
+        const body = document.createElement("div");
+        body.className = bodyClass;
+
+        details.appendChild(summary);
+        details.appendChild(body);
+        heading.parentNode.insertBefore(details, heading);
+
+        let node = heading.nextSibling;
+        while (node) {
+          const next = node.nextSibling;
+          if (node.nodeType === 1 && node.tagName === headingTag) {
+            break;
+          }
+          body.appendChild(node);
+          node = next;
+        }
+
+        heading.remove();
+      });
+    };
     const headers = Array.from(container.querySelectorAll("h2"));
     if (!headers.length) {
       return;
     }
 
-    // Wrap only numbered manual sections 1–6 in collapsible details blocks.
-    for (let i = headers.length - 1; i >= 0; i -= 1) {
-      const h2 = headers[i];
-      const titleText = String(h2.textContent || "").trim();
-      const match = titleText.match(/^(\d+)\.\s+/);
-      if (!match) {
-        continue;
+    headers.forEach((h2) => {
+      if (!h2.parentNode) {
+        return;
       }
-      const sectionNum = Number(match[1]);
-      if (!Number.isFinite(sectionNum) || sectionNum < 1 || sectionNum > 6) {
-        continue;
+      if (h2.closest(".doc-section")) {
+        return;
+      }
+      const titleText = String(h2.textContent || "").trim();
+      if (!titleText) {
+        return;
       }
 
       const details = document.createElement("details");
@@ -92,7 +135,15 @@
       }
 
       h2.remove();
-    }
+    });
+
+    wrapHeadingSections(
+      container,
+      "H3",
+      "doc-subsection",
+      "doc-subsection-summary",
+      "doc-subsection-body"
+    );
 
     container.dataset.docEnhanced = "1";
   };
