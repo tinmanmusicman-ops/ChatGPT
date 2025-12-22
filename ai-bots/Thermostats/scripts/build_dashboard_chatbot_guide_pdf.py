@@ -73,11 +73,12 @@ def build_story(theme: Theme) -> list:
 
     story: list = []
 
-    story.append(Paragraph("Welcome to the Dashboard", title))
+    story.append(Paragraph("Welcome to the Thermostat Dashboard", title))
     story.append(
         Paragraph(
             "If you just arrived here and nothing makes sense yet, you’re in the right place. "
-            "This page is meant to be explored, and you don’t need any background to start. "
+            "This page is here to help you understand what’s happening in a real Honeywell thermostat setup. "
+            "You don’t need any background or technical knowledge to use it. "
             "When you’re ready, the chatbot can explain what you’re seeing—one question at a time.",
             body,
         )
@@ -86,10 +87,11 @@ def build_story(theme: Theme) -> list:
     story.append(Paragraph("What This Dashboard Is", section))
     story.append(
         Paragraph(
-            "This dashboard is a quick, live snapshot of what’s happening right now. "
-            "It brings together a few signals (like recent activity and trends) and shows them as simple labels and charts. "
-            "You can use it to get a sense of “what’s going on” at a glance, even if you don’t recognize everything. "
-            "If something looks unfamiliar, that’s normal—the chatbot can translate it into plain language.",
+            "This dashboard is a simple “window” into a Honeywell thermostat system. "
+            "It shows what the thermostat is doing right now (and what it has been doing recently) using a few numbers and a chart. "
+            "For example, you may see the current indoor temperature, the target temperature, whether it’s heating or cooling, "
+            "and whether the equipment is running. "
+            "If anything looks unfamiliar, that’s normal—the chatbot can translate it into plain language.",
             body,
         )
     )
@@ -97,8 +99,9 @@ def build_story(theme: Theme) -> list:
     story.append(Paragraph("What the Chatbot Is For", section))
     story.append(
         Paragraph(
-            "The chatbot is your guide. You can ask questions in everyday language—no special commands. "
-            "It can explain what a label means, what a chart is showing, or why something might be happening. "
+            "The chatbot is your guide for this thermostat dashboard. "
+            "You can ask questions in everyday language—no special commands. "
+            "It can explain what a label means, what the chart is showing, or why the system might be running. "
             "It won’t start talking until you ask something, so just type whenever you’re ready.",
             body,
         )
@@ -107,6 +110,7 @@ def build_story(theme: Theme) -> list:
     story.append(Paragraph("Common Questions You Can Ask", section))
     questions = [
         "What am I looking at?",
+        "What does this Honeywell thermostat dashboard show?",
         "What does this chart mean?",
         "Why is this running right now?",
         "Is this normal?",
@@ -131,8 +135,8 @@ def build_story(theme: Theme) -> list:
     story.append(Paragraph("What Happens Next", section))
     story.append(
         Paragraph(
-            "Once you ask a question, the chatbot will reply with a clear explanation and may ask a quick follow-up to make sure it understands. "
-            "If you’re not sure how to phrase your question, that’s okay—just describe what you notice. "
+            "Once you ask a question, the chatbot will reply with a clear explanation and may ask a quick follow-up. "
+            "If you’re not sure how to phrase your question, that’s okay—just describe what you notice on the screen. "
             "When you’re ready, start typing a question in the chat.",
             body,
         )
@@ -171,4 +175,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
