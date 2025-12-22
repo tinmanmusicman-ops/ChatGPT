@@ -94,6 +94,24 @@ In TV mode:
 - TV navigation overlay provides step mode and archive prev/next (`#tv-archive-prev`, `#tv-archive-next`)
 - most small-mode elements are hidden by CSS
 
+### 3.3 Charts (what they do)
+
+This dashboard has **two charts**:
+
+1. **History chart** (the thermostat timeline chart)
+   - Purpose: show how readings change across time points within the loaded day.
+   - Controls:
+     - dataset buttons (Set Point / Building Temp / Outside Temp / AC Status / Fan Mode / Combined)
+     - selection behavior (hover/pin) controls which time point the cards show
+     - step buttons (<< / >>) move between time points
+     - Show/Hide History Chart toggles its visibility
+
+2. **Usage chart** (the runtime summary bar chart)
+   - Purpose: summarize condenser runtime across a selected range (7 days / month / year).
+   - Controls:
+     - range buttons (7 Day / Month / Year)
+     - clicking a bar loads the archive day associated with that bar
+
 ---
 
 ## 4. Data Cassette & Archive Loading
@@ -274,6 +292,11 @@ Handled by `bindArchiveKeyboardShortcuts()`:
 - `ArrowRight`: navigate forward
 - In TV mode:
   - `Escape`: exits TV mode
+
+### 5.11 Quick answer: “What do the charts do?”
+
+- **History chart:** shows the thermostat timeline for the loaded day; you can hover/pin points to change what the cards show, and use the step buttons to move through time points.
+- **Usage chart:** summarizes runtime totals across multiple days; clicking a bar loads the day behind that bar.
 
 ---
 

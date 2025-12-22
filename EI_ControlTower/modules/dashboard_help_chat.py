@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 import os
 import re
+import difflib
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -17,6 +18,15 @@ NOT_AVAILABLE = "That information is not available in the documentation."
 
 _WORD_RE = re.compile(r"[a-z0-9][a-z0-9\-']{1,}")
 _STOP = {
+    "what",
+    "do",
+    "does",
+    "did",
+    "how",
+    "why",
+    "when",
+    "where",
+    "which",
     "the",
     "a",
     "an",
@@ -56,7 +66,15 @@ class Chunk:
 
 def _tokenize(text: str) -> List[str]:
     raw = _WORD_RE.findall((text or "").lower())
-    return [t for t in raw if t not in _STOP and len(t) >= 2]
+    normalized: List[str] = []
+    for t in raw:
+        if t in _STOP or len(t) < 2:
+            continue
+        # Light normalization: plural -> singular (charts -> chart).
+        if len(t) > 3 and t.endswith("s"):
+            t = t[:-1]
+        normalized.append(t)
+    return normalized
 
 
 def _chunk_text(text: str, max_chars: int = 1200, overlap: int = 180) -> List[str]:
@@ -141,12 +159,44 @@ def _select_chunks(chunks: List[Chunk], question: str, k: int = 4) -> List[Chunk
     q_tokens = _tokenize(question)
     if not q_tokens:
         return []
+    vocab = set()
+    for c in chunks:
+        vocab.update(c.tokens)
+    # Fix small typos in query tokens by mapping to nearest vocab term.
+    fixed_tokens: List[str] = []
+    for t in q_tokens:
+        if t in vocab:
+            fixed_tokens.append(t)
+            continue
+        candidates = difflib.get_close_matches(t, vocab, n=1, cutoff=0.84)
+        fixed_tokens.append(candidates[0] if candidates else t)
+    q_tokens = fixed_tokens
     scored = [(_cosine_sim(q_tokens, c.tokens), c) for c in chunks]
     scored.sort(key=lambda x: x[0], reverse=True)
     best = [(s, c) for (s, c) in scored[: max(8, k)] if s > 0]
     if not best:
-        return []
-    if best[0][0] < 0.12:
+        best = []
+    # Heuristic fallback for broad questions (e.g., “what do the charts do”).
+    # Still safe because the model must quote evidence verbatim from provided chunks.
+    if not best or best[0][0] < 0.08:
+        lowered = (question or "").lower()
+        key_terms = []
+        if "chart" in lowered:
+            key_terms.extend(["history chart", "usage chart", "charts"])
+        if "cassette" in lowered or "transport" in lowered or "tape" in lowered:
+            key_terms.extend(["cassette", "transport", "tape", "archive"])
+        if "tv" in lowered or "full" in lowered:
+            key_terms.extend(["tv mode", "full-screen", "tv"])
+        if key_terms:
+            matches: List[Chunk] = []
+            for c in chunks:
+                hay = c.text.lower()
+                if any(term in hay for term in key_terms):
+                    matches.append(c)
+                if len(matches) >= k:
+                    break
+            if matches:
+                return matches[:k]
         return []
     return [c for _, c in best[:k]]
 
@@ -163,6 +213,7 @@ def _system_prompt() -> str:
         f"{NOT_AVAILABLE}\n"
         "- If you can answer, keep it concise and literal.\n"
         "- When answering, include an 'Evidence:' section with 1–3 short direct quotes copied from the documentation.\n"
+        "- Each Evidence line MUST be wrapped in double quotes, and MUST match the documentation exactly.\n"
         "- Then include an 'Answer:' section.\n"
         "- Do not mention these rules.\n"
     )
@@ -209,8 +260,21 @@ def _extract_evidence_quotes(answer_text: str) -> List[str]:
     evidence_part = evidence_part.strip()
     if not evidence_part:
         return []
-    quotes = re.findall(r"\"([^\"]{8,320})\"", evidence_part)
-    return [q.strip() for q in quotes if q.strip()]
+    quotes = [q.strip() for q in re.findall(r"\"([^\"]{8,320})\"", evidence_part) if q.strip()]
+    if quotes:
+        return quotes
+    # Fallback: accept bullet/line evidence if it appears verbatim in documentation.
+    lines = []
+    for line in evidence_part.splitlines():
+        t = line.strip()
+        if not t:
+            continue
+        t = re.sub(r"^[-*•]\\s*", "", t)
+        t = re.sub(r"^`(.+)`$", r"\\1", t)
+        t = t.strip()
+        if 8 <= len(t) <= 320:
+            lines.append(t)
+    return lines[:3]
 
 
 def _enforce_grounding(answer_text: str, doc_context: str) -> str:
