@@ -26,9 +26,13 @@ If you already run the Flask Control Tower (`EI_ControlTower/tower.py`), you can
 
 The dashboard chat calls `http://localhost:8000/api/help-chat` by default.
 
-If you’re using the Flask Control Tower route, set:
+If you’re using the Flask Control Tower route, the default Flask port is `5000`, so the chat endpoint is:
 
-- `HELP_CHAT_ENDPOINT=/tower/api/help-chat`
+- `http://localhost:5000/tower/api/help-chat`
+
+You can also set:
+
+- `HELP_CHAT_ENDPOINT=http://localhost:5000/tower/api/help-chat`
 
 ### Configure endpoint (optional)
 
