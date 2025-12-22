@@ -3353,6 +3353,44 @@ def build_dashboard_html(
         background: transparent;
         padding: 0;
       }}
+      .help-msg.assistant details.doc-section {{
+        border: 1px solid rgba(255,255,255,0.10);
+        border-radius: 12px;
+        background: rgba(0,0,0,0.18);
+        padding: 6px 8px;
+      }}
+      .help-msg.assistant details.doc-section + details.doc-section {{
+        margin-top: 8px;
+      }}
+      .help-msg.assistant summary.doc-section-summary {{
+        cursor: pointer;
+        list-style: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+        color: rgba(244,246,255,0.96);
+        outline: none;
+      }}
+      .help-msg.assistant summary.doc-section-summary::-webkit-details-marker {{
+        display: none;
+      }}
+      .help-msg.assistant details.doc-section summary.doc-section-summary::before {{
+        content: "▶";
+        font-weight: 700;
+        opacity: 0.9;
+      }}
+      .help-msg.assistant details.doc-section[open] summary.doc-section-summary::before {{
+        content: "▼";
+      }}
+      .help-msg.assistant summary.doc-section-summary:focus-visible {{
+        outline: 2px solid rgba(154, 215, 255, 0.55);
+        outline-offset: 3px;
+        border-radius: 10px;
+      }}
+      .help-msg.assistant .doc-section-body {{
+        margin-top: 8px;
+      }}
       .help-chat-form {{
         display: flex;
         gap: 10px;

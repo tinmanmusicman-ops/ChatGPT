@@ -47,6 +47,56 @@
   let helpChatManualSections = null;
   let helpChatManualLoadPromise = null;
 
+  const enhanceHelpChatDocSections = (container) => {
+    if (!container || container.dataset.docEnhanced === "1") {
+      return;
+    }
+    const headers = Array.from(container.querySelectorAll("h2"));
+    if (!headers.length) {
+      return;
+    }
+
+    // Wrap only numbered manual sections 1–6 in collapsible details blocks.
+    for (let i = headers.length - 1; i >= 0; i -= 1) {
+      const h2 = headers[i];
+      const titleText = String(h2.textContent || "").trim();
+      const match = titleText.match(/^(\d+)\.\s+/);
+      if (!match) {
+        continue;
+      }
+      const sectionNum = Number(match[1]);
+      if (!Number.isFinite(sectionNum) || sectionNum < 1 || sectionNum > 6) {
+        continue;
+      }
+
+      const details = document.createElement("details");
+      details.className = "doc-section";
+      const summary = document.createElement("summary");
+      summary.className = "doc-section-summary";
+      summary.textContent = titleText;
+      const body = document.createElement("div");
+      body.className = "doc-section-body";
+
+      details.appendChild(summary);
+      details.appendChild(body);
+      h2.parentNode.insertBefore(details, h2);
+
+      let node = h2.nextSibling;
+      while (node) {
+        const next = node.nextSibling;
+        if (node.nodeType === 1 && node.tagName === "H2") {
+          break;
+        }
+        body.appendChild(node);
+        node = next;
+      }
+
+      h2.remove();
+    }
+
+    container.dataset.docEnhanced = "1";
+  };
+
   const tokenizeHelpQuery = (text) => {
     const raw = String(text || "")
       .toLowerCase()
@@ -226,6 +276,7 @@
         a.target = "_blank";
         a.rel = "noopener noreferrer";
       });
+      enhanceHelpChatDocSections(el);
       if (!el.innerHTML) {
         el.textContent = messageText;
       }
