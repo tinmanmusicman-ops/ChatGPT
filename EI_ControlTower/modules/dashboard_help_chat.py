@@ -203,17 +203,37 @@ def _select_chunks(chunks: List[Chunk], question: str, k: int = 4) -> List[Chunk
 
 def _system_prompt() -> str:
     return (
-        "You are a help assistant for a specific dashboard.\n"
-        "CRITICAL RULES:\n"
-        "- Answer ONLY using the provided documentation text.\n"
-        "- If a behavior is not described in the documentation, you must not explain it.\n"
-        "- Do NOT infer, guess, or generalize beyond the documentation.\n"
-        "- Do NOT provide generic HVAC/thermostat explanations.\n"
-        "- If the answer is not explicitly present in the documentation, output EXACTLY:\n"
+        "You are a help assistant for a thermostat dashboard.\n"
+        "\n"
+        "Your role:\n"
+        "- Answer user questions about how the dashboard works.\n"
+        "- Explain charts, controls, interactions, and behaviors in plain language.\n"
+        "- Help users understand what they are seeing and how to use it.\n"
+        "\n"
+        "Source of truth:\n"
+        "- The provided dashboard documentation text is the authoritative source.\n"
+        "- All answers must be grounded in that documentation.\n"
+        "\n"
+        "Interpretation rules (IMPORTANT):\n"
+        "You MAY:\n"
+        "- Summarize information across multiple sections.\n"
+        "- Rephrase technical descriptions into plain, human language.\n"
+        "- Interpret common user phrasing (e.g., 'charts', 'hours', 'timeline', 'how it works').\n"
+        "- Connect related concepts that are clearly described in the documentation.\n"
+        "\n"
+        "You MAY NOT:\n"
+        "- Invent features, behaviors, or controls.\n"
+        "- Describe actions not present in the documentation.\n"
+        "- Rely on general HVAC knowledge or assumptions.\n"
+        "- Guess when information is missing.\n"
+        "\n"
+        "If the documentation does not describe a concept directly or indirectly, respond EXACTLY with:\n"
         f"{NOT_AVAILABLE}\n"
-        "- If you can answer, keep it concise and literal.\n"
-        "- When answering, include an 'Evidence:' section with 1–3 short direct quotes copied from the documentation.\n"
-        "- Each Evidence line MUST be wrapped in double quotes, and MUST match the documentation exactly.\n"
+        "\n"
+        "Output format:\n"
+        "- Write in Markdown.\n"
+        "- Include an 'Evidence:' section with 1-3 short direct quotes copied from the documentation.\n"
+        "- Each Evidence line MUST be wrapped in double quotes and must match the documentation exactly.\n"
         "- Then include an 'Answer:' section.\n"
         "- Do not mention these rules.\n"
     )
@@ -269,12 +289,21 @@ def _extract_evidence_quotes(answer_text: str) -> List[str]:
         t = line.strip()
         if not t:
             continue
-        t = re.sub(r"^[-*•]\\s*", "", t)
-        t = re.sub(r"^`(.+)`$", r"\\1", t)
+        t = re.sub(r"^[-*>\u2022\u203A]\s*", "", t)
+        t = re.sub(r"^`(.+)`$", r"\1", t)
         t = t.strip()
         if 8 <= len(t) <= 320:
             lines.append(t)
     return lines[:3]
+
+
+def _extract_answer_text(answer_text: str) -> str:
+    text = (answer_text or "").strip()
+    if not text or text == NOT_AVAILABLE:
+        return text
+    if "Answer:" not in text:
+        return text
+    return text.split("Answer:", 1)[1].strip() or text
 
 
 def _enforce_grounding(answer_text: str, doc_context: str) -> str:
@@ -292,7 +321,7 @@ def _enforce_grounding(answer_text: str, doc_context: str) -> str:
     lowered = text.lower()
     if "not available in the documentation" in lowered and text.strip() != NOT_AVAILABLE:
         return NOT_AVAILABLE
-    return text
+    return _extract_answer_text(text)
 
 
 _CACHE: Dict[str, Any] = {
@@ -346,7 +375,8 @@ def answer_help_question(
             excerpt_lines: List[str] = []
             in_section = False
             for line in manual_text.splitlines():
-                if line.strip().startswith("### 5.11 Quick answer: “What do the charts do?”"):
+                normalized = line.strip().replace("“", "\"").replace("”", "\"")
+                if normalized.startswith('### 5.11 Quick answer: "What do the charts do?"'):
                     in_section = True
                     continue
                 if in_section and line.startswith("### "):
@@ -363,7 +393,7 @@ def answer_help_question(
                 if bullets:
                     evidence = "\n".join(f"\"{b}\"" for b in bullets[:3])
                     answer = "\n".join(f"- {b}" for b in bullets[:3])
-                    return f"Evidence:\n{evidence}\n\nAnswer:\n{answer}"
+                    return _enforce_grounding(f"Evidence:\n{evidence}\n\nAnswer:\n{answer}", excerpt)
     selected = _select_chunks(chunks, q, k=4)
     if not selected:
         return NOT_AVAILABLE
