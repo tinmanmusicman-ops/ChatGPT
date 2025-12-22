@@ -176,13 +176,19 @@ def _select_chunks(chunks: List[Chunk], question: str, k: int = 4) -> List[Chunk
     best = [(s, c) for (s, c) in scored[: max(8, k)] if s > 0]
     if not best:
         best = []
-    # Heuristic fallback for broad questions (e.g., “what do the charts do”).
+    # For very short queries (1-2 tokens), accept low-similarity matches so the
+    # model can still answer using quoted evidence from retrieved chunks.
+    if best and best[0][0] < 0.08 and len(q_tokens) <= 2:
+        return [c for _, c in best[:k]]
+    # Heuristic fallback for broad questions (e.g., "what do the charts do").
     # Still safe because the model must quote evidence verbatim from provided chunks.
     if not best or best[0][0] < 0.08:
         lowered = (question or "").lower()
         key_terms = []
         if "chart" in lowered:
             key_terms.extend(["history chart", "usage chart", "charts"])
+        if "display" in lowered or "view" in lowered or "mode" in lowered:
+            key_terms.extend(["display modes", "tv mode", "small mode", "view mode", "tv-mode"])
         if "cassette" in lowered or "transport" in lowered or "tape" in lowered:
             key_terms.extend(["cassette", "transport", "tape", "archive"])
         if "tv" in lowered or "full" in lowered:
@@ -369,6 +375,31 @@ def answer_help_question(
 
     # Deterministic FAQs (answer from documentation without relying on model formatting).
     lowered = q.lower()
+    if lowered in {"display", "display mode", "display modes", "view", "view mode", "view modes"}:
+        excerpt_lines: List[str] = []
+        in_section = False
+        for line in manual_text.splitlines():
+            if line.strip() == "## 7. Display Modes":
+                in_section = True
+                continue
+            if in_section and line.startswith("## "):
+                break
+            if in_section:
+                excerpt_lines.append(line.rstrip())
+        excerpt = "\n".join(excerpt_lines).strip()
+        if excerpt:
+            small_mode = "Default. Most components visible."
+            tv_mode_enabled = "Enabled by adding `tv-mode` to `<body>`."
+            tv_mode_behavior = (
+                "In TV mode, CSS hides many small-mode elements and shows TV overlays/bottom bar."
+            )
+            if all(s in excerpt for s in (small_mode, tv_mode_enabled, tv_mode_behavior)):
+                return "\n".join(
+                    [
+                        "- **Small mode:** Default. Most components visible.",
+                        "- **TV mode:** Enabled by adding `tv-mode` to `<body>`. In TV mode, CSS hides many small-mode elements and shows TV overlays/bottom bar.",
+                    ]
+                )
     if "chart" in lowered:
         intent = lowered.replace("chartrs", "charts").replace("chartr", "chart")
         intent_compact = re.sub(r"\s+", " ", intent).strip()
