@@ -3179,9 +3179,9 @@ def build_dashboard_html(
 
       /* Embedded help chat (operator manual only). */
       #help-chat-toggle {{
-        position: absolute;
-        right: 0;
-        top: -44px;
+        position: fixed;
+        top: 18px;
+        right: max(18px, calc((100vw - 1020px) / 2));
         z-index: 2500;
         display: inline-flex;
         align-items: center;
@@ -3212,11 +3212,11 @@ def build_dashboard_html(
       }}
 
       #help-chat-panel {{
-        position: absolute;
-        right: 0;
-        top: 0;
+        position: fixed;
+        top: 64px;
+        right: max(18px, calc((100vw - 1020px) / 2));
         width: min(420px, calc(100vw - 36px));
-        height: min(520px, calc(100vh - 140px));
+        height: min(520px, calc(100vh - 92px));
         z-index: 2600;
         border-radius: 14px;
         border: 1px solid rgba(255,255,255,0.14);
