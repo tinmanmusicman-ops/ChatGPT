@@ -8,6 +8,7 @@ __pycache__/
 *.zip
 !/ai-bots/Scams/README.pdf
 !/ai-bots/Thermostats/Web/dashboard_public.pdf
+!/ai-bots/Thermostats/Web/dashboard_chatbot_guide.pdf
 
 # Local images / assets
 *.png
