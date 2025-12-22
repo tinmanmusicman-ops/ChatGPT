@@ -190,10 +190,10 @@ INLINE_CLIENT_SCRIPT = _normalize_flag(
     os.environ.get("INLINE_CLIENT_SCRIPT", inline_flag_cfg),
     default=INLINE_CLIENT_SCRIPT_DEFAULT,
 )
-HELP_CHAT_ENDPOINT = str(
+HELP_CHAT_MANUAL_URL = str(
     os.environ.get(
-        "HELP_CHAT_ENDPOINT",
-        cfg_payload.get("help_chat_endpoint") or "http://localhost:5000/tower/api/help-chat",
+        "HELP_CHAT_MANUAL_URL",
+        cfg_payload.get("help_chat_manual_url") or "dashboard_operator_manual.md",
     )
 ).strip()
 TEST_MODE = _normalize_flag(
@@ -3384,7 +3384,7 @@ def build_dashboard_html(
   <body class="hide-big-chart hide-chart-history">
     <div class="container">
       <button id="help-chat-toggle" type="button" aria-haspopup="dialog" aria-controls="help-chat-panel">Help Chat</button>
-      <div id="help-chat-panel" class="hidden" role="dialog" aria-label="Dashboard Help Chat" data-endpoint="{HELP_CHAT_ENDPOINT}">
+      <div id="help-chat-panel" class="hidden" role="dialog" aria-label="Dashboard Help Chat" data-manual-url="{HELP_CHAT_MANUAL_URL}">
         <div class="help-chat-header">
           <div>
             <div class="help-chat-title">Dashboard Help</div>
@@ -3393,7 +3393,7 @@ def build_dashboard_html(
           <button id="help-chat-close" type="button" aria-label="Close help chat">×</button>
         </div>
         <div id="help-chat-messages" aria-live="polite"></div>
-        <div id="help-chat-status">Tip: ask about the cassette/transport, chart modes, TV mode, or a specific button.</div>
+        <div id="help-chat-status">Tip: try keywords like "chart", "display", "rewind", or "cassette".</div>
         <form id="help-chat-form" class="help-chat-form" autocomplete="off">
           <input id="help-chat-input" type="text" placeholder="Ask a question…" aria-label="Ask a dashboard question" />
           <button id="help-chat-send" type="submit">Send</button>

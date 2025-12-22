@@ -372,7 +372,7 @@ The UI supports swapping which chart appears in the TV frame vs the usage slot.
 [tags: help, chat, documentation, manual, ask, question]
 
 ### What this is
-The dashboard includes an embedded help chat panel backed by a local API. The help chat answers questions using only this manual’s text.
+The dashboard includes an embedded help chat panel that answers questions using only this manual’s text.
 
 Core elements:
 
@@ -388,14 +388,16 @@ Core elements:
 - Type a question (or a keyword) and click “Send”.
 
 ### What happens when used
-- The UI sends `POST` to the backend endpoint defined by `#help-chat-panel[data-endpoint]`.
-- Payload includes `{ question, state }` where `state` includes view mode, chart swap state, archive slug, pinned selection, and enabled modes.
+- The help panel loads the manual file from `#help-chat-panel[data-manual-url]`.
+- Your input is used to find matching sections based on headings and `[tags: ...]`.
+- The matching manual sections are shown verbatim in the chat.
 
 ### What does NOT change (state preservation)
 - Opening/closing the help chat does not navigate away from the dashboard.
 
 ### Caveats or limitations
 - Help answers must be grounded only in this manual. If the manual does not contain the requested information, the help system must not invent an answer.
+- If no tags/headings match your term, the help system should respond with: `No documentation matches that term.`
 
 ---
 

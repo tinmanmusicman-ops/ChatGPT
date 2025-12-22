@@ -32,7 +32,7 @@
     console[level](message);
   };
 
-  // Embedded help chat (server-backed; operator manual only).
+  // Embedded help chat (client-side; operator manual only).
   const helpChatToggle = document.getElementById("help-chat-toggle");
   const helpChatPanel = document.getElementById("help-chat-panel");
   const helpChatClose = document.getElementById("help-chat-close");
@@ -42,6 +42,137 @@
   const helpChatSend = document.getElementById("help-chat-send");
   let helpChatBusy = false;
   let helpChatMarkdownConfigured = false;
+  const HELP_CHAT_NO_MATCH = "No documentation matches that term.";
+  let helpChatManualText = null;
+  let helpChatManualSections = null;
+  let helpChatManualLoadPromise = null;
+
+  const tokenizeHelpQuery = (text) => {
+    const raw = String(text || "")
+      .toLowerCase()
+      .match(/[a-z0-9][a-z0-9\\-']+/g);
+    return raw ? raw.map((t) => (t.length > 3 && t.endsWith("s") ? t.slice(0, -1) : t)) : [];
+  };
+
+  const parseHelpManualSections = (manualText) => {
+    const text = String(manualText || "").replace(/\\r\\n?/g, \"\\n\");
+    const lines = text.split(\"\\n\");
+    const sections = [];
+    let current = null;
+
+    const flush = () => {
+      if (!current) return;
+      const body = current.bodyLines.join(\"\\n\").trim();
+      if (body) {
+        sections.push({
+          title: current.title,
+          tags: (current.tags || []).map((t) => String(t).trim().toLowerCase()).filter(Boolean),
+          body,
+        });
+      }
+      current = null;
+    };
+
+    for (let i = 0; i < lines.length; i += 1) {
+      const line = lines[i];
+      if (line.startsWith(\"## \")) {
+        flush();
+        current = { title: line.trim(), tags: [], bodyLines: [line.replace(/\\s+$/, \"\")] };
+
+        let j = i + 1;
+        while (j < lines.length && !lines[j].trim()) {
+          current.bodyLines.push(lines[j].replace(/\\s+$/, \"\"));
+          j += 1;
+        }
+        if (j < lines.length && lines[j].trim().toLowerCase().startsWith(\"[tags:\")) {
+          const tagLine = lines[j].trim();
+          current.bodyLines.push(lines[j].replace(/\\s+$/, \"\"));
+          const payload = tagLine.replace(/^\\[tags:\\s*/i, \"\").replace(/\\]\\s*$/, \"\").trim();
+          current.tags = payload
+            .split(\",\")
+            .map((t) => t.trim())
+            .filter(Boolean);
+          i = j;
+        }
+        continue;
+      }
+      if (current) {
+        current.bodyLines.push(line.replace(/\\s+$/, \"\"));
+      }
+    }
+    flush();
+    return sections;
+  };
+
+  const loadHelpManual = async () => {
+    if (helpChatManualText && helpChatManualSections) {
+      return;
+    }
+    if (helpChatManualLoadPromise) {
+      await helpChatManualLoadPromise;
+      return;
+    }
+
+    const manualUrl = helpChatPanel?.dataset?.manualUrl || \"dashboard_operator_manual.md\";
+    helpChatManualLoadPromise = (async () => {
+      const resp = await fetch(manualUrl, { cache: \"no-store\" });
+      if (!resp.ok) {
+        throw new Error(`manual fetch failed (HTTP ${resp.status})`);
+      }
+      const text = await resp.text();
+      helpChatManualText = text;
+      helpChatManualSections = parseHelpManualSections(text);
+    })();
+
+    try {
+      await helpChatManualLoadPromise;
+    } finally {
+      helpChatManualLoadPromise = null;
+    }
+  };
+
+  const keywordLookupHelp = (query) => {
+    const q = String(query || \"\").trim().toLowerCase();
+    const tokens = tokenizeHelpQuery(q);
+    if (!tokens.length) {
+      return null;
+    }
+    if (!helpChatManualSections || !helpChatManualSections.length) {
+      return null;
+    }
+
+    const synonymMap = {
+      tv: [\"tv\", \"display\", \"fullscreen\", \"full-screen\", \"television\"],
+      display: [\"display\", \"tv\", \"fullscreen\", \"full-screen\", \"screen\"],
+      tape: [\"tape\", \"cassette\", \"transport\", \"rewind\", \"fast-forward\", \"spin\"],
+      rewind: [\"rewind\", \"tape\", \"cassette\", \"transport\", \"spin\"],
+      chart: [\"chart\", \"charts\", \"history chart\", \"usage chart\"],
+      charts: [\"chart\", \"charts\", \"history chart\", \"usage chart\"],
+    };
+    const expanded = tokens.flatMap((t) => synonymMap[t] || [t]).map((t) => String(t).toLowerCase());
+
+    const scored = [];
+    for (const section of helpChatManualSections) {
+      const title = String(section.title || \"\").toLowerCase();
+      const tags = new Set((section.tags || []).map((t) => String(t).toLowerCase()));
+      let score = 0;
+      for (const term of expanded) {
+        if (!term) continue;
+        if (tags.has(term)) score += 3;
+        if (title.includes(term)) score += 2;
+      }
+      if (score > 0) {
+        scored.push({ score, section });
+      }
+    }
+    scored.sort((a, b) => b.score - a.score);
+    if (!scored.length) {
+      return null;
+    }
+
+    const picked = scored.slice(0, 3).map((s) => s.section.body).filter(Boolean);
+    return picked.length ? picked.join(\"\\n\\n---\\n\\n\") : null;
+  };
 
   const configureHelpChatMarkdown = () => {
     if (helpChatMarkdownConfigured) {
@@ -4372,39 +4503,20 @@
       }
       appendHelpChatMessage("user", question);
       const placeholder = appendHelpChatMessage("assistant", "…");
-
-      const endpoint =
-        helpChatPanel.dataset.endpoint || "http://localhost:8000/api/help-chat";
       helpChatBusy = true;
       if (helpChatInput) helpChatInput.disabled = true;
       if (helpChatSend) helpChatSend.disabled = true;
       try {
-        const resp = await fetch(endpoint, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ question, state: getHelpChatState() }),
-        });
-        let text = "";
-        try {
-          const data = await resp.json();
-          text = data && typeof data.answer === "string" ? data.answer : "";
-        } catch (err) {
-          text = "";
-        }
-        if (!resp.ok) {
-          const statusText = resp.status ? ` (HTTP ${resp.status})` : "";
-          text = text || `Help service error${statusText}.`;
-        }
-        if (!text) {
-          text = "Help service returned an empty response.";
-        }
+        await loadHelpManual();
+        const matched = keywordLookupHelp(question);
+        const text = matched || HELP_CHAT_NO_MATCH;
         if (placeholder) {
           setHelpChatMessageContent(placeholder, "assistant", text);
         } else {
           appendHelpChatMessage("assistant", text);
         }
       } catch (err) {
-        const msg = "Help service is not reachable. Start the local help API and try again.";
+        const msg = "Help manual is not reachable. Ensure the manual file is hosted next to the dashboard.";
         if (placeholder) {
           setHelpChatMessageContent(placeholder, "assistant", msg);
         } else {
