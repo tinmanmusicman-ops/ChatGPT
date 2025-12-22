@@ -50,7 +50,7 @@
   const tokenizeHelpQuery = (text) => {
     const raw = String(text || "")
       .toLowerCase()
-      .match(/[a-z0-9][a-z0-9\\-']+/g);
+      .match(/[a-z0-9][a-z0-9'-]+/g);
     return raw ? raw.map((t) => (t.length > 3 && t.endsWith("s") ? t.slice(0, -1) : t)) : [];
   };
 
