@@ -170,7 +170,7 @@ This dashboard has **two charts**:
 ---
 
 ## 5. Selecting a Time Point (Hover, Pin, Clear Pin, Step)
-[tags: hover, pin, selection, cursor, point, step, previous, next, clear]
+[tags: chart, history chart, hover, pin, selection, cursor, point, step, previous, next, clear]
 
 ### What this is
 The dashboard supports selecting a specific “time point” within the loaded day using the history chart.

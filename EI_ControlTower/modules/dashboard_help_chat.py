@@ -64,6 +64,13 @@ class Chunk:
     tokens: List[str]
 
 
+@dataclass(frozen=True)
+class ManualSection:
+    title: str
+    tags: List[str]
+    body: str
+
+
 def _tokenize(text: str) -> List[str]:
     raw = _WORD_RE.findall((text or "").lower())
     normalized: List[str] = []
@@ -355,6 +362,105 @@ def _load_manual(path: Path) -> Tuple[str, List[Chunk]]:
     return text, chunks
 
 
+def _parse_manual_sections(manual_text: str) -> List[ManualSection]:
+    lines = (manual_text or "").splitlines()
+    sections: List[ManualSection] = []
+    current_title: Optional[str] = None
+    current_tags: List[str] = []
+    current_body_lines: List[str] = []
+
+    def flush():
+        nonlocal current_title, current_tags, current_body_lines
+        if not current_title:
+            current_title = None
+            current_tags = []
+            current_body_lines = []
+            return
+        body = "\n".join(current_body_lines).strip()
+        sections.append(
+            ManualSection(
+                title=current_title.strip(),
+                tags=[t.strip().lower() for t in current_tags if t.strip()],
+                body=body,
+            )
+        )
+        current_title = None
+        current_tags = []
+        current_body_lines = []
+
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        if line.startswith("## "):
+            flush()
+            current_title = line.strip()
+            current_body_lines.append(line.rstrip())
+
+            # Optional tag line directly under the header.
+            j = i + 1
+            while j < len(lines) and not lines[j].strip():
+                current_body_lines.append(lines[j].rstrip())
+                j += 1
+            if j < len(lines) and lines[j].strip().lower().startswith("[tags:"):
+                tag_line = lines[j].strip()
+                current_body_lines.append(lines[j].rstrip())
+                tag_payload = tag_line.strip()[len("[tags:") :].rstrip("]").strip()
+                current_tags = [t.strip() for t in tag_payload.split(",") if t.strip()]
+                i = j
+        else:
+            if current_title is not None:
+                current_body_lines.append(line.rstrip())
+        i += 1
+    flush()
+    return sections
+
+
+def _keyword_lookup(manual_text: str, question: str, *, max_sections: int = 4) -> Optional[str]:
+    q = (question or "").strip().lower()
+    if not q:
+        return None
+    q_tokens = _tokenize(q)
+    if not q_tokens or len(q_tokens) > 2:
+        return None
+
+    sections = _parse_manual_sections(manual_text)
+    if not sections:
+        return None
+
+    # Light synonym expansion for the most common operator terms.
+    synonym_map = {
+        "tv": ["tv", "display", "fullscreen", "full-screen", "television"],
+        "display": ["display", "tv", "fullscreen", "full-screen", "screen"],
+        "tape": ["tape", "cassette", "transport", "rewind", "fast-forward", "spin"],
+        "rewind": ["rewind", "tape", "cassette", "transport", "spin"],
+        "chart": ["chart", "charts", "history chart", "usage chart"],
+        "charts": ["chart", "charts", "history chart", "usage chart"],
+    }
+    expanded: List[str] = []
+    for t in q_tokens:
+        expanded.extend(synonym_map.get(t, [t]))
+    expanded = [t.lower() for t in expanded]
+
+    scored: List[Tuple[int, ManualSection]] = []
+    for s in sections:
+        title_lower = (s.title or "").lower()
+        tags_set = set(s.tags or [])
+        score = 0
+        for term in expanded:
+            if term in tags_set:
+                score += 3
+            if term and term in title_lower:
+                score += 2
+        if score > 0:
+            scored.append((score, s))
+    scored.sort(key=lambda x: x[0], reverse=True)
+    if not scored:
+        return None
+
+    picked = [s for _, s in scored[:max_sections]]
+    return "\n\n---\n\n".join(s.body.strip() for s in picked if s.body.strip()) or None
+
+
 def answer_help_question(
     question: str,
     state: Optional[Dict[str, Any]] = None,
@@ -372,6 +478,10 @@ def answer_help_question(
         else _default_manual_path()
     )
     manual_text, chunks = _load_manual(path)
+
+    keyword_hit = _keyword_lookup(manual_text, q)
+    if keyword_hit:
+        return keyword_hit
 
     # Deterministic FAQs (answer from documentation without relying on model formatting).
     lowered = q.lower()
