@@ -371,7 +371,14 @@ def answer_help_question(
     lowered = q.lower()
     if "chart" in lowered:
         intent = lowered.replace("chartrs", "charts").replace("chartr", "chart")
-        if "what do the chart" in intent or "what do chart" in intent or "charts do" in intent:
+        intent_compact = re.sub(r"\s+", " ", intent).strip()
+        wants_chart_overview = (
+            intent_compact in {"chart", "charts", "the chart", "the charts"}
+            or "what do the chart" in intent_compact
+            or "what do chart" in intent_compact
+            or "charts do" in intent_compact
+        )
+        if wants_chart_overview:
             excerpt_lines: List[str] = []
             in_section = False
             for line in manual_text.splitlines():
@@ -385,14 +392,14 @@ def answer_help_question(
                     excerpt_lines.append(line.rstrip())
             excerpt = "\n".join(excerpt_lines).strip()
             if excerpt:
-                bullets: List[str] = []
+                bullet_lines: List[str] = []
                 for ln in excerpt.splitlines():
                     t = ln.strip()
                     if t.startswith("- "):
-                        bullets.append(t[2:].strip())
-                if bullets:
-                    evidence = "\n".join(f"\"{b}\"" for b in bullets[:3])
-                    answer = "\n".join(f"- {b}" for b in bullets[:3])
+                        bullet_lines.append(t)
+                if bullet_lines:
+                    evidence = "\n".join(f"\"{b}\"" for b in bullet_lines[:3])
+                    answer = "\n".join(bullet_lines[:3])
                     return _enforce_grounding(f"Evidence:\n{evidence}\n\nAnswer:\n{answer}", excerpt)
     selected = _select_chunks(chunks, q, k=4)
     if not selected:
