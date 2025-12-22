@@ -41,13 +41,60 @@
   const helpChatInput = document.getElementById("help-chat-input");
   const helpChatSend = document.getElementById("help-chat-send");
   let helpChatBusy = false;
+  let helpChatMarkdownConfigured = false;
+
+  const configureHelpChatMarkdown = () => {
+    if (helpChatMarkdownConfigured) {
+      return;
+    }
+    if (typeof window.marked !== "undefined" && window.marked?.setOptions) {
+      window.marked.setOptions({
+        gfm: true,
+        breaks: true,
+        headerIds: false,
+        mangle: false,
+      });
+    }
+    helpChatMarkdownConfigured = true;
+  };
+
+  const setHelpChatMessageContent = (el, role, text) => {
+    if (!el) {
+      return;
+    }
+    const messageText = String(text ?? "");
+
+    if (
+      role === "assistant" &&
+      typeof window.marked !== "undefined" &&
+      typeof window.DOMPurify !== "undefined" &&
+      window.marked?.parse &&
+      window.DOMPurify?.sanitize
+    ) {
+      configureHelpChatMarkdown();
+      const rendered = window.marked.parse(messageText);
+      const sanitized = window.DOMPurify.sanitize(rendered, { USE_PROFILES: { html: true } });
+      el.innerHTML = sanitized || "";
+      el.querySelectorAll("a[href]").forEach((a) => {
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
+      });
+      if (!el.innerHTML) {
+        el.textContent = messageText;
+      }
+      return;
+    }
+
+    el.textContent = messageText;
+  };
+
   const appendHelpChatMessage = (role, text) => {
     if (!helpChatMessages) {
       return null;
     }
     const msg = document.createElement("div");
     msg.className = `help-msg ${role || ""}`.trim();
-    msg.textContent = String(text || "");
+    setHelpChatMessageContent(msg, role, text);
     helpChatMessages.appendChild(msg);
     helpChatMessages.scrollTop = helpChatMessages.scrollHeight;
     return msg;
@@ -4352,14 +4399,14 @@
           text = "Help service returned an empty response.";
         }
         if (placeholder) {
-          placeholder.textContent = text;
+          setHelpChatMessageContent(placeholder, "assistant", text);
         } else {
           appendHelpChatMessage("assistant", text);
         }
       } catch (err) {
         const msg = "Help service is not reachable. Start the local help API and try again.";
         if (placeholder) {
-          placeholder.textContent = msg;
+          setHelpChatMessageContent(placeholder, "assistant", msg);
         } else {
           appendHelpChatMessage("assistant", msg);
         }

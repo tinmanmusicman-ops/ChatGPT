@@ -1329,6 +1329,8 @@ def build_dashboard_html(
     if INLINE_CLIENT_SCRIPT:
         client_js = script_path.read_text(encoding="utf-8")
         script_block = f"""    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
     <script id="dashboard-data-inline" type="application/json">
 {data_json}
     </script>
@@ -1338,6 +1340,8 @@ def build_dashboard_html(
     """
     else:
         script_block = f"""    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
     <script id="dashboard-data-inline" type="application/json">
 {data_json}
     </script>
@@ -3281,15 +3285,57 @@ def build_dashboard_html(
         background: rgba(255,255,255,0.04);
         font-size: 13px;
         line-height: 1.35;
-        white-space: pre-wrap;
+        white-space: normal;
       }}
       .help-msg.user {{
         border-color: rgba(102, 255, 153, 0.28);
         background: rgba(102, 255, 153, 0.08);
+        white-space: pre-wrap;
       }}
       .help-msg.assistant {{
         border-color: rgba(154, 215, 255, 0.18);
         background: rgba(154, 215, 255, 0.06);
+        white-space: normal;
+      }}
+      .help-msg.assistant p {{
+        margin: 0 0 8px;
+      }}
+      .help-msg.assistant p:last-child {{
+        margin-bottom: 0;
+      }}
+      .help-msg.assistant ul,
+      .help-msg.assistant ol {{
+        margin: 6px 0 6px 20px;
+        padding: 0;
+      }}
+      .help-msg.assistant li {{
+        margin: 3px 0;
+      }}
+      .help-msg.assistant a {{
+        color: rgba(154, 215, 255, 0.95);
+        text-decoration: underline;
+      }}
+      .help-msg.assistant a:hover {{
+        color: rgba(202, 235, 255, 1);
+      }}
+      .help-msg.assistant code {{
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        font-size: 12px;
+        background: rgba(0, 0, 0, 0.35);
+        padding: 1px 4px;
+        border-radius: 6px;
+      }}
+      .help-msg.assistant pre {{
+        margin: 8px 0;
+        padding: 10px;
+        background: rgba(0, 0, 0, 0.45);
+        border: 1px solid rgba(255,255,255,0.10);
+        border-radius: 10px;
+        overflow: auto;
+      }}
+      .help-msg.assistant pre code {{
+        background: transparent;
+        padding: 0;
       }}
       .help-chat-form {{
         display: flex;
