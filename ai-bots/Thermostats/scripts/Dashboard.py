@@ -1,4 +1,5 @@
 from  __future__ import annotations
+from  __future__ import annotations
 
 import argparse
 import subprocess
@@ -3209,7 +3210,7 @@ def build_dashboard_html(
   </head>
   <body class="hide-big-chart hide-chart-history">
     <div class="container">
-      <a id="help-chat-link" href="http://localhost/" target="_blank" rel="noopener noreferrer">Chat Help</a>
+      <a id="help-chat-link" href="https://cdn.botpress.cloud/webchat/v3.4/shareable.html?configUrl=https://files.bpcontent.cloud/2025/11/23/04/20251123044527-N8XXQ6V7.json" target="_blank" rel="noopener noreferrer">Chat Help</a>
       <div id="Cards" class="card-grid frame2">
         {cards}
       </div>
