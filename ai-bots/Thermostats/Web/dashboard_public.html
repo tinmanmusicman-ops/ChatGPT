@@ -2437,14 +2437,14 @@
   };
 
   const parseHelpManualSections = (manualText) => {
-    const text = String(manualText || "").replace(/\\r\\n?/g, \"\\n\");
-    const lines = text.split(\"\\n\");
+    const text = String(manualText || "").replace(/\r\n?/g, "\n");
+    const lines = text.split("\n");
     const sections = [];
     let current = null;
 
     const flush = () => {
       if (!current) return;
-      const body = current.bodyLines.join(\"\\n\").trim();
+      const body = current.bodyLines.join("\n").trim();
       if (body) {
         sections.push({
           title: current.title,
@@ -2457,21 +2457,21 @@
 
     for (let i = 0; i < lines.length; i += 1) {
       const line = lines[i];
-      if (line.startsWith(\"## \")) {
+      if (line.startsWith("## ")) {
         flush();
-        current = { title: line.trim(), tags: [], bodyLines: [line.replace(/\\s+$/, \"\")] };
+        current = { title: line.trim(), tags: [], bodyLines: [line.replace(/\s+$/, "")] };
 
         let j = i + 1;
         while (j < lines.length && !lines[j].trim()) {
-          current.bodyLines.push(lines[j].replace(/\\s+$/, \"\"));
+          current.bodyLines.push(lines[j].replace(/\s+$/, ""));
           j += 1;
         }
-        if (j < lines.length && lines[j].trim().toLowerCase().startsWith(\"[tags:\")) {
+        if (j < lines.length && lines[j].trim().toLowerCase().startsWith("[tags:")) {
           const tagLine = lines[j].trim();
-          current.bodyLines.push(lines[j].replace(/\\s+$/, \"\"));
-          const payload = tagLine.replace(/^\\[tags:\\s*/i, \"\").replace(/\\]\\s*$/, \"\").trim();
+          current.bodyLines.push(lines[j].replace(/\s+$/, ""));
+          const payload = tagLine.replace(/^\[tags:\s*/i, "").replace(/\]\s*$/, "").trim();
           current.tags = payload
-            .split(\",\")
+            .split(",")
             .map((t) => t.trim())
             .filter(Boolean);
           i = j;
@@ -2479,7 +2479,7 @@
         continue;
       }
       if (current) {
-        current.bodyLines.push(line.replace(/\\s+$/, \"\"));
+        current.bodyLines.push(line.replace(/\s+$/, ""));
       }
     }
     flush();
@@ -2495,9 +2495,9 @@
       return;
     }
 
-    const manualUrl = helpChatPanel?.dataset?.manualUrl || \"dashboard_operator_manual.md\";
+    const manualUrl = helpChatPanel?.dataset?.manualUrl || "dashboard_operator_manual.md";
     helpChatManualLoadPromise = (async () => {
-      const resp = await fetch(manualUrl, { cache: \"no-store\" });
+      const resp = await fetch(manualUrl, { cache: "no-store" });
       if (!resp.ok) {
         throw new Error(`manual fetch failed (HTTP ${resp.status})`);
       }
@@ -2514,7 +2514,7 @@
   };
 
   const keywordLookupHelp = (query) => {
-    const q = String(query || \"\").trim().toLowerCase();
+    const q = String(query || "").trim().toLowerCase();
     const tokens = tokenizeHelpQuery(q);
     if (!tokens.length) {
       return null;
@@ -2524,18 +2524,18 @@
     }
 
     const synonymMap = {
-      tv: [\"tv\", \"display\", \"fullscreen\", \"full-screen\", \"television\"],
-      display: [\"display\", \"tv\", \"fullscreen\", \"full-screen\", \"screen\"],
-      tape: [\"tape\", \"cassette\", \"transport\", \"rewind\", \"fast-forward\", \"spin\"],
-      rewind: [\"rewind\", \"tape\", \"cassette\", \"transport\", \"spin\"],
-      chart: [\"chart\", \"charts\", \"history chart\", \"usage chart\"],
-      charts: [\"chart\", \"charts\", \"history chart\", \"usage chart\"],
+      tv: ["tv", "display", "fullscreen", "full-screen", "television"],
+      display: ["display", "tv", "fullscreen", "full-screen", "screen"],
+      tape: ["tape", "cassette", "transport", "rewind", "fast-forward", "spin"],
+      rewind: ["rewind", "tape", "cassette", "transport", "spin"],
+      chart: ["chart", "charts", "history chart", "usage chart"],
+      charts: ["chart", "charts", "history chart", "usage chart"],
     };
     const expanded = tokens.flatMap((t) => synonymMap[t] || [t]).map((t) => String(t).toLowerCase());
 
     const scored = [];
     for (const section of helpChatManualSections) {
-      const title = String(section.title || \"\").toLowerCase();
+      const title = String(section.title || "").toLowerCase();
       const tags = new Set((section.tags || []).map((t) => String(t).toLowerCase()));
       let score = 0;
       for (const term of expanded) {
@@ -2553,7 +2553,7 @@
     }
 
     const picked = scored.slice(0, 3).map((s) => s.section.body).filter(Boolean);
-    return picked.length ? picked.join(\"\\n\\n---\\n\\n\") : null;
+    return picked.length ? picked.join("\n\n---\n\n") : null;
   };
 
   const configureHelpChatMarkdown = () => {
