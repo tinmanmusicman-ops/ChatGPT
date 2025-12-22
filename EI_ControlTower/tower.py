@@ -3,7 +3,7 @@ import sys
 import threading
 import time
 from datetime import datetime, timedelta
-from flask import Flask, send_from_directory, jsonify
+from flask import Flask, send_from_directory, jsonify, request, make_response
 from pathlib import Path
 
 # Import stub modules
@@ -15,6 +15,7 @@ from modules import (
     config_manager,
     logger
 )
+from modules import dashboard_help_chat
 
 app = Flask(__name__)
 
@@ -172,6 +173,25 @@ def security_notify_route():
 def security_log():
     security_notify.stub()
     return jsonify({"status": "ok", "action": "security_log stub called"})
+
+
+@app.route("/tower/api/help-chat", methods=["POST", "OPTIONS"])
+def tower_help_chat():
+    if request.method == "OPTIONS":
+        resp = make_response("", 204)
+        resp.headers["Access-Control-Allow-Origin"] = "*"
+        resp.headers["Access-Control-Allow-Methods"] = "POST, OPTIONS"
+        resp.headers["Access-Control-Allow-Headers"] = "Content-Type"
+        return resp
+
+    payload = request.get_json(silent=True) or {}
+    question = str(payload.get("question") or "").strip()
+    state = payload.get("state") if isinstance(payload.get("state"), dict) else None
+
+    answer = dashboard_help_chat.answer_help_question(question, state)
+    resp = jsonify({"answer": answer})
+    resp.headers["Access-Control-Allow-Origin"] = "*"
+    return resp
 
 
 @app.route("/tower/config-load")

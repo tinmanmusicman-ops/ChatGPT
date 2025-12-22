@@ -191,7 +191,7 @@ INLINE_CLIENT_SCRIPT = _normalize_flag(
     default=INLINE_CLIENT_SCRIPT_DEFAULT,
 )
 HELP_CHAT_ENDPOINT = str(
-    os.environ.get("HELP_CHAT_ENDPOINT", cfg_payload.get("help_chat_endpoint") or "http://localhost:8000/api/help-chat")
+    os.environ.get("HELP_CHAT_ENDPOINT", cfg_payload.get("help_chat_endpoint") or "/tower/api/help-chat")
 ).strip()
 TEST_MODE = _normalize_flag(
     cfg_payload.get("test_mode", cfg_payload.get("testMode", cfg_payload.get("test", False))),

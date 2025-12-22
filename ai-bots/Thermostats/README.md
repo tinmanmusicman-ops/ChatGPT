@@ -11,6 +11,10 @@ The dashboard includes an embedded help chat panel that answers questions using 
 - Operator manual PDF (derived): `ai-bots/Thermostats/Web/dashboard_operator_manual.pdf`
 - Dashboard HTML: `ai-bots/Thermostats/Web/dashboard_public.html`
 
+If you already run the Flask Control Tower (`EI_ControlTower/tower.py`), you can use its route:
+
+- Flask endpoint: `POST /tower/api/help-chat`
+
 ### Run the help API locally
 
 1. Install dependencies:
@@ -21,6 +25,10 @@ The dashboard includes an embedded help chat panel that answers questions using 
    - `python ai-bots/Thermostats/scripts/dashboard_help_api.py`
 
 The dashboard chat calls `http://localhost:8000/api/help-chat` by default.
+
+If you’re using the Flask Control Tower route, set:
+
+- `HELP_CHAT_ENDPOINT=/tower/api/help-chat`
 
 ### Configure endpoint (optional)
 
