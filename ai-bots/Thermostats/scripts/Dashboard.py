@@ -3181,7 +3181,7 @@ def build_dashboard_html(
       #help-chat-toggle {{
         position: fixed;
         right: 18px;
-        bottom: 18px;
+        top: 18px;
         z-index: 2500;
         display: inline-flex;
         align-items: center;
@@ -3214,9 +3214,9 @@ def build_dashboard_html(
       #help-chat-panel {{
         position: fixed;
         right: 18px;
-        bottom: 64px;
+        top: 64px;
         width: min(420px, calc(100vw - 36px));
-        height: min(520px, calc(100vh - 110px));
+        height: min(520px, calc(100vh - 92px));
         z-index: 2600;
         border-radius: 14px;
         border: 1px solid rgba(255,255,255,0.14);
