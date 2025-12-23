@@ -992,6 +992,45 @@ if (tvControlsLabel) {
     "Dec",
   ];
 
+  const WEEKDAY_LABELS_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const MONTH_ABBREV_TO_INDEX = MONTH_LABELS_SHORT.reduce((map, label, idx) => {
+    map[label.toUpperCase()] = idx;
+    return map;
+  }, {});
+  const WEEKDAY_ABBREV_MAP = WEEKDAY_LABELS_SHORT.reduce((map, label) => {
+    map[label.toUpperCase()] = label;
+    return map;
+  }, {});
+
+  const deriveWeekdayFromParts = (yearValue, monthName, dayText) => {
+    const trimmedMonth = String(monthName || "").slice(0, 3).toUpperCase();
+    const monthIndex = MONTH_ABBREV_TO_INDEX[trimmedMonth];
+    const parsedDay = Number(dayText);
+    if (!Number.isFinite(parsedDay) || parsedDay < 1 || parsedDay > 31 || monthIndex === undefined) {
+      return "";
+    }
+    const parsedYear = Number(yearValue);
+    const resolvedYear = Number.isFinite(parsedYear) ? parsedYear : new Date().getFullYear();
+    const date = new Date(resolvedYear, monthIndex, parsedDay);
+    if (!Number.isFinite(date.getTime())) {
+      return "";
+    }
+    const weekdayLabel = WEEKDAY_LABELS_SHORT[date.getDay()];
+    return weekdayLabel || "";
+  };
+
+  const parseWeekdayFromLabel = (value) => {
+    const trimmed = String(value || "").trim();
+    if (!trimmed) {
+      return "";
+    }
+    const match = trimmed.match(/^([A-Za-z]{3,9})/);
+    if (!match) {
+      return "";
+    }
+    const key = match[1].slice(0, 3).toUpperCase();
+    return WEEKDAY_ABBREV_MAP[key] || "";
+  };
   const getAvailableArchiveSlugs = () => {
     const dates = getArchiveDates();
     if (!Array.isArray(dates)) {
@@ -3626,7 +3665,10 @@ if (tvControlsLabel) {
     }
     if (tvHistoryMonth || tvHistoryDay) {
       const trimmed = String(text || "").trim();
-      const match = trimmed.match(/^([A-Za-z]{3,9})\s+(\d{1,2})(?:st|nd|rd|th)?(?:,\s*\d{4})?$/);
+      const weekdayLabel = parseWeekdayFromLabel(trimmed);
+      const match = trimmed.match(
+        /^(?:[A-Za-z]{3,9}\s+)?([A-Za-z]{3,9})\s+(\d{1,2})(?:st|nd|rd|th)?(?:,\s*\d{4})?$/
+      );
       if (match) {
         if (tvHistoryMonth) {
           tvHistoryMonth.textContent = String(match[1] || "").toUpperCase();
@@ -3637,7 +3679,7 @@ if (tvControlsLabel) {
           tvHistoryDay.textContent = String(match[2] || "");
         }
         const monthText = String(match[1] || "").toUpperCase();
-        const dayText = String(match[2] || "");
+        const dayText = weekdayLabel || String(match[2] || "");
         setTvStepReadout(monthText, dayText, tvStepTimeValue?.textContent || "");
       } else {
         if (tvHistoryMonth) {
@@ -3648,7 +3690,7 @@ if (tvControlsLabel) {
         if (tvHistoryDay) {
           tvHistoryDay.textContent = "";
         }
-        setTvStepReadout(trimmed || "Current", "", "");
+        setTvStepReadout(trimmed || "Current", weekdayLabel || "", "");
       }
     } else if (tvHistoryStatus) {
       tvHistoryStatus.textContent = text;
@@ -3750,6 +3792,8 @@ if (tvControlsLabel) {
         return d ? d.getUTCFullYear() : null;
       };
 
+      const resolvedYear = resolveYear();
+
       const resolveHourText = () => {
         const includeMinutes = /:\s*\d{2}\b/.test(raw);
         const parsed = parseLabelTime(raw);
@@ -3769,7 +3813,7 @@ if (tvControlsLabel) {
       };
 
       const resolveDateParts = () => {
-        const year = resolveYear();
+        const year = resolvedYear;
 
         // Prefer explicit YYYY-MM-DD.
         const iso = raw.match(/\b(20\d{2})-(\d{2})-(\d{2})\b/);
@@ -3812,23 +3856,27 @@ if (tvControlsLabel) {
 
       const hourText = resolveHourText();
       const dateParts = resolveDateParts();
+      let weekdayLabel = "";
+      const dayLabel = (dateParts?.dayText || "").trim();
       if (dateParts) {
-        const monthLabel = (dateParts.monthName || "").trim();
-        const dayLabel = (dateParts.dayText || "").trim();
-        const segments = [];
-        if (monthLabel) {
-          segments.push(monthLabel);
-        }
-        if (dayLabel) {
-          segments.push(dayLabel);
-        }
-        if (hourText) {
-          segments.push(hourText);
-        }
-        if (segments.length) {
-          chartStepValueEl.textContent = segments.join(" ");
-          return;
-        }
+        weekdayLabel = deriveWeekdayFromParts(resolvedYear, dateParts.monthName, dayLabel);
+      }
+      if (!weekdayLabel) {
+        weekdayLabel = parseWeekdayFromLabel(raw);
+      }
+      const segments = [];
+      if (weekdayLabel) {
+        segments.push(weekdayLabel);
+      }
+      if (dayLabel) {
+        segments.push(dayLabel);
+      }
+      if (hourText) {
+        segments.push(hourText);
+      }
+      if (segments.length) {
+        chartStepValueEl.textContent = segments.join(" ");
+        return;
       }
 
       // Fall back to something readable if we can't parse date components.
