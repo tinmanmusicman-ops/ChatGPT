@@ -32,6 +32,469 @@
     console[level](message);
   };
 
+  // Embedded help chat (client-side; operator manual only).
+  const helpChatToggle = document.getElementById("help-chat-toggle");
+  const helpChatPanel = document.getElementById("help-chat-panel");
+  const helpChatClose = document.getElementById("help-chat-close");
+  const helpChatMessages = document.getElementById("help-chat-messages");
+  const helpChatStatus = document.getElementById("help-chat-status");
+  const helpChatForm = document.getElementById("help-chat-form");
+  const helpChatInput = document.getElementById("help-chat-input");
+  const helpChatClear = document.getElementById("help-chat-clear");
+  const helpChatTagToggle = document.getElementById("help-chat-tag-toggle");
+  const helpChatSend = document.getElementById("help-chat-send");
+  let helpChatBusy = false;
+  let helpChatMarkdownConfigured = false;
+  const HELP_CHAT_NO_MATCH = "No documentation matches that term.";
+  let helpChatManualText = null;
+  let helpChatManualSections = null;
+  let helpChatManualLoadPromise = null;
+  const defaultHelpChatStatusText = helpChatStatus?.textContent || "";
+  const clearHelpChatMessages = () => {
+    if (helpChatMessages) {
+      helpChatMessages.innerHTML = "";
+    }
+    if (helpChatStatus) {
+      helpChatStatus.textContent = defaultHelpChatStatusText;
+    }
+    if (helpChatInput) {
+      helpChatInput.value = "";
+      helpChatInput.focus();
+    }
+    syncTagToggle();
+  };
+
+  const wrapTagLines = (container) => {
+    if (!container || container.dataset.tagsWrapped === "1") {
+      return;
+    }
+    Array.from(container.querySelectorAll("p")).forEach((p) => {
+      const text = (p.textContent || "").trim();
+      if (text.toLowerCase().startsWith("[tags:")) {
+        const wrapper = document.createElement("div");
+        wrapper.className = "tag-line";
+        wrapper.textContent = text;
+        p.replaceWith(wrapper);
+      }
+    });
+    container.dataset.tagsWrapped = "1";
+  };
+  const syncTagToggle = () => {
+    if (!helpChatPanel || !helpChatTagToggle) {
+      return;
+    }
+    helpChatPanel.classList.toggle("hide-tags", helpChatTagToggle.checked);
+  };
+  // Remove tag-line text before the chatbot renders so the checkbox controls actual content flow.
+  const filterTagLines = (text) => {
+    if (!helpChatTagToggle?.checked) {
+      return text;
+    }
+    return String(text || "")
+      .split("\n")
+      .filter((line) => !line.trim().toLowerCase().startsWith("[tags:"))
+      .join("\n");
+  };
+
+  const enhanceHelpChatDocSections = (container) => {
+    if (!container || container.dataset.docEnhanced === "1") {
+      return;
+    }
+    const wrapHeadingSections = (
+      root,
+      headingTag,
+      detailClass,
+      summaryClass,
+      bodyClass
+    ) => {
+      const headings = Array.from(root.querySelectorAll(headingTag));
+      headings.forEach((heading) => {
+        if (!heading.parentNode) {
+          return;
+        }
+        if (heading.closest(`.${detailClass}`)) {
+          return;
+        }
+        const titleText = String(heading.textContent || "").trim();
+        if (!titleText) {
+          return;
+        }
+        const details = document.createElement("details");
+        details.className = detailClass;
+        const summary = document.createElement("summary");
+        summary.className = summaryClass;
+        summary.textContent = titleText;
+        const body = document.createElement("div");
+        body.className = bodyClass;
+
+        details.appendChild(summary);
+        details.appendChild(body);
+        heading.parentNode.insertBefore(details, heading);
+
+        let node = heading.nextSibling;
+        while (node) {
+          const next = node.nextSibling;
+          if (node.nodeType === 1 && node.tagName === headingTag) {
+            break;
+          }
+          body.appendChild(node);
+          node = next;
+        }
+
+        heading.remove();
+      });
+    };
+    const headers = Array.from(container.querySelectorAll("h2"));
+    if (!headers.length) {
+      return;
+    }
+
+    headers.forEach((h2) => {
+      if (!h2.parentNode) {
+        return;
+      }
+      if (h2.closest(".doc-section")) {
+        return;
+      }
+      const titleText = String(h2.textContent || "").trim();
+      if (!titleText) {
+        return;
+      }
+
+      const details = document.createElement("details");
+      details.className = "doc-section";
+      const summary = document.createElement("summary");
+      summary.className = "doc-section-summary";
+      summary.textContent = titleText;
+      const body = document.createElement("div");
+      body.className = "doc-section-body";
+
+      details.appendChild(summary);
+      details.appendChild(body);
+      h2.parentNode.insertBefore(details, h2);
+
+      let node = h2.nextSibling;
+      while (node) {
+        const next = node.nextSibling;
+        if (node.nodeType === 1 && node.tagName === "H2") {
+          break;
+        }
+        body.appendChild(node);
+        node = next;
+      }
+
+      wrapHeadingSections(
+        body,
+        "H3",
+        "doc-subsection",
+        "doc-subsection-summary",
+        "doc-subsection-body"
+      );
+
+      h2.remove();
+    });
+
+    wrapHeadingSections(
+      container,
+      "H3",
+      "doc-subsection",
+      "doc-subsection-summary",
+      "doc-subsection-body"
+    );
+
+    container.dataset.docEnhanced = "1";
+  };
+
+  const tokenizeHelpQuery = (text) => {
+    const raw = String(text || "")
+      .toLowerCase()
+      .match(/[a-z0-9][a-z0-9'-]+/g);
+    return raw ? raw.map((t) => (t.length > 3 && t.endsWith("s") ? t.slice(0, -1) : t)) : [];
+  };
+
+  const parseHelpManualSections = (manualText) => {
+    const text = String(manualText || "").replace(/\r\n?/g, "\n");
+    const lines = text.split("\n");
+    const sections = [];
+    let current = null;
+
+    const flush = () => {
+      if (!current) return;
+      const body = current.bodyLines.join("\n").trim();
+      if (body) {
+        sections.push({
+          title: current.title,
+          tags: (current.tags || []).map((t) => String(t).trim().toLowerCase()).filter(Boolean),
+          body,
+        });
+      }
+      current = null;
+    };
+
+    for (let i = 0; i < lines.length; i += 1) {
+      const line = lines[i];
+      if (line.startsWith("## ")) {
+        flush();
+        current = { title: line.trim(), tags: [], bodyLines: [line.replace(/\s+$/, "")] };
+
+        let j = i + 1;
+        while (j < lines.length && !lines[j].trim()) {
+          current.bodyLines.push(lines[j].replace(/\s+$/, ""));
+          j += 1;
+        }
+        if (j < lines.length && lines[j].trim().toLowerCase().startsWith("[tags:")) {
+          const tagLine = lines[j].trim();
+          current.bodyLines.push(lines[j].replace(/\s+$/, ""));
+          const payload = tagLine.replace(/^\[tags:\s*/i, "").replace(/\]\s*$/, "").trim();
+          current.tags = payload
+            .split(",")
+            .map((t) => t.trim())
+            .filter(Boolean);
+          i = j;
+        }
+        continue;
+      }
+      if (current) {
+        current.bodyLines.push(line.replace(/\s+$/, ""));
+      }
+    }
+    flush();
+    return sections;
+  };
+
+  const loadHelpManual = async (forceReload = false) => {
+    if (!forceReload && helpChatManualText && helpChatManualSections) {
+      return;
+    }
+    if (helpChatManualLoadPromise) {
+      await helpChatManualLoadPromise;
+      return;
+    }
+
+    helpChatManualText = null;
+    helpChatManualSections = null;
+
+    const manualUrlRaw = helpChatPanel?.dataset?.manualUrl || "dashboard_operator_manual.md";
+    const manualUrl = new URL(manualUrlRaw, window.location.href).toString();
+    helpChatManualLoadPromise = (async () => {
+      try {
+        const resp = await fetch(manualUrl, { cache: "no-store" });
+        if (!resp.ok) {
+          throw new Error(`manual fetch failed (HTTP ${resp.status})`);
+        }
+        const text = await resp.text();
+        helpChatManualText = text;
+        helpChatManualSections = parseHelpManualSections(text);
+        return;
+      } catch (fetchErr) {
+        if (forceReload) {
+          throw fetchErr;
+        }
+        const inlineEl = document.getElementById("help-chat-manual-inline");
+        if (inlineEl) {
+          const payload = JSON.parse(inlineEl.textContent || "{}");
+          const inlineText = typeof payload?.text === "string" ? payload.text : "";
+          if (inlineText.trim()) {
+            helpChatManualText = inlineText;
+            helpChatManualSections = parseHelpManualSections(inlineText);
+            return;
+          }
+        }
+        throw fetchErr;
+      }
+    })();
+
+    try {
+      await helpChatManualLoadPromise;
+    } finally {
+      helpChatManualLoadPromise = null;
+    }
+  };
+
+  const keywordLookupHelp = (query) => {
+    const rawNormalized = String(query || "")
+      .toLowerCase()
+      .replace(/[^\w\s]/g, " ")
+      .trim();
+    const rawWords = rawNormalized.split(/\s+/).filter(Boolean);
+    if (!rawWords.length) {
+      return null;
+    }
+    if (!helpChatManualSections || !helpChatManualSections.length) {
+      return null;
+    }
+
+    const tagVocabulary = new Set();
+    for (const section of helpChatManualSections) {
+      if (!Array.isArray(section.tags)) {
+        continue;
+      }
+      section.tags.forEach((tag) => {
+        const normalizedTag = String(tag || "").toLowerCase().trim();
+        if (normalizedTag) {
+          tagVocabulary.add(normalizedTag);
+        }
+      });
+    }
+    if (!tagVocabulary.size) {
+      return null;
+    }
+
+    const levenshteinDistance = (a, b) => {
+      const rows = a.length + 1;
+      const cols = b.length + 1;
+      const dist = Array.from({ length: rows }, () => Array(cols).fill(0));
+      for (let i = 0; i < rows; i += 1) {
+        dist[i][0] = i;
+      }
+      for (let j = 0; j < cols; j += 1) {
+        dist[0][j] = j;
+      }
+      for (let i = 1; i < rows; i += 1) {
+        for (let j = 1; j < cols; j += 1) {
+          const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+          dist[i][j] = Math.min(
+            dist[i - 1][j] + 1,
+            dist[i][j - 1] + 1,
+            dist[i - 1][j - 1] + cost
+          );
+        }
+      }
+      return dist[rows - 1][cols - 1];
+    };
+
+    const similarity = (a, b) => {
+      const maxLength = Math.max(a.length, b.length);
+      if (maxLength === 0) {
+        return 1;
+      }
+      const distance = levenshteinDistance(a, b);
+      return 1 - distance / maxLength;
+    };
+
+    const tagList = Array.from(tagVocabulary);
+    const correctedWords = rawWords.map((word) => {
+      if (tagVocabulary.has(word)) {
+        return word;
+      }
+      let bestMatch = word;
+      let bestScore = 0;
+      for (const candidate of tagList) {
+        const score = similarity(word, candidate);
+        if (score > bestScore) {
+          bestScore = score;
+          bestMatch = candidate;
+        }
+      }
+      return bestScore >= 0.8 ? bestMatch : word;
+    });
+
+    const correctedQuery = correctedWords.join(" ");
+    const tokens = correctedQuery.split(/\s+/).filter(Boolean);
+    if (!tokens.length) {
+      return null;
+    }
+
+    const keywords = tokens.filter((token) => tagVocabulary.has(token));
+    if (!keywords.length) {
+      return null;
+    }
+
+    const matches = helpChatManualSections.filter((section) => {
+      const tags = new Set(
+        (section.tags || [])
+          .map((t) => String(t || "").toLowerCase().trim())
+          .filter(Boolean)
+      );
+      if (!tags.size) {
+        return false;
+      }
+      if (keywords.length === 1) {
+        return tags.has(keywords[0]);
+      }
+      return keywords.every((keyword) => tags.has(keyword));
+    });
+
+    if (!matches.length) {
+      return null;
+    }
+
+    const picked = matches.map((section) => section.body).filter(Boolean);
+    return picked.length ? picked.join("\n\n---\n\n") : null;
+  };
+
+  const configureHelpChatMarkdown = () => {
+    if (helpChatMarkdownConfigured) {
+      return;
+    }
+    if (typeof window.marked !== "undefined" && window.marked?.setOptions) {
+      window.marked.setOptions({
+        gfm: true,
+        breaks: true,
+        headerIds: false,
+        mangle: false,
+      });
+    }
+    helpChatMarkdownConfigured = true;
+  };
+
+  const setHelpChatMessageContent = (el, role, text) => {
+    if (!el) {
+      return;
+    }
+    const messageText = filterTagLines(String(text ?? ""));
+
+    if (
+      role === "assistant" &&
+      typeof window.marked !== "undefined" &&
+      typeof window.DOMPurify !== "undefined" &&
+      window.marked?.parse &&
+      window.DOMPurify?.sanitize
+    ) {
+      configureHelpChatMarkdown();
+      const rendered = window.marked.parse(messageText);
+      const sanitized = window.DOMPurify.sanitize(rendered, { USE_PROFILES: { html: true } });
+      el.innerHTML = sanitized || "";
+      el.querySelectorAll("a[href]").forEach((a) => {
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
+      });
+      enhanceHelpChatDocSections(el);
+      wrapTagLines(el);
+      if (!el.innerHTML) {
+        el.textContent = messageText;
+      }
+      return;
+    }
+
+    el.textContent = messageText;
+  };
+
+  const appendHelpChatMessage = (role, text) => {
+    if (!helpChatMessages) {
+      return null;
+    }
+    const msg = document.createElement("div");
+    msg.className = `help-msg ${role || ""}`.trim();
+    setHelpChatMessageContent(msg, role, text);
+    helpChatMessages.appendChild(msg);
+    helpChatMessages.scrollTop = helpChatMessages.scrollHeight;
+    return msg;
+  };
+  const setHelpChatOpen = (open) => {
+    if (!helpChatPanel) {
+      return;
+    }
+    helpChatPanel.classList.toggle("hidden", !open);
+    if (open) {
+      loadHelpManual(true).catch(() => {});
+      syncTagToggle();
+    }
+    if (open && helpChatInput) {
+      setTimeout(() => helpChatInput.focus(), 0);
+    }
+  };
+
   const chartHistory = document.getElementById("chart-history");
   const chartHistoryList = document.getElementById("chart-history-list");
   const chartHistoryToggle = document.getElementById("chart-history-toggle");
@@ -4222,6 +4685,119 @@
     }
   };
 
+  const getHelpChatState = () => {
+    const labels = getChartLabels();
+    const length = Array.isArray(labels) ? labels.length : 0;
+    const pinned = clampIndex(pinnedPointIndex, length);
+    const pinnedLabel = pinned !== null ? valueAt(labels, pinned, "") : "";
+    const modes = typeof enabledModes !== "undefined" ? Array.from(enabledModes || []) : [];
+    const archiveSlug = currentArchiveSlug || dashboardData.generatedDateSlug || "";
+    const isTvMode = Boolean(document.body && document.body.classList.contains("tv-mode"));
+    const chartsAreSwapped = Boolean(document.body && document.body.classList.contains("charts-swapped"));
+    const historyVisible = Boolean(canvas && canvas.style.display !== "none");
+    return {
+      viewMode: isTvMode ? "tv" : "normal",
+      chartsSwapped: chartsAreSwapped,
+      historyChartVisible: historyVisible,
+      archiveSlug,
+      pinnedIndex: pinned,
+      pinnedLabel,
+      enabledModes: modes,
+    };
+  };
+
+  const bindHelpChat = () => {
+    if (!helpChatPanel || !helpChatToggle || !helpChatForm) {
+      return;
+    }
+    if (helpChatPanel.dataset.bound === "1") {
+      return;
+    }
+    helpChatPanel.dataset.bound = "1";
+
+    helpChatToggle.addEventListener("click", () => {
+      const isHidden = helpChatPanel.classList.contains("hidden");
+      setHelpChatOpen(isHidden);
+      if (isHidden && (!helpChatMessages || helpChatMessages.childElementCount === 0)) {
+        appendHelpChatMessage(
+          "assistant",
+          "Ask me how to use the dashboard. I can only answer using the operator manual."
+        );
+      }
+    });
+    if (helpChatClose) {
+      helpChatClose.addEventListener("click", () => setHelpChatOpen(false));
+    }
+
+    // Close on Escape when chat is open and focus is inside it.
+    window.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape") {
+        return;
+      }
+      if (!helpChatPanel || helpChatPanel.classList.contains("hidden")) {
+        return;
+      }
+      const active = document.activeElement;
+      if (active && helpChatPanel.contains(active)) {
+        event.preventDefault();
+        setHelpChatOpen(false);
+      }
+    });
+
+    helpChatForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (helpChatBusy) {
+        return;
+      }
+      const question = String(helpChatInput?.value || "").trim();
+      if (!question) {
+        return;
+      }
+      if (helpChatInput) {
+        helpChatInput.value = "";
+      }
+      appendHelpChatMessage("user", question);
+      const placeholder = appendHelpChatMessage("assistant", "…");
+      helpChatBusy = true;
+      if (helpChatInput) helpChatInput.disabled = true;
+      if (helpChatSend) helpChatSend.disabled = true;
+      try {
+        await loadHelpManual();
+        const matched = keywordLookupHelp(question);
+        const text = matched || HELP_CHAT_NO_MATCH;
+        if (placeholder) {
+          setHelpChatMessageContent(placeholder, "assistant", text);
+        } else {
+          appendHelpChatMessage("assistant", text);
+        }
+      } catch (err) {
+        const manualUrlRaw = helpChatPanel?.dataset?.manualUrl || "dashboard_operator_manual.md";
+        const manualUrl = new URL(manualUrlRaw, window.location.href).toString();
+        const msg = `Help manual is not reachable (${manualUrl}). Ensure the manual file is hosted at that URL.`;
+        if (placeholder) {
+          setHelpChatMessageContent(placeholder, "assistant", msg);
+        } else {
+          appendHelpChatMessage("assistant", msg);
+        }
+      } finally {
+        helpChatBusy = false;
+        if (helpChatInput) helpChatInput.disabled = false;
+        if (helpChatSend) helpChatSend.disabled = false;
+        if (helpChatInput) helpChatInput.focus();
+      }
+    });
+    if (helpChatClear) {
+      helpChatClear.addEventListener("click", (event) => {
+        event.preventDefault();
+        clearHelpChatMessages();
+      });
+    }
+    if (helpChatTagToggle) {
+      helpChatTagToggle.addEventListener("change", syncTagToggle);
+      syncTagToggle();
+    }
+  };
+
   if (chartControlButtons) {
     chartControlButtons.forEach((button) => {
       button.addEventListener("click", () => {
@@ -4251,6 +4827,7 @@
   bindArchiveKeyboardShortcuts();
   bindTvControls();
   bindAutoplayInteractions();
+  bindHelpChat();
   updateAutoplayToggle();
   ensureAutoplayScheduled();
 })();

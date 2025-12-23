@@ -1,4 +1,4 @@
-from __future__ import annotations
+from  __future__ import annotations
 
 import argparse
 import subprocess
@@ -190,17 +190,11 @@ INLINE_CLIENT_SCRIPT = _normalize_flag(
     os.environ.get("INLINE_CLIENT_SCRIPT", inline_flag_cfg),
     default=INLINE_CLIENT_SCRIPT_DEFAULT,
 )
-HELP_CHAT_MANUAL_URL = str(
-    os.environ.get(
-        "HELP_CHAT_MANUAL_URL",
-        cfg_payload.get("help_chat_manual_url") or "dashboard_operator_manual.md",
-    )
-).strip()
 TEST_MODE = _normalize_flag(
     cfg_payload.get("test_mode", cfg_payload.get("testMode", cfg_payload.get("test", False))),
     default=False,
 )
-logger.info("Dashboard test_mode=%s (generates HTML from cached JSON)", TEST_MODE)
+logger.info("Dashboard test_mode=%s (disables git autopush)", TEST_MODE)
 
 HISTORY_WINDOW = 24
 CHART_METRIC_INDEX = 1  # Fallback index; overridden to "Current Temperature" if present
@@ -1315,25 +1309,9 @@ def build_dashboard_html(
           <div class="label">{display_label}</div>
           <div class="value">{value}</div>
         </div>
-    """
+        """
     script_path = SCRIPT_DIR / "dashboard_client.js"
     web_output_dir = base_dir.parent / "Web"
-    help_chat_manual_inline = ""
-    manual_path = web_output_dir / "dashboard_operator_manual.md"
-    if manual_path.exists():
-        try:
-            manual_text = manual_path.read_text(encoding="utf-8", errors="replace")
-            help_chat_manual_inline = json.dumps({"text": manual_text}, ensure_ascii=False).replace(
-                "</", "<\\/"
-            )
-        except Exception as exc:
-            logger.warning("Unable to inline help manual from %s (%s)", manual_path, exc)
-            help_chat_manual_inline = ""
-    help_chat_manual_script = (
-        f'    <script id="help-chat-manual-inline" type="application/json">{help_chat_manual_inline}</script>\\n'
-        if help_chat_manual_inline
-        else ""
-    )
     if output_path.parent == web_output_dir:
         # HTML generated for the public Web directory should reference the script in the sibling scripts folder.
         script_src_url = "../scripts/dashboard_client.js"
@@ -1345,21 +1323,17 @@ def build_dashboard_html(
     if INLINE_CLIENT_SCRIPT:
         client_js = script_path.read_text(encoding="utf-8")
         script_block = f"""    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
-{help_chat_manual_script}    <script id="dashboard-data-inline" type="application/json">
- {data_json}
+    <script id="dashboard-data-inline" type="application/json">
+{data_json}
     </script>
     <script id="dashboard-client" data-archive-path="{ARCHIVE_DIR_NAME}">
- {client_js}
+{client_js}
     </script>
     """
     else:
         script_block = f"""    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
-{help_chat_manual_script}    <script id="dashboard-data-inline" type="application/json">
- {data_json}
+    <script id="dashboard-data-inline" type="application/json">
+{data_json}
     </script>
     <script id="dashboard-client" data-archive-path="{ARCHIVE_DIR_NAME}" src="{script_src_url}"></script>
     """
@@ -1412,7 +1386,6 @@ def build_dashboard_html(
         border: 2px solid rgba(255, 255, 255, 0.01);
         border-radius: 12px;
         box-sizing: border-box;
-        position: relative;
       }}
       h1 {{
         margin: 0 0 16px;
@@ -1705,10 +1678,8 @@ def build_dashboard_html(
         background: rgba(255,255,255,0.02);
         border-radius: 12px;
         padding: 16px;
-        border: 0;
+        border: 1px solid rgba(255,255,255,0.08);
         position: relative;
-        z-index: 250;
-        isolation: isolate;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -1770,56 +1741,36 @@ def build_dashboard_html(
       }}
       
       #chartcontrols {{
-        margin-top: 50PX;
-        margin-left: 200PX;
+        margin-top: 22px;
+        margin-left: 47px;
         max-width: none;
-        width: 80%;
+        width: 50%;
         position: relative;
         z-index: 30;
-        padding: 1px;
+        padding: 6px;
         display: grid;
         grid-template-columns: 1fr;
-        gap: 2px;
-        font-size: 15px;
+        gap: 3px;
+        font-size: 13px;
         color: #f4f6ff;
-
-
-
+        background: rgba(0, 0, 0, 0.18);
+        box-sizing: border-box;
       }}
       #chartcontrols .chart-control {{
-        width: 60%;
+        width: 100%;
         justify-content: flex-start;
         padding: 3px 8px;
-        font-size: 16px;
-        line-height: 1;
+        font-size: 12px;
+        line-height: 1.1;
       }}
       #chartcontrols #autoplay-toggle {{
         grid-column: 1 / -1;
       }}
-      .controls-transport-wrap {{
-        /* Let children participate in the outer 3-column grid for even spacing. */
-        display: contents;
-      }}
-      #chartcontrols {{
-        min-width: 0;
-        margin-top: -45px;
-        margin-left: 0;
-        margin-right: 0;
-        justify-self: end;
-        width: 240px;
-        transform: translateX(60px);
-      }}
-      .controls-transport-wrap .chart-history {{
-        grid-area: history;
-      }}
       .transport-stack {{
-        margin-top: -40px;
-        margin-left: 0;
+        margin-top: 10px;
         position: relative;
         z-index: 10;
-        transform: none;
-        min-width: 0;
-        justify-self: center;
+        transform: translateX(-75px);
       }}
       .transport-panel {{
         height: 210px;
@@ -1832,12 +1783,12 @@ def build_dashboard_html(
         transform: none;
         position: relative;
         z-index: 1;
-        padding: 8px;
+        padding: 12px;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: flex-start;
-        gap: 2px;
+        gap: 6px;
         border-radius: 12px;
         box-sizing: border-box;
         pointer-events: auto;
@@ -1850,93 +1801,34 @@ def build_dashboard_html(
         width: 100%;
         max-width: 320px;
         display: flex;
-        flex-direction: column;
         align-items: center;
         justify-content: center;
         min-height: 26px;
-        gap: 2px;
+        font-size: 14px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
         opacity: 0.9;
         color: white;
-        margin: 1px auto 0;
+        margin: 1px auto px;
         padding: 1px 1px;
         border-radius: 12px;
-        white-space: normal;
+        white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
         text-align: center;
-        line-height: 1.1;
+        line-height: .5;
         margin-top: 0;
       }}
-      .transport-history-status .transport-history-month {{
-        width: 100%;
-        font-size: 12px;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        opacity: 0.9;
-      }}
-      .transport-history-status .transport-history-day {{
-        width: 100%;
-        font-size: 18px;
-        letter-spacing: 0.06em;
-        opacity: 0.98;
-      }}
-      .transport-step-modes {{
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0;
-        padding: 4px;
-        margin-top: -10px;
-        border-radius: 14px;
-        border: 1px solid rgba(255,255,255,0.12);
-        background: rgba(0,0,0,0.18);
-        backdrop-filter: blur(6px);
-      }}
-      .transport-step-modes label {{
-        position: relative;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        user-select: none;
-        cursor: pointer;
-      }}
-      .transport-step-modes input[type="radio"] {{
-        position: absolute;
-        opacity: 0;
-      }}
-      .transport-step-modes span {{
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 6px 10px;
-        border-radius: 999px;
-        border: 1px solid rgba(255,255,255,0.10);
-        background: rgba(255,255,255,0.04);
-        font-size: 11px;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: rgba(244, 246, 255, 0.82);
-        transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
-      }}
-      .transport-step-modes input[type="radio"]:checked + span {{
-        background: rgba(255, 179, 71, 0.28);
-        border-color: rgba(255, 179, 71, 0.65);
-        color: rgba(255, 255, 255, 0.95);
-      }}
-      .transport-step-modes input[type="radio"]:focus-visible + span {{
-        outline: 2px solid rgba(255, 179, 71, 0.85);
-        outline-offset: 2px;
-      }}
       .transport-deck {{
-        width: 440px;
-        height: 206px;
+        width: 280px;
+        height: 130px;
         margin-top: 0px;
         border-radius: 14px;
         pointer-events: auto;
         opacity: 0.98;
       }}
       .transport-nav {{
-        margin-top: -8px;
+        margin-top: -1px;
         width: 100%;
         display: flex;
         align-items: center;
@@ -1954,49 +1846,13 @@ def build_dashboard_html(
         height: 100%;
         display: block;
       }}
-      .transport-deck .deck-cassette {{
-        opacity: 0;
-        transition: opacity 0.3s ease;
-      }}
-      .transport-deck.cassette-skin .deck-cassette {{
-        opacity: 1;
-      }}
-      .transport-deck.cassette-skin .deck-ui {{
-        opacity: 0;
-      }}
-      .transport-deck {{
-        --cassette-reel-scale: 1.05;
-        --cassette-reel-left-x: 18px;
-        --cassette-reel-left-y: -11px;
-        --cassette-reel-right-x: -18px;
-        --cassette-reel-right-y: -10px;
-        --cassette-image-scale: 1.05;
-        --cassette-image-x: 0px;
-        --cassette-image-y: 5px;
-      }}
-      .transport-deck .reel-wrap {{
-        transform-box: fill-box;
-        transform-origin: center;
-      }}
-      .transport-deck .reel-wrap.reel-left {{
-        transform: translate(var(--cassette-reel-left-x), var(--cassette-reel-left-y)) scale(var(--cassette-reel-scale));
-      }}
-      .transport-deck .reel-wrap.reel-right {{
-        transform: translate(var(--cassette-reel-right-x), var(--cassette-reel-right-y)) scale(var(--cassette-reel-scale));
-      }}
-      .transport-deck .reel-spin {{
+      .transport-deck .reel {{
         height: 200px;
         transform-box: fill-box;
         transform-origin: center;
       }}
-      .transport-deck .deck-cassette {{
-        transform-box: fill-box;
-        transform-origin: center;
-        transform: translate(var(--cassette-image-x), var(--cassette-image-y)) scale(var(--cassette-image-scale));
-      }}
-      .transport-deck.playing .reel-spin {{
-        animation: deck-spin var(--deck-spin-duration, 1.35s) linear infinite;
-        animation-direction: var(--deck-spin-direction, normal);
+      .transport-deck.playing .reel {{
+        animation: deck-spin 1.35s linear infinite;
       }}
       .transport-deck .led-dot {{
         transition: fill 0.25s ease, filter 0.25s ease;
@@ -2010,30 +1866,29 @@ def build_dashboard_html(
         to {{ transform: rotate(360deg); }}
       }}
       .chart-top-row {{
-        max-width: 1120px;
+        max-width: 1240px;
         width: 100%;
         display: grid;
-        grid-template-columns: 320px 400px 240px;
-        grid-template-areas:
-          "transport usage controls"
-          "history history history";
+        grid-template-columns: 400px minmax(260px, 1fr) 340px;
         align-items: flex-start;
-        column-gap: 0;
-        row-gap: 10px;
-        justify-content: space-between;
+        gap: 14px;
         margin-top: 20px;
         margin-bottom: 18px;
         transform: translateX(-15px);
-        border: 0;
+        border: 1px solid rgba(255, 255, 255, 0.18);
       }}
-      .usage-frame-wrap {{
-        grid-area: usage;
+      .controls-col,
+      .transport-col {{
+        margin-top: -65px;
+        height: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
       }}
-      #chartcontrols {{
-        grid-area: controls;
-      }}
-      .transport-stack {{
-        grid-area: transport;
+      .transport-col .chart-history {{
+        margin: 0;
+        max-width: none;
       }}
       .usage-slot {{
         width: 400px;
@@ -2042,6 +1897,7 @@ def build_dashboard_html(
         margin-top: -65px;
         margin-left: 1px;
  
+
         border-radius: 12px;
         background: rgba(0, 0, 0, 0.6);
 
@@ -2054,36 +1910,18 @@ def build_dashboard_html(
         display: flex;
         flex-direction: column;
       }}
-      .usage-frame-wrap {{
-        position: relative;
-        container-type: inline-size;
-        --usage-legs-overlap: 18px;
-      }}
-      .usage-frame-wrap .usage-legs {{
+      .tv-legs-small {{
         position: absolute;
         left: 50%;
-        bottom: 0;
-        transform: translateX(-50%) translateY(calc(100% - var(--usage-legs-overlap)));
-        height: clamp(170px, 92%, 260px);
-        width: min(520px, 95%);
+        top: 100%;
+        bottom: auto;
+        transform: translateX(-50%) translateY(-10px);
+        width: min(520px, 92%);
+        height: auto;
         z-index: 0;
         pointer-events: none;
         opacity: 0.96;
-        background-image: url("../../../Images/Legs2.png");
-        background-repeat: no-repeat;
-        background-position: center bottom;
-        background-size: contain;
         filter: brightness(1.25) contrast(1.1) saturate(1.15) drop-shadow(0 10px 20px rgba(0,0,0,0.6));
-      }}
-      @supports (height: 1cqi) {{
-        .usage-frame-wrap .usage-legs {{
-          height: clamp(170px, 62cqi, 300px);
-          width: min(520px, 120cqi);
-        }}
-      }}
-      .usage-frame-wrap .usage-slot {{
-        position: relative;
-        z-index: 1;
       }}
       .usage-slot > .usage-header,
       .usage-slot > .usage-graphic,
@@ -2149,7 +1987,7 @@ def build_dashboard_html(
       .swap-controls {{
         margin-top: 8px;
         width: 100%;
-        display: flex;
+        display: none !important;
         justify-content: center;
       }}
       .swap-controls .swap-controls-inner {{
@@ -2160,40 +1998,13 @@ def build_dashboard_html(
         border: 1px solid rgba(255, 255, 255, 0.16);
         background: rgba(0, 0, 0, 0.18);
         box-shadow: 0 10px 18px rgba(0, 0, 0, 0.35);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 10px;
-        user-select: none;
-        color: rgba(255, 245, 199, 0.95);
-      }}
-      .swap-controls .swap-step-btn {{
-        flex: 0 0 auto;
-        min-width: 48px;
-        height: 36px;
-        border-radius: 14px;
-        border: 1px solid rgba(255,255,255,0.22);
-        background: rgba(0,0,0,0.35);
-        color: rgba(244, 246, 255, 0.92);
-        font-size: 16px;
-        letter-spacing: 0.08em;
         cursor: pointer;
-        box-shadow: 0 10px 18px rgba(0, 0, 0, 0.35);
-      }}
-      .swap-controls .swap-step-btn:disabled {{
-        opacity: 0.35;
-        cursor: default;
-      }}
-      .swap-controls .swap-step-label {{
-        flex: 1 1 auto;
+        user-select: none;
         text-align: center;
         font-size: 12px;
         letter-spacing: 0.08em;
         text-transform: uppercase;
-        opacity: 0.95;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        color: rgba(255, 245, 199, 0.95);
       }}
       .swap-controls .swap-controls-inner:focus-visible {{
         outline: 2px solid rgba(102, 255, 153, 0.55);
@@ -2261,27 +2072,19 @@ def build_dashboard_html(
           max-width: none;
           width: 100%;
           box-sizing: border-box;
-          display: grid;
-          grid-template-columns: 1fr;
+          justify-content: center;
           margin-right: 0;
           margin-left: 0;
           padding-right: 1px;
         }}
-        .controls-transport-wrap {{
-          margin-top: 40;
-          margin-left: 10;
+        .controls-col,
+        .transport-col {{
+          margin-top: 0;
+          margin-left: 0;
           width: 100%;
-          align-items: start;
-          display: grid;
-          grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-          grid-template-areas:
-            "controls transport"
-            "history history";
+          align-items: center;
         }}
         .transport-stack {{
-          width: 100%;
-          max-width: 320px;
-          margin-top: 0;
           transform: none;
         }}
         .transport-panel {{
@@ -2521,40 +2324,26 @@ def build_dashboard_html(
         }}
       }}
       /* TV stand/legs graphic under the main chart frame. */
-      .tv-frame-wrap {{
-        position: relative;
-        container-type: inline-size;
-        --tv-legs-overlap: 35px;
+      .chart-wrap.tv-frame {{
         margin-bottom: 48px;
       }}
-      body.hide-big-chart .tv-frame-wrap {{
+      body.hide-big-chart .chart-wrap.tv-frame {{
         display: none;
       }}
-      .tv-frame-wrap .tv-legs {{
-        position: absolute;
+      body.hide-big-chart #tv-legs {{
+        display: none;
+      }}
+      #tv-legs {{
+        display: none;
+        position: fixed;
         left: 50%;
-        bottom: 0;
-        transform: translateX(-50%) translateY(calc(100% - var(--tv-legs-overlap)));
-        height: clamp(400px, 95%, 650px);
-        width: min(1100px, 95%);
+        top: 0;
+        transform: translateX(-50%);
+        width: min(990px, 80%);
+        height: auto;
+        max-width: 100%;
         z-index: -1;
         pointer-events: none;
-        opacity: 0.98;
-        background-image: url("../../../Images/Legs2.png");
-        background-repeat: no-repeat;
-        background-position: center bottom;
-        background-size: contain;
-        filter: brightness(1.25) contrast(1.1) saturate(1.15) drop-shadow(0 18px 26px rgba(0,0,0,0.65));
-      }}
-      @supports (height: 1cqi) {{
-        .tv-frame-wrap .tv-legs {{
-          height: clamp(400px, 62cqi, 700px);
-          width: min(1100px, 140cqi);
-        }}
-      }}
-      .tv-frame-wrap .chart-wrap.tv-frame {{
-        position: relative;
-        z-index: 1;
       }}
       body.hide-big-chart #toggle-history {{
         display: none;
@@ -2562,6 +2351,7 @@ def build_dashboard_html(
       body.tv-mode {{
         overflow: hidden;
         background: #07070b;
+        --tv-inset-bottom: 84px;
       }}
       body.tv-mode .header-row,
       body.tv-mode .timestamp-row,
@@ -2583,15 +2373,11 @@ def build_dashboard_html(
         box-shadow: none;
         border-radius: 0;
       }}
-      body.tv-mode .tv-frame-wrap {{
+      body.tv-mode .chart-wrap.tv-frame {{
         display: block !important;
         position: fixed;
-        inset: 14px 34px 74px 34px;
+        inset: 24px 44px 84px 44px;
         z-index: 9999;
-      }}
-      body.tv-mode .tv-frame-wrap .chart-wrap.tv-frame {{
-        position: absolute;
-        inset: 0;
         height: auto;
         width: auto;
         max-width: none;
@@ -2601,19 +2387,20 @@ def build_dashboard_html(
         --frame-border: 12px;
         border: var(--frame-border) solid rgba(255, 255, 255, 0.2);
         background: linear-gradient(to bottom, #050506 0%, #151518 55%, #2b2b2e 100%);
+        overflow: visible;
       }}
       body.tv-mode #history-chart-canvas-slot,
       body.tv-mode #history-chart {{
         height: 100% !important;
       }}
-      body.tv-mode .tv-frame-wrap .tv-legs {{
-        display: block;
-        height: clamp(360px, 72%, 560px);
-      }}
-      @supports (height: 1cqi) {{
-        body.tv-mode .tv-frame-wrap .tv-legs {{
-          height: clamp(360px, 40cqi, 600px);
-        }}
+      body.tv-mode #tv-legs {{
+        display: block !important;
+        top: calc(100vh - var(--tv-inset-bottom, 84px));
+        transform: translateX(-50%) translateY(-30px);
+        width: min(990px, 80%);
+        max-width: 100%;
+        filter: brightness(1.25) contrast(1.1) saturate(1.15) drop-shadow(0 18px 26px rgba(0,0,0,0.65));
+        opacity: 0.98;
       }}
       /* TV mode chart controls (mode toggles) shown on the right. */
       .tv-chartcontrols-overlay {{
@@ -2623,21 +2410,21 @@ def build_dashboard_html(
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
         grid-auto-rows: auto;
-        gap: 6px 6px;
-        padding: 5px;
-        border-radius: 12px;
+        gap: 8px 8px;
+        padding: 6px;
+        border-radius: 14px;
         border: 1px solid rgba(255,255,255,0.12);
         background: rgba(0,0,0,0.24);
         backdrop-filter: blur(8px);
-        width: 300px;
+        width: 380px;
         justify-content: start;
 
       }}
       body.tv-mode .tv-chartcontrols-overlay .chart-control {{
         width: 100%;
         text-align: left;
-        font-size: 11px;
-        padding: 2px 6px;
+        font-size: 12px;
+        padding: 2px 8px;
         letter-spacing: 0.2px;
         white-space: nowrap;
       }}
@@ -2661,18 +2448,6 @@ def build_dashboard_html(
         align-items: flex-end;
         gap: 12px;
       }}
-      /* TV-mode tape reader (shows cassette spin in the bottom bar). */
-      .tv-transport-deck {{
-        display: none;
-      }}
-      body.tv-mode #tv-transport-deck.transport-deck {{
-        display: block;
-        width: 260px;
-        height: 122px;
-        border-radius: 14px;
-        pointer-events: none;
-        opacity: 0.98;
-      }}
       body.tv-mode .tv-file-select {{
         display: flex;
         flex-direction: column;
@@ -2692,8 +2467,6 @@ def build_dashboard_html(
         text-transform: uppercase;
         opacity: 0.85;
         user-select: none;
-        width: 100%;
-        text-align: center;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -2704,37 +2477,9 @@ def build_dashboard_html(
         opacity: 0.9;
         letter-spacing: 0.02em;
         user-select: none;
-        width: 100%;
-        text-align: center;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-      }}
-      body.tv-mode #tv-history-status {{
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 2px;
-      }}
-      body.tv-mode #tv-history-status .tv-history-month {{
-        width: 100%;
-        font-size: 11px;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        opacity: 0.9;
-      }}
-      body.tv-mode #tv-history-status .tv-history-day {{
-        width: 100%;
-        font-size: 18px;
-        letter-spacing: 0.06em;
-        opacity: 0.95;
-      }}
-      body.tv-mode #tv-history-status .tv-history-hour {{
-        width: 100%;
-        font-size: 14px;
-        letter-spacing: 0.08em;
-        color: #ffb347;
       }}
       body.tv-mode #tv-file-select {{
         cursor: pointer;
@@ -2773,105 +2518,10 @@ def build_dashboard_html(
         display: flex;
         align-items: center;
         justify-content: center;
-        flex-direction: column;
-        gap: 8px;
+        gap: 10px;
         pointer-events: auto;
-        position: fixed;
-        left: 50%;
-        bottom: 34px;
-        transform: translateX(-50%);
-        z-index: 10070;
-      }}
-      body.tv-mode .tv-nav-overlay .tv-step-modes {{
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0;
-        padding: 4px;
-        border-radius: 14px;
-        border: 1px solid rgba(255,255,255,0.12);
-        background: rgba(0,0,0,0.18);
-        backdrop-filter: blur(6px);
-      }}
-      body.tv-mode .tv-nav-overlay .tv-step-modes label {{
-        position: relative;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        user-select: none;
-        cursor: pointer;
-      }}
-      body.tv-mode .tv-nav-overlay .tv-step-modes input[type="radio"] {{
-        position: absolute;
-        opacity: 0;
-      }}
-      body.tv-mode .tv-nav-overlay .tv-step-modes span {{
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 6px 10px;
-        border-radius: 999px;
-        border: 1px solid rgba(255,255,255,0.10);
-        background: rgba(255,255,255,0.04);
-        font-size: 11px;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: rgba(244, 246, 255, 0.82);
-        transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
-      }}
-      body.tv-mode .tv-nav-overlay .tv-step-modes input[type="radio"]:checked + span {{
-        background: rgba(255, 179, 71, 0.28);
-        border-color: rgba(255, 179, 71, 0.65);
-        color: rgba(255, 255, 255, 0.95);
-      }}
-      body.tv-mode .tv-nav-overlay .tv-step-modes input[type="radio"]:focus-visible + span {{
-        outline: 2px solid rgba(255, 179, 71, 0.85);
-        outline-offset: 2px;
-      }}
-      body.tv-mode .tv-nav-overlay .tv-nav-row {{
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 28px;
-      }}
-      body.tv-mode .tv-nav-overlay .tv-step-value {{
-        min-width: 140px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        user-select: none;
-      }}
-      body.tv-mode .tv-nav-overlay .tv-step-stack {{
-        display: flex;
-        flex-direction: column;
-        gap: 3px;
-        font-size: 12px;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        line-height: 1.05;
-      }}
-      body.tv-mode .tv-nav-overlay .tv-step-row {{
-        display: flex;
-        align-items: baseline;
-        justify-content: center;
-        gap: 6px;
-      }}
-      body.tv-mode .tv-nav-overlay .tv-step-row .k {{
-        opacity: 0.7;
-        min-width: 58px;
-        text-align: right;
-        color: rgba(244, 246, 255, 0.75);
-      }}
-      body.tv-mode .tv-nav-overlay .tv-step-row .sep {{
-        opacity: 0.55;
-        color: rgba(244, 246, 255, 0.7);
-      }}
-      body.tv-mode .tv-nav-overlay .tv-step-row .v {{
-        min-width: 62px;
-        text-align: left;
-        letter-spacing: 0.16em;
-        color: rgba(244, 246, 255, 0.92);
+        margin-left: 70px;
+        
       }}
       .tv-nav-btn {{
         flex: 0 0 auto;
@@ -3102,10 +2752,10 @@ def build_dashboard_html(
       .chart-history.expanded .history-lists-row {{
         display: flex;
         position: absolute;
-        left: 140px;
+        left: 0;
         right: 0;
         bottom: calc(100% + 10px);
-        z-index: 600;
+        z-index: 60;
         background: #2f3136;
         border: 1px solid rgba(255, 255, 255, 0.2);
         border-radius: 14px;
@@ -3150,21 +2800,19 @@ def build_dashboard_html(
         list-style: none;
         margin: 0;
         padding: 0;
-        font-size: 11px;
+        font-size: 10px;
         color: #f4f6ff;
-        line-height: 1.4;
+        line-height: 1.15;
       }}
       .chart-history ul button {{
         all: unset;
-        display: block;
         width: 100%;
-        box-sizing: border-box;
         text-align: left;
         cursor: pointer;
         color: #33ccff;
-        font-size: 11px;
-        letter-spacing: 0.04em;
-        padding: 3px 8px;
+        font-size: 10px;
+        line-height: 1.15;
+        letter-spacing: 0.03em;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -3181,7 +2829,7 @@ def build_dashboard_html(
         display: none;
       }}
       .note {{
-        border: 0;
+        border: 2px solid;
         margin-top: 12px;
         font-size: 12px;
         opacity: 0.7;
@@ -3199,351 +2847,10 @@ def build_dashboard_html(
         white-space: pre-wrap;
         width: 100%;
       }}
-
-      /* Embedded help chat (operator manual only). */
-      #help-chat-toggle {{
-        position: fixed;
-        top: 18px;
-        right: max(18px, calc((100vw - 1020px) / 2));
-        z-index: 2500;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 10px 14px;
-        border-radius: 999px;
-        border: 1px solid rgba(255,255,255,0.18);
-        background: rgba(0,0,0,0.55);
-        color: rgba(244,246,255,0.92);
-        font-size: 12px;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        backdrop-filter: blur(8px);
-        cursor: pointer;
-      }}
-      #help-chat-toggle:hover,
-      #help-chat-toggle:focus-visible {{
-        border-color: rgba(102, 255, 153, 0.6);
-        background: rgba(102, 255, 153, 0.14);
-        color: rgba(255,255,255,0.98);
-      }}
-      #help-chat-toggle:focus-visible {{
-        outline: 2px solid rgba(102, 255, 153, 0.85);
-        outline-offset: 2px;
-      }}
-      body.tv-mode #help-chat-toggle {{
-        display: none !important;
-      }}
-
-      #help-chat-panel {{
-        position: fixed;
-        top: 64px;
-        right: max(18px, calc((100vw - 1020px) / 2));
-        width: min(420px, calc(100vw - 36px));
-        height: min(520px, calc(100vh - 92px));
-        z-index: 2600;
-        border-radius: 14px;
-        border: 1px solid rgba(255,255,255,0.14);
-        background: rgba(10, 14, 20, 0.96);
-        box-shadow: 0 22px 60px rgba(0,0,0,0.65);
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-      }}
-      #help-chat-panel.hidden {{
-        display: none;
-      }}
-      .help-chat-header {{
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        padding: 12px 12px 10px;
-        border-bottom: 1px solid rgba(255,255,255,0.10);
-      }}
-      .help-chat-actions {{
-        display: flex;
-        align-items: center;
-        gap: 6px;
-      }}
-      .help-chat-tag-toggle {{
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        font-size: 11px;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        opacity: 0.8;
-      }}
-      .help-chat-tag-toggle span {{
-        color: rgba(244,246,255,0.8);
-      }}
-      .help-chat-tag-toggle input {{
-        width: 14px;
-        height: 14px;
-        accent-color: #66ff99;
-      }}
-      .help-chat-tag-toggle input:checked + span {{
-        color: #66ff99;
-      }}
-      .help-chat-panel.hide-tags .tag-line {{
-        display: none;
-      }}
-      .help-chat-actions {{
-        display: flex;
-        align-items: center;
-        gap: 6px;
-      }}
-      .help-chat-title {{
-        font-size: 12px;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        opacity: 0.92;
-      }}
-      .help-chat-subtitle {{
-        font-size: 11px;
-        opacity: 0.68;
-        margin-top: 2px;
-      }}
-      #help-chat-close {{
-        width: 34px;
-        height: 34px;
-        border-radius: 10px;
-        border: 1px solid rgba(255,255,255,0.16);
-        background: rgba(0,0,0,0.25);
-        color: rgba(244,246,255,0.92);
-        cursor: pointer;
-      }}
-      #help-chat-close:hover,
-      #help-chat-close:focus-visible {{
-        border-color: rgba(102, 255, 153, 0.6);
-        background: rgba(102, 255, 153, 0.12);
-      }}
-      #help-chat-messages {{
-        flex: 1;
-        padding: 12px;
-        overflow: auto;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-      }}
-      .help-msg {{
-        max-width: 100%;
-        padding: 10px 10px;
-        border-radius: 12px;
-        border: 1px solid rgba(255,255,255,0.10);
-        background: rgba(255,255,255,0.04);
-        font-size: 13px;
-        line-height: 1.35;
-        white-space: normal;
-      }}
-      .help-msg.user {{
-        border-color: rgba(102, 255, 153, 0.28);
-        background: rgba(102, 255, 153, 0.08);
-        white-space: pre-wrap;
-      }}
-      .help-msg.assistant {{
-        border-color: rgba(154, 215, 255, 0.18);
-        background: rgba(154, 215, 255, 0.06);
-        white-space: normal;
-      }}
-      .help-msg.assistant p {{
-        margin: 0 0 8px;
-      }}
-      .help-msg.assistant p:last-child {{
-        margin-bottom: 0;
-      }}
-      .help-msg.assistant ul,
-      .help-msg.assistant ol {{
-        margin: 6px 0 6px 20px;
-        padding: 0;
-      }}
-      .help-msg.assistant li {{
-        margin: 3px 0;
-      }}
-      .help-msg.assistant a {{
-        color: rgba(154, 215, 255, 0.95);
-        text-decoration: underline;
-      }}
-      .help-msg.assistant a:hover {{
-        color: rgba(202, 235, 255, 1);
-      }}
-      .help-msg.assistant code {{
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-        font-size: 12px;
-        background: rgba(0, 0, 0, 0.35);
-        padding: 1px 4px;
-        border-radius: 6px;
-      }}
-      .help-msg.assistant pre {{
-        margin: 8px 0;
-        padding: 10px;
-        background: rgba(0, 0, 0, 0.45);
-        border: 1px solid rgba(255,255,255,0.10);
-        border-radius: 10px;
-        overflow: auto;
-      }}
-      .help-msg.assistant pre code {{
-        background: transparent;
-        padding: 0;
-      }}
-      .help-msg.assistant details.doc-section {{
-        border: 1px solid rgba(255,255,255,0.10);
-        border-radius: 12px;
-        background: rgba(0,0,0,0.18);
-        padding: 6px 8px;
-      }}
-      .help-msg.assistant details.doc-section + details.doc-section {{
-        margin-top: 8px;
-      }}
-      .help-msg.assistant summary.doc-section-summary {{
-        cursor: pointer;
-        list-style: none;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-weight: 600;
-        color: rgba(244,246,255,0.96);
-        outline: none;
-      }}
-      .help-msg.assistant summary.doc-section-summary::-webkit-details-marker {{
-        display: none;
-      }}
-      .help-msg.assistant details.doc-section summary.doc-section-summary::before {{
-        content: "▶";
-        font-weight: 700;
-        opacity: 0.9;
-      }}
-      .help-msg.assistant details.doc-section[open] summary.doc-section-summary::before {{
-        content: "▼";
-      }}
-      .help-msg.assistant summary.doc-section-summary:focus-visible {{
-        outline: 2px solid rgba(154, 215, 255, 0.55);
-        outline-offset: 3px;
-        border-radius: 10px;
-      }}
-      .help-msg.assistant .doc-section-body {{
-        margin-top: 8px;
-      }}
-      .help-msg.assistant details.doc-subsection {{
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 10px;
-        background: rgba(255, 255, 255, 0.03);
-        margin-top: 6px;
-        margin-left: 12px;
-        padding: 4px 6px;
-      }}
-      .help-msg.assistant summary.doc-subsection-summary {{
-        cursor: pointer;
-        list-style: none;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        font-weight: 600;
-        font-size: 13px;
-        color: rgba(244, 246, 255, 0.96);
-        outline: none;
-      }}
-      .help-msg.assistant summary.doc-subsection-summary::before {{
-        content: ">";
-        font-weight: 700;
-        opacity: 0.85;
-      }}
-      .help-msg.assistant details.doc-subsection[open] summary.doc-subsection-summary::before {{
-        content: "v";
-      }}
-      .help-msg.assistant summary.doc-subsection-summary:focus-visible {{
-        outline: 2px solid rgba(154, 215, 255, 0.55);
-        outline-offset: 2px;
-        border-radius: 8px;
-      }}
-      .help-msg.assistant .doc-subsection-body {{
-        margin-top: 6px;
-        padding-left: 10px;
-      }}
-      .help-chat-form {{
-        display: flex;
-        gap: 10px;
-        padding: 10px 12px 12px;
-        border-top: 1px solid rgba(255,255,255,0.10);
-        background: rgba(0,0,0,0.20);
-      }}
-      #help-chat-input {{
-        flex: 1;
-        border-radius: 12px;
-        border: 1px solid rgba(255,255,255,0.14);
-        background: rgba(0,0,0,0.25);
-        color: rgba(244,246,255,0.95);
-        padding: 10px 10px;
-        font-size: 13px;
-        outline: none;
-      }}
-      #help-chat-input:focus-visible {{
-        border-color: rgba(154, 215, 255, 0.55);
-        outline: 2px solid rgba(154, 215, 255, 0.35);
-        outline-offset: 2px;
-      }}
-      #help-chat-send {{
-        border-radius: 12px;
-        border: 1px solid rgba(255,255,255,0.14);
-        background: rgba(0,0,0,0.25);
-        color: rgba(244,246,255,0.92);
-        padding: 10px 12px;
-        font-size: 13px;
-        cursor: pointer;
-        white-space: nowrap;
-      }}
-      #help-chat-clear {{
-        border-radius: 12px;
-        border: 1px solid rgba(255,255,255,0.14);
-        background: rgba(255,255,255,0.12);
-        color: rgba(244,246,255,0.92);
-        padding: 10px 12px;
-        font-size: 13px;
-        cursor: pointer;
-        white-space: nowrap;
-      }}
-      #help-chat-send:hover,
-      #help-chat-send:focus-visible {{
-        border-color: rgba(154, 215, 255, 0.55);
-        background: rgba(154, 215, 255, 0.10);
-      }}
-      #help-chat-clear:hover,
-      #help-chat-clear:focus-visible {{
-        border-color: rgba(154, 215, 255, 0.55);
-        background: rgba(154, 215, 255, 0.10);
-      }}
-      #help-chat-status {{
-        padding: 0 12px 10px;
-        font-size: 11px;
-        opacity: 0.7;
-      }}
     </style>
   </head>
   <body class="hide-big-chart hide-chart-history">
     <div class="container">
-      <button id="help-chat-toggle" type="button" aria-haspopup="dialog" aria-controls="help-chat-panel">Help Chat</button>
-      <div id="help-chat-panel" class="hidden" role="dialog" aria-label="Dashboard Help Chat" data-manual-url="{HELP_CHAT_MANUAL_URL}">
-        <div class="help-chat-header">
-          <div>
-            <div class="help-chat-title">Dashboard Help</div>
-            <div class="help-chat-subtitle">Answers come only from the operator manual.</div>
-          </div>
-          <div class="help-chat-actions">
-            <label class="help-chat-tag-toggle">
-              <input id="help-chat-tag-toggle" type="checkbox" checked />
-              <span>tags</span>
-            </label>
-            <button id="help-chat-close" type="button" aria-label="Close help chat">×</button>
-          </div>
-        </div>
-        <div id="help-chat-messages" aria-live="polite"></div>
-        <div id="help-chat-status">Tip: try keywords like "chart", "display", "rewind", or "cassette".</div>
-        <form id="help-chat-form" class="help-chat-form" autocomplete="off">
-          <input id="help-chat-input" type="text" placeholder="Ask a question…" aria-label="Ask a dashboard question" />
-          <button id="help-chat-clear" type="button">Clear</button>
-          <button id="help-chat-send" type="submit">Send</button>
-        </form>
-      </div>
       <div id="Cards" class="card-grid frame2">
         {cards}
       </div>
@@ -3562,40 +2869,35 @@ def build_dashboard_html(
       </div>
 
       <div class="chart-top-row">
-        <div class="usage-frame-wrap">
-          <div class="usage-legs" aria-hidden="true"></div>
-          <div class="usage-slot tv-frame" id="usage-slot">
-            <div class="usage-header">
-              <div class="usage-header-left">
-                <div class="title">Usage Chart</div>
-                <div class="usage-controls" role="group" aria-label="Usage Range">
-                  <button type="button" class="usage-control" data-range="7d">7 Day</button>
-                  <button type="button" class="usage-control" data-range="month">Month</button>
-                  <button type="button" class="usage-control active" data-range="year">Year</button>
-                </div>
-              </div>
-              <div class="usage-stats" id="usage-slot-stats" aria-hidden="true">
-                <div class="k">Total</div><div class="v" id="usage-stat-total">-</div>
-                <div class="k">Avg</div><div class="v" id="usage-stat-avg">-</div>
-                <div class="k">Max</div><div class="v" id="usage-stat-max">-</div>
-                <div class="k">Cost</div><div class="v" id="usage-stat-cost">-</div>
+        <div class="usage-slot tv-frame" id="usage-slot">
+          <div class="usage-header">
+            <div class="usage-header-left">
+              <div class="title">Usage Chart</div>
+              <div class="usage-controls" role="group" aria-label="Usage Range">
+                <button type="button" class="usage-control" data-range="7d">7 Day</button>
+                <button type="button" class="usage-control" data-range="month">Month</button>
+                <button type="button" class="usage-control active" data-range="year">Year</button>
               </div>
             </div>
-            <div class="usage-graphic">
-              <div id="usage-slot-canvas-slot">
-                <canvas id="usage-slot-chart"></canvas>
-              </div>
+            <div class="usage-stats" id="usage-slot-stats" aria-hidden="true">
+              <div class="k">Total</div><div class="v" id="usage-stat-total">-</div>
+              <div class="k">Avg</div><div class="v" id="usage-stat-avg">-</div>
+              <div class="k">Max</div><div class="v" id="usage-stat-max">-</div>
+              <div class="k">Cost</div><div class="v" id="usage-stat-cost">-</div>
             </div>
-            <div id="swap-controls" class="swap-controls" aria-hidden="false">
-              <div id="swap-controls-label" class="swap-controls-inner" role="group" aria-label="Step through 24 hour chart">
-                <button type="button" id="chart-step-prev" class="swap-step-btn" aria-label="Previous point">&lt;&lt;</button>
-                <div id="chart-step-value" class="swap-step-label">Step Time</div>
-                <button type="button" id="chart-step-next" class="swap-step-btn" aria-label="Next point">&gt;&gt;</button>
-              </div>
+          </div>
+          <div class="usage-graphic">
+            <div id="usage-slot-canvas-slot">
+              <canvas id="usage-slot-chart"></canvas>
+            </div>
+          </div>
+          <div id="swap-controls" class="swap-controls" aria-hidden="false">
+            <div id="swap-controls-label" class="swap-controls-inner" role="button" tabindex="0" aria-label="Swap chart">
+              Swap Chart
             </div>
           </div>
         </div>
-        <div class="controls-transport-wrap">
+        <div class="controls-col">
           <div id="chartcontrols" class="chart-controls">
               <button type="button" class="chart-control" data-mode="setpoint">Set Point</button>
               <button type="button" class="chart-control" data-mode="actual">Building Temp</button>
@@ -3603,9 +2905,10 @@ def build_dashboard_html(
               <button type="button" class="chart-control" data-mode="cooling">AC Status</button>
               <button type="button" class="chart-control" data-mode="fan">Fan Mode</button>
               <button type="button" class="chart-control active" data-mode="both">Combined</button>
-              <span>&nbsp;</span>
               <button type="button" class="chart-control" id="autoplay-toggle">Auto-play: On</button>
             </div>
+        </div>
+        <div class="transport-col">
           <div class="chart-history" id="chart-history">
             <h4 id="chart-history-toggle">Chart History</h4>
             <div id="chart-history-status" class="chart-history-status"></div>
@@ -3614,7 +2917,7 @@ def build_dashboard_html(
           <div class="transport-stack">
 
       <div id="transport-panel" class="transport-panel">
-            <div id="transport-deck" class="transport-deck cassette-skin" aria-hidden="true">
+            <div id="transport-deck" class="transport-deck" aria-hidden="true">
               <svg viewBox="0 0 240 90" role="img" aria-label="Data deck">
               <defs>
                 <linearGradient id="deck-bg" x1="0" x2="0" y1="0" y2="1">
@@ -3630,181 +2933,90 @@ def build_dashboard_html(
                   <feDropShadow dx="0" dy="10" stdDeviation="7" flood-color="rgba(0,0,0,0.7)" />
                 </filter>
               </defs>
-              <g class="deck-ui">
-                <!-- Depth/back plate to make the deck feel like a cassette -->
-                <rect x="6" y="6" width="234" height="84" rx="14" fill="rgba(0,0,0,0.55)" />
-                <!-- Main body -->
-                <rect x="3" y="3" width="234" height="84" rx="14" fill="url(#deck-bg)" stroke="url(#deck-edge)" stroke-width="2" filter="url(#deck-shadow)" />
-                <!-- Bottom lip -->
-                <rect x="10" y="74" width="220" height="10" rx="6" fill="rgba(0,0,0,0.28)" />
-                <!-- Window area -->
-                <rect x="12" y="14" width="216" height="40" rx="10" fill="rgba(255,255,255,0.07)" />
-                <rect x="14" y="16" width="212" height="36" rx="9" fill="rgba(0,0,0,0.30)" />
+              <!-- Depth/back plate to make the deck feel like a cassette -->
+              <rect x="6" y="6" width="234" height="84" rx="14" fill="rgba(0,0,0,0.55)" />
+              <!-- Main body -->
+              <rect x="3" y="3" width="234" height="84" rx="14" fill="url(#deck-bg)" stroke="url(#deck-edge)" stroke-width="2" filter="url(#deck-shadow)" />
+              <!-- Bottom lip -->
+              <rect x="10" y="74" width="220" height="10" rx="6" fill="rgba(0,0,0,0.28)" />
+              <!-- Window area -->
+              <rect x="12" y="14" width="216" height="40" rx="10" fill="rgba(255,255,255,0.07)" />
+              <rect x="14" y="16" width="212" height="36" rx="9" fill="rgba(0,0,0,0.30)" />
+
+              <g class="reel reel-left">
+                <circle cx="72" cy="34" r="14" fill="rgba(0,0,0,0.0)" stroke="rgba(0,0,0,0.55)" stroke-width="1.5" />
+                <circle cx="72" cy="34" r="10" fill="rgba(0,0,0,0.0)" stroke="rgba(255,255,255,0.14)" stroke-width="1" />
+                <circle cx="72" cy="34" r="2.5" fill="rgba(255,255,255,0.35)" />
+                <path d="M72 24 L74.8 32 L72 34 L69.2 32 Z" fill="rgba(255,255,255,0.35)" />
+                <path d="M62 34 L70 36.8 L72 34 L70 31.2 Z" fill="rgba(255,255,255,0.35)" />
+                <path d="M72 44 L74.8 36 L72 34 L69.2 36 Z" fill="rgba(255,255,255,0.35)" />
+                <path d="M82 34 L74 36.8 L72 34 L74 31.2 Z" fill="rgba(255,255,255,0.35)" />
               </g>
 
-              <!-- Cassette overlay (RGBA). Place behind reels so the animated reels are visible. -->
-              <image class="deck-cassette" href="../../../Images/Casette2.png" x="0" y="0" width="242" height="94" preserveAspectRatio="xMidYMid meet" />
-
-              <g class="reel-wrap reel-left" aria-hidden="true">
-                <g class="reel-spin">
-                  <circle cx="72" cy="34" r="14" fill="rgba(0,0,0,0.0)" stroke="rgba(0,0,0,0.55)" stroke-width="1.5" />
-                  <!--
-                  <circle cx="72" cy="34" r="10" fill="rgba(0,0,0,0.0)" stroke="rgba(255,255,255,0.14)" stroke-width="1" />
-                  <circle cx="72" cy="34" r="2.5" fill="rgba(255,255,255,0.35)" />
-                  -->
-
-                  <path d="M72 24 L74.8 32 L72 34 L69.2 32 Z" fill="rgba(255,255,255,0.35)" />
-                  <path d="M62 34 L70 36.8 L72 34 L70 31.2 Z" fill="rgba(255,255,255,0.35)" />
-                  <path d="M72 44 L74.8 36 L72 34 L69.2 36 Z" fill="rgba(255,255,255,0.35)" />
-                  <path d="M82 34 L74 36.8 L72 34 L74 31.2 Z" fill="rgba(255,255,255,0.35)" />
-                </g>
+              <g class="reel reel-right">
+                <circle cx="168" cy="34" r="14" fill="rgba(0,0,0,0.0)" stroke="rgba(0,0,0,0.55)" stroke-width="1.5" />
+                <circle cx="168" cy="34" r="10" fill="rgba(0,0,0,0.0)" stroke="rgba(255,255,255,0.14)" stroke-width="1" />
+                <circle cx="168" cy="34" r="2.5" fill="rgba(255,255,255,0.35)" />
+                <path d="M168 24 L170.8 32 L168 34 L165.2 32 Z" fill="rgba(255,255,255,0.35)" />
+                <path d="M158 34 L166 36.8 L168 34 L166 31.2 Z" fill="rgba(255,255,255,0.35)" />
+                <path d="M168 44 L170.8 36 L168 34 L165.2 36 Z" fill="rgba(255,255,255,0.35)" />
+                <path d="M178 34 L170 36.8 L168 34 L170 31.2 Z" fill="rgba(255,255,255,0.35)" />
               </g>
 
-              <g class="reel-wrap reel-right" aria-hidden="true" transform="translate(12,0) scale(0.9)">
-                <g class="reel-spin">
-                  <circle cx="168" cy="34" r="14" fill="rgba(0,0,0,0.0)" stroke="rgba(0,0,0,0.55)" stroke-width="1.5" />
-                  <!--
-                  <circle cx="168" cy="34" r="10" fill="rgba(0,0,0,0.0)" stroke="rgba(255,255,255,0.14)" stroke-width="1" />
-                  <circle cx="168" cy="34" r="2.5" fill="rgba(255,255,255,0.35)" />
-                  -->
-                  <path d="M168 24 L170.8 32 L168 34 L165.2 32 Z" fill="rgba(255,255,255,0.35)" />
-                  <path d="M158 34 L166 36.8 L168 34 L166 31.2 Z" fill="rgba(255,255,255,0.35)" />
-                  <path d="M168 44 L170.8 36 L168 34 L165.2 36 Z" fill="rgba(255,255,255,0.35)" />
-                  <path d="M178 34 L170 36.8 L168 34 L170 31.2 Z" fill="rgba(255,255,255,0.35)" />
-                </g>
-              </g>
+              <path d="M86 34 C104 28, 136 28, 154 34" stroke="rgba(255,255,255,0.18)" stroke-width="2" fill="none" />
+              <path d="M86 38 C104 44, 136 44, 154 38" stroke="rgba(255,255,255,0.10)" stroke-width="2" fill="none" />
 
-              <g class="deck-ui">
-                <path d="M86 34 C104 28, 136 28, 154 34" stroke="rgba(255,255,255,0.18)" stroke-width="2" fill="none" />
-                <path d="M86 38 C104 44, 136 44, 154 38" stroke="rgba(255,255,255,0.10)" stroke-width="2" fill="none" />
-
-                <text x="120" y="70" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="12" fill="rgba(244,246,255,0.72)" letter-spacing="0.18em">
-                  DATA TRANSPORT
-                </text>
-              </g>
+              <text x="120" y="70" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="12" fill="rgba(244,246,255,0.72)" letter-spacing="0.18em">
+                DATA TRANSPORT
+              </text>
 
               <g class="deck-led">
-                <circle cx="182" cy="50" r="4" fill="rgba(0,0,0,0.3)" />
-                <circle class="led-dot" cx="182" cy="50" r="2" fill="rgba(255,102,102,0.25)" />
+                <circle cx="220" cy="70" r="5.5" fill="rgba(0,0,0,0.35)" />
+                <circle class="led-dot" cx="220" cy="70" r="3.5" fill="rgba(255,102,102,0.25)" />
               </g>
             </svg>
           </div>
-          <div id="transport-history-status" class="transport-history-status" style="display:none">
-            <div id="transport-history-month" class="transport-history-month">Current</div>
-            <div id="transport-history-day" class="transport-history-day"></div>
-          </div>
-          <div class="transport-step-modes" aria-label="Step size" role="radiogroup">
-            <label><input type="radio" name="transport-step-mode" id="transport-step-month" value="month" /><span>Month</span></label>
-            <label><input type="radio" name="transport-step-mode" id="transport-step-day" value="day" checked /><span>Day</span></label>
-          </div>
+          <div id="transport-history-status" class="transport-history-status">Current</div>
           <div id="transport-nav" class="transport-nav" role="group" aria-label="History navigation"></div>
         </div>
         </div>
         </div>
       </div>
-        <div class="tv-frame-wrap">
-          <div class="tv-legs" aria-hidden="true"></div>
-          <div class="chart-wrap tv-frame">
-            <div id="usage-pip" aria-hidden="true"></div>
-            <div id="tv-hands-logo" aria-hidden="true"></div>
-            <div>
-            </div>
-            <div id="history-chart-canvas-slot">
-              <canvas id="history-chart"></canvas>
-            </div>
-              <div class="tv-bottom-bar" aria-hidden="true">
-                <div class="tv-bottom-left">
-                <div class="tv-file-select" id="tv-file-select" aria-label="TV file select">
-                  <div class="tv-file-select-title">Chart History</div>
-                  <div id="tv-history-status" class="tv-file-select-status">
-                    <div id="tv-history-month" class="tv-history-month">Current</div>
-                    <div id="tv-history-day" class="tv-history-day"></div>
-                    <div id="tv-history-hour" class="tv-history-hour"></div>
-                  </div>
-                  <div id="tv-history-slot"></div>
-                </div>
-                <div id="tv-transport-deck" class="transport-deck cassette-skin tv-transport-deck" aria-hidden="true">
-                  <svg viewBox="0 0 240 90" role="img" aria-label="Tape reader">
-                    <defs>
-                      <linearGradient id="tv-deck-bg" x1="0" x2="0" y1="0" y2="1">
-                        <stop offset="0" stop-color="#1c1c24" />
-                        <stop offset="0.55" stop-color="#0d0d14" />
-                        <stop offset="1" stop-color="#2b2b34" />
-                      </linearGradient>
-                      <linearGradient id="tv-deck-edge" x1="0" x2="0" y1="0" y2="1">
-                        <stop offset="0" stop-color="rgba(255,255,255,0.18)" />
-                        <stop offset="1" stop-color="rgba(0,0,0,0.6)" />
-                      </linearGradient>
-                      <filter id="tv-deck-shadow" x="-20%" y="-40%" width="140%" height="180%">
-                        <feDropShadow dx="0" dy="10" stdDeviation="7" flood-color="rgba(0,0,0,0.7)" />
-                      </filter>
-                    </defs>
-                    <g class="deck-ui">
-                      <rect x="6" y="6" width="234" height="84" rx="14" fill="rgba(0,0,0,0.55)" />
-                      <rect x="3" y="3" width="234" height="84" rx="14" fill="url(#tv-deck-bg)" stroke="url(#tv-deck-edge)" stroke-width="2" filter="url(#tv-deck-shadow)" />
-                      <rect x="10" y="74" width="220" height="10" rx="6" fill="rgba(0,0,0,0.28)" />
-                      <rect x="12" y="14" width="216" height="40" rx="10" fill="rgba(255,255,255,0.07)" />
-                      <rect x="14" y="16" width="212" height="36" rx="9" fill="rgba(0,0,0,0.30)" />
-                    </g>
-                    <image class="deck-cassette" href="../../../Images/Casette2.png" x="0" y="0" width="240" height="90" preserveAspectRatio="xMidYMid meet" />
-                    <g class="reel-wrap reel-left" aria-hidden="true">
-                      <g class="reel-spin">
-                        <circle cx="72" cy="34" r="14" fill="rgba(0,0,0,0.0)" stroke="rgba(0,0,0,0.55)" stroke-width="1.5" />
-                        <circle cx="72" cy="34" r="10" fill="rgba(0,0,0,0.0)" stroke="rgba(255,255,255,0.14)" stroke-width="1" />
-                        <circle cx="72" cy="34" r="2.5" fill="rgba(255,255,255,0.35)" />
-                        <path d="M72 24 L74.8 32 L72 34 L69.2 32 Z" fill="rgba(255,255,255,0.35)" />
-                        <path d="M62 34 L70 36.8 L72 34 L70 31.2 Z" fill="rgba(255,255,255,0.35)" />
-                        <path d="M72 44 L74.8 36 L72 34 L69.2 36 Z" fill="rgba(255,255,255,0.35)" />
-                        <path d="M82 34 L74 36.8 L72 34 L74 31.2 Z" fill="rgba(255,255,255,0.35)" />
-                      </g>
-                    </g>
-                    <g class="reel-wrap reel-right" aria-hidden="true">
-                      <g class="reel-spin">
-                        <circle cx="168" cy="34" r="14" fill="rgba(0,0,0,0.0)" stroke="rgba(0,0,0,0.55)" stroke-width="1.5" />
-                        <circle cx="168" cy="34" r="10" fill="rgba(0,0,0,0.0)" stroke="rgba(255,255,255,0.14)" stroke-width="1" />
-                        <circle cx="168" cy="34" r="2.5" fill="rgba(255,255,255,0.35)" />
-                        <path d="M168 24 L170.8 32 L168 34 L165.2 32 Z" fill="rgba(255,255,255,0.35)" />
-                        <path d="M158 34 L166 36.8 L168 34 L166 31.2 Z" fill="rgba(255,255,255,0.35)" />
-                        <path d="M168 44 L170.8 36 L168 34 L165.2 36 Z" fill="rgba(255,255,255,0.35)" />
-                        <path d="M178 34 L170 36.8 L168 34 L170 31.2 Z" fill="rgba(255,255,255,0.35)" />
-                      </g>
-                    </g>
-                    <g class="deck-led">
-                      <circle cx="178" cy="50" r="5.5" fill="rgba(0,0,0,0.35)" />
-                      <circle class="led-dot" cx="178" cy="50" r="3.5" fill="rgba(255,102,102,0.25)" />
-                    </g>
-                  </svg>
-                </div>
+        <div class="chart-wrap tv-frame">
+          <div id="usage-pip" aria-hidden="true"></div>
+          <div id="tv-hands-logo" aria-hidden="true"></div>
+          <div>
+          </div>
+          <div id="history-chart-canvas-slot">
+            <canvas id="history-chart"></canvas>
+  
+          </div>
+
+          
+          <div class="tv-bottom-bar" aria-hidden="true">
+            <div class="tv-bottom-left">
+              <div class="tv-file-select" id="tv-file-select" aria-label="TV file select">
+                <div class="tv-file-select-title">Chart History</div>
+                <div id="tv-history-status" class="tv-file-select-status">Current</div>
+                <div id="tv-history-slot"></div>
               </div>
-                <div class="tv-nav-overlay" aria-hidden="true">
-                  <div class="tv-step-modes" aria-label="Step size" role="radiogroup">
-                    <label><input type="radio" name="tv-step-mode" id="tv-step-month" value="month" /><span>Month</span></label>
-                    <label><input type="radio" name="tv-step-mode" id="tv-step-day" value="day" checked /><span>Day</span></label>
-                    <label><input type="radio" name="tv-step-mode" id="tv-step-hour" value="hour" /><span>Time</span></label>
-                  </div>
-                  <div class="tv-nav-row" aria-hidden="true">
-                    <button type="button" id="tv-archive-prev" class="tv-nav-btn" aria-label="Previous">&lt;&lt;</button>
-                    <div id="tv-step-value" class="tv-step-value">
-                      <div class="tv-step-stack" aria-label="Selected step">
-                        <div class="tv-step-row"><span class="k">Month</span><span class="sep">:</span><span id="tv-step-month-value" class="v"></span></div>
-                        <div class="tv-step-row"><span class="k">Day</span><span class="sep">:</span><span id="tv-step-day-value" class="v"></span></div>
-                        <div class="tv-step-row"><span class="k">Time</span><span class="sep">:</span><span id="tv-step-time-value" class="v"></span></div>
-                      </div>
-                    </div>
-                    <button type="button" id="tv-archive-next" class="tv-nav-btn" aria-label="Next">&gt;&gt;</button>
-                  </div>
-                </div>
-              <div class="tv-chartcontrols-overlay" aria-label="TV chart controls">
-                <button type="button" class="chart-control" data-mode="setpoint">Set Point</button>
-                <button type="button" class="chart-control" data-mode="actual">Building Temp</button>
-                <button type="button" class="chart-control" data-mode="outside">Outside Temp</button>
-                <button type="button" class="chart-control" data-mode="cooling">AC Status</button>
-                <button type="button" class="chart-control" data-mode="fan">Fan Mode</button>
-                <button type="button" class="chart-control" data-mode="both">Combined</button>
-              </div>
+            </div>
+            <div class="tv-nav-overlay" aria-hidden="true">
+              <button type="button" id="tv-archive-prev" class="tv-nav-btn" aria-label="Previous day">&lt;&lt;</button>
+              <button type="button" id="tv-archive-next" class="tv-nav-btn" aria-label="Next day">&gt;&gt;</button>
+            </div>
+            <div class="tv-chartcontrols-overlay" aria-label="TV chart controls">
+              <button type="button" class="chart-control" data-mode="setpoint">Set Point</button>
+              <button type="button" class="chart-control" data-mode="actual">Building Temp</button>
+              <button type="button" class="chart-control" data-mode="outside">Outside Temp</button>
+              <button type="button" class="chart-control" data-mode="cooling">AC Status</button>
+              <button type="button" class="chart-control" data-mode="fan">Fan Mode</button>
+              <button type="button" class="chart-control" data-mode="both">Combined</button>
             </div>
           </div>
         </div>
+        <div class="note">Data source: Google Sheet (last updated when this page was generated).</div>
+
         <pre id="js-log"></pre>
       </div>
     </div>
@@ -3819,9 +3031,6 @@ def build_dashboard_html(
 
 
 def run_live_dashboard() -> None:
-    if TEST_MODE:
-        run_test_mode_dashboard()
-        return
     headers, latest_row, history_rows = fetch_sheet_data()
     if not headers:
         raise SystemExit("Sheet returned no data; set GOOGLE_SHEET_ID and DATA_RANGE.")
@@ -3844,7 +3053,6 @@ def run_live_dashboard() -> None:
             public_html = public_html.replace(temp_script_src, web_script_src, 1)
         public_copy.write_text(public_html, encoding="utf-8")
         logger.info("Wrote public copy to %s", public_copy)
-
         archive_dir = ARCHIVE_DIR
         archive_dir.mkdir(parents=True, exist_ok=True)
         archive_target = archive_dir / f"{generated_suffix}.html"
@@ -3874,127 +3082,6 @@ def run_live_dashboard() -> None:
             logger.info("Dashboard uploaded to Drive (file id %s); kept local copy at %s", file_id, target_path)
     except Exception as exc:
         logger.error("Failed to upload dashboard to Drive: %s", exc)
-
-
-def _find_index_in_headers(headers: List[str], keywords: Tuple[str, ...]) -> Optional[int]:
-    for idx, header in enumerate(headers):
-        if not header:
-            continue
-        value = str(header).strip().lower()
-        for keyword in keywords:
-            if keyword in value:
-                return idx
-    return None
-
-
-def _reconstruct_history_rows_from_payload(payload: dict) -> Tuple[List[str], List[str], List[List[str]]]:
-    headers = list(payload.get("headers") or [])
-    latest_row = list(payload.get("latestRow") or [])
-
-    chart_labels = list(payload.get("chartLabels") or [])
-    setpoint_series = list(payload.get("setpoint") or [])
-    actual_series = list(payload.get("actual") or [])
-    outside_series = list(payload.get("outside") or [])
-    fan_series = list(payload.get("fan") or [])
-    cooling_series = list(payload.get("cooling") or [])
-    condenser_minutes_series = list(payload.get("condenserMinutes") or [])
-
-    row_count = max(
-        len(chart_labels),
-        len(setpoint_series),
-        len(actual_series),
-        len(outside_series),
-        len(fan_series),
-        len(cooling_series),
-        len(condenser_minutes_series),
-    )
-    if row_count == 0:
-        raise SystemExit("Cached payload missing chart series; cannot reconstruct history rows.")
-
-    setpoint_idx = _find_index_in_headers(
-        headers, ("cooling set point", "cooling setpoint", "set point", "d")
-    )
-    actual_idx = _find_index_in_headers(headers, ("building temperature", "actual temperature", "temperature"))
-    outside_idx = _find_index_in_headers(headers, ("outside temperature", "outside temp", "exterior temperature", "outdoor temp"))
-    fan_idx = _find_index_in_headers(headers, ("fan", "fan setting", "fan mode"))
-    cooling_idx = _find_index_in_headers(headers, ("equipment status", "status", "equipment", "cooling status"))
-    condenser_idx = _find_index_in_headers(headers, ("condenser minutes", "condenser runtime"))
-
-    def _series_value(series: List, idx: int) -> str:
-        if idx < 0 or idx >= len(series):
-            return ""
-        value = series[idx]
-        if value is None:
-            return ""
-        return str(value)
-
-    def _fan_text(val: str) -> str:
-        t = (val or "").strip().upper()
-        if t == "A":
-            return "Auto"
-        if t == "C":
-            return "Circulate"
-        if t == "O":
-            return "On"
-        return val
-
-    def _cooling_text(val: str) -> str:
-        t = (val or "").strip()
-        if not t:
-            return ""
-        if t in ("1", "1.0", "true", "True"):
-            return "Cooling"
-        if t in ("0", "0.0", "false", "False"):
-            return "Idle"
-        try:
-            return "Cooling" if float(t) >= 1 else "Idle"
-        except ValueError:
-            return t
-
-    history_rows: List[List[str]] = []
-    for i in range(row_count):
-        row = [""] * len(headers)
-        # build_dashboard_html always uses row[0] for chart labels.
-        if row:
-            row[0] = _series_value(chart_labels, i)
-        if setpoint_idx is not None and setpoint_idx < len(row):
-            row[setpoint_idx] = _series_value(setpoint_series, i)
-        if actual_idx is not None and actual_idx < len(row):
-            row[actual_idx] = _series_value(actual_series, i)
-        if outside_idx is not None and outside_idx < len(row):
-            row[outside_idx] = _series_value(outside_series, i)
-        if fan_idx is not None and fan_idx < len(row):
-            row[fan_idx] = _fan_text(_series_value(fan_series, i))
-        if cooling_idx is not None and cooling_idx < len(row):
-            row[cooling_idx] = _cooling_text(_series_value(cooling_series, i))
-        if condenser_idx is not None and condenser_idx < len(row):
-            row[condenser_idx] = _series_value(condenser_minutes_series, i)
-        history_rows.append(row)
-
-    return headers, latest_row, history_rows
-
-
-def run_test_mode_dashboard() -> None:
-    # Test mode intentionally avoids spreadsheet access; it regenerates HTML from cached JSON.
-    public_dir = base_dir.parent / "Web"
-    payload_path = public_dir / "dashboard_data.json"
-    if not payload_path.exists():
-        raise SystemExit(f"test_mode expects cached payload at {payload_path}")
-    try:
-        payload = json.loads(payload_path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError as exc:
-        raise SystemExit(f"Invalid JSON in cached payload {payload_path}: {exc}") from exc
-
-    headers, latest_row, history_rows = _reconstruct_history_rows_from_payload(payload)
-    TEMP_DIR.mkdir(parents=True, exist_ok=True)
-    target_path = TEMP_DIR / "dashboard.html"
-    build_dashboard_html(headers, latest_row, history_rows, target_path)
-
-    public_dir.mkdir(parents=True, exist_ok=True)
-    public_copy = public_dir / "dashboard_public.html"
-    build_dashboard_html(headers, latest_row, history_rows, public_copy)
-    print(f"Dashboard generated (test_mode) at: {target_path.resolve()}")
-    logger.info("test_mode HTML generated from cached payload %s", payload_path)
 
 
 def _format_archive_label(slug: str) -> str:

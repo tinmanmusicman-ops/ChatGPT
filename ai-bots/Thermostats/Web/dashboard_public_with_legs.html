@@ -46,7 +46,6 @@
         border: 2px solid rgba(255, 255, 255, 0.01);
         border-radius: 12px;
         box-sizing: border-box;
-        position: relative;
       }
       h1 {
         margin: 0 0 16px;
@@ -339,10 +338,8 @@
         background: rgba(255,255,255,0.02);
         border-radius: 12px;
         padding: 16px;
-        border: 0;
+        border: 1px solid rgba(255,255,255,0.08);
         position: relative;
-        z-index: 250;
-        isolation: isolate;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -404,56 +401,36 @@
       }
       
       #chartcontrols {
-        margin-top: 50PX;
-        margin-left: 200PX;
+        margin-top: 22px;
+        margin-left: 47px;
         max-width: none;
-        width: 80%;
+        width: 50%;
         position: relative;
         z-index: 30;
-        padding: 1px;
+        padding: 6px;
         display: grid;
         grid-template-columns: 1fr;
-        gap: 2px;
-        font-size: 15px;
+        gap: 3px;
+        font-size: 13px;
         color: #f4f6ff;
-
-
-
+        background: rgba(0, 0, 0, 0.18);
+        box-sizing: border-box;
       }
       #chartcontrols .chart-control {
-        width: 60%;
+        width: 100%;
         justify-content: flex-start;
         padding: 3px 8px;
-        font-size: 16px;
-        line-height: 1;
+        font-size: 12px;
+        line-height: 1.1;
       }
       #chartcontrols #autoplay-toggle {
         grid-column: 1 / -1;
       }
-      .controls-transport-wrap {
-        /* Let children participate in the outer 3-column grid for even spacing. */
-        display: contents;
-      }
-      #chartcontrols {
-        min-width: 0;
-        margin-top: -45px;
-        margin-left: 0;
-        margin-right: 0;
-        justify-self: end;
-        width: 240px;
-        transform: translateX(60px);
-      }
-      .controls-transport-wrap .chart-history {
-        grid-area: history;
-      }
       .transport-stack {
-        margin-top: -40px;
-        margin-left: 0;
+        margin-top: 10px;
         position: relative;
         z-index: 10;
-        transform: none;
-        min-width: 0;
-        justify-self: center;
+        transform: translateX(-75px);
       }
       .transport-panel {
         height: 210px;
@@ -466,12 +443,12 @@
         transform: none;
         position: relative;
         z-index: 1;
-        padding: 8px;
+        padding: 12px;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: flex-start;
-        gap: 2px;
+        gap: 6px;
         border-radius: 12px;
         box-sizing: border-box;
         pointer-events: auto;
@@ -484,93 +461,34 @@
         width: 100%;
         max-width: 320px;
         display: flex;
-        flex-direction: column;
         align-items: center;
         justify-content: center;
         min-height: 26px;
-        gap: 2px;
+        font-size: 14px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
         opacity: 0.9;
         color: white;
-        margin: 1px auto 0;
+        margin: 1px auto px;
         padding: 1px 1px;
         border-radius: 12px;
-        white-space: normal;
+        white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
         text-align: center;
-        line-height: 1.1;
+        line-height: .5;
         margin-top: 0;
       }
-      .transport-history-status .transport-history-month {
-        width: 100%;
-        font-size: 12px;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        opacity: 0.9;
-      }
-      .transport-history-status .transport-history-day {
-        width: 100%;
-        font-size: 18px;
-        letter-spacing: 0.06em;
-        opacity: 0.98;
-      }
-      .transport-step-modes {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0;
-        padding: 4px;
-        margin-top: -10px;
-        border-radius: 14px;
-        border: 1px solid rgba(255,255,255,0.12);
-        background: rgba(0,0,0,0.18);
-        backdrop-filter: blur(6px);
-      }
-      .transport-step-modes label {
-        position: relative;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        user-select: none;
-        cursor: pointer;
-      }
-      .transport-step-modes input[type="radio"] {
-        position: absolute;
-        opacity: 0;
-      }
-      .transport-step-modes span {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 6px 10px;
-        border-radius: 999px;
-        border: 1px solid rgba(255,255,255,0.10);
-        background: rgba(255,255,255,0.04);
-        font-size: 11px;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: rgba(244, 246, 255, 0.82);
-        transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
-      }
-      .transport-step-modes input[type="radio"]:checked + span {
-        background: rgba(255, 179, 71, 0.28);
-        border-color: rgba(255, 179, 71, 0.65);
-        color: rgba(255, 255, 255, 0.95);
-      }
-      .transport-step-modes input[type="radio"]:focus-visible + span {
-        outline: 2px solid rgba(255, 179, 71, 0.85);
-        outline-offset: 2px;
-      }
       .transport-deck {
-        width: 440px;
-        height: 206px;
+        width: 280px;
+        height: 130px;
         margin-top: 0px;
         border-radius: 14px;
         pointer-events: auto;
         opacity: 0.98;
       }
       .transport-nav {
-        margin-top: -8px;
+        margin-top: -1px;
         width: 100%;
         display: flex;
         align-items: center;
@@ -588,49 +506,13 @@
         height: 100%;
         display: block;
       }
-      .transport-deck .deck-cassette {
-        opacity: 0;
-        transition: opacity 0.3s ease;
-      }
-      .transport-deck.cassette-skin .deck-cassette {
-        opacity: 1;
-      }
-      .transport-deck.cassette-skin .deck-ui {
-        opacity: 0;
-      }
-      .transport-deck {
-        --cassette-reel-scale: 1.05;
-        --cassette-reel-left-x: 18px;
-        --cassette-reel-left-y: -11px;
-        --cassette-reel-right-x: -18px;
-        --cassette-reel-right-y: -10px;
-        --cassette-image-scale: 1.05;
-        --cassette-image-x: 0px;
-        --cassette-image-y: 5px;
-      }
-      .transport-deck .reel-wrap {
-        transform-box: fill-box;
-        transform-origin: center;
-      }
-      .transport-deck .reel-wrap.reel-left {
-        transform: translate(var(--cassette-reel-left-x), var(--cassette-reel-left-y)) scale(var(--cassette-reel-scale));
-      }
-      .transport-deck .reel-wrap.reel-right {
-        transform: translate(var(--cassette-reel-right-x), var(--cassette-reel-right-y)) scale(var(--cassette-reel-scale));
-      }
-      .transport-deck .reel-spin {
+      .transport-deck .reel {
         height: 200px;
         transform-box: fill-box;
         transform-origin: center;
       }
-      .transport-deck .deck-cassette {
-        transform-box: fill-box;
-        transform-origin: center;
-        transform: translate(var(--cassette-image-x), var(--cassette-image-y)) scale(var(--cassette-image-scale));
-      }
-      .transport-deck.playing .reel-spin {
-        animation: deck-spin var(--deck-spin-duration, 1.35s) linear infinite;
-        animation-direction: var(--deck-spin-direction, normal);
+      .transport-deck.playing .reel {
+        animation: deck-spin 1.35s linear infinite;
       }
       .transport-deck .led-dot {
         transition: fill 0.25s ease, filter 0.25s ease;
@@ -644,30 +526,29 @@
         to { transform: rotate(360deg); }
       }
       .chart-top-row {
-        max-width: 1120px;
+        max-width: 1240px;
         width: 100%;
         display: grid;
-        grid-template-columns: 320px 400px 240px;
-        grid-template-areas:
-          "transport usage controls"
-          "history history history";
+        grid-template-columns: 400px minmax(260px, 1fr) 340px;
         align-items: flex-start;
-        column-gap: 0;
-        row-gap: 10px;
-        justify-content: space-between;
+        gap: 14px;
         margin-top: 20px;
         margin-bottom: 18px;
         transform: translateX(-15px);
-        border: 0;
+        border: 1px solid rgba(255, 255, 255, 0.18);
       }
-      .usage-frame-wrap {
-        grid-area: usage;
+      .controls-col,
+      .transport-col {
+        margin-top: -65px;
+        height: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
       }
-      #chartcontrols {
-        grid-area: controls;
-      }
-      .transport-stack {
-        grid-area: transport;
+      .transport-col .chart-history {
+        margin: 0;
+        max-width: none;
       }
       .usage-slot {
         width: 400px;
@@ -676,6 +557,7 @@
         margin-top: -65px;
         margin-left: 1px;
  
+
         border-radius: 12px;
         background: rgba(0, 0, 0, 0.6);
 
@@ -688,36 +570,18 @@
         display: flex;
         flex-direction: column;
       }
-      .usage-frame-wrap {
-        position: relative;
-        container-type: inline-size;
-        --usage-legs-overlap: 18px;
-      }
-      .usage-frame-wrap .usage-legs {
+      .tv-legs-small {
         position: absolute;
         left: 50%;
-        bottom: 0;
-        transform: translateX(-50%) translateY(calc(100% - var(--usage-legs-overlap)));
-        height: clamp(170px, 92%, 260px);
-        width: min(520px, 95%);
+        top: 100%;
+        bottom: auto;
+        transform: translateX(-50%) translateY(-10px);
+        width: min(520px, 92%);
+        height: auto;
         z-index: 0;
         pointer-events: none;
         opacity: 0.96;
-        background-image: url("../../../Images/Legs2.png");
-        background-repeat: no-repeat;
-        background-position: center bottom;
-        background-size: contain;
         filter: brightness(1.25) contrast(1.1) saturate(1.15) drop-shadow(0 10px 20px rgba(0,0,0,0.6));
-      }
-      @supports (height: 1cqi) {
-        .usage-frame-wrap .usage-legs {
-          height: clamp(170px, 62cqi, 300px);
-          width: min(520px, 120cqi);
-        }
-      }
-      .usage-frame-wrap .usage-slot {
-        position: relative;
-        z-index: 1;
       }
       .usage-slot > .usage-header,
       .usage-slot > .usage-graphic,
@@ -783,7 +647,7 @@
       .swap-controls {
         margin-top: 8px;
         width: 100%;
-        display: flex;
+        display: none !important;
         justify-content: center;
       }
       .swap-controls .swap-controls-inner {
@@ -794,40 +658,13 @@
         border: 1px solid rgba(255, 255, 255, 0.16);
         background: rgba(0, 0, 0, 0.18);
         box-shadow: 0 10px 18px rgba(0, 0, 0, 0.35);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 10px;
-        user-select: none;
-        color: rgba(255, 245, 199, 0.95);
-      }
-      .swap-controls .swap-step-btn {
-        flex: 0 0 auto;
-        min-width: 48px;
-        height: 36px;
-        border-radius: 14px;
-        border: 1px solid rgba(255,255,255,0.22);
-        background: rgba(0,0,0,0.35);
-        color: rgba(244, 246, 255, 0.92);
-        font-size: 16px;
-        letter-spacing: 0.08em;
         cursor: pointer;
-        box-shadow: 0 10px 18px rgba(0, 0, 0, 0.35);
-      }
-      .swap-controls .swap-step-btn:disabled {
-        opacity: 0.35;
-        cursor: default;
-      }
-      .swap-controls .swap-step-label {
-        flex: 1 1 auto;
+        user-select: none;
         text-align: center;
         font-size: 12px;
         letter-spacing: 0.08em;
         text-transform: uppercase;
-        opacity: 0.95;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        color: rgba(255, 245, 199, 0.95);
       }
       .swap-controls .swap-controls-inner:focus-visible {
         outline: 2px solid rgba(102, 255, 153, 0.55);
@@ -895,27 +732,19 @@
           max-width: none;
           width: 100%;
           box-sizing: border-box;
-          display: grid;
-          grid-template-columns: 1fr;
+          justify-content: center;
           margin-right: 0;
           margin-left: 0;
           padding-right: 1px;
         }
-        .controls-transport-wrap {
-          margin-top: 40;
-          margin-left: 10;
+        .controls-col,
+        .transport-col {
+          margin-top: 0;
+          margin-left: 0;
           width: 100%;
-          align-items: start;
-          display: grid;
-          grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-          grid-template-areas:
-            "controls transport"
-            "history history";
+          align-items: center;
         }
         .transport-stack {
-          width: 100%;
-          max-width: 320px;
-          margin-top: 0;
           transform: none;
         }
         .transport-panel {
@@ -1155,40 +984,26 @@
         }
       }
       /* TV stand/legs graphic under the main chart frame. */
-      .tv-frame-wrap {
-        position: relative;
-        container-type: inline-size;
-        --tv-legs-overlap: 35px;
+      .chart-wrap.tv-frame {
         margin-bottom: 48px;
       }
-      body.hide-big-chart .tv-frame-wrap {
+      body.hide-big-chart .chart-wrap.tv-frame {
         display: none;
       }
-      .tv-frame-wrap .tv-legs {
-        position: absolute;
+      body.hide-big-chart #tv-legs {
+        display: none;
+      }
+      #tv-legs {
+        display: none;
+        position: fixed;
         left: 50%;
-        bottom: 0;
-        transform: translateX(-50%) translateY(calc(100% - var(--tv-legs-overlap)));
-        height: clamp(400px, 95%, 650px);
-        width: min(1100px, 95%);
+        top: 0;
+        transform: translateX(-50%);
+        width: min(990px, 80%);
+        height: auto;
+        max-width: 100%;
         z-index: -1;
         pointer-events: none;
-        opacity: 0.98;
-        background-image: url("../../../Images/Legs2.png");
-        background-repeat: no-repeat;
-        background-position: center bottom;
-        background-size: contain;
-        filter: brightness(1.25) contrast(1.1) saturate(1.15) drop-shadow(0 18px 26px rgba(0,0,0,0.65));
-      }
-      @supports (height: 1cqi) {
-        .tv-frame-wrap .tv-legs {
-          height: clamp(400px, 62cqi, 700px);
-          width: min(1100px, 140cqi);
-        }
-      }
-      .tv-frame-wrap .chart-wrap.tv-frame {
-        position: relative;
-        z-index: 1;
       }
       body.hide-big-chart #toggle-history {
         display: none;
@@ -1196,6 +1011,7 @@
       body.tv-mode {
         overflow: hidden;
         background: #07070b;
+        --tv-inset-bottom: 84px;
       }
       body.tv-mode .header-row,
       body.tv-mode .timestamp-row,
@@ -1217,15 +1033,11 @@
         box-shadow: none;
         border-radius: 0;
       }
-      body.tv-mode .tv-frame-wrap {
+      body.tv-mode .chart-wrap.tv-frame {
         display: block !important;
         position: fixed;
-        inset: 14px 34px 74px 34px;
+        inset: 24px 44px 84px 44px;
         z-index: 9999;
-      }
-      body.tv-mode .tv-frame-wrap .chart-wrap.tv-frame {
-        position: absolute;
-        inset: 0;
         height: auto;
         width: auto;
         max-width: none;
@@ -1235,19 +1047,20 @@
         --frame-border: 12px;
         border: var(--frame-border) solid rgba(255, 255, 255, 0.2);
         background: linear-gradient(to bottom, #050506 0%, #151518 55%, #2b2b2e 100%);
+        overflow: visible;
       }
       body.tv-mode #history-chart-canvas-slot,
       body.tv-mode #history-chart {
         height: 100% !important;
       }
-      body.tv-mode .tv-frame-wrap .tv-legs {
-        display: block;
-        height: clamp(360px, 72%, 560px);
-      }
-      @supports (height: 1cqi) {
-        body.tv-mode .tv-frame-wrap .tv-legs {
-          height: clamp(360px, 40cqi, 600px);
-        }
+      body.tv-mode #tv-legs {
+        display: block !important;
+        top: calc(100vh - var(--tv-inset-bottom, 84px));
+        transform: translateX(-50%) translateY(-30px);
+        width: min(990px, 80%);
+        max-width: 100%;
+        filter: brightness(1.25) contrast(1.1) saturate(1.15) drop-shadow(0 18px 26px rgba(0,0,0,0.65));
+        opacity: 0.98;
       }
       /* TV mode chart controls (mode toggles) shown on the right. */
       .tv-chartcontrols-overlay {
@@ -1257,21 +1070,21 @@
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
         grid-auto-rows: auto;
-        gap: 6px 6px;
-        padding: 5px;
-        border-radius: 12px;
+        gap: 8px 8px;
+        padding: 6px;
+        border-radius: 14px;
         border: 1px solid rgba(255,255,255,0.12);
         background: rgba(0,0,0,0.24);
         backdrop-filter: blur(8px);
-        width: 300px;
+        width: 380px;
         justify-content: start;
 
       }
       body.tv-mode .tv-chartcontrols-overlay .chart-control {
         width: 100%;
         text-align: left;
-        font-size: 11px;
-        padding: 2px 6px;
+        font-size: 12px;
+        padding: 2px 8px;
         letter-spacing: 0.2px;
         white-space: nowrap;
       }
@@ -1295,18 +1108,6 @@
         align-items: flex-end;
         gap: 12px;
       }
-      /* TV-mode tape reader (shows cassette spin in the bottom bar). */
-      .tv-transport-deck {
-        display: none;
-      }
-      body.tv-mode #tv-transport-deck.transport-deck {
-        display: block;
-        width: 260px;
-        height: 122px;
-        border-radius: 14px;
-        pointer-events: none;
-        opacity: 0.98;
-      }
       body.tv-mode .tv-file-select {
         display: flex;
         flex-direction: column;
@@ -1326,8 +1127,6 @@
         text-transform: uppercase;
         opacity: 0.85;
         user-select: none;
-        width: 100%;
-        text-align: center;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -1338,37 +1137,9 @@
         opacity: 0.9;
         letter-spacing: 0.02em;
         user-select: none;
-        width: 100%;
-        text-align: center;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-      }
-      body.tv-mode #tv-history-status {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 2px;
-      }
-      body.tv-mode #tv-history-status .tv-history-month {
-        width: 100%;
-        font-size: 11px;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        opacity: 0.9;
-      }
-      body.tv-mode #tv-history-status .tv-history-day {
-        width: 100%;
-        font-size: 18px;
-        letter-spacing: 0.06em;
-        opacity: 0.95;
-      }
-      body.tv-mode #tv-history-status .tv-history-hour {
-        width: 100%;
-        font-size: 14px;
-        letter-spacing: 0.08em;
-        color: #ffb347;
       }
       body.tv-mode #tv-file-select {
         cursor: pointer;
@@ -1407,105 +1178,10 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        flex-direction: column;
-        gap: 8px;
+        gap: 10px;
         pointer-events: auto;
-        position: fixed;
-        left: 50%;
-        bottom: 34px;
-        transform: translateX(-50%);
-        z-index: 10070;
-      }
-      body.tv-mode .tv-nav-overlay .tv-step-modes {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0;
-        padding: 4px;
-        border-radius: 14px;
-        border: 1px solid rgba(255,255,255,0.12);
-        background: rgba(0,0,0,0.18);
-        backdrop-filter: blur(6px);
-      }
-      body.tv-mode .tv-nav-overlay .tv-step-modes label {
-        position: relative;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        user-select: none;
-        cursor: pointer;
-      }
-      body.tv-mode .tv-nav-overlay .tv-step-modes input[type="radio"] {
-        position: absolute;
-        opacity: 0;
-      }
-      body.tv-mode .tv-nav-overlay .tv-step-modes span {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 6px 10px;
-        border-radius: 999px;
-        border: 1px solid rgba(255,255,255,0.10);
-        background: rgba(255,255,255,0.04);
-        font-size: 11px;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: rgba(244, 246, 255, 0.82);
-        transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
-      }
-      body.tv-mode .tv-nav-overlay .tv-step-modes input[type="radio"]:checked + span {
-        background: rgba(255, 179, 71, 0.28);
-        border-color: rgba(255, 179, 71, 0.65);
-        color: rgba(255, 255, 255, 0.95);
-      }
-      body.tv-mode .tv-nav-overlay .tv-step-modes input[type="radio"]:focus-visible + span {
-        outline: 2px solid rgba(255, 179, 71, 0.85);
-        outline-offset: 2px;
-      }
-      body.tv-mode .tv-nav-overlay .tv-nav-row {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 28px;
-      }
-      body.tv-mode .tv-nav-overlay .tv-step-value {
-        min-width: 140px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        user-select: none;
-      }
-      body.tv-mode .tv-nav-overlay .tv-step-stack {
-        display: flex;
-        flex-direction: column;
-        gap: 3px;
-        font-size: 12px;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        line-height: 1.05;
-      }
-      body.tv-mode .tv-nav-overlay .tv-step-row {
-        display: flex;
-        align-items: baseline;
-        justify-content: center;
-        gap: 6px;
-      }
-      body.tv-mode .tv-nav-overlay .tv-step-row .k {
-        opacity: 0.7;
-        min-width: 58px;
-        text-align: right;
-        color: rgba(244, 246, 255, 0.75);
-      }
-      body.tv-mode .tv-nav-overlay .tv-step-row .sep {
-        opacity: 0.55;
-        color: rgba(244, 246, 255, 0.7);
-      }
-      body.tv-mode .tv-nav-overlay .tv-step-row .v {
-        min-width: 62px;
-        text-align: left;
-        letter-spacing: 0.16em;
-        color: rgba(244, 246, 255, 0.92);
+        margin-left: 70px;
+        
       }
       .tv-nav-btn {
         flex: 0 0 auto;
@@ -1736,10 +1412,10 @@
       .chart-history.expanded .history-lists-row {
         display: flex;
         position: absolute;
-        left: 140px;
+        left: 0;
         right: 0;
         bottom: calc(100% + 10px);
-        z-index: 600;
+        z-index: 60;
         background: #2f3136;
         border: 1px solid rgba(255, 255, 255, 0.2);
         border-radius: 14px;
@@ -1784,21 +1460,19 @@
         list-style: none;
         margin: 0;
         padding: 0;
-        font-size: 11px;
+        font-size: 10px;
         color: #f4f6ff;
-        line-height: 1.4;
+        line-height: 1.15;
       }
       .chart-history ul button {
         all: unset;
-        display: block;
         width: 100%;
-        box-sizing: border-box;
         text-align: left;
         cursor: pointer;
         color: #33ccff;
-        font-size: 11px;
-        letter-spacing: 0.04em;
-        padding: 3px 8px;
+        font-size: 10px;
+        line-height: 1.15;
+        letter-spacing: 0.03em;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -1815,7 +1489,7 @@
         display: none;
       }
       .note {
-        border: 0;
+        border: 2px solid;
         margin-top: 12px;
         font-size: 12px;
         opacity: 0.7;
@@ -1833,413 +1507,72 @@
         white-space: pre-wrap;
         width: 100%;
       }
-
-      /* Embedded help chat (operator manual only). */
-      #help-chat-toggle {
-        position: fixed;
-        top: 18px;
-        right: max(18px, calc((100vw - 1020px) / 2));
-        z-index: 2500;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 10px 14px;
-        border-radius: 999px;
-        border: 1px solid rgba(255,255,255,0.18);
-        background: rgba(0,0,0,0.55);
-        color: rgba(244,246,255,0.92);
-        font-size: 12px;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        backdrop-filter: blur(8px);
-        cursor: pointer;
-      }
-      #help-chat-toggle:hover,
-      #help-chat-toggle:focus-visible {
-        border-color: rgba(102, 255, 153, 0.6);
-        background: rgba(102, 255, 153, 0.14);
-        color: rgba(255,255,255,0.98);
-      }
-      #help-chat-toggle:focus-visible {
-        outline: 2px solid rgba(102, 255, 153, 0.85);
-        outline-offset: 2px;
-      }
-      body.tv-mode #help-chat-toggle {
-        display: none !important;
-      }
-
-      #help-chat-panel {
-        position: fixed;
-        top: 64px;
-        right: max(18px, calc((100vw - 1020px) / 2));
-        width: min(420px, calc(100vw - 36px));
-        height: min(520px, calc(100vh - 92px));
-        z-index: 2600;
-        border-radius: 14px;
-        border: 1px solid rgba(255,255,255,0.14);
-        background: rgba(10, 14, 20, 0.96);
-        box-shadow: 0 22px 60px rgba(0,0,0,0.65);
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-      }
-      #help-chat-panel.hidden {
-        display: none;
-      }
-      .help-chat-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        padding: 12px 12px 10px;
-        border-bottom: 1px solid rgba(255,255,255,0.10);
-      }
-      .help-chat-actions {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-      }
-      .help-chat-tag-toggle {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        font-size: 11px;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        opacity: 0.8;
-      }
-      .help-chat-tag-toggle span {
-        color: rgba(244,246,255,0.8);
-      }
-      .help-chat-tag-toggle input {
-        width: 14px;
-        height: 14px;
-        accent-color: #66ff99;
-      }
-      .help-chat-tag-toggle input:checked + span {
-        color: #66ff99;
-      }
-      .help-chat-panel.hide-tags .tag-line {
-        display: none;
-      }
-      .help-chat-actions {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-      }
-      .help-chat-title {
-        font-size: 12px;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        opacity: 0.92;
-      }
-      .help-chat-subtitle {
-        font-size: 11px;
-        opacity: 0.68;
-        margin-top: 2px;
-      }
-      #help-chat-close {
-        width: 34px;
-        height: 34px;
-        border-radius: 10px;
-        border: 1px solid rgba(255,255,255,0.16);
-        background: rgba(0,0,0,0.25);
-        color: rgba(244,246,255,0.92);
-        cursor: pointer;
-      }
-      #help-chat-close:hover,
-      #help-chat-close:focus-visible {
-        border-color: rgba(102, 255, 153, 0.6);
-        background: rgba(102, 255, 153, 0.12);
-      }
-      #help-chat-messages {
-        flex: 1;
-        padding: 12px;
-        overflow: auto;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-      }
-      .help-msg {
-        max-width: 100%;
-        padding: 10px 10px;
-        border-radius: 12px;
-        border: 1px solid rgba(255,255,255,0.10);
-        background: rgba(255,255,255,0.04);
-        font-size: 13px;
-        line-height: 1.35;
-        white-space: normal;
-      }
-      .help-msg.user {
-        border-color: rgba(102, 255, 153, 0.28);
-        background: rgba(102, 255, 153, 0.08);
-        white-space: pre-wrap;
-      }
-      .help-msg.assistant {
-        border-color: rgba(154, 215, 255, 0.18);
-        background: rgba(154, 215, 255, 0.06);
-        white-space: normal;
-      }
-      .help-msg.assistant p {
-        margin: 0 0 8px;
-      }
-      .help-msg.assistant p:last-child {
-        margin-bottom: 0;
-      }
-      .help-msg.assistant ul,
-      .help-msg.assistant ol {
-        margin: 6px 0 6px 20px;
-        padding: 0;
-      }
-      .help-msg.assistant li {
-        margin: 3px 0;
-      }
-      .help-msg.assistant a {
-        color: rgba(154, 215, 255, 0.95);
-        text-decoration: underline;
-      }
-      .help-msg.assistant a:hover {
-        color: rgba(202, 235, 255, 1);
-      }
-      .help-msg.assistant code {
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-        font-size: 12px;
-        background: rgba(0, 0, 0, 0.35);
-        padding: 1px 4px;
-        border-radius: 6px;
-      }
-      .help-msg.assistant pre {
-        margin: 8px 0;
-        padding: 10px;
-        background: rgba(0, 0, 0, 0.45);
-        border: 1px solid rgba(255,255,255,0.10);
-        border-radius: 10px;
-        overflow: auto;
-      }
-      .help-msg.assistant pre code {
-        background: transparent;
-        padding: 0;
-      }
-      .help-msg.assistant details.doc-section {
-        border: 1px solid rgba(255,255,255,0.10);
-        border-radius: 12px;
-        background: rgba(0,0,0,0.18);
-        padding: 6px 8px;
-      }
-      .help-msg.assistant details.doc-section + details.doc-section {
-        margin-top: 8px;
-      }
-      .help-msg.assistant summary.doc-section-summary {
-        cursor: pointer;
-        list-style: none;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-weight: 600;
-        color: rgba(244,246,255,0.96);
-        outline: none;
-      }
-      .help-msg.assistant summary.doc-section-summary::-webkit-details-marker {
-        display: none;
-      }
-      .help-msg.assistant details.doc-section summary.doc-section-summary::before {
-        content: "▶";
-        font-weight: 700;
-        opacity: 0.9;
-      }
-      .help-msg.assistant details.doc-section[open] summary.doc-section-summary::before {
-        content: "▼";
-      }
-      .help-msg.assistant summary.doc-section-summary:focus-visible {
-        outline: 2px solid rgba(154, 215, 255, 0.55);
-        outline-offset: 3px;
-        border-radius: 10px;
-      }
-      .help-msg.assistant .doc-section-body {
-        margin-top: 8px;
-      }
-      .help-msg.assistant details.doc-subsection {
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 10px;
-        background: rgba(255, 255, 255, 0.03);
-        margin-top: 6px;
-        margin-left: 12px;
-        padding: 4px 6px;
-      }
-      .help-msg.assistant summary.doc-subsection-summary {
-        cursor: pointer;
-        list-style: none;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        font-weight: 600;
-        font-size: 13px;
-        color: rgba(244, 246, 255, 0.96);
-        outline: none;
-      }
-      .help-msg.assistant summary.doc-subsection-summary::before {
-        content: ">";
-        font-weight: 700;
-        opacity: 0.85;
-      }
-      .help-msg.assistant details.doc-subsection[open] summary.doc-subsection-summary::before {
-        content: "v";
-      }
-      .help-msg.assistant summary.doc-subsection-summary:focus-visible {
-        outline: 2px solid rgba(154, 215, 255, 0.55);
-        outline-offset: 2px;
-        border-radius: 8px;
-      }
-      .help-msg.assistant .doc-subsection-body {
-        margin-top: 6px;
-        padding-left: 10px;
-      }
-      .help-chat-form {
-        display: flex;
-        gap: 10px;
-        padding: 10px 12px 12px;
-        border-top: 1px solid rgba(255,255,255,0.10);
-        background: rgba(0,0,0,0.20);
-      }
-      #help-chat-input {
-        flex: 1;
-        border-radius: 12px;
-        border: 1px solid rgba(255,255,255,0.14);
-        background: rgba(0,0,0,0.25);
-        color: rgba(244,246,255,0.95);
-        padding: 10px 10px;
-        font-size: 13px;
-        outline: none;
-      }
-      #help-chat-input:focus-visible {
-        border-color: rgba(154, 215, 255, 0.55);
-        outline: 2px solid rgba(154, 215, 255, 0.35);
-        outline-offset: 2px;
-      }
-      #help-chat-send {
-        border-radius: 12px;
-        border: 1px solid rgba(255,255,255,0.14);
-        background: rgba(0,0,0,0.25);
-        color: rgba(244,246,255,0.92);
-        padding: 10px 12px;
-        font-size: 13px;
-        cursor: pointer;
-        white-space: nowrap;
-      }
-      #help-chat-clear {
-        border-radius: 12px;
-        border: 1px solid rgba(255,255,255,0.14);
-        background: rgba(255,255,255,0.12);
-        color: rgba(244,246,255,0.92);
-        padding: 10px 12px;
-        font-size: 13px;
-        cursor: pointer;
-        white-space: nowrap;
-      }
-      #help-chat-send:hover,
-      #help-chat-send:focus-visible {
-        border-color: rgba(154, 215, 255, 0.55);
-        background: rgba(154, 215, 255, 0.10);
-      }
-      #help-chat-clear:hover,
-      #help-chat-clear:focus-visible {
-        border-color: rgba(154, 215, 255, 0.55);
-        background: rgba(154, 215, 255, 0.10);
-      }
-      #help-chat-status {
-        padding: 0 12px 10px;
-        font-size: 11px;
-        opacity: 0.7;
-      }
     </style>
   </head>
   <body class="hide-big-chart hide-chart-history">
     <div class="container">
-      <button id="help-chat-toggle" type="button" aria-haspopup="dialog" aria-controls="help-chat-panel">Help Chat</button>
-      <div id="help-chat-panel" class="hidden" role="dialog" aria-label="Dashboard Help Chat" data-manual-url="dashboard_operator_manual.md">
-        <div class="help-chat-header">
-          <div>
-            <div class="help-chat-title">Dashboard Help</div>
-            <div class="help-chat-subtitle">Answers come only from the operator manual.</div>
-          </div>
-          <div class="help-chat-actions">
-            <label class="help-chat-tag-toggle">
-              <input id="help-chat-tag-toggle" type="checkbox" checked />
-              <span>tags</span>
-            </label>
-            <button id="help-chat-close" type="button" aria-label="Close help chat">×</button>
-          </div>
-        </div>
-        <div id="help-chat-messages" aria-live="polite"></div>
-        <div id="help-chat-status">Tip: try keywords like "chart", "display", "rewind", or "cassette".</div>
-        <form id="help-chat-form" class="help-chat-form" autocomplete="off">
-          <input id="help-chat-input" type="text" placeholder="Ask a question…" aria-label="Ask a dashboard question" />
-          <button id="help-chat-clear" type="button">Clear</button>
-          <button id="help-chat-send" type="submit">Send</button>
-        </form>
-      </div>
       <div id="Cards" class="card-grid frame2">
         
         <div class="metric-card frame2" data-metric="timestamp">
           <div class="label">Timestamp</div>
           <div class="value">Tuesday Nov 25 2025 8:11 PM</div>
         </div>
-    
+        
         <div class="metric-card frame2" data-metric="type">
           <div class="label">Type</div>
           <div class="value">System</div>
         </div>
-    
+        
         <div class="metric-card frame2" data-metric="actual">
           <div class="label">Building Temperature</div>
           <div class="value">95</div>
         </div>
-    
+        
         <div class="metric-card frame2" data-metric="setpoint">
           <div class="label">Cooling Set Point</div>
           <div class="value">80</div>
         </div>
-    
+        
         <div class="metric-card frame2" data-metric="climate-setting">
           <div class="label">Climate Setting</div>
           <div class="value">Cool</div>
         </div>
-    
+        
         <div class="metric-card frame2 fan-state-o" data-metric="fan">
           <div class="label">Fan Setting</div>
           <div class="value">On</div>
         </div>
-    
+        
         <div class="metric-card frame2" data-metric="cooling">
           <div class="label">Equipment Status</div>
           <div class="value">Cooling</div>
         </div>
-    
+        
         <div class="metric-card frame2">
           <div class="label">Studio</div>
           <div class="value"> </div>
         </div>
-    
+        
         <div class="metric-card frame2">
           <div class="label">Request Expires (local time)</div>
           <div class="value">8:54 PM</div>
         </div>
-    
+        
         <div class="metric-card frame2" data-metric="outside">
           <div class="label">Outside Temp</div>
           <div class="value">57</div>
         </div>
-    
+        
         <div class="metric-card frame2" data-metric="condenser-state">
           <div class="label">Condenser State</div>
           <div class="value">On</div>
         </div>
-    
+        
         <div class="metric-card frame2" data-metric="condenser-minutes">
           <div class="label">Condenser Minutes Past Hour</div>
           <div class="value">500</div>
         </div>
-    
+        
       </div>
       <div class="hands-logo-slot" aria-hidden="true">
         <div class="hands-logo-top"></div>
@@ -2256,40 +1589,50 @@
       </div>
 
       <div class="chart-top-row">
-        <div class="usage-frame-wrap">
-          <div class="usage-legs" aria-hidden="true"></div>
-          <div class="usage-slot tv-frame" id="usage-slot">
-            <div class="usage-header">
-              <div class="usage-header-left">
-                <div class="title">Usage Chart</div>
-                <div class="usage-controls" role="group" aria-label="Usage Range">
-                  <button type="button" class="usage-control" data-range="7d">7 Day</button>
-                  <button type="button" class="usage-control" data-range="month">Month</button>
-                  <button type="button" class="usage-control active" data-range="year">Year</button>
-                </div>
-              </div>
-              <div class="usage-stats" id="usage-slot-stats" aria-hidden="true">
-                <div class="k">Total</div><div class="v" id="usage-stat-total">-</div>
-                <div class="k">Avg</div><div class="v" id="usage-stat-avg">-</div>
-                <div class="k">Max</div><div class="v" id="usage-stat-max">-</div>
-                <div class="k">Cost</div><div class="v" id="usage-stat-cost">-</div>
+        <div class="usage-slot tv-frame" id="usage-slot">
+          <div class="usage-header">
+            <div class="usage-header-left">
+              <div class="title">Usage Chart</div>
+              <div class="usage-controls" role="group" aria-label="Usage Range">
+                <button type="button" class="usage-control" data-range="7d">7 Day</button>
+                <button type="button" class="usage-control" data-range="month">Month</button>
+                <button type="button" class="usage-control active" data-range="year">Year</button>
               </div>
             </div>
-            <div class="usage-graphic">
-              <div id="usage-slot-canvas-slot">
-                <canvas id="usage-slot-chart"></canvas>
-              </div>
-            </div>
-            <div id="swap-controls" class="swap-controls" aria-hidden="false">
-              <div id="swap-controls-label" class="swap-controls-inner" role="group" aria-label="Step through 24 hour chart">
-                <button type="button" id="chart-step-prev" class="swap-step-btn" aria-label="Previous point">&lt;&lt;</button>
-                <div id="chart-step-value" class="swap-step-label">Step Time</div>
-                <button type="button" id="chart-step-next" class="swap-step-btn" aria-label="Next point">&gt;&gt;</button>
-              </div>
+            <div class="usage-stats" id="usage-slot-stats" aria-hidden="true">
+              <div class="k">Total</div><div class="v" id="usage-stat-total">-</div>
+              <div class="k">Avg</div><div class="v" id="usage-stat-avg">-</div>
+              <div class="k">Max</div><div class="v" id="usage-stat-max">-</div>
+              <div class="k">Cost</div><div class="v" id="usage-stat-cost">-</div>
             </div>
           </div>
+          <div class="usage-graphic">
+            <div id="usage-slot-canvas-slot">
+              <canvas id="usage-slot-chart"></canvas>
+            </div>
+          </div>
+          <div id="swap-controls" class="swap-controls" aria-hidden="false">
+            <div id="swap-controls-label" class="swap-controls-inner" role="button" tabindex="0" aria-label="Swap chart">
+              Swap Chart
+            </div>
+          
+          <img
+            src="../../../Images/Legs2.png"
+            class="tv-legs-small"
+            alt=""
+            aria-hidden="true"
+          />
+</div>
+
         </div>
-        <div class="controls-transport-wrap">
+          <img
+            src="../../../Images/Legs2.png"
+            class="tv-legs-small"
+            alt=""
+            aria-hidden="true"
+          />
+
+        <div class="controls-col">
           <div id="chartcontrols" class="chart-controls">
               <button type="button" class="chart-control" data-mode="setpoint">Set Point</button>
               <button type="button" class="chart-control" data-mode="actual">Building Temp</button>
@@ -2297,9 +1640,10 @@
               <button type="button" class="chart-control" data-mode="cooling">AC Status</button>
               <button type="button" class="chart-control" data-mode="fan">Fan Mode</button>
               <button type="button" class="chart-control active" data-mode="both">Combined</button>
-              <span>&nbsp;</span>
               <button type="button" class="chart-control" id="autoplay-toggle">Auto-play: On</button>
             </div>
+        </div>
+        <div class="transport-col">
           <div class="chart-history" id="chart-history">
             <h4 id="chart-history-toggle">Chart History</h4>
             <div id="chart-history-status" class="chart-history-status"></div>
@@ -2308,7 +1652,7 @@
           <div class="transport-stack">
 
       <div id="transport-panel" class="transport-panel">
-            <div id="transport-deck" class="transport-deck cassette-skin" aria-hidden="true">
+            <div id="transport-deck" class="transport-deck" aria-hidden="true">
               <svg viewBox="0 0 240 90" role="img" aria-label="Data deck">
               <defs>
                 <linearGradient id="deck-bg" x1="0" x2="0" y1="0" y2="1">
@@ -2324,192 +1668,99 @@
                   <feDropShadow dx="0" dy="10" stdDeviation="7" flood-color="rgba(0,0,0,0.7)" />
                 </filter>
               </defs>
-              <g class="deck-ui">
-                <!-- Depth/back plate to make the deck feel like a cassette -->
-                <rect x="6" y="6" width="234" height="84" rx="14" fill="rgba(0,0,0,0.55)" />
-                <!-- Main body -->
-                <rect x="3" y="3" width="234" height="84" rx="14" fill="url(#deck-bg)" stroke="url(#deck-edge)" stroke-width="2" filter="url(#deck-shadow)" />
-                <!-- Bottom lip -->
-                <rect x="10" y="74" width="220" height="10" rx="6" fill="rgba(0,0,0,0.28)" />
-                <!-- Window area -->
-                <rect x="12" y="14" width="216" height="40" rx="10" fill="rgba(255,255,255,0.07)" />
-                <rect x="14" y="16" width="212" height="36" rx="9" fill="rgba(0,0,0,0.30)" />
+              <!-- Depth/back plate to make the deck feel like a cassette -->
+              <rect x="6" y="6" width="234" height="84" rx="14" fill="rgba(0,0,0,0.55)" />
+              <!-- Main body -->
+              <rect x="3" y="3" width="234" height="84" rx="14" fill="url(#deck-bg)" stroke="url(#deck-edge)" stroke-width="2" filter="url(#deck-shadow)" />
+              <!-- Bottom lip -->
+              <rect x="10" y="74" width="220" height="10" rx="6" fill="rgba(0,0,0,0.28)" />
+              <!-- Window area -->
+              <rect x="12" y="14" width="216" height="40" rx="10" fill="rgba(255,255,255,0.07)" />
+              <rect x="14" y="16" width="212" height="36" rx="9" fill="rgba(0,0,0,0.30)" />
+
+              <g class="reel reel-left">
+                <circle cx="72" cy="34" r="14" fill="rgba(0,0,0,0.0)" stroke="rgba(0,0,0,0.55)" stroke-width="1.5" />
+                <circle cx="72" cy="34" r="10" fill="rgba(0,0,0,0.0)" stroke="rgba(255,255,255,0.14)" stroke-width="1" />
+                <circle cx="72" cy="34" r="2.5" fill="rgba(255,255,255,0.35)" />
+                <path d="M72 24 L74.8 32 L72 34 L69.2 32 Z" fill="rgba(255,255,255,0.35)" />
+                <path d="M62 34 L70 36.8 L72 34 L70 31.2 Z" fill="rgba(255,255,255,0.35)" />
+                <path d="M72 44 L74.8 36 L72 34 L69.2 36 Z" fill="rgba(255,255,255,0.35)" />
+                <path d="M82 34 L74 36.8 L72 34 L74 31.2 Z" fill="rgba(255,255,255,0.35)" />
               </g>
 
-              <!-- Cassette overlay (RGBA). Place behind reels so the animated reels are visible. -->
-              <image class="deck-cassette" href="../../../Images/Casette2.png" x="0" y="0" width="242" height="94" preserveAspectRatio="xMidYMid meet" />
-
-              <g class="reel-wrap reel-left" aria-hidden="true">
-                <g class="reel-spin">
-                  <circle cx="72" cy="34" r="14" fill="rgba(0,0,0,0.0)" stroke="rgba(0,0,0,0.55)" stroke-width="1.5" />
-                  <!--
-                  <circle cx="72" cy="34" r="10" fill="rgba(0,0,0,0.0)" stroke="rgba(255,255,255,0.14)" stroke-width="1" />
-                  <circle cx="72" cy="34" r="2.5" fill="rgba(255,255,255,0.35)" />
-                  -->
-
-                  <path d="M72 24 L74.8 32 L72 34 L69.2 32 Z" fill="rgba(255,255,255,0.35)" />
-                  <path d="M62 34 L70 36.8 L72 34 L70 31.2 Z" fill="rgba(255,255,255,0.35)" />
-                  <path d="M72 44 L74.8 36 L72 34 L69.2 36 Z" fill="rgba(255,255,255,0.35)" />
-                  <path d="M82 34 L74 36.8 L72 34 L74 31.2 Z" fill="rgba(255,255,255,0.35)" />
-                </g>
+              <g class="reel reel-right">
+                <circle cx="168" cy="34" r="14" fill="rgba(0,0,0,0.0)" stroke="rgba(0,0,0,0.55)" stroke-width="1.5" />
+                <circle cx="168" cy="34" r="10" fill="rgba(0,0,0,0.0)" stroke="rgba(255,255,255,0.14)" stroke-width="1" />
+                <circle cx="168" cy="34" r="2.5" fill="rgba(255,255,255,0.35)" />
+                <path d="M168 24 L170.8 32 L168 34 L165.2 32 Z" fill="rgba(255,255,255,0.35)" />
+                <path d="M158 34 L166 36.8 L168 34 L166 31.2 Z" fill="rgba(255,255,255,0.35)" />
+                <path d="M168 44 L170.8 36 L168 34 L165.2 36 Z" fill="rgba(255,255,255,0.35)" />
+                <path d="M178 34 L170 36.8 L168 34 L170 31.2 Z" fill="rgba(255,255,255,0.35)" />
               </g>
 
-              <g class="reel-wrap reel-right" aria-hidden="true" transform="translate(12,0) scale(0.9)">
-                <g class="reel-spin">
-                  <circle cx="168" cy="34" r="14" fill="rgba(0,0,0,0.0)" stroke="rgba(0,0,0,0.55)" stroke-width="1.5" />
-                  <!--
-                  <circle cx="168" cy="34" r="10" fill="rgba(0,0,0,0.0)" stroke="rgba(255,255,255,0.14)" stroke-width="1" />
-                  <circle cx="168" cy="34" r="2.5" fill="rgba(255,255,255,0.35)" />
-                  -->
-                  <path d="M168 24 L170.8 32 L168 34 L165.2 32 Z" fill="rgba(255,255,255,0.35)" />
-                  <path d="M158 34 L166 36.8 L168 34 L166 31.2 Z" fill="rgba(255,255,255,0.35)" />
-                  <path d="M168 44 L170.8 36 L168 34 L165.2 36 Z" fill="rgba(255,255,255,0.35)" />
-                  <path d="M178 34 L170 36.8 L168 34 L170 31.2 Z" fill="rgba(255,255,255,0.35)" />
-                </g>
-              </g>
+              <path d="M86 34 C104 28, 136 28, 154 34" stroke="rgba(255,255,255,0.18)" stroke-width="2" fill="none" />
+              <path d="M86 38 C104 44, 136 44, 154 38" stroke="rgba(255,255,255,0.10)" stroke-width="2" fill="none" />
 
-              <g class="deck-ui">
-                <path d="M86 34 C104 28, 136 28, 154 34" stroke="rgba(255,255,255,0.18)" stroke-width="2" fill="none" />
-                <path d="M86 38 C104 44, 136 44, 154 38" stroke="rgba(255,255,255,0.10)" stroke-width="2" fill="none" />
-
-                <text x="120" y="70" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="12" fill="rgba(244,246,255,0.72)" letter-spacing="0.18em">
-                  DATA TRANSPORT
-                </text>
-              </g>
+              <text x="120" y="70" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="12" fill="rgba(244,246,255,0.72)" letter-spacing="0.18em">
+                DATA TRANSPORT
+              </text>
 
               <g class="deck-led">
-                <circle cx="182" cy="50" r="4" fill="rgba(0,0,0,0.3)" />
-                <circle class="led-dot" cx="182" cy="50" r="2" fill="rgba(255,102,102,0.25)" />
+                <circle cx="220" cy="70" r="5.5" fill="rgba(0,0,0,0.35)" />
+                <circle class="led-dot" cx="220" cy="70" r="3.5" fill="rgba(255,102,102,0.25)" />
               </g>
             </svg>
           </div>
-          <div id="transport-history-status" class="transport-history-status" style="display:none">
-            <div id="transport-history-month" class="transport-history-month">Current</div>
-            <div id="transport-history-day" class="transport-history-day"></div>
-          </div>
-          <div class="transport-step-modes" aria-label="Step size" role="radiogroup">
-            <label><input type="radio" name="transport-step-mode" id="transport-step-month" value="month" /><span>Month</span></label>
-            <label><input type="radio" name="transport-step-mode" id="transport-step-day" value="day" checked /><span>Day</span></label>
-          </div>
+          <div id="transport-history-status" class="transport-history-status">Current</div>
           <div id="transport-nav" class="transport-nav" role="group" aria-label="History navigation"></div>
         </div>
         </div>
         </div>
       </div>
-        <div class="tv-frame-wrap">
-          <div class="tv-legs" aria-hidden="true"></div>
-          <div class="chart-wrap tv-frame">
-            <div id="usage-pip" aria-hidden="true"></div>
-            <div id="tv-hands-logo" aria-hidden="true"></div>
-            <div>
-            </div>
-            <div id="history-chart-canvas-slot">
-              <canvas id="history-chart"></canvas>
-            </div>
-              <div class="tv-bottom-bar" aria-hidden="true">
-                <div class="tv-bottom-left">
-                <div class="tv-file-select" id="tv-file-select" aria-label="TV file select">
-                  <div class="tv-file-select-title">Chart History</div>
-                  <div id="tv-history-status" class="tv-file-select-status">
-                    <div id="tv-history-month" class="tv-history-month">Current</div>
-                    <div id="tv-history-day" class="tv-history-day"></div>
-                    <div id="tv-history-hour" class="tv-history-hour"></div>
-                  </div>
-                  <div id="tv-history-slot"></div>
-                </div>
-                <div id="tv-transport-deck" class="transport-deck cassette-skin tv-transport-deck" aria-hidden="true">
-                  <svg viewBox="0 0 240 90" role="img" aria-label="Tape reader">
-                    <defs>
-                      <linearGradient id="tv-deck-bg" x1="0" x2="0" y1="0" y2="1">
-                        <stop offset="0" stop-color="#1c1c24" />
-                        <stop offset="0.55" stop-color="#0d0d14" />
-                        <stop offset="1" stop-color="#2b2b34" />
-                      </linearGradient>
-                      <linearGradient id="tv-deck-edge" x1="0" x2="0" y1="0" y2="1">
-                        <stop offset="0" stop-color="rgba(255,255,255,0.18)" />
-                        <stop offset="1" stop-color="rgba(0,0,0,0.6)" />
-                      </linearGradient>
-                      <filter id="tv-deck-shadow" x="-20%" y="-40%" width="140%" height="180%">
-                        <feDropShadow dx="0" dy="10" stdDeviation="7" flood-color="rgba(0,0,0,0.7)" />
-                      </filter>
-                    </defs>
-                    <g class="deck-ui">
-                      <rect x="6" y="6" width="234" height="84" rx="14" fill="rgba(0,0,0,0.55)" />
-                      <rect x="3" y="3" width="234" height="84" rx="14" fill="url(#tv-deck-bg)" stroke="url(#tv-deck-edge)" stroke-width="2" filter="url(#tv-deck-shadow)" />
-                      <rect x="10" y="74" width="220" height="10" rx="6" fill="rgba(0,0,0,0.28)" />
-                      <rect x="12" y="14" width="216" height="40" rx="10" fill="rgba(255,255,255,0.07)" />
-                      <rect x="14" y="16" width="212" height="36" rx="9" fill="rgba(0,0,0,0.30)" />
-                    </g>
-                    <image class="deck-cassette" href="../../../Images/Casette2.png" x="0" y="0" width="240" height="90" preserveAspectRatio="xMidYMid meet" />
-                    <g class="reel-wrap reel-left" aria-hidden="true">
-                      <g class="reel-spin">
-                        <circle cx="72" cy="34" r="14" fill="rgba(0,0,0,0.0)" stroke="rgba(0,0,0,0.55)" stroke-width="1.5" />
-                        <circle cx="72" cy="34" r="10" fill="rgba(0,0,0,0.0)" stroke="rgba(255,255,255,0.14)" stroke-width="1" />
-                        <circle cx="72" cy="34" r="2.5" fill="rgba(255,255,255,0.35)" />
-                        <path d="M72 24 L74.8 32 L72 34 L69.2 32 Z" fill="rgba(255,255,255,0.35)" />
-                        <path d="M62 34 L70 36.8 L72 34 L70 31.2 Z" fill="rgba(255,255,255,0.35)" />
-                        <path d="M72 44 L74.8 36 L72 34 L69.2 36 Z" fill="rgba(255,255,255,0.35)" />
-                        <path d="M82 34 L74 36.8 L72 34 L74 31.2 Z" fill="rgba(255,255,255,0.35)" />
-                      </g>
-                    </g>
-                    <g class="reel-wrap reel-right" aria-hidden="true">
-                      <g class="reel-spin">
-                        <circle cx="168" cy="34" r="14" fill="rgba(0,0,0,0.0)" stroke="rgba(0,0,0,0.55)" stroke-width="1.5" />
-                        <circle cx="168" cy="34" r="10" fill="rgba(0,0,0,0.0)" stroke="rgba(255,255,255,0.14)" stroke-width="1" />
-                        <circle cx="168" cy="34" r="2.5" fill="rgba(255,255,255,0.35)" />
-                        <path d="M168 24 L170.8 32 L168 34 L165.2 32 Z" fill="rgba(255,255,255,0.35)" />
-                        <path d="M158 34 L166 36.8 L168 34 L166 31.2 Z" fill="rgba(255,255,255,0.35)" />
-                        <path d="M168 44 L170.8 36 L168 34 L165.2 36 Z" fill="rgba(255,255,255,0.35)" />
-                        <path d="M178 34 L170 36.8 L168 34 L170 31.2 Z" fill="rgba(255,255,255,0.35)" />
-                      </g>
-                    </g>
-                    <g class="deck-led">
-                      <circle cx="178" cy="50" r="5.5" fill="rgba(0,0,0,0.35)" />
-                      <circle class="led-dot" cx="178" cy="50" r="3.5" fill="rgba(255,102,102,0.25)" />
-                    </g>
-                  </svg>
-                </div>
+        <div class="chart-wrap tv-frame">
+          <div id="usage-pip" aria-hidden="true"></div>
+          <div id="tv-hands-logo" aria-hidden="true"></div>
+          <div>
+          </div>
+          <div id="history-chart-canvas-slot">
+            <canvas id="history-chart"></canvas>
+  
+          </div>
+
+          
+          <div class="tv-bottom-bar" aria-hidden="true">
+            <div class="tv-bottom-left">
+              <div class="tv-file-select" id="tv-file-select" aria-label="TV file select">
+                <div class="tv-file-select-title">Chart History</div>
+                <div id="tv-history-status" class="tv-file-select-status">Current</div>
+                <div id="tv-history-slot"></div>
               </div>
-                <div class="tv-nav-overlay" aria-hidden="true">
-                  <div class="tv-step-modes" aria-label="Step size" role="radiogroup">
-                    <label><input type="radio" name="tv-step-mode" id="tv-step-month" value="month" /><span>Month</span></label>
-                    <label><input type="radio" name="tv-step-mode" id="tv-step-day" value="day" checked /><span>Day</span></label>
-                    <label><input type="radio" name="tv-step-mode" id="tv-step-hour" value="hour" /><span>Time</span></label>
-                  </div>
-                  <div class="tv-nav-row" aria-hidden="true">
-                    <button type="button" id="tv-archive-prev" class="tv-nav-btn" aria-label="Previous">&lt;&lt;</button>
-                    <div id="tv-step-value" class="tv-step-value">
-                      <div class="tv-step-stack" aria-label="Selected step">
-                        <div class="tv-step-row"><span class="k">Month</span><span class="sep">:</span><span id="tv-step-month-value" class="v"></span></div>
-                        <div class="tv-step-row"><span class="k">Day</span><span class="sep">:</span><span id="tv-step-day-value" class="v"></span></div>
-                        <div class="tv-step-row"><span class="k">Time</span><span class="sep">:</span><span id="tv-step-time-value" class="v"></span></div>
-                      </div>
-                    </div>
-                    <button type="button" id="tv-archive-next" class="tv-nav-btn" aria-label="Next">&gt;&gt;</button>
-                  </div>
-                </div>
-              <div class="tv-chartcontrols-overlay" aria-label="TV chart controls">
-                <button type="button" class="chart-control" data-mode="setpoint">Set Point</button>
-                <button type="button" class="chart-control" data-mode="actual">Building Temp</button>
-                <button type="button" class="chart-control" data-mode="outside">Outside Temp</button>
-                <button type="button" class="chart-control" data-mode="cooling">AC Status</button>
-                <button type="button" class="chart-control" data-mode="fan">Fan Mode</button>
-                <button type="button" class="chart-control" data-mode="both">Combined</button>
-              </div>
+            </div>
+            <div class="tv-nav-overlay" aria-hidden="true">
+              <button type="button" id="tv-archive-prev" class="tv-nav-btn" aria-label="Previous day">&lt;&lt;</button>
+              <button type="button" id="tv-archive-next" class="tv-nav-btn" aria-label="Next day">&gt;&gt;</button>
+            </div>
+            <div class="tv-chartcontrols-overlay" aria-label="TV chart controls">
+              <button type="button" class="chart-control" data-mode="setpoint">Set Point</button>
+              <button type="button" class="chart-control" data-mode="actual">Building Temp</button>
+              <button type="button" class="chart-control" data-mode="outside">Outside Temp</button>
+              <button type="button" class="chart-control" data-mode="cooling">AC Status</button>
+              <button type="button" class="chart-control" data-mode="fan">Fan Mode</button>
+              <button type="button" class="chart-control" data-mode="both">Combined</button>
             </div>
           </div>
         </div>
+        <div class="note">Data source: Google Sheet (last updated when this page was generated).</div>
+
         <pre id="js-log"></pre>
       </div>
     </div>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
-    <script id="help-chat-manual-inline" type="application/json">{"text": "# Thermostat Dashboard Operator Manual\n\nThis guide explains every visible feature of the dashboard from a user perspective. Follow the simple steps below to read the data, change what you see, and move between days.\n\n## Creators:\n[tags: author]\nHope, Sparky, Stinky and Tim\n## Open the Dashboard and Get Oriented\n[tags: overview, dashboard, cards, set point, temperature, outside, fan, condenser, timestamp]\n1. Open the dashboard page in your browser; it loads automatically with the latest available data.\n2. Notice the set of cards near the top—each card shows a key value such as the thermostat set point, building temperature, outside air, fan status, and condenser minutes.\n3. Read the timestamp card to confirm how fresh the readings are before making judgments.\n\n[tags: card, current, value, top, metric, set point, building temperature, outside, fan, compare]\n1. Look at the card grid to see the most recent value for each metric.\n2. Pay attention to highlighted labels (Set Point, Building Temperature, Outside, Fan) to understand the system’s immediate state.\n3. If you need to compare a value, keep multiple cards in view; they update together whenever another point is selected.\n\n## Explore the Timeline Chart\n[tags: chart, history, timeline, hover, pin, temperature]\n\n1. Find the large history chart—it plots every recorded time point for the selected day.\n2. Hover your mouse over the line to highlight a point; the cards refresh to show the readings for that moment, so you can inspect precise temperatures.\n3. Click one of those points to pin it and lock the cards to that time until you clear the pin or click elsewhere.\n\n## Toggle Chart Layers\n[tags: chart, tv, set point, building temp, outside temp, ac status, fan mode, combined]\n\n1. Click the buttons beneath the TV frame (Set Point, Building Temp, Outside Temp, AC Status, Fan Mode, Combined) to add or remove those lines from the chart.\n2. Use the Combined view when you want all controls active, or switch to a single series when you need a cleaner readout.\n3. The chart redraws instantly; use whichever combination makes the story of that day easiest to understand.\n\n## Step Through the Timeline\n[tags: chart, step, buttons, data point, day]\n\n1. Use the << and >> buttons near the chart to step backward or forward one data point at a time.\n2. Hold down the step buttons if you want to move through several points quickly.\n3. The selected time wraps around—stepping past the edge loads the next or previous day automatically, so you can continue the story without manually switching files.\n\n## Choose a Day from the History List\n[tags: chart, history, archive, month, day, cards]\n1. Click the “History” toggle above the chart to open the archive picker.\n2. Choose the month you care about from the left column, then click the day you want; the dashboard closes the list and loads that day.\n3. As soon as a new day loads, the cards and chart refresh to show its data. If an archive is missing, it disappears from the list, keeping only available days.\n\n## Navigate with the Tape Controls\n[tags: tape, cassette, step mode, day, week, month, date, 600A]\n\n1. Use the << and >> cassette buttons near the tape graphic to jump backward or forward by one day, week, or month depending on the selected step mode (Day, Month, Hour).\n2. Watch the tape reels animate whenever a new day loads; the movement signals that the dashboard is fetching a different archive file.\n3. You can also click the month/day readouts below the tape to jump directly to specific dates.\n\n## Scan Runtime with the Usage Chart\n[tags: usage, chart, bar, condenser, runtime, weekly, monthly, yearly, range]\n1. Look at the small bar chart (Usage) to compare condenser runtime over weekly, monthly, or yearly ranges.\n2. Click the range buttons (7d, Month, Year) to change how much history the bars cover.\n3. Click any bar to load that day in the main view; the cards and history chart update to match.\n\n## Enter and Exit TV Mode\n[tags: tv, display, chart, bigger, larger, double-click, history list, usage chart, big screen, escape]\n\n1. Double-click the main chart area to enter TV mode, which puts the dashboard inside the large television frame for presentations.\n2. In TV mode, the history list and usage chart hide so the focus stays on the big screen display.\n3. Double-click again or press Escape to exit TV mode and return to the desktop layout.\n\n## Get Help From the Embedded Assistant\n1. Click the “Help Chat” button to open the help panel on the left.\n2. Type a question in plain English (for example, “What does the history list do?”) and press Send.\n3. The chat answers using only the operator manual text, so it always describes the dashboard features exactly as they appear.\n\n## Keep Track of Saved Settings\n[tags: chart, pinned point, datasets, step mode, visit, reload]\n1. The dashboard remembers your pinned point, selected datasets, and step mode for the next visit.\n2. If you ever want to start fresh, reload the page and the dashboard resets to the default unpinned view.\n\nFollow these steps whenever you need to interpret the dashboard, compare days, or present the data to others. Everything on the page reacts instantly to your clicks, so feel free to explore each control until you are comfortable with the layout.\n\n\n## Tape Navigation System (Technical Summary)\n\n[tags: tech, tape, cassette, navigation, time index, rewind, fast forward, emulation]\n\n### Purpose\nThe tape navigation system provides a deterministic, linear mechanism for moving through\ntime-based data. At the code level, it is designed to emulate the behavior of a physical\ncassette tape in order to make historical navigation predictable, inspectable, and reversible.\n\nThis system is intentionally not random-access search.\n\n---\n\n### Core Concept\nAt runtime, the tape is represented as an **ordered time index**.\nEach position on the tape corresponds to a concrete timestamp or aggregated time slice\n(hour, day, week, or month).\n\nAll movement operates by advancing or retreating along this ordered index.\n\nThere is always:\n- a current tape position\n- a previous position\n- a next position\n\nNo implicit jumps are allowed.\n\n---\n\n### Rewind and Fast-Forward (Conceptual)\nRewind and fast-forward are implemented as **index traversal operations**:\n\n- Rewind moves backward along the index\n- Fast-forward moves forward along the index\n- Step size is controlled by the active step mode\n- Boundary checks prevent underflow or overflow\n\nAt the code level, this is simple arithmetic over an ordered list, not date math\nor calendar inference.\n\nThis mirrors physical tape behavior: movement is sequential and observable.\n\n---\n\n### Step Modes\nStep modes control **granularity**, not data:\n\n- Hourly\n- Daily\n- Weekly\n- Monthly\n\nChanging step mode alters how far the index advances per action,\nwithout modifying the underlying data set.\n\nThis allows both fine inspection and coarse historical scanning\nusing the same traversal logic.\n\n---\n\n### Why This Design Was Chosen\nAccording to Tim, the tape navigation system was not chosen for a technical necessity.\nThere were simpler and more conventional ways to implement time navigation.\n\nInstead, the tape metaphor was chosen deliberately for a few specific reasons.\n\nFirst, it introduces a sense of **nostalgia**. The visual and behavioral reference to\nphysical media is intentional—it serves as a reminder of how far technology has come,\nwhile still relying on interaction models that feel familiar and intuitive.\n\nSecond, the tape makes a **statement about progression**. It connects past and future by\npairing an old interaction metaphor with modern, real-time data systems. The intent was\nnot to recreate the past, but to use it as a frame for understanding what comes next.\n\nThird, the tape provided a practical **bench test for the HSST model**. It was complex\nenough to require real coordination and iteration, yet contained enough to implement\nquickly. This allowed for repeated requests, fast refinement, and direct observation of\nwhat Stinky could accomplish when guided by clear, structured prompts.\n\nAside from minor tweaks, the tape system—from concept to working implementation—was\ncompleted in approximately two hours. This made it a low-risk, real-world proving ground\nfor validating the HSST workflow under actual development conditions.\n\nIn short, the tape exists as much as a **demonstration of collaboration and capability**\nas it does as a navigation tool.\n\n---\n\n### Relationship to Search\nThe tape is a **temporal navigation mechanism**, not a content search system.\n\nIt is optimized for:\n- reviewing history\n- scanning patterns over time\n- understanding progression and change\n\nSearch answers “what,” while the tape answers “when” and “how did we get here.”\n\n---\n\n### Key Invariants\n- The tape index is always ordered\n- Movement is always deterministic\n- No hidden jumps or implicit filtering\n- UI state reflects index state exactly\n- Every position maps to a real data point\n\n\n\n## Card Grid System (Technical Summary)\n[tags: tech, cards, metrics, state, snapshot]\n\n### Purpose\nThe card grid provides a real-time snapshot of key thermostat metrics. At the code level,\ncards are a synchronized view layer bound to the currently selected time index.\n\n### Core Behavior\n- Cards update whenever the active time index changes\n- Values are derived from parsed archive JSON, not recalculated\n- Highlighting reflects state transitions (e.g., fan mode)\n\n---\n\n## Timeline Chart System (Technical Summary)\n[tags: tech, chart, timeline, history, hover, pin]\n\n### Purpose\nThe timeline chart visualizes all recorded data points for a selected day as an ordered series.\n\n### Core Behavior\n- Hover events preview data without mutating state\n- Click (pin) locks the global time index\n- All downstream UI components read from the pinned index\n\n---\n\n## History Archive Loader (Technical Summary)\n[tags: tech, history, archive, json, loader]\n\n### Purpose\nThe history loader resolves day-based archives into structured JSON at runtime.\n\n### Core Behavior\n- Archive selection changes the active dataset\n- Missing archives are filtered deterministically\n- All views refresh from the new archive source\n\n---\n\n## Usage Chart System (Technical Summary)\n[tags: tech, usage, runtime, bar chart, aggregation]\n\n### Purpose\nThe usage chart aggregates condenser runtime across configurable time windows.\n\n### Core Behavior\n- Uses precomputed totals per day\n- Clicking a bar rebinds the main timeline view\n- Range selection changes aggregation window, not source data\n\n---\n\n## TV Mode Presentation Layer (Technical Summary)\n[tags: tech, tv mode, presentation, layout]\n\n### Purpose\nTV mode is a presentation-focused layout state, not a data mode.\n\n### Core Behavior\n- Toggles CSS/layout only\n- Suppresses secondary UI panels\n- Does not affect data loading or indexing\n\n---\n\n## Embedded Help Chat System (Technical Summary)\n[tags: tech, help chat, search, indexing, markdown]\n\n### Purpose\nThe embedded help chat provides deterministic documentation lookup using the operator manual.\n\n### Core Behavior\n- Loads manual at runtime (live file read)\n- Parses sections by headers and tag blocks\n- Matches queries via tag-based keyword logic\n\n---\n\n## Help Search Spell Correction (Technical Summary)\n[tags: tech, spellcheck, tags, search correction]\n\n### Purpose\nSpell correction improves query tolerance while remaining deterministic.\n\n### Core Behavior\n- Builds vocabulary from known tags\n- Corrects query terms before tokenization\n- Never introduces terms not present in documentation\n\n---\n\n## Tag Suppression Rendering Control (Technical Summary)\n[tags: tech, tags, rendering, ui control]\n\n### Purpose\nTag suppression separates diagnostic metadata from user-facing content.\n\n### Core Behavior\n- Tags remain indexed and searchable\n- Suppression occurs only at render time\n- Controlled by explicit UI toggle state\n"}</script>\n    <script id="dashboard-data-inline" type="application/json">
- {"headers": ["Timestamp", "Type", "Current Temperature", "Cooling Set Point", "Climate Setting", "Fan Setting", "Equipment Status", "Studio", "Request Expires (local time)", "Outside Temp", "Condenser State", "Condenser Minutes"], "latestRow": ["Tuesday Nov 25 2025 8:11 PM", "System", "95", "80", "Cool", "On", "Cooling", " ", "8:54 PM", "NN57.0 | Mostly Cloudy", "On", "500"], "history": [{"label": "Sunday Nov 23      ", "value": 70.0}, {"label": "Sunday Nov 23      ", "value": 75.0}, {"label": "Sunday Nov 23      ", "value": 75.0}, {"label": "Sunday Nov 23      ", "value": 75.0}, {"label": "Sunday Nov 23      ", "value": 75.0}, {"label": "Sunday Nov 23      ", "value": 75.0}, {"label": "Sunday Nov 23      ", "value": 75.0}, {"label": "Tuesday Nov 25      ", "value": 72.0}, {"label": "Tuesday Nov 25      ", "value": 74.0}, {"label": "Tuesday Nov 25      ", "value": 74.0}, {"label": "Tuesday Nov 25      ", "value": 74.0}, {"label": "Tuesday Nov 25      ", "value": 74.0}, {"label": "Friday Nov 21      ", "value": 74.0}, {"label": "Sunday Nov 23      ", "value": 75.0}, {"label": "Sunday Nov 23      ", "value": 75.0}, {"label": "Sunday Nov 23      ", "value": 75.0}, {"label": "Sunday Nov 23      ", "value": 75.0}, {"label": "Sunday Nov 23      ", "value": 75.0}, {"label": "Sunday Nov 23      ", "value": 75.0}, {"label": "Sunday Nov 23      ", "value": 74.0}, {"label": "Tuesday Nov 25      ", "value": 72.0}, {"label": "Tuesday Nov 25      ", "value": 74.0}, {"label": "Tuesday Nov 25      ", "value": 74.0}, {"label": "Tuesday Nov 25      ", "value": 80.0}], "chartLabels": ["Sunday Nov 23      ", "Sunday Nov 23      ", "Sunday Nov 23      ", "Sunday Nov 23      ", "Sunday Nov 23      ", "Sunday Nov 23      ", "Sunday Nov 23      ", "Tuesday Nov 25      ", "Tuesday Nov 25      ", "Tuesday Nov 25      ", "Tuesday Nov 25      ", "Tuesday Nov 25      ", "Friday Nov 21      ", "Sunday Nov 23      ", "Sunday Nov 23      ", "Sunday Nov 23      ", "Sunday Nov 23      ", "Sunday Nov 23      ", "Sunday Nov 23      ", "Sunday Nov 23      ", "Tuesday Nov 25      ", "Tuesday Nov 25      ", "Tuesday Nov 25      ", "Tuesday Nov 25      "], "setpoint": [70.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 72.0, 74.0, 74.0, 74.0, 74.0, 74.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 74.0, 72.0, 74.0, 74.0, 80.0], "actual": [45.0, 71.0, 72.0, 73.0, 74.0, 75.0, 75.0, 75.0, 75.0, 73.0, 72.0, 71.0, 70.0, 68.0, 65.0, 61.0, 64.0, 63.0, 65.0, 65.0, 70.0, 88.0, 90.0, 95.0], "setpointLabel": "Set Point", "actualLabel": "Current Temperature", "fan": ["A", "A", "O", "O", "O", "O", "O", "C", "C", "C", "C", "A", "A", "A", "A", "A", "A", "A", "A", "A", "C", "C", "C", "O"], "fanLegend": ["Auto", "Circulate", "On"], "outside": [55.0, 65.0, 65.0, 65.0, 62.0, 59.0, 57.0, 53.0, 52.0, 50.0, 49.0, 49.0, 48.0, 48.0, 47.0, 46.0, 46.0, 47.0, 48.0, 54.0, 58.0, 61.0, 63.0, 57.0], "outsideLabel": "Outside Temp", "outsideFlags": ["5", "6", "6", "6", "6", "5", "5", "5", "5", "5", "4", "4", "4", "4", "4", "4", "4", "4", "4", "5", "5", "6", "6", "5"], "outsideFlagDayChars": ["5", "5", "5", "5", "2", "9", "7", "3", "2", "0", "9", "9", "8", "8", "7", "6", "6", "7", "8", "4", "8", "1", "3", "7"], "cooling": [0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1], "coolingLegend": ["Idle", "Cooling"], "coolingLabel": "Equipment Status", "climateSetting": ["Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool"], "climateSettingLabel": "Climate Setting", "condenserMinutes": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 500.0], "totalCondenserMinutes": "500", "totalCondenserMinutesValue": 500.0, "totalCondenserCost": "$25.00", "totalCondenserCostValue": 25.0, "condenserCostPerMinute": 0.05, "latestActual": 95.0, "latestSetpoint": 80.0, "latestOutside": 57.0, "latestOutsideRaw": "NN57.0 | Mostly Cloudy", "latestOutsideDaylight": false, "latestOutsideFlagDayChar": "N", "latestFan": "O", "latestCooling": 1, "latestCondenserState": "On", "generatedTimestamp": "Monday Dec 22 2025 10:25:15 PM", "generatedDateSlug": "2025-12-22", "archiveDates": [{"slug": "2025-12-22", "label": "Dec 22, 2025"}, {"slug": "2025-12-20", "label": "Dec 20, 2025"}, {"slug": "2025-12-19", "label": "Dec 19, 2025"}, {"slug": "2025-12-18", "label": "Dec 18, 2025"}, {"slug": "2025-12-17", "label": "Dec 17, 2025"}, {"slug": "2025-12-16", "label": "Dec 16, 2025"}, {"slug": "2025-12-15", "label": "Dec 15, 2025"}, {"slug": "2025-12-14", "label": "Dec 14, 2025"}, {"slug": "2025-12-13", "label": "Dec 13, 2025"}, {"slug": "2025-12-12", "label": "Dec 12, 2025"}, {"slug": "2025-12-11", "label": "Dec 11, 2025"}, {"slug": "2025-12-10", "label": "Dec 10, 2025"}, {"slug": "2025-12-09", "label": "Dec 09, 2025"}, {"slug": "2025-12-08", "label": "Dec 08, 2025"}, {"slug": "2025-12-07", "label": "Dec 07, 2025"}, {"slug": "2025-12-06", "label": "Dec 06, 2025"}, {"slug": "2025-12-05", "label": "Dec 05, 2025"}, {"slug": "2025-12-04", "label": "Dec 04, 2025"}, {"slug": "2025-12-03", "label": "Dec 03, 2025"}, {"slug": "2025-12-02", "label": "Dec 02, 2025"}, {"slug": "2025-12-01", "label": "Dec 01, 2025"}, {"slug": "2025-11-30", "label": "Nov 30, 2025"}, {"slug": "2025-11-29", "label": "Nov 29, 2025"}, {"slug": "2025-11-28", "label": "Nov 28, 2025"}, {"slug": "2025-11-27", "label": "Nov 27, 2025"}, {"slug": "2025-11-26", "label": "Nov 26, 2025"}, {"slug": "2025-11-25", "label": "Nov 25, 2025"}, {"slug": "2025-11-24", "label": "Nov 24, 2025"}, {"slug": "2025-11-23", "label": "Nov 23, 2025"}, {"slug": "2025-11-22", "label": "Nov 22, 2025"}, {"slug": "2025-11-21", "label": "Nov 21, 2025"}, {"slug": "2025-11-20", "label": "Nov 20, 2025"}, {"slug": "2025-11-19", "label": "Nov 19, 2025"}, {"slug": "2025-11-18", "label": "Nov 18, 2025"}, {"slug": "2025-11-17", "label": "Nov 17, 2025"}, {"slug": "2025-11-16", "label": "Nov 16, 2025"}, {"slug": "2025-11-15", "label": "Nov 15, 2025"}, {"slug": "2025-11-14", "label": "Nov 14, 2025"}, {"slug": "2025-11-13", "label": "Nov 13, 2025"}, {"slug": "2025-11-12", "label": "Nov 12, 2025"}, {"slug": "2025-11-11", "label": "Nov 11, 2025"}, {"slug": "2025-11-10", "label": "Nov 10, 2025"}, {"slug": "2025-11-09", "label": "Nov 09, 2025"}, {"slug": "2025-11-08", "label": "Nov 08, 2025"}, {"slug": "2025-11-07", "label": "Nov 07, 2025"}, {"slug": "2025-11-06", "label": "Nov 06, 2025"}, {"slug": "2025-11-05", "label": "Nov 05, 2025"}, {"slug": "2025-11-04", "label": "Nov 04, 2025"}, {"slug": "2025-11-03", "label": "Nov 03, 2025"}, {"slug": "2025-11-02", "label": "Nov 02, 2025"}, {"slug": "2025-11-01", "label": "Nov 01, 2025"}, {"slug": "2025-10-31", "label": "Oct 31, 2025"}, {"slug": "2025-10-30", "label": "Oct 30, 2025"}, {"slug": "2025-10-29", "label": "Oct 29, 2025"}, {"slug": "2025-10-28", "label": "Oct 28, 2025"}, {"slug": "2025-10-27", "label": "Oct 27, 2025"}, {"slug": "2025-10-26", "label": "Oct 26, 2025"}, {"slug": "2025-10-25", "label": "Oct 25, 2025"}, {"slug": "2025-10-24", "label": "Oct 24, 2025"}, {"slug": "2025-10-23", "label": "Oct 23, 2025"}, {"slug": "2025-10-22", "label": "Oct 22, 2025"}, {"slug": "2025-10-21", "label": "Oct 21, 2025"}, {"slug": "2025-10-20", "label": "Oct 20, 2025"}, {"slug": "2025-10-19", "label": "Oct 19, 2025"}, {"slug": "2025-10-18", "label": "Oct 18, 2025"}, {"slug": "2025-10-17", "label": "Oct 17, 2025"}, {"slug": "2025-10-16", "label": "Oct 16, 2025"}, {"slug": "2025-10-15", "label": "Oct 15, 2025"}, {"slug": "2025-10-14", "label": "Oct 14, 2025"}, {"slug": "2025-10-13", "label": "Oct 13, 2025"}, {"slug": "2025-10-12", "label": "Oct 12, 2025"}, {"slug": "2025-10-11", "label": "Oct 11, 2025"}, {"slug": "2025-10-10", "label": "Oct 10, 2025"}, {"slug": "2025-10-09", "label": "Oct 09, 2025"}, {"slug": "2025-10-08", "label": "Oct 08, 2025"}, {"slug": "2025-10-07", "label": "Oct 07, 2025"}, {"slug": "2025-10-06", "label": "Oct 06, 2025"}, {"slug": "2025-10-05", "label": "Oct 05, 2025"}, {"slug": "2025-10-04", "label": "Oct 04, 2025"}, {"slug": "2025-10-03", "label": "Oct 03, 2025"}, {"slug": "2025-10-02", "label": "Oct 02, 2025"}, {"slug": "2025-10-01", "label": "Oct 01, 2025"}, {"slug": "2025-09-30", "label": "Sep 30, 2025"}, {"slug": "2025-09-29", "label": "Sep 29, 2025"}, {"slug": "2025-09-28", "label": "Sep 28, 2025"}, {"slug": "2025-09-27", "label": "Sep 27, 2025"}, {"slug": "2025-09-26", "label": "Sep 26, 2025"}, {"slug": "2025-09-25", "label": "Sep 25, 2025"}, {"slug": "2025-09-24", "label": "Sep 24, 2025"}, {"slug": "2025-09-23", "label": "Sep 23, 2025"}, {"slug": "2025-09-22", "label": "Sep 22, 2025"}, {"slug": "2025-09-21", "label": "Sep 21, 2025"}, {"slug": "2025-09-20", "label": "Sep 20, 2025"}, {"slug": "2025-09-19", "label": "Sep 19, 2025"}, {"slug": "2025-09-18", "label": "Sep 18, 2025"}, {"slug": "2025-09-17", "label": "Sep 17, 2025"}, {"slug": "2025-09-16", "label": "Sep 16, 2025"}, {"slug": "2025-09-15", "label": "Sep 15, 2025"}, {"slug": "2025-09-14", "label": "Sep 14, 2025"}, {"slug": "2025-09-13", "label": "Sep 13, 2025"}, {"slug": "2025-09-12", "label": "Sep 12, 2025"}, {"slug": "2025-09-11", "label": "Sep 11, 2025"}, {"slug": "2025-09-10", "label": "Sep 10, 2025"}, {"slug": "2025-09-09", "label": "Sep 09, 2025"}, {"slug": "2025-09-08", "label": "Sep 08, 2025"}, {"slug": "2025-09-07", "label": "Sep 07, 2025"}, {"slug": "2025-09-06", "label": "Sep 06, 2025"}, {"slug": "2025-09-05", "label": "Sep 05, 2025"}, {"slug": "2025-09-04", "label": "Sep 04, 2025"}, {"slug": "2025-09-03", "label": "Sep 03, 2025"}, {"slug": "2025-09-02", "label": "Sep 02, 2025"}, {"slug": "2025-09-01", "label": "Sep 01, 2025"}, {"slug": "2025-08-31", "label": "Aug 31, 2025"}, {"slug": "2025-08-30", "label": "Aug 30, 2025"}, {"slug": "2025-08-29", "label": "Aug 29, 2025"}, {"slug": "2025-08-28", "label": "Aug 28, 2025"}, {"slug": "2025-08-27", "label": "Aug 27, 2025"}, {"slug": "2025-08-26", "label": "Aug 26, 2025"}, {"slug": "2025-08-25", "label": "Aug 25, 2025"}, {"slug": "2025-08-24", "label": "Aug 24, 2025"}, {"slug": "2025-08-23", "label": "Aug 23, 2025"}, {"slug": "2025-08-22", "label": "Aug 22, 2025"}, {"slug": "2025-08-21", "label": "Aug 21, 2025"}, {"slug": "2025-08-20", "label": "Aug 20, 2025"}, {"slug": "2025-08-19", "label": "Aug 19, 2025"}, {"slug": "2025-08-18", "label": "Aug 18, 2025"}, {"slug": "2025-08-17", "label": "Aug 17, 2025"}, {"slug": "2025-08-16", "label": "Aug 16, 2025"}, {"slug": "2025-08-15", "label": "Aug 15, 2025"}, {"slug": "2025-08-14", "label": "Aug 14, 2025"}, {"slug": "2025-08-13", "label": "Aug 13, 2025"}, {"slug": "2025-08-12", "label": "Aug 12, 2025"}, {"slug": "2025-08-11", "label": "Aug 11, 2025"}, {"slug": "2025-08-10", "label": "Aug 10, 2025"}, {"slug": "2025-08-09", "label": "Aug 09, 2025"}, {"slug": "2025-08-08", "label": "Aug 08, 2025"}, {"slug": "2025-08-07", "label": "Aug 07, 2025"}, {"slug": "2025-08-06", "label": "Aug 06, 2025"}, {"slug": "2025-08-05", "label": "Aug 05, 2025"}, {"slug": "2025-08-04", "label": "Aug 04, 2025"}, {"slug": "2025-08-03", "label": "Aug 03, 2025"}, {"slug": "2025-08-02", "label": "Aug 02, 2025"}, {"slug": "2025-08-01", "label": "Aug 01, 2025"}, {"slug": "2025-07-31", "label": "Jul 31, 2025"}, {"slug": "2025-07-30", "label": "Jul 30, 2025"}, {"slug": "2025-07-29", "label": "Jul 29, 2025"}, {"slug": "2025-07-28", "label": "Jul 28, 2025"}, {"slug": "2025-07-27", "label": "Jul 27, 2025"}, {"slug": "2025-07-26", "label": "Jul 26, 2025"}, {"slug": "2025-07-25", "label": "Jul 25, 2025"}, {"slug": "2025-07-24", "label": "Jul 24, 2025"}, {"slug": "2025-07-23", "label": "Jul 23, 2025"}, {"slug": "2025-07-22", "label": "Jul 22, 2025"}, {"slug": "2025-07-21", "label": "Jul 21, 2025"}, {"slug": "2025-07-20", "label": "Jul 20, 2025"}, {"slug": "2025-07-19", "label": "Jul 19, 2025"}, {"slug": "2025-07-18", "label": "Jul 18, 2025"}, {"slug": "2025-07-17", "label": "Jul 17, 2025"}, {"slug": "2025-07-16", "label": "Jul 16, 2025"}, {"slug": "2025-07-15", "label": "Jul 15, 2025"}, {"slug": "2025-07-14", "label": "Jul 14, 2025"}, {"slug": "2025-07-13", "label": "Jul 13, 2025"}, {"slug": "2025-07-12", "label": "Jul 12, 2025"}, {"slug": "2025-07-11", "label": "Jul 11, 2025"}, {"slug": "2025-07-10", "label": "Jul 10, 2025"}, {"slug": "2025-07-09", "label": "Jul 09, 2025"}, {"slug": "2025-07-08", "label": "Jul 08, 2025"}, {"slug": "2025-07-07", "label": "Jul 07, 2025"}, {"slug": "2025-07-06", "label": "Jul 06, 2025"}, {"slug": "2025-07-05", "label": "Jul 05, 2025"}, {"slug": "2025-07-04", "label": "Jul 04, 2025"}, {"slug": "2025-07-03", "label": "Jul 03, 2025"}, {"slug": "2025-07-02", "label": "Jul 02, 2025"}, {"slug": "2025-07-01", "label": "Jul 01, 2025"}, {"slug": "2025-06-30", "label": "Jun 30, 2025"}, {"slug": "2025-06-29", "label": "Jun 29, 2025"}, {"slug": "2025-06-28", "label": "Jun 28, 2025"}, {"slug": "2025-06-27", "label": "Jun 27, 2025"}, {"slug": "2025-06-26", "label": "Jun 26, 2025"}, {"slug": "2025-06-25", "label": "Jun 25, 2025"}, {"slug": "2025-06-24", "label": "Jun 24, 2025"}, {"slug": "2025-06-23", "label": "Jun 23, 2025"}, {"slug": "2025-06-22", "label": "Jun 22, 2025"}, {"slug": "2025-06-21", "label": "Jun 21, 2025"}, {"slug": "2025-06-20", "label": "Jun 20, 2025"}, {"slug": "2025-06-19", "label": "Jun 19, 2025"}, {"slug": "2025-06-18", "label": "Jun 18, 2025"}, {"slug": "2025-06-17", "label": "Jun 17, 2025"}, {"slug": "2025-06-16", "label": "Jun 16, 2025"}, {"slug": "2025-06-15", "label": "Jun 15, 2025"}, {"slug": "2025-06-14", "label": "Jun 14, 2025"}, {"slug": "2025-06-13", "label": "Jun 13, 2025"}, {"slug": "2025-06-12", "label": "Jun 12, 2025"}, {"slug": "2025-06-11", "label": "Jun 11, 2025"}, {"slug": "2025-06-10", "label": "Jun 10, 2025"}, {"slug": "2025-06-09", "label": "Jun 09, 2025"}, {"slug": "2025-06-08", "label": "Jun 08, 2025"}, {"slug": "2025-06-07", "label": "Jun 07, 2025"}, {"slug": "2025-06-06", "label": "Jun 06, 2025"}, {"slug": "2025-06-05", "label": "Jun 05, 2025"}, {"slug": "2025-06-04", "label": "Jun 04, 2025"}, {"slug": "2025-06-03", "label": "Jun 03, 2025"}, {"slug": "2025-06-02", "label": "Jun 02, 2025"}, {"slug": "2025-06-01", "label": "Jun 01, 2025"}, {"slug": "2025-05-31", "label": "May 31, 2025"}, {"slug": "2025-05-30", "label": "May 30, 2025"}, {"slug": "2025-05-29", "label": "May 29, 2025"}, {"slug": "2025-05-28", "label": "May 28, 2025"}, {"slug": "2025-05-27", "label": "May 27, 2025"}, {"slug": "2025-05-26", "label": "May 26, 2025"}, {"slug": "2025-05-25", "label": "May 25, 2025"}, {"slug": "2025-05-24", "label": "May 24, 2025"}, {"slug": "2025-05-23", "label": "May 23, 2025"}, {"slug": "2025-05-22", "label": "May 22, 2025"}, {"slug": "2025-05-21", "label": "May 21, 2025"}, {"slug": "2025-05-20", "label": "May 20, 2025"}, {"slug": "2025-05-19", "label": "May 19, 2025"}, {"slug": "2025-05-18", "label": "May 18, 2025"}, {"slug": "2025-05-17", "label": "May 17, 2025"}, {"slug": "2025-05-16", "label": "May 16, 2025"}, {"slug": "2025-05-15", "label": "May 15, 2025"}, {"slug": "2025-05-14", "label": "May 14, 2025"}, {"slug": "2025-05-13", "label": "May 13, 2025"}, {"slug": "2025-05-12", "label": "May 12, 2025"}, {"slug": "2025-05-11", "label": "May 11, 2025"}, {"slug": "2025-05-10", "label": "May 10, 2025"}, {"slug": "2025-05-09", "label": "May 09, 2025"}, {"slug": "2025-05-08", "label": "May 08, 2025"}, {"slug": "2025-05-07", "label": "May 07, 2025"}, {"slug": "2025-05-06", "label": "May 06, 2025"}, {"slug": "2025-05-05", "label": "May 05, 2025"}, {"slug": "2025-05-04", "label": "May 04, 2025"}, {"slug": "2025-05-03", "label": "May 03, 2025"}, {"slug": "2025-05-02", "label": "May 02, 2025"}, {"slug": "2025-05-01", "label": "May 01, 2025"}, {"slug": "2025-04-30", "label": "Apr 30, 2025"}, {"slug": "2025-04-29", "label": "Apr 29, 2025"}, {"slug": "2025-04-28", "label": "Apr 28, 2025"}, {"slug": "2025-04-27", "label": "Apr 27, 2025"}, {"slug": "2025-04-26", "label": "Apr 26, 2025"}, {"slug": "2025-04-25", "label": "Apr 25, 2025"}, {"slug": "2025-04-24", "label": "Apr 24, 2025"}, {"slug": "2025-04-23", "label": "Apr 23, 2025"}, {"slug": "2025-04-22", "label": "Apr 22, 2025"}, {"slug": "2025-04-21", "label": "Apr 21, 2025"}, {"slug": "2025-04-20", "label": "Apr 20, 2025"}, {"slug": "2025-04-19", "label": "Apr 19, 2025"}, {"slug": "2025-04-18", "label": "Apr 18, 2025"}, {"slug": "2025-04-17", "label": "Apr 17, 2025"}, {"slug": "2025-04-16", "label": "Apr 16, 2025"}, {"slug": "2025-04-15", "label": "Apr 15, 2025"}, {"slug": "2025-04-14", "label": "Apr 14, 2025"}, {"slug": "2025-04-13", "label": "Apr 13, 2025"}, {"slug": "2025-04-12", "label": "Apr 12, 2025"}, {"slug": "2025-04-11", "label": "Apr 11, 2025"}, {"slug": "2025-04-10", "label": "Apr 10, 2025"}, {"slug": "2025-04-09", "label": "Apr 09, 2025"}, {"slug": "2025-04-08", "label": "Apr 08, 2025"}, {"slug": "2025-04-07", "label": "Apr 07, 2025"}, {"slug": "2025-04-06", "label": "Apr 06, 2025"}, {"slug": "2025-04-05", "label": "Apr 05, 2025"}, {"slug": "2025-04-04", "label": "Apr 04, 2025"}, {"slug": "2025-04-03", "label": "Apr 03, 2025"}, {"slug": "2025-04-02", "label": "Apr 02, 2025"}, {"slug": "2025-04-01", "label": "Apr 01, 2025"}, {"slug": "2025-03-31", "label": "Mar 31, 2025"}, {"slug": "2025-03-30", "label": "Mar 30, 2025"}, {"slug": "2025-03-29", "label": "Mar 29, 2025"}, {"slug": "2025-03-28", "label": "Mar 28, 2025"}, {"slug": "2025-03-27", "label": "Mar 27, 2025"}, {"slug": "2025-03-26", "label": "Mar 26, 2025"}, {"slug": "2025-03-25", "label": "Mar 25, 2025"}, {"slug": "2025-03-24", "label": "Mar 24, 2025"}, {"slug": "2025-03-23", "label": "Mar 23, 2025"}, {"slug": "2025-03-22", "label": "Mar 22, 2025"}, {"slug": "2025-03-21", "label": "Mar 21, 2025"}, {"slug": "2025-03-20", "label": "Mar 20, 2025"}, {"slug": "2025-03-19", "label": "Mar 19, 2025"}, {"slug": "2025-03-18", "label": "Mar 18, 2025"}, {"slug": "2025-03-17", "label": "Mar 17, 2025"}, {"slug": "2025-03-16", "label": "Mar 16, 2025"}, {"slug": "2025-03-15", "label": "Mar 15, 2025"}, {"slug": "2025-03-14", "label": "Mar 14, 2025"}, {"slug": "2025-03-13", "label": "Mar 13, 2025"}, {"slug": "2025-03-12", "label": "Mar 12, 2025"}, {"slug": "2025-03-11", "label": "Mar 11, 2025"}, {"slug": "2025-03-10", "label": "Mar 10, 2025"}, {"slug": "2025-03-09", "label": "Mar 09, 2025"}, {"slug": "2025-03-08", "label": "Mar 08, 2025"}, {"slug": "2025-03-07", "label": "Mar 07, 2025"}, {"slug": "2025-03-06", "label": "Mar 06, 2025"}, {"slug": "2025-03-05", "label": "Mar 05, 2025"}, {"slug": "2025-03-04", "label": "Mar 04, 2025"}, {"slug": "2025-03-03", "label": "Mar 03, 2025"}, {"slug": "2025-03-02", "label": "Mar 02, 2025"}, {"slug": "2025-03-01", "label": "Mar 01, 2025"}, {"slug": "2025-02-28", "label": "Feb 28, 2025"}, {"slug": "2025-02-27", "label": "Feb 27, 2025"}, {"slug": "2025-02-26", "label": "Feb 26, 2025"}, {"slug": "2025-02-25", "label": "Feb 25, 2025"}, {"slug": "2025-02-24", "label": "Feb 24, 2025"}, {"slug": "2025-02-23", "label": "Feb 23, 2025"}, {"slug": "2025-02-22", "label": "Feb 22, 2025"}, {"slug": "2025-02-21", "label": "Feb 21, 2025"}, {"slug": "2025-02-20", "label": "Feb 20, 2025"}, {"slug": "2025-02-19", "label": "Feb 19, 2025"}, {"slug": "2025-02-18", "label": "Feb 18, 2025"}, {"slug": "2025-02-17", "label": "Feb 17, 2025"}, {"slug": "2025-02-16", "label": "Feb 16, 2025"}, {"slug": "2025-02-15", "label": "Feb 15, 2025"}, {"slug": "2025-02-14", "label": "Feb 14, 2025"}, {"slug": "2025-02-13", "label": "Feb 13, 2025"}, {"slug": "2025-02-12", "label": "Feb 12, 2025"}, {"slug": "2025-02-11", "label": "Feb 11, 2025"}, {"slug": "2025-02-10", "label": "Feb 10, 2025"}, {"slug": "2025-02-09", "label": "Feb 09, 2025"}, {"slug": "2025-02-08", "label": "Feb 08, 2025"}, {"slug": "2025-02-07", "label": "Feb 07, 2025"}, {"slug": "2025-02-06", "label": "Feb 06, 2025"}, {"slug": "2025-02-05", "label": "Feb 05, 2025"}, {"slug": "2025-02-04", "label": "Feb 04, 2025"}, {"slug": "2025-02-03", "label": "Feb 03, 2025"}, {"slug": "2025-02-02", "label": "Feb 02, 2025"}, {"slug": "2025-02-01", "label": "Feb 01, 2025"}, {"slug": "2025-01-31", "label": "Jan 31, 2025"}, {"slug": "2025-01-30", "label": "Jan 30, 2025"}, {"slug": "2025-01-29", "label": "Jan 29, 2025"}, {"slug": "2025-01-28", "label": "Jan 28, 2025"}, {"slug": "2025-01-27", "label": "Jan 27, 2025"}, {"slug": "2025-01-26", "label": "Jan 26, 2025"}, {"slug": "2025-01-25", "label": "Jan 25, 2025"}, {"slug": "2025-01-24", "label": "Jan 24, 2025"}, {"slug": "2025-01-23", "label": "Jan 23, 2025"}, {"slug": "2025-01-22", "label": "Jan 22, 2025"}, {"slug": "2025-01-21", "label": "Jan 21, 2025"}, {"slug": "2025-01-20", "label": "Jan 20, 2025"}, {"slug": "2025-01-19", "label": "Jan 19, 2025"}, {"slug": "2025-01-18", "label": "Jan 18, 2025"}, {"slug": "2025-01-17", "label": "Jan 17, 2025"}, {"slug": "2025-01-16", "label": "Jan 16, 2025"}, {"slug": "2025-01-15", "label": "Jan 15, 2025"}, {"slug": "2025-01-14", "label": "Jan 14, 2025"}, {"slug": "2025-01-13", "label": "Jan 13, 2025"}, {"slug": "2025-01-12", "label": "Jan 12, 2025"}, {"slug": "2025-01-11", "label": "Jan 11, 2025"}, {"slug": "2025-01-10", "label": "Jan 10, 2025"}, {"slug": "2025-01-09", "label": "Jan 09, 2025"}, {"slug": "2025-01-08", "label": "Jan 08, 2025"}, {"slug": "2025-01-07", "label": "Jan 07, 2025"}, {"slug": "2025-01-06", "label": "Jan 06, 2025"}, {"slug": "2025-01-05", "label": "Jan 05, 2025"}, {"slug": "2025-01-04", "label": "Jan 04, 2025"}, {"slug": "2025-01-03", "label": "Jan 03, 2025"}, {"slug": "2025-01-02", "label": "Jan 02, 2025"}, {"slug": "2025-01-01", "label": "Jan 01, 2025"}], "archivePath": "chart hist"}
+    <script id="dashboard-data-inline" type="application/json">
+{"headers": ["Timestamp", "Type", "Current Temperature", "Cooling Set Point", "Climate Setting", "Fan Setting", "Equipment Status", "Studio", "Request Expires (local time)", "Outside Temp", "Condenser State", "Condenser Minutes"], "latestRow": ["Tuesday Nov 25 2025 8:11 PM", "System", "95", "80", "Cool", "On", "Cooling", " ", "8:54 PM", "NN57.0 | Mostly Cloudy", "On", "500"], "history": [{"label": "Sunday Nov 23     1:56 PM", "value": 70.0}, {"label": "Sunday Nov 23     2:02 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:46 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:59 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:03 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:06 PM", "value": 75.0}, {"label": "Sunday Nov 23     11:20 PM", "value": 75.0}, {"label": "Tuesday Nov 25     7:59 PM", "value": 72.0}, {"label": "Tuesday Nov 25     8:01 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:04 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:11 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:46 PM", "value": 74.0}, {"label": "Friday Nov 21     6:51 PM", "value": 74.0}, {"label": "Sunday Nov 23     1:56 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:02 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:46 PM", "value": 75.0}, {"label": "Sunday Nov 23     2:59 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:03 PM", "value": 75.0}, {"label": "Sunday Nov 23     3:06 PM", "value": 75.0}, {"label": "Sunday Nov 23     11:20 PM", "value": 74.0}, {"label": "Tuesday Nov 25     7:59 PM", "value": 72.0}, {"label": "Tuesday Nov 25     8:01 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:04 PM", "value": 74.0}, {"label": "Tuesday Nov 25     8:11 PM", "value": 80.0}], "chartLabels": ["Sunday Nov 23     1:56 PM", "Sunday Nov 23     2:02 PM", "Sunday Nov 23     2:46 PM", "Sunday Nov 23     2:59 PM", "Sunday Nov 23     3:03 PM", "Sunday Nov 23     3:06 PM", "Sunday Nov 23     11:20 PM", "Tuesday Nov 25     7:59 PM", "Tuesday Nov 25     8:01 PM", "Tuesday Nov 25     8:04 PM", "Tuesday Nov 25     8:11 PM", "Tuesday Nov 25     8:46 PM", "Friday Nov 21     6:51 PM", "Sunday Nov 23     1:56 PM", "Sunday Nov 23     2:02 PM", "Sunday Nov 23     2:46 PM", "Sunday Nov 23     2:59 PM", "Sunday Nov 23     3:03 PM", "Sunday Nov 23     3:06 PM", "Sunday Nov 23     11:20 PM", "Tuesday Nov 25     7:59 PM", "Tuesday Nov 25     8:01 PM", "Tuesday Nov 25     8:04 PM", "Tuesday Nov 25     8:11 PM"], "setpoint": [70.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 72.0, 74.0, 74.0, 74.0, 74.0, 74.0, 75.0, 75.0, 75.0, 75.0, 75.0, 75.0, 74.0, 72.0, 74.0, 74.0, 80.0], "actual": [45.0, 71.0, 72.0, 73.0, 74.0, 75.0, 75.0, 75.0, 75.0, 73.0, 72.0, 71.0, 70.0, 68.0, 65.0, 61.0, 64.0, 63.0, 65.0, 65.0, 70.0, 88.0, 90.0, 95.0], "setpointLabel": "Set Point", "actualLabel": "Current Temperature", "fan": ["A", "A", "O", "O", "O", "O", "O", "C", "C", "C", "C", "A", "A", "A", "A", "A", "A", "A", "A", "A", "C", "C", "C", "O"], "fanLegend": ["Auto", "Circulate", "On"], "outside": [55.0, 65.0, 65.0, 65.0, 62.0, 59.0, 57.0, 53.0, 52.0, 50.0, 49.0, 49.0, 48.0, 48.0, 47.0, 46.0, 46.0, 47.0, 48.0, 54.0, 58.0, 61.0, 63.0, 57.0], "outsideLabel": "Outside Temp", "outsideFlags": ["S", "S", "P", "O", "R", "R", "P", "P", "O", "O", "P", "P", "P", "P", "O", "P", "P", "P", "P", "P", "P", "S", "S", "N"], "outsideFlagDayChars": ["5", "6", "6", "6", "6", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "4", "5", "5", "6", "6", "N"], "cooling": [0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1], "coolingLegend": ["Idle", "Cooling"], "coolingLabel": "Equipment Status", "climateSetting": ["Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool", "Cool"], "climateSettingLabel": "Climate Setting", "condenserMinutes": [null, null, 0.0, 0.0, 0.0, null, null, null, null, 0.0, null, 0.0, null, 0.0, null, 0.0, null, 0.0, null, 0.0, null, 0.0, null, 500.0], "totalCondenserMinutes": "500", "totalCondenserMinutesValue": 500.0, "totalCondenserCost": "$25.00", "totalCondenserCostValue": 25.0, "condenserCostPerMinute": 0.05, "latestActual": 95.0, "latestSetpoint": 80.0, "latestOutside": 57.0, "latestOutsideRaw": "NN57.0 | Mostly Cloudy", "latestOutsideDaylight": false, "latestOutsideFlagDayChar": "N", "latestFan": "O", "latestCooling": 1, "latestCondenserState": "On", "generatedTimestamp": "Saturday Dec 20 2025 02:42:33 PM", "generatedDateSlug": "2025-12-20", "archiveDates": [{"slug": "2025-12-20", "label": "Dec 20, 2025"}, {"slug": "2025-12-19", "label": "Dec 19, 2025"}, {"slug": "2025-12-18", "label": "Dec 18, 2025"}, {"slug": "2025-12-17", "label": "Dec 17, 2025"}, {"slug": "2025-12-16", "label": "Dec 16, 2025"}, {"slug": "2025-12-15", "label": "Dec 15, 2025"}, {"slug": "2025-12-14", "label": "Dec 14, 2025"}, {"slug": "2025-12-13", "label": "Dec 13, 2025"}, {"slug": "2025-12-12", "label": "Dec 12, 2025"}, {"slug": "2025-12-11", "label": "Dec 11, 2025"}, {"slug": "2025-12-10", "label": "Dec 10, 2025"}, {"slug": "2025-12-09", "label": "Dec 09, 2025"}, {"slug": "2025-12-08", "label": "Dec 08, 2025"}, {"slug": "2025-12-07", "label": "Dec 07, 2025"}, {"slug": "2025-12-06", "label": "Dec 06, 2025"}, {"slug": "2025-12-05", "label": "Dec 05, 2025"}, {"slug": "2025-12-04", "label": "Dec 04, 2025"}, {"slug": "2025-12-03", "label": "Dec 03, 2025"}, {"slug": "2025-12-02", "label": "Dec 02, 2025"}, {"slug": "2025-12-01", "label": "Dec 01, 2025"}, {"slug": "2025-11-30", "label": "Nov 30, 2025"}, {"slug": "2025-11-29", "label": "Nov 29, 2025"}, {"slug": "2025-11-28", "label": "Nov 28, 2025"}, {"slug": "2025-11-27", "label": "Nov 27, 2025"}, {"slug": "2025-11-26", "label": "Nov 26, 2025"}, {"slug": "2025-11-25", "label": "Nov 25, 2025"}, {"slug": "2025-11-24", "label": "Nov 24, 2025"}, {"slug": "2025-11-23", "label": "Nov 23, 2025"}, {"slug": "2025-11-22", "label": "Nov 22, 2025"}, {"slug": "2025-11-21", "label": "Nov 21, 2025"}, {"slug": "2025-11-20", "label": "Nov 20, 2025"}, {"slug": "2025-11-19", "label": "Nov 19, 2025"}, {"slug": "2025-11-18", "label": "Nov 18, 2025"}, {"slug": "2025-11-17", "label": "Nov 17, 2025"}, {"slug": "2025-11-16", "label": "Nov 16, 2025"}, {"slug": "2025-11-15", "label": "Nov 15, 2025"}, {"slug": "2025-11-14", "label": "Nov 14, 2025"}, {"slug": "2025-11-13", "label": "Nov 13, 2025"}, {"slug": "2025-11-12", "label": "Nov 12, 2025"}, {"slug": "2025-11-11", "label": "Nov 11, 2025"}, {"slug": "2025-11-10", "label": "Nov 10, 2025"}, {"slug": "2025-11-09", "label": "Nov 09, 2025"}, {"slug": "2025-11-08", "label": "Nov 08, 2025"}, {"slug": "2025-11-07", "label": "Nov 07, 2025"}, {"slug": "2025-11-06", "label": "Nov 06, 2025"}, {"slug": "2025-11-05", "label": "Nov 05, 2025"}, {"slug": "2025-11-04", "label": "Nov 04, 2025"}, {"slug": "2025-11-03", "label": "Nov 03, 2025"}, {"slug": "2025-11-02", "label": "Nov 02, 2025"}, {"slug": "2025-11-01", "label": "Nov 01, 2025"}, {"slug": "2025-10-31", "label": "Oct 31, 2025"}, {"slug": "2025-10-30", "label": "Oct 30, 2025"}, {"slug": "2025-10-29", "label": "Oct 29, 2025"}, {"slug": "2025-10-28", "label": "Oct 28, 2025"}, {"slug": "2025-10-27", "label": "Oct 27, 2025"}, {"slug": "2025-10-26", "label": "Oct 26, 2025"}, {"slug": "2025-10-25", "label": "Oct 25, 2025"}, {"slug": "2025-10-24", "label": "Oct 24, 2025"}, {"slug": "2025-10-23", "label": "Oct 23, 2025"}, {"slug": "2025-10-22", "label": "Oct 22, 2025"}, {"slug": "2025-10-21", "label": "Oct 21, 2025"}, {"slug": "2025-10-20", "label": "Oct 20, 2025"}, {"slug": "2025-10-19", "label": "Oct 19, 2025"}, {"slug": "2025-10-18", "label": "Oct 18, 2025"}, {"slug": "2025-10-17", "label": "Oct 17, 2025"}, {"slug": "2025-10-16", "label": "Oct 16, 2025"}, {"slug": "2025-10-15", "label": "Oct 15, 2025"}, {"slug": "2025-10-14", "label": "Oct 14, 2025"}, {"slug": "2025-10-13", "label": "Oct 13, 2025"}, {"slug": "2025-10-12", "label": "Oct 12, 2025"}, {"slug": "2025-10-11", "label": "Oct 11, 2025"}, {"slug": "2025-10-10", "label": "Oct 10, 2025"}, {"slug": "2025-10-09", "label": "Oct 09, 2025"}, {"slug": "2025-10-08", "label": "Oct 08, 2025"}, {"slug": "2025-10-07", "label": "Oct 07, 2025"}, {"slug": "2025-10-06", "label": "Oct 06, 2025"}, {"slug": "2025-10-05", "label": "Oct 05, 2025"}, {"slug": "2025-10-04", "label": "Oct 04, 2025"}, {"slug": "2025-10-03", "label": "Oct 03, 2025"}, {"slug": "2025-10-02", "label": "Oct 02, 2025"}, {"slug": "2025-10-01", "label": "Oct 01, 2025"}, {"slug": "2025-09-30", "label": "Sep 30, 2025"}, {"slug": "2025-09-29", "label": "Sep 29, 2025"}, {"slug": "2025-09-28", "label": "Sep 28, 2025"}, {"slug": "2025-09-27", "label": "Sep 27, 2025"}, {"slug": "2025-09-26", "label": "Sep 26, 2025"}, {"slug": "2025-09-25", "label": "Sep 25, 2025"}, {"slug": "2025-09-24", "label": "Sep 24, 2025"}, {"slug": "2025-09-23", "label": "Sep 23, 2025"}, {"slug": "2025-09-22", "label": "Sep 22, 2025"}, {"slug": "2025-09-21", "label": "Sep 21, 2025"}, {"slug": "2025-09-20", "label": "Sep 20, 2025"}, {"slug": "2025-09-19", "label": "Sep 19, 2025"}, {"slug": "2025-09-18", "label": "Sep 18, 2025"}, {"slug": "2025-09-17", "label": "Sep 17, 2025"}, {"slug": "2025-09-16", "label": "Sep 16, 2025"}, {"slug": "2025-09-15", "label": "Sep 15, 2025"}, {"slug": "2025-09-14", "label": "Sep 14, 2025"}, {"slug": "2025-09-13", "label": "Sep 13, 2025"}, {"slug": "2025-09-12", "label": "Sep 12, 2025"}, {"slug": "2025-09-11", "label": "Sep 11, 2025"}, {"slug": "2025-09-10", "label": "Sep 10, 2025"}, {"slug": "2025-09-09", "label": "Sep 09, 2025"}, {"slug": "2025-09-08", "label": "Sep 08, 2025"}, {"slug": "2025-09-07", "label": "Sep 07, 2025"}, {"slug": "2025-09-06", "label": "Sep 06, 2025"}, {"slug": "2025-09-05", "label": "Sep 05, 2025"}, {"slug": "2025-09-04", "label": "Sep 04, 2025"}, {"slug": "2025-09-03", "label": "Sep 03, 2025"}, {"slug": "2025-09-02", "label": "Sep 02, 2025"}, {"slug": "2025-09-01", "label": "Sep 01, 2025"}, {"slug": "2025-08-31", "label": "Aug 31, 2025"}, {"slug": "2025-08-30", "label": "Aug 30, 2025"}, {"slug": "2025-08-29", "label": "Aug 29, 2025"}, {"slug": "2025-08-28", "label": "Aug 28, 2025"}, {"slug": "2025-08-27", "label": "Aug 27, 2025"}, {"slug": "2025-08-26", "label": "Aug 26, 2025"}, {"slug": "2025-08-25", "label": "Aug 25, 2025"}, {"slug": "2025-08-24", "label": "Aug 24, 2025"}, {"slug": "2025-08-23", "label": "Aug 23, 2025"}, {"slug": "2025-08-22", "label": "Aug 22, 2025"}, {"slug": "2025-08-21", "label": "Aug 21, 2025"}, {"slug": "2025-08-20", "label": "Aug 20, 2025"}, {"slug": "2025-08-19", "label": "Aug 19, 2025"}, {"slug": "2025-08-18", "label": "Aug 18, 2025"}, {"slug": "2025-08-17", "label": "Aug 17, 2025"}, {"slug": "2025-08-16", "label": "Aug 16, 2025"}, {"slug": "2025-08-15", "label": "Aug 15, 2025"}, {"slug": "2025-08-14", "label": "Aug 14, 2025"}, {"slug": "2025-08-13", "label": "Aug 13, 2025"}, {"slug": "2025-08-12", "label": "Aug 12, 2025"}, {"slug": "2025-08-11", "label": "Aug 11, 2025"}, {"slug": "2025-08-10", "label": "Aug 10, 2025"}, {"slug": "2025-08-09", "label": "Aug 09, 2025"}, {"slug": "2025-08-08", "label": "Aug 08, 2025"}, {"slug": "2025-08-07", "label": "Aug 07, 2025"}, {"slug": "2025-08-06", "label": "Aug 06, 2025"}, {"slug": "2025-08-05", "label": "Aug 05, 2025"}, {"slug": "2025-08-04", "label": "Aug 04, 2025"}, {"slug": "2025-08-03", "label": "Aug 03, 2025"}, {"slug": "2025-08-02", "label": "Aug 02, 2025"}, {"slug": "2025-08-01", "label": "Aug 01, 2025"}, {"slug": "2025-07-31", "label": "Jul 31, 2025"}, {"slug": "2025-07-30", "label": "Jul 30, 2025"}, {"slug": "2025-07-29", "label": "Jul 29, 2025"}, {"slug": "2025-07-28", "label": "Jul 28, 2025"}, {"slug": "2025-07-27", "label": "Jul 27, 2025"}, {"slug": "2025-07-26", "label": "Jul 26, 2025"}, {"slug": "2025-07-25", "label": "Jul 25, 2025"}, {"slug": "2025-07-24", "label": "Jul 24, 2025"}, {"slug": "2025-07-23", "label": "Jul 23, 2025"}, {"slug": "2025-07-22", "label": "Jul 22, 2025"}, {"slug": "2025-07-21", "label": "Jul 21, 2025"}, {"slug": "2025-07-20", "label": "Jul 20, 2025"}, {"slug": "2025-07-19", "label": "Jul 19, 2025"}, {"slug": "2025-07-18", "label": "Jul 18, 2025"}, {"slug": "2025-07-17", "label": "Jul 17, 2025"}, {"slug": "2025-07-16", "label": "Jul 16, 2025"}, {"slug": "2025-07-15", "label": "Jul 15, 2025"}, {"slug": "2025-07-14", "label": "Jul 14, 2025"}, {"slug": "2025-07-13", "label": "Jul 13, 2025"}, {"slug": "2025-07-12", "label": "Jul 12, 2025"}, {"slug": "2025-07-11", "label": "Jul 11, 2025"}, {"slug": "2025-07-10", "label": "Jul 10, 2025"}, {"slug": "2025-07-09", "label": "Jul 09, 2025"}, {"slug": "2025-07-08", "label": "Jul 08, 2025"}, {"slug": "2025-07-07", "label": "Jul 07, 2025"}, {"slug": "2025-07-06", "label": "Jul 06, 2025"}, {"slug": "2025-07-05", "label": "Jul 05, 2025"}, {"slug": "2025-07-04", "label": "Jul 04, 2025"}, {"slug": "2025-07-03", "label": "Jul 03, 2025"}, {"slug": "2025-07-02", "label": "Jul 02, 2025"}, {"slug": "2025-07-01", "label": "Jul 01, 2025"}, {"slug": "2025-06-30", "label": "Jun 30, 2025"}, {"slug": "2025-06-29", "label": "Jun 29, 2025"}, {"slug": "2025-06-28", "label": "Jun 28, 2025"}, {"slug": "2025-06-27", "label": "Jun 27, 2025"}, {"slug": "2025-06-26", "label": "Jun 26, 2025"}, {"slug": "2025-06-25", "label": "Jun 25, 2025"}, {"slug": "2025-06-24", "label": "Jun 24, 2025"}, {"slug": "2025-06-23", "label": "Jun 23, 2025"}, {"slug": "2025-06-22", "label": "Jun 22, 2025"}, {"slug": "2025-06-21", "label": "Jun 21, 2025"}, {"slug": "2025-06-20", "label": "Jun 20, 2025"}, {"slug": "2025-06-19", "label": "Jun 19, 2025"}, {"slug": "2025-06-18", "label": "Jun 18, 2025"}, {"slug": "2025-06-17", "label": "Jun 17, 2025"}, {"slug": "2025-06-16", "label": "Jun 16, 2025"}, {"slug": "2025-06-15", "label": "Jun 15, 2025"}, {"slug": "2025-06-14", "label": "Jun 14, 2025"}, {"slug": "2025-06-13", "label": "Jun 13, 2025"}, {"slug": "2025-06-12", "label": "Jun 12, 2025"}, {"slug": "2025-06-11", "label": "Jun 11, 2025"}, {"slug": "2025-06-10", "label": "Jun 10, 2025"}, {"slug": "2025-06-09", "label": "Jun 09, 2025"}, {"slug": "2025-06-08", "label": "Jun 08, 2025"}, {"slug": "2025-06-07", "label": "Jun 07, 2025"}, {"slug": "2025-06-06", "label": "Jun 06, 2025"}, {"slug": "2025-06-05", "label": "Jun 05, 2025"}, {"slug": "2025-06-04", "label": "Jun 04, 2025"}, {"slug": "2025-06-03", "label": "Jun 03, 2025"}, {"slug": "2025-06-02", "label": "Jun 02, 2025"}, {"slug": "2025-06-01", "label": "Jun 01, 2025"}, {"slug": "2025-05-31", "label": "May 31, 2025"}, {"slug": "2025-05-30", "label": "May 30, 2025"}, {"slug": "2025-05-29", "label": "May 29, 2025"}, {"slug": "2025-05-28", "label": "May 28, 2025"}, {"slug": "2025-05-27", "label": "May 27, 2025"}, {"slug": "2025-05-26", "label": "May 26, 2025"}, {"slug": "2025-05-25", "label": "May 25, 2025"}, {"slug": "2025-05-24", "label": "May 24, 2025"}, {"slug": "2025-05-23", "label": "May 23, 2025"}, {"slug": "2025-05-22", "label": "May 22, 2025"}, {"slug": "2025-05-21", "label": "May 21, 2025"}, {"slug": "2025-05-20", "label": "May 20, 2025"}, {"slug": "2025-05-19", "label": "May 19, 2025"}, {"slug": "2025-05-18", "label": "May 18, 2025"}, {"slug": "2025-05-17", "label": "May 17, 2025"}, {"slug": "2025-05-16", "label": "May 16, 2025"}, {"slug": "2025-05-15", "label": "May 15, 2025"}, {"slug": "2025-05-14", "label": "May 14, 2025"}, {"slug": "2025-05-13", "label": "May 13, 2025"}, {"slug": "2025-05-12", "label": "May 12, 2025"}, {"slug": "2025-05-11", "label": "May 11, 2025"}, {"slug": "2025-05-10", "label": "May 10, 2025"}, {"slug": "2025-05-09", "label": "May 09, 2025"}, {"slug": "2025-05-08", "label": "May 08, 2025"}, {"slug": "2025-05-07", "label": "May 07, 2025"}, {"slug": "2025-05-06", "label": "May 06, 2025"}, {"slug": "2025-05-05", "label": "May 05, 2025"}, {"slug": "2025-05-04", "label": "May 04, 2025"}, {"slug": "2025-05-03", "label": "May 03, 2025"}, {"slug": "2025-05-02", "label": "May 02, 2025"}, {"slug": "2025-05-01", "label": "May 01, 2025"}, {"slug": "2025-04-30", "label": "Apr 30, 2025"}, {"slug": "2025-04-29", "label": "Apr 29, 2025"}, {"slug": "2025-04-28", "label": "Apr 28, 2025"}, {"slug": "2025-04-27", "label": "Apr 27, 2025"}, {"slug": "2025-04-26", "label": "Apr 26, 2025"}, {"slug": "2025-04-25", "label": "Apr 25, 2025"}, {"slug": "2025-04-24", "label": "Apr 24, 2025"}, {"slug": "2025-04-23", "label": "Apr 23, 2025"}, {"slug": "2025-04-22", "label": "Apr 22, 2025"}, {"slug": "2025-04-21", "label": "Apr 21, 2025"}, {"slug": "2025-04-20", "label": "Apr 20, 2025"}, {"slug": "2025-04-19", "label": "Apr 19, 2025"}, {"slug": "2025-04-18", "label": "Apr 18, 2025"}, {"slug": "2025-04-17", "label": "Apr 17, 2025"}, {"slug": "2025-04-16", "label": "Apr 16, 2025"}, {"slug": "2025-04-15", "label": "Apr 15, 2025"}, {"slug": "2025-04-14", "label": "Apr 14, 2025"}, {"slug": "2025-04-13", "label": "Apr 13, 2025"}, {"slug": "2025-04-12", "label": "Apr 12, 2025"}, {"slug": "2025-04-11", "label": "Apr 11, 2025"}, {"slug": "2025-04-10", "label": "Apr 10, 2025"}, {"slug": "2025-04-09", "label": "Apr 09, 2025"}, {"slug": "2025-04-08", "label": "Apr 08, 2025"}, {"slug": "2025-04-07", "label": "Apr 07, 2025"}, {"slug": "2025-04-06", "label": "Apr 06, 2025"}, {"slug": "2025-04-05", "label": "Apr 05, 2025"}, {"slug": "2025-04-04", "label": "Apr 04, 2025"}, {"slug": "2025-04-03", "label": "Apr 03, 2025"}, {"slug": "2025-04-02", "label": "Apr 02, 2025"}, {"slug": "2025-04-01", "label": "Apr 01, 2025"}, {"slug": "2025-03-31", "label": "Mar 31, 2025"}, {"slug": "2025-03-30", "label": "Mar 30, 2025"}, {"slug": "2025-03-29", "label": "Mar 29, 2025"}, {"slug": "2025-03-28", "label": "Mar 28, 2025"}, {"slug": "2025-03-27", "label": "Mar 27, 2025"}, {"slug": "2025-03-26", "label": "Mar 26, 2025"}, {"slug": "2025-03-25", "label": "Mar 25, 2025"}, {"slug": "2025-03-24", "label": "Mar 24, 2025"}, {"slug": "2025-03-23", "label": "Mar 23, 2025"}, {"slug": "2025-03-22", "label": "Mar 22, 2025"}, {"slug": "2025-03-21", "label": "Mar 21, 2025"}, {"slug": "2025-03-20", "label": "Mar 20, 2025"}, {"slug": "2025-03-19", "label": "Mar 19, 2025"}, {"slug": "2025-03-18", "label": "Mar 18, 2025"}, {"slug": "2025-03-17", "label": "Mar 17, 2025"}, {"slug": "2025-03-16", "label": "Mar 16, 2025"}, {"slug": "2025-03-15", "label": "Mar 15, 2025"}, {"slug": "2025-03-14", "label": "Mar 14, 2025"}, {"slug": "2025-03-13", "label": "Mar 13, 2025"}, {"slug": "2025-03-12", "label": "Mar 12, 2025"}, {"slug": "2025-03-11", "label": "Mar 11, 2025"}, {"slug": "2025-03-10", "label": "Mar 10, 2025"}, {"slug": "2025-03-09", "label": "Mar 09, 2025"}, {"slug": "2025-03-08", "label": "Mar 08, 2025"}, {"slug": "2025-03-07", "label": "Mar 07, 2025"}, {"slug": "2025-03-06", "label": "Mar 06, 2025"}, {"slug": "2025-03-05", "label": "Mar 05, 2025"}, {"slug": "2025-03-04", "label": "Mar 04, 2025"}, {"slug": "2025-03-03", "label": "Mar 03, 2025"}, {"slug": "2025-03-02", "label": "Mar 02, 2025"}, {"slug": "2025-03-01", "label": "Mar 01, 2025"}, {"slug": "2025-02-28", "label": "Feb 28, 2025"}, {"slug": "2025-02-27", "label": "Feb 27, 2025"}, {"slug": "2025-02-26", "label": "Feb 26, 2025"}, {"slug": "2025-02-25", "label": "Feb 25, 2025"}, {"slug": "2025-02-24", "label": "Feb 24, 2025"}, {"slug": "2025-02-23", "label": "Feb 23, 2025"}, {"slug": "2025-02-22", "label": "Feb 22, 2025"}, {"slug": "2025-02-21", "label": "Feb 21, 2025"}, {"slug": "2025-02-20", "label": "Feb 20, 2025"}, {"slug": "2025-02-19", "label": "Feb 19, 2025"}, {"slug": "2025-02-18", "label": "Feb 18, 2025"}, {"slug": "2025-02-17", "label": "Feb 17, 2025"}, {"slug": "2025-02-16", "label": "Feb 16, 2025"}, {"slug": "2025-02-15", "label": "Feb 15, 2025"}, {"slug": "2025-02-14", "label": "Feb 14, 2025"}, {"slug": "2025-02-13", "label": "Feb 13, 2025"}, {"slug": "2025-02-12", "label": "Feb 12, 2025"}, {"slug": "2025-02-11", "label": "Feb 11, 2025"}, {"slug": "2025-02-10", "label": "Feb 10, 2025"}, {"slug": "2025-02-09", "label": "Feb 09, 2025"}, {"slug": "2025-02-08", "label": "Feb 08, 2025"}, {"slug": "2025-02-07", "label": "Feb 07, 2025"}, {"slug": "2025-02-06", "label": "Feb 06, 2025"}, {"slug": "2025-02-05", "label": "Feb 05, 2025"}, {"slug": "2025-02-04", "label": "Feb 04, 2025"}, {"slug": "2025-02-03", "label": "Feb 03, 2025"}, {"slug": "2025-02-02", "label": "Feb 02, 2025"}, {"slug": "2025-02-01", "label": "Feb 01, 2025"}, {"slug": "2025-01-31", "label": "Jan 31, 2025"}, {"slug": "2025-01-30", "label": "Jan 30, 2025"}, {"slug": "2025-01-29", "label": "Jan 29, 2025"}, {"slug": "2025-01-28", "label": "Jan 28, 2025"}, {"slug": "2025-01-27", "label": "Jan 27, 2025"}, {"slug": "2025-01-26", "label": "Jan 26, 2025"}, {"slug": "2025-01-25", "label": "Jan 25, 2025"}, {"slug": "2025-01-24", "label": "Jan 24, 2025"}, {"slug": "2025-01-23", "label": "Jan 23, 2025"}, {"slug": "2025-01-22", "label": "Jan 22, 2025"}, {"slug": "2025-01-21", "label": "Jan 21, 2025"}, {"slug": "2025-01-20", "label": "Jan 20, 2025"}, {"slug": "2025-01-19", "label": "Jan 19, 2025"}, {"slug": "2025-01-18", "label": "Jan 18, 2025"}, {"slug": "2025-01-17", "label": "Jan 17, 2025"}, {"slug": "2025-01-16", "label": "Jan 16, 2025"}, {"slug": "2025-01-15", "label": "Jan 15, 2025"}, {"slug": "2025-01-14", "label": "Jan 14, 2025"}, {"slug": "2025-01-13", "label": "Jan 13, 2025"}, {"slug": "2025-01-12", "label": "Jan 12, 2025"}, {"slug": "2025-01-11", "label": "Jan 11, 2025"}, {"slug": "2025-01-10", "label": "Jan 10, 2025"}, {"slug": "2025-01-09", "label": "Jan 09, 2025"}, {"slug": "2025-01-08", "label": "Jan 08, 2025"}, {"slug": "2025-01-07", "label": "Jan 07, 2025"}, {"slug": "2025-01-06", "label": "Jan 06, 2025"}, {"slug": "2025-01-05", "label": "Jan 05, 2025"}, {"slug": "2025-01-04", "label": "Jan 04, 2025"}, {"slug": "2025-01-03", "label": "Jan 03, 2025"}, {"slug": "2025-01-02", "label": "Jan 02, 2025"}, {"slug": "2025-01-01", "label": "Jan 01, 2025"}], "archivePath": "chart hist"}
     </script>
     <script id="dashboard-client" data-archive-path="chart hist">
- (() => {
+(() => {
   //  Bootstrap: log once and capture the embedded JSON payload.
   console.log("Starting Javascript")
   const dataEl = document.getElementById("dashboard-data-inline");
@@ -2543,505 +1794,21 @@
     console[level](message);
   };
 
-  // Embedded help chat (client-side; operator manual only).
-  const helpChatToggle = document.getElementById("help-chat-toggle");
-  const helpChatPanel = document.getElementById("help-chat-panel");
-  const helpChatClose = document.getElementById("help-chat-close");
-  const helpChatMessages = document.getElementById("help-chat-messages");
-  const helpChatStatus = document.getElementById("help-chat-status");
-  const helpChatForm = document.getElementById("help-chat-form");
-  const helpChatInput = document.getElementById("help-chat-input");
-  const helpChatClear = document.getElementById("help-chat-clear");
-  const helpChatTagToggle = document.getElementById("help-chat-tag-toggle");
-  const helpChatSend = document.getElementById("help-chat-send");
-  let helpChatBusy = false;
-  let helpChatMarkdownConfigured = false;
-  const HELP_CHAT_NO_MATCH = "No documentation matches that term.";
-  let helpChatManualText = null;
-  let helpChatManualSections = null;
-  let helpChatManualLoadPromise = null;
-  const defaultHelpChatStatusText = helpChatStatus?.textContent || "";
-  const clearHelpChatMessages = () => {
-    if (helpChatMessages) {
-      helpChatMessages.innerHTML = "";
-    }
-    if (helpChatStatus) {
-      helpChatStatus.textContent = defaultHelpChatStatusText;
-    }
-    if (helpChatInput) {
-      helpChatInput.value = "";
-      helpChatInput.focus();
-    }
-    syncTagToggle();
-  };
-
-  const wrapTagLines = (container) => {
-    if (!container || container.dataset.tagsWrapped === "1") {
-      return;
-    }
-    Array.from(container.querySelectorAll("p")).forEach((p) => {
-      const text = (p.textContent || "").trim();
-      if (text.toLowerCase().startsWith("[tags:")) {
-        const wrapper = document.createElement("div");
-        wrapper.className = "tag-line";
-        wrapper.textContent = text;
-        p.replaceWith(wrapper);
-      }
-    });
-    container.dataset.tagsWrapped = "1";
-  };
-  const syncTagToggle = () => {
-    if (!helpChatPanel || !helpChatTagToggle) {
-      return;
-    }
-    helpChatPanel.classList.toggle("hide-tags", helpChatTagToggle.checked);
-  };
-  // Remove tag-line text before the chatbot renders so the checkbox controls actual content flow.
-  const filterTagLines = (text) => {
-    if (!helpChatTagToggle?.checked) {
-      return text;
-    }
-    return String(text || "")
-      .split("\n")
-      .filter((line) => !line.trim().toLowerCase().startsWith("[tags:"))
-      .join("\n");
-  };
-
-  const enhanceHelpChatDocSections = (container) => {
-    if (!container || container.dataset.docEnhanced === "1") {
-      return;
-    }
-    const wrapHeadingSections = (
-      root,
-      headingTag,
-      detailClass,
-      summaryClass,
-      bodyClass
-    ) => {
-      const headings = Array.from(root.querySelectorAll(headingTag));
-      headings.forEach((heading) => {
-        if (!heading.parentNode) {
-          return;
-        }
-        if (heading.closest(`.${detailClass}`)) {
-          return;
-        }
-        const titleText = String(heading.textContent || "").trim();
-        if (!titleText) {
-          return;
-        }
-        const details = document.createElement("details");
-        details.className = detailClass;
-        const summary = document.createElement("summary");
-        summary.className = summaryClass;
-        summary.textContent = titleText;
-        const body = document.createElement("div");
-        body.className = bodyClass;
-
-        details.appendChild(summary);
-        details.appendChild(body);
-        heading.parentNode.insertBefore(details, heading);
-
-        let node = heading.nextSibling;
-        while (node) {
-          const next = node.nextSibling;
-          if (node.nodeType === 1 && node.tagName === headingTag) {
-            break;
-          }
-          body.appendChild(node);
-          node = next;
-        }
-
-        heading.remove();
-      });
-    };
-    const headers = Array.from(container.querySelectorAll("h2"));
-    if (!headers.length) {
-      return;
-    }
-
-    headers.forEach((h2) => {
-      if (!h2.parentNode) {
-        return;
-      }
-      if (h2.closest(".doc-section")) {
-        return;
-      }
-      const titleText = String(h2.textContent || "").trim();
-      if (!titleText) {
-        return;
-      }
-
-      const details = document.createElement("details");
-      details.className = "doc-section";
-      const summary = document.createElement("summary");
-      summary.className = "doc-section-summary";
-      summary.textContent = titleText;
-      const body = document.createElement("div");
-      body.className = "doc-section-body";
-
-      details.appendChild(summary);
-      details.appendChild(body);
-      h2.parentNode.insertBefore(details, h2);
-
-      let node = h2.nextSibling;
-      while (node) {
-        const next = node.nextSibling;
-        if (node.nodeType === 1 && node.tagName === "H2") {
-          break;
-        }
-        body.appendChild(node);
-        node = next;
-      }
-
-      wrapHeadingSections(
-        body,
-        "H3",
-        "doc-subsection",
-        "doc-subsection-summary",
-        "doc-subsection-body"
-      );
-
-      h2.remove();
-    });
-
-    wrapHeadingSections(
-      container,
-      "H3",
-      "doc-subsection",
-      "doc-subsection-summary",
-      "doc-subsection-body"
-    );
-
-    container.dataset.docEnhanced = "1";
-  };
-
-  const tokenizeHelpQuery = (text) => {
-    const raw = String(text || "")
-      .toLowerCase()
-      .match(/[a-z0-9][a-z0-9'-]+/g);
-    return raw ? raw.map((t) => (t.length > 3 && t.endsWith("s") ? t.slice(0, -1) : t)) : [];
-  };
-
-  const parseHelpManualSections = (manualText) => {
-    const text = String(manualText || "").replace(/\r\n?/g, "\n");
-    const lines = text.split("\n");
-    const sections = [];
-    let current = null;
-
-    const flush = () => {
-      if (!current) return;
-      const body = current.bodyLines.join("\n").trim();
-      if (body) {
-        sections.push({
-          title: current.title,
-          tags: (current.tags || []).map((t) => String(t).trim().toLowerCase()).filter(Boolean),
-          body,
-        });
-      }
-      current = null;
-    };
-
-    for (let i = 0; i < lines.length; i += 1) {
-      const line = lines[i];
-      if (line.startsWith("## ")) {
-        flush();
-        current = { title: line.trim(), tags: [], bodyLines: [line.replace(/\s+$/, "")] };
-
-        let j = i + 1;
-        while (j < lines.length && !lines[j].trim()) {
-          current.bodyLines.push(lines[j].replace(/\s+$/, ""));
-          j += 1;
-        }
-        if (j < lines.length && lines[j].trim().toLowerCase().startsWith("[tags:")) {
-          const tagLine = lines[j].trim();
-          current.bodyLines.push(lines[j].replace(/\s+$/, ""));
-          const payload = tagLine.replace(/^\[tags:\s*/i, "").replace(/\]\s*$/, "").trim();
-          current.tags = payload
-            .split(",")
-            .map((t) => t.trim())
-            .filter(Boolean);
-          i = j;
-        }
-        continue;
-      }
-      if (current) {
-        current.bodyLines.push(line.replace(/\s+$/, ""));
-      }
-    }
-    flush();
-    return sections;
-  };
-
-  const loadHelpManual = async (forceReload = false) => {
-    if (!forceReload && helpChatManualText && helpChatManualSections) {
-      return;
-    }
-    if (helpChatManualLoadPromise) {
-      await helpChatManualLoadPromise;
-      return;
-    }
-
-    helpChatManualText = null;
-    helpChatManualSections = null;
-
-    const manualUrlRaw = helpChatPanel?.dataset?.manualUrl || "dashboard_operator_manual.md";
-    const manualUrl = new URL(manualUrlRaw, window.location.href).toString();
-    helpChatManualLoadPromise = (async () => {
-      try {
-        const resp = await fetch(manualUrl, { cache: "no-store" });
-        if (!resp.ok) {
-          throw new Error(`manual fetch failed (HTTP ${resp.status})`);
-        }
-        const text = await resp.text();
-        helpChatManualText = text;
-        helpChatManualSections = parseHelpManualSections(text);
-        return;
-      } catch (fetchErr) {
-        if (forceReload) {
-          throw fetchErr;
-        }
-        const inlineEl = document.getElementById("help-chat-manual-inline");
-        if (inlineEl) {
-          const payload = JSON.parse(inlineEl.textContent || "{}");
-          const inlineText = typeof payload?.text === "string" ? payload.text : "";
-          if (inlineText.trim()) {
-            helpChatManualText = inlineText;
-            helpChatManualSections = parseHelpManualSections(inlineText);
-            return;
-          }
-        }
-        throw fetchErr;
-      }
-    })();
-
-    try {
-      await helpChatManualLoadPromise;
-    } finally {
-      helpChatManualLoadPromise = null;
-    }
-  };
-
-  const keywordLookupHelp = (query) => {
-    const rawNormalized = String(query || "")
-      .toLowerCase()
-      .replace(/[^\w\s]/g, " ")
-      .trim();
-    const rawWords = rawNormalized.split(/\s+/).filter(Boolean);
-    if (!rawWords.length) {
-      return null;
-    }
-    if (!helpChatManualSections || !helpChatManualSections.length) {
-      return null;
-    }
-
-    const tagVocabulary = new Set();
-    for (const section of helpChatManualSections) {
-      if (!Array.isArray(section.tags)) {
-        continue;
-      }
-      section.tags.forEach((tag) => {
-        const normalizedTag = String(tag || "").toLowerCase().trim();
-        if (normalizedTag) {
-          tagVocabulary.add(normalizedTag);
-        }
-      });
-    }
-    if (!tagVocabulary.size) {
-      return null;
-    }
-
-    const levenshteinDistance = (a, b) => {
-      const rows = a.length + 1;
-      const cols = b.length + 1;
-      const dist = Array.from({ length: rows }, () => Array(cols).fill(0));
-      for (let i = 0; i < rows; i += 1) {
-        dist[i][0] = i;
-      }
-      for (let j = 0; j < cols; j += 1) {
-        dist[0][j] = j;
-      }
-      for (let i = 1; i < rows; i += 1) {
-        for (let j = 1; j < cols; j += 1) {
-          const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-          dist[i][j] = Math.min(
-            dist[i - 1][j] + 1,
-            dist[i][j - 1] + 1,
-            dist[i - 1][j - 1] + cost
-          );
-        }
-      }
-      return dist[rows - 1][cols - 1];
-    };
-
-    const similarity = (a, b) => {
-      const maxLength = Math.max(a.length, b.length);
-      if (maxLength === 0) {
-        return 1;
-      }
-      const distance = levenshteinDistance(a, b);
-      return 1 - distance / maxLength;
-    };
-
-    const tagList = Array.from(tagVocabulary);
-    const correctedWords = rawWords.map((word) => {
-      if (tagVocabulary.has(word)) {
-        return word;
-      }
-      let bestMatch = word;
-      let bestScore = 0;
-      for (const candidate of tagList) {
-        const score = similarity(word, candidate);
-        if (score > bestScore) {
-          bestScore = score;
-          bestMatch = candidate;
-        }
-      }
-      return bestScore >= 0.8 ? bestMatch : word;
-    });
-
-    const correctedQuery = correctedWords.join(" ");
-    const tokens = correctedQuery.split(/\s+/).filter(Boolean);
-    if (!tokens.length) {
-      return null;
-    }
-
-    const keywords = tokens.filter((token) => tagVocabulary.has(token));
-    if (!keywords.length) {
-      return null;
-    }
-
-    const matches = helpChatManualSections.filter((section) => {
-      const tags = new Set(
-        (section.tags || [])
-          .map((t) => String(t || "").toLowerCase().trim())
-          .filter(Boolean)
-      );
-      if (!tags.size) {
-        return false;
-      }
-      if (keywords.length === 1) {
-        return tags.has(keywords[0]);
-      }
-      return keywords.every((keyword) => tags.has(keyword));
-    });
-
-    if (!matches.length) {
-      return null;
-    }
-
-    const picked = matches.map((section) => section.body).filter(Boolean);
-    return picked.length ? picked.join("\n\n---\n\n") : null;
-  };
-
-  const configureHelpChatMarkdown = () => {
-    if (helpChatMarkdownConfigured) {
-      return;
-    }
-    if (typeof window.marked !== "undefined" && window.marked?.setOptions) {
-      window.marked.setOptions({
-        gfm: true,
-        breaks: true,
-        headerIds: false,
-        mangle: false,
-      });
-    }
-    helpChatMarkdownConfigured = true;
-  };
-
-  const setHelpChatMessageContent = (el, role, text) => {
-    if (!el) {
-      return;
-    }
-    const messageText = filterTagLines(String(text ?? ""));
-
-    if (
-      role === "assistant" &&
-      typeof window.marked !== "undefined" &&
-      typeof window.DOMPurify !== "undefined" &&
-      window.marked?.parse &&
-      window.DOMPurify?.sanitize
-    ) {
-      configureHelpChatMarkdown();
-      const rendered = window.marked.parse(messageText);
-      const sanitized = window.DOMPurify.sanitize(rendered, { USE_PROFILES: { html: true } });
-      el.innerHTML = sanitized || "";
-      el.querySelectorAll("a[href]").forEach((a) => {
-        a.target = "_blank";
-        a.rel = "noopener noreferrer";
-      });
-      enhanceHelpChatDocSections(el);
-      wrapTagLines(el);
-      if (!el.innerHTML) {
-        el.textContent = messageText;
-      }
-      return;
-    }
-
-    el.textContent = messageText;
-  };
-
-  const appendHelpChatMessage = (role, text) => {
-    if (!helpChatMessages) {
-      return null;
-    }
-    const msg = document.createElement("div");
-    msg.className = `help-msg ${role || ""}`.trim();
-    setHelpChatMessageContent(msg, role, text);
-    helpChatMessages.appendChild(msg);
-    helpChatMessages.scrollTop = helpChatMessages.scrollHeight;
-    return msg;
-  };
-  const setHelpChatOpen = (open) => {
-    if (!helpChatPanel) {
-      return;
-    }
-    helpChatPanel.classList.toggle("hidden", !open);
-    if (open) {
-      loadHelpManual(true).catch(() => {});
-      syncTagToggle();
-    }
-    if (open && helpChatInput) {
-      setTimeout(() => helpChatInput.focus(), 0);
-    }
-  };
-
   const chartHistory = document.getElementById("chart-history");
   const chartHistoryList = document.getElementById("chart-history-list");
   const chartHistoryToggle = document.getElementById("chart-history-toggle");
   const chartHistoryStatus = document.getElementById("chart-history-status");
   const transportHistoryStatus = document.getElementById("transport-history-status");
-  const transportHistoryMonth = document.getElementById("transport-history-month");
-  const transportHistoryDay = document.getElementById("transport-history-day");
-  const transportStepMonth = document.getElementById("transport-step-month");
-  const transportStepDay = document.getElementById("transport-step-day");
   const tvControls = document.getElementById("tv-controls");
   const tvControlsLabel = document.getElementById("tv-controls-label");
   const tvControlsSwap = document.getElementById("tv-controls-swap");
   const tvArchivePrevButton = document.getElementById("tv-archive-prev");
   const tvArchiveNextButton = document.getElementById("tv-archive-next");
-  const chartStepPrevButton = document.getElementById("chart-step-prev");
-  const chartStepNextButton = document.getElementById("chart-step-next");
-  const chartStepValueEl = document.getElementById("chart-step-value");
   const tvHistorySlot = document.getElementById("tv-history-slot");
   const tvFileSelect = document.getElementById("tv-file-select");
   const tvHistoryStatus = document.getElementById("tv-history-status");
-  const tvHistoryMonth = document.getElementById("tv-history-month");
-  const tvHistoryDay = document.getElementById("tv-history-day");
-  const tvHistoryHour = document.getElementById("tv-history-hour");
-  const tvStepMonth = document.getElementById("tv-step-month");
-  const tvStepDay = document.getElementById("tv-step-day");
-  const tvStepHour = document.getElementById("tv-step-hour");
-  const tvStepValue = document.getElementById("tv-step-value");
-  const tvStepMonthValue = document.getElementById("tv-step-month-value");
-  const tvStepDayValue = document.getElementById("tv-step-day-value");
-  const tvStepTimeValue = document.getElementById("tv-step-time-value");
-  const setTvStepReadout = (monthText, dayText, timeText) => {
-    if (tvStepMonthValue) tvStepMonthValue.textContent = monthText || "";
-    if (tvStepDayValue) tvStepDayValue.textContent = dayText || "";
-    if (tvStepTimeValue) tvStepTimeValue.textContent = timeText || "";
-    return Boolean(tvStepMonthValue || tvStepDayValue || tvStepTimeValue);
-  };
+  const swapControls = document.getElementById("swap-controls");
+  const swapControlsLabel = document.getElementById("swap-controls-label");
   const isChartHistoryUiHidden = () =>
     document.body && document.body.classList.contains("hide-chart-history");
   const chartArea = document.getElementById("history");
@@ -3130,318 +1897,15 @@
   const usagePipEl = document.getElementById("usage-pip");
   let usageRangeKey = "year"; // 7d | month | year
 
-  let tvStepMode = (() => {
-    if (tvStepMonth?.checked) return "month";
-    if (tvStepHour?.checked) return "hour";
-    return "day";
-  })(); // month | day | hour
-
-  let transportStepMode = (() => {
-    if (transportStepMonth?.checked) return "month";
-    return "day";
-  })(); // month | day
-
-  // When stepping across the first/last point, we can load the adjacent day and
-  // re-pin to the opposite edge to create a continuous "scrolling" feel.
-  let pendingPinnedIndexAfterArchiveLoad = null;
-
-  const DECK_SPIN_DEFAULT_MS = 4_000;
-  const DECK_SPIN_FAST_MS = 1_000; // forward one day
-  const DECK_REWIND_MIN_MS = 700; // quick rewind effect for small jumps
-  const DECK_REWIND_BASE_MONTH_MS = 1_500; // 30 days back
-  const DECK_REWIND_PER_MONTH_MS = 500; // add per additional 30 days
-  const DECK_REWIND_MAX_MS = 5_000; // cap rewind duration
-  const DECK_PLAY_AFTER_MOVE_MS = 1_000; // brief "play" after a long move
-  let deckSpinTimerId = null;
-  let pendingArchiveLoadTimerId = null;
-  let pendingArchivePhaseTimerId = null;
-  let pendingArchiveSlug = null;
-  let pendingSelectedArchiveSlug = null;
-  const triggerDeckSpin = (
-    durationMs = DECK_SPIN_DEFAULT_MS,
-    { direction = "normal", spinSpeedSeconds = "1.35s" } = {}
-  ) => {
-    const decks = [
-      document.getElementById("transport-deck"),
-      document.getElementById("tv-transport-deck"),
-    ].filter(Boolean);
-    if (!decks.length) {
-      return;
-    }
-    decks.forEach((deck) => {
-      deck.style.setProperty("--deck-spin-direction", direction);
-      deck.style.setProperty("--deck-spin-duration", spinSpeedSeconds);
-      deck.classList.add("playing");
-    });
-    if (deckSpinTimerId) {
-      clearTimeout(deckSpinTimerId);
-    }
-    deckSpinTimerId = setTimeout(() => {
-      decks.forEach((deck) => deck.classList.remove("playing"));
-      deckSpinTimerId = null;
-    }, durationMs);
-  };
-
-  const computeTapeMoveDurationMs = (absDays) => {
-    const days = Math.max(0, Math.floor(Number(absDays || 0)));
-    const months = Math.floor(days / 30);
-    if (months <= 0) {
-      return DECK_REWIND_MIN_MS;
-    }
-    return Math.min(
-      DECK_REWIND_MAX_MS,
-      DECK_REWIND_BASE_MONTH_MS + DECK_REWIND_PER_MONTH_MS * Math.max(0, months - 1)
-    );
-  };
-
-  const computeArchiveDeltaDays = (fromSlug, toSlug) => {
-    const fromDate = parseSlugDateUtc(fromSlug);
-    const toDate = parseSlugDateUtc(toSlug);
-    if (!fromDate || !toDate) {
-      return null;
-    }
-    const msPerDay = 24 * 60 * 60 * 1000;
-    return Math.round((toDate - fromDate) / msPerDay);
-  };
-
-  const scheduleArchiveLoadAfterSpin = (
-    slug,
-    pinIndexAfterLoad = null,
-    durationMs = DECK_SPIN_DEFAULT_MS,
-    spinOptions = null
-  ) => {
-    if (!slug) {
-      return false;
-    }
-    pendingSelectedArchiveSlug = null;
-    pendingArchiveSlug = slug;
-    if (pendingArchiveLoadTimerId) {
-      clearTimeout(pendingArchiveLoadTimerId);
-      pendingArchiveLoadTimerId = null;
-    }
-    if (pendingArchivePhaseTimerId) {
-      clearTimeout(pendingArchivePhaseTimerId);
-      pendingArchivePhaseTimerId = null;
-    }
-    triggerDeckSpin(durationMs, spinOptions || undefined);
-    pendingArchiveLoadTimerId = setTimeout(() => {
-      pendingArchiveLoadTimerId = null;
-      pendingArchiveSlug = null;
-      if (pinIndexAfterLoad !== null && pinIndexAfterLoad !== undefined) {
-        pendingPinnedIndexAfterArchiveLoad = Number.isFinite(Number(pinIndexAfterLoad))
-          ? Math.floor(Number(pinIndexAfterLoad))
-          : null;
-      }
-      updateHistoryStatus(slug);
-      currentArchiveSlug = slug;
-      loadDashboardData(slug);
-    }, durationMs);
-    return true;
-  };
-
-  const scheduleArchiveLoadAfterFastForwardPlay = (slug, pinIndexAfterLoad = null) => {
-    if (!slug) {
-      return false;
-    }
-    const fromSlug = pendingArchiveSlug || currentArchiveSlug || dashboardData.generatedDateSlug || "";
-    const deltaDays = computeArchiveDeltaDays(fromSlug, slug);
-    const absDays = deltaDays === null ? 0 : Math.abs(deltaDays);
-    const fastForwardMs = computeTapeMoveDurationMs(absDays);
-
-    pendingSelectedArchiveSlug = null;
-    pendingArchiveSlug = slug;
-    if (pendingArchiveLoadTimerId) {
-      clearTimeout(pendingArchiveLoadTimerId);
-      pendingArchiveLoadTimerId = null;
-    }
-    if (pendingArchivePhaseTimerId) {
-      clearTimeout(pendingArchivePhaseTimerId);
-      pendingArchivePhaseTimerId = null;
-    }
-    // Fast-forward (forward), then briefly play forward, then load.
-    triggerDeckSpin(fastForwardMs, { direction: "normal", spinSpeedSeconds: "0.35s" });
-    pendingArchivePhaseTimerId = setTimeout(() => {
-      pendingArchivePhaseTimerId = null;
-      triggerDeckSpin(DECK_PLAY_AFTER_MOVE_MS, { direction: "normal", spinSpeedSeconds: "1.35s" });
-    }, fastForwardMs);
-    pendingArchiveLoadTimerId = setTimeout(() => {
-      pendingArchiveLoadTimerId = null;
-      pendingArchiveSlug = null;
-      if (pinIndexAfterLoad !== null && pinIndexAfterLoad !== undefined) {
-        pendingPinnedIndexAfterArchiveLoad = Number.isFinite(Number(pinIndexAfterLoad))
-          ? Math.floor(Number(pinIndexAfterLoad))
-          : null;
-      }
-      updateHistoryStatus(slug);
-      currentArchiveSlug = slug;
-      loadDashboardData(slug);
-    }, fastForwardMs + DECK_PLAY_AFTER_MOVE_MS);
-    return true;
-  };
-
-  const scheduleArchiveLoadAfterRewindPlay = (slug, pinIndexAfterLoad = null) => {
-    if (!slug) {
-      return false;
-    }
-    const fromSlug = pendingArchiveSlug || currentArchiveSlug || dashboardData.generatedDateSlug || "";
-    const deltaDays = computeArchiveDeltaDays(fromSlug, slug);
-    const absDays = deltaDays === null ? 0 : Math.abs(deltaDays);
-    const rewindMs = computeTapeMoveDurationMs(absDays);
-    pendingSelectedArchiveSlug = null;
-    pendingArchiveSlug = slug;
-    if (pendingArchiveLoadTimerId) {
-      clearTimeout(pendingArchiveLoadTimerId);
-      pendingArchiveLoadTimerId = null;
-    }
-    if (pendingArchivePhaseTimerId) {
-      clearTimeout(pendingArchivePhaseTimerId);
-      pendingArchivePhaseTimerId = null;
-    }
-    // Rewind fast (reverse), then briefly play forward, then load.
-    triggerDeckSpin(rewindMs, { direction: "reverse", spinSpeedSeconds: "0.35s" });
-    pendingArchivePhaseTimerId = setTimeout(() => {
-      pendingArchivePhaseTimerId = null;
-      triggerDeckSpin(DECK_PLAY_AFTER_MOVE_MS, { direction: "normal", spinSpeedSeconds: "1.35s" });
-    }, rewindMs);
-    pendingArchiveLoadTimerId = setTimeout(() => {
-      pendingArchiveLoadTimerId = null;
-      pendingArchiveSlug = null;
-      if (pinIndexAfterLoad !== null && pinIndexAfterLoad !== undefined) {
-        pendingPinnedIndexAfterArchiveLoad = Number.isFinite(Number(pinIndexAfterLoad))
-          ? Math.floor(Number(pinIndexAfterLoad))
-          : null;
-      }
-      updateHistoryStatus(slug);
-      currentArchiveSlug = slug;
-      loadDashboardData(slug);
-    }, rewindMs + DECK_PLAY_AFTER_MOVE_MS);
-    return true;
-  };
-
-  const scheduleArchiveLoadWithTapeRules = (slug, pinIndexAfterLoad = null) => {
-    if (!slug) {
-      return false;
-    }
-    const fromSlug = pendingArchiveSlug || currentArchiveSlug || dashboardData.generatedDateSlug || "";
-    const deltaDays = computeArchiveDeltaDays(fromSlug, slug);
-    if (deltaDays === null) {
-      return scheduleArchiveLoadAfterSpin(slug, pinIndexAfterLoad, DECK_SPIN_DEFAULT_MS);
-    }
-    if (deltaDays === 1) {
-      // Special-case: "next day" is quick.
-      return scheduleArchiveLoadAfterSpin(slug, pinIndexAfterLoad, DECK_SPIN_FAST_MS);
-    }
-    if (deltaDays > 1) {
-      return scheduleArchiveLoadAfterFastForwardPlay(slug, pinIndexAfterLoad);
-    }
-    // deltaDays <= 0
-    return scheduleArchiveLoadAfterRewindPlay(slug, pinIndexAfterLoad);
-  };
-
-  const HOLD_REPEAT_DELAY_MS = 1000;
-  const HOLD_REPEAT_INTERVAL_MS = 160;
-  const holdRepeatSuppressClickUntil = new WeakMap();
-  const holdRepeatTimers = new WeakMap(); // el -> { timeoutId, intervalId }
-
-  const clearHoldRepeatTimers = (el) => {
-    const entry = holdRepeatTimers.get(el);
-    if (!entry) {
-      return;
-    }
-    if (entry.timeoutId) {
-      clearTimeout(entry.timeoutId);
-    }
-    if (entry.intervalId) {
-      clearInterval(entry.intervalId);
-    }
-    holdRepeatTimers.delete(el);
-  };
-
-  const bindHoldRepeat = (el, action) => {
-    if (!el || typeof action !== "function" || el.dataset.boundHoldRepeat === "1") {
-      return;
-    }
-    el.dataset.boundHoldRepeat = "1";
-
-    const stop = () => clearHoldRepeatTimers(el);
-
-    const start = (event) => {
-      // Only primary button for mouse; always allow touch/pen.
-      if (event && event.type === "pointerdown") {
-        const btn = Number(event.button);
-        if (Number.isFinite(btn) && btn !== 0) {
-          return;
-        }
-      }
-      stop();
-      // Fire immediately, then begin repeating after a delay.
-      action();
-      holdRepeatSuppressClickUntil.set(el, Date.now() + 500);
-      const timeoutId = setTimeout(() => {
-        const intervalId = setInterval(() => action(), HOLD_REPEAT_INTERVAL_MS);
-        const current = holdRepeatTimers.get(el) || {};
-        holdRepeatTimers.set(el, { ...current, intervalId });
-      }, HOLD_REPEAT_DELAY_MS);
-      holdRepeatTimers.set(el, { timeoutId, intervalId: null });
-    };
-
-    el.addEventListener("pointerdown", (event) => {
-      try {
-        el.setPointerCapture?.(event.pointerId);
-      } catch (err) {
-        // ignore
-      }
-      start(event);
-    });
-    el.addEventListener("pointerup", stop);
-    el.addEventListener("pointercancel", stop);
-    el.addEventListener("pointerleave", stop);
-    window.addEventListener("blur", stop);
-
-    // Keyboard hold on focused button (Space/Enter).
-    el.addEventListener("keydown", (event) => {
-      if (event.key !== "Enter" && event.key !== " ") {
-        return;
-      }
-      event.preventDefault();
-      start(event);
-    });
-    el.addEventListener("keyup", (event) => {
-      if (event.key !== "Enter" && event.key !== " ") {
-        return;
-      }
-      event.preventDefault();
-      stop();
-    });
-  };
-
-  const setTvStepMode = (mode) => {
-    const normalized = mode === "month" || mode === "hour" ? mode : "day";
-    tvStepMode = normalized;
-    if (tvStepMonth) tvStepMonth.checked = normalized === "month";
-    if (tvStepDay) tvStepDay.checked = normalized === "day";
-    if (tvStepHour) tvStepHour.checked = normalized === "hour";
-    syncArchiveNavButtons();
-    // Refresh the displayed value between the arrows.
-    updateHistoryStatus(currentArchiveSlug || dashboardData.generatedDateSlug || "");
-    updateTimestampFromSelection();
-  };
-
-  const setTransportStepMode = (mode) => {
-    const normalized = mode === "month" ? "month" : "day";
-    transportStepMode = normalized;
-    if (transportStepMonth) transportStepMonth.checked = normalized === "month";
-    if (transportStepDay) transportStepDay.checked = normalized === "day";
-    syncArchiveNavButtons();
-    updateHistoryStatus(currentArchiveSlug || dashboardData.generatedDateSlug || "");
-  };
-
   const STORAGE_KEY = "thermostatDashboard.ui.v1";
   let savedUiState = null;
   const updateSwapLabels = () => {
     const mainLabel = chartsSwapped ? "Usage Chart" : "History Chart";
     if (tvControlsLabel) {
       tvControlsLabel.textContent = `Click here to swap chart (now showing: ${mainLabel})`;
+    }
+    if (swapControlsLabel) {
+      swapControlsLabel.textContent = `Swap Chart (now showing: ${mainLabel})`;
     }
   };
 
@@ -3524,7 +1988,7 @@
     if (!slugs.length) {
       return -1;
     }
-    const current = pendingArchiveSlug || currentArchiveSlug || dashboardData.generatedDateSlug || "";
+    const current = currentArchiveSlug || dashboardData.generatedDateSlug || "";
     const idx = current ? slugs.indexOf(current) : -1;
     return idx >= 0 ? idx : slugs.length - 1;
   };
@@ -3537,74 +2001,19 @@
     }
     const slugs = getSortedArchiveSlugs();
     const idx = getCurrentArchiveIndex(slugs);
-    const baseHasPrevDay = idx > 0;
-    const baseHasNextDay = idx >= 0 && idx < slugs.length - 1;
-
-    const computeMonthAvailability = (slug) => {
-      const currentDate = parseSlugDateUtc(slug);
-      if (!currentDate) {
-        return { hasPrev: baseHasPrevDay, hasNext: baseHasNextDay };
-      }
-      const currentMonthIndex = currentDate.getUTCFullYear() * 12 + currentDate.getUTCMonth();
-      const availableMonthIndexes = new Set();
-      getAvailableArchiveSlugs().forEach((availableSlug) => {
-        const d = parseSlugDateUtc(availableSlug);
-        if (!d) return;
-        availableMonthIndexes.add(d.getUTCFullYear() * 12 + d.getUTCMonth());
-      });
-      return {
-        hasPrev: availableMonthIndexes.has(currentMonthIndex - 1),
-        hasNext: availableMonthIndexes.has(currentMonthIndex + 1),
-      };
-    };
-
-    const tvAvailability = (() => {
-      if (!hasTvNav) {
-        return { hasPrev: baseHasPrevDay, hasNext: baseHasNextDay };
-      }
-      if (tvStepMode === "hour") {
-        const labels = getChartLabels();
-        const length = Array.isArray(labels) ? labels.length : 0;
-        const currentPoint =
-          clampIndex(pinnedPointIndex, length) ?? clampIndex(hoverPointIndex, length);
-        if (currentPoint === null || length <= 0) {
-          return { hasPrev: baseHasPrevDay, hasNext: baseHasNextDay };
-        }
-        return {
-          hasPrev: currentPoint > 0 || (currentPoint <= 0 && baseHasPrevDay),
-          hasNext: currentPoint < length - 1 || (currentPoint >= length - 1 && baseHasNextDay),
-        };
-      }
-      if (tvStepMode === "month") {
-        const currentSlug = currentArchiveSlug || dashboardData.generatedDateSlug || "";
-        return computeMonthAvailability(currentSlug);
-      }
-      return { hasPrev: baseHasPrevDay, hasNext: baseHasNextDay };
-    })();
-
-    const inlineAvailability = (() => {
-      if (!hasInlineNav) {
-        return { hasPrev: baseHasPrevDay, hasNext: baseHasNextDay };
-      }
-      const stepModeForInline = transportStepMode || "day";
-      if (stepModeForInline === "month") {
-        const currentSlug = currentArchiveSlug || dashboardData.generatedDateSlug || "";
-        return computeMonthAvailability(currentSlug);
-      }
-      return { hasPrev: baseHasPrevDay, hasNext: baseHasNextDay };
-    })();
-
+    const hasPrev = idx > 0;
+    const hasNext = idx >= 0 && idx < slugs.length - 1;
     if (hasInlineNav) {
-      prevDayButtonEl.disabled = !inlineAvailability.hasPrev;
-      nextDayButtonEl.disabled = !inlineAvailability.hasNext;
-      prevDayButtonEl.style.opacity = inlineAvailability.hasPrev ? "1" : "0.5";
-      nextDayButtonEl.style.opacity = inlineAvailability.hasNext ? "1" : "0.5";
+      prevDayButtonEl.disabled = !hasPrev;
+      nextDayButtonEl.disabled = !hasNext;
+      prevDayButtonEl.style.opacity = hasPrev ? "1" : "0.5";
+      nextDayButtonEl.style.opacity = hasNext ? "1" : "0.5";
     }
     if (hasTvNav) {
-      tvArchivePrevButton.disabled = !tvAvailability.hasPrev;
-      tvArchiveNextButton.disabled = !tvAvailability.hasNext;
-      tvArchivePrevButton.style.opacity = tvAvailability.hasPrev ? "1" : "0.5";
-      tvArchiveNextButton.style.opacity = tvAvailability.hasNext ? "1" : "0.5";
+      tvArchivePrevButton.disabled = !hasPrev;
+      tvArchiveNextButton.disabled = !hasNext;
+      tvArchivePrevButton.style.opacity = hasPrev ? "1" : "0.5";
+      tvArchiveNextButton.style.opacity = hasNext ? "1" : "0.5";
     }
   };
 
@@ -3622,67 +2031,9 @@
     if (!slug) {
       return;
     }
-    const normalizedDelta = Number(delta || 0);
-    if (normalizedDelta < 0) {
-      scheduleArchiveLoadAfterRewindPlay(slug);
-      return;
-    }
-    // Next day is always quick (1s).
-    scheduleArchiveLoadAfterSpin(slug, null, DECK_SPIN_FAST_MS);
-  };
-
-  const navigateArchiveByDaysWithPinnedIndex = (delta, pinIndexAfterLoad) => {
-    const slugs = getSortedArchiveSlugs();
-    const idx = getCurrentArchiveIndex(slugs);
-    if (idx < 0) {
-      return false;
-    }
-    const nextIdx = idx + Number(delta || 0);
-    if (nextIdx < 0 || nextIdx >= slugs.length) {
-      return false;
-    }
-    const slug = slugs[nextIdx];
-    if (!slug) {
-      return false;
-    }
-    const normalizedDelta = Number(delta || 0);
-    if (normalizedDelta < 0) {
-      return scheduleArchiveLoadAfterRewindPlay(slug, pinIndexAfterLoad);
-    }
-    // Next day is always quick (1s).
-    return scheduleArchiveLoadAfterSpin(slug, pinIndexAfterLoad, DECK_SPIN_FAST_MS);
-  };
-
-  const navigateArchiveByMonths = (delta) => {
-    const current = pendingArchiveSlug || currentArchiveSlug || dashboardData.generatedDateSlug || "";
-    const currentDate = parseSlugDateUtc(current);
-    if (!currentDate) {
-      return;
-    }
-    const months = Number(delta || 0);
-    if (!Number.isFinite(months) || months === 0) {
-      return;
-    }
-
-    const desiredMonthIndex =
-      currentDate.getUTCFullYear() * 12 + currentDate.getUTCMonth() + months;
-
-    const candidates = [];
-    getAvailableArchiveSlugs().forEach((slug) => {
-      const d = parseSlugDateUtc(slug);
-      if (!d) return;
-      const idx = d.getUTCFullYear() * 12 + d.getUTCMonth();
-      if (idx === desiredMonthIndex) {
-        candidates.push(slug);
-      }
-    });
-
-    if (!candidates.length) {
-      return;
-    }
-    candidates.sort();
-    const slug = candidates[candidates.length - 1]; // latest day in that month
-    scheduleArchiveLoadWithTapeRules(slug);
+    updateHistoryStatus(slug);
+    currentArchiveSlug = slug;
+    loadDashboardData(slug);
   };
 
   let tvChartHistoryHomeParent = null;
@@ -3758,25 +2109,13 @@
         if (tvModeActive) {
           showTvControlsHint(6000);
         }
-        if (tvStepMode === "hour") {
-          stepPinnedPoint(-1);
-        } else if (tvStepMode === "month") {
-          navigateArchiveByMonths(-1);
-        } else {
-          navigateArchiveByDays(-1);
-        }
+        navigateArchiveByDays(-1);
       } else if (event.key === "ArrowRight") {
         event.preventDefault();
         if (tvModeActive) {
           showTvControlsHint(6000);
         }
-        if (tvStepMode === "hour") {
-          stepPinnedPoint(1);
-        } else if (tvStepMode === "month") {
-          navigateArchiveByMonths(1);
-        } else {
-          navigateArchiveByDays(1);
-        }
+        navigateArchiveByDays(1);
       }
     });
   };
@@ -4292,54 +2631,47 @@
 
     if (tvArchivePrevButton && tvArchivePrevButton.dataset.boundClick !== "1") {
       tvArchivePrevButton.dataset.boundClick = "1";
-      const action = () => {
+      tvArchivePrevButton.addEventListener("click", () => {
         if (tvModeActive) {
           showTvControlsHint(6000);
         }
-        if (tvStepMode === "hour") {
-          stepPinnedPoint(-1);
-        } else if (tvStepMode === "month") {
-          navigateArchiveByMonths(-1);
-        } else {
-          navigateArchiveByDays(-1);
-        }
-      };
-      tvArchivePrevButton.addEventListener("click", (event) => {
-        const until = holdRepeatSuppressClickUntil.get(tvArchivePrevButton) || 0;
-        if (until > Date.now()) {
-          event.preventDefault();
-          return;
-        }
-        action();
+        navigateArchiveByDays(-1);
       });
-      bindHoldRepeat(tvArchivePrevButton, action);
     }
     if (tvArchiveNextButton && tvArchiveNextButton.dataset.boundClick !== "1") {
       tvArchiveNextButton.dataset.boundClick = "1";
-      const action = () => {
+      tvArchiveNextButton.addEventListener("click", () => {
         if (tvModeActive) {
           showTvControlsHint(6000);
         }
-        if (tvStepMode === "hour") {
-          stepPinnedPoint(1);
-        } else if (tvStepMode === "month") {
-          navigateArchiveByMonths(1);
-        } else {
-          navigateArchiveByDays(1);
-        }
-      };
-      tvArchiveNextButton.addEventListener("click", (event) => {
-        const until = holdRepeatSuppressClickUntil.get(tvArchiveNextButton) || 0;
-        if (until > Date.now()) {
-          event.preventDefault();
-          return;
-        }
-        action();
+        navigateArchiveByDays(1);
       });
-      bindHoldRepeat(tvArchiveNextButton, action);
     }
   };
 
+  const bindSwapControls = () => {
+    if (!swapControls || swapControls.dataset.boundClick === "1") {
+      return;
+    }
+    swapControls.dataset.boundClick = "1";
+    const activate = () => {
+      if (tvModeActive) {
+        return;
+      }
+      applyChartSwap(!chartsSwapped);
+    };
+    swapControls.addEventListener("click", (event) => {
+      event.preventDefault();
+      activate();
+    });
+    swapControls.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        activate();
+      }
+    });
+    updateSwapLabels();
+  };
 
   const bindUsageSlotControls = () => {
     if (usageSlotBound) {
@@ -5373,19 +3705,15 @@
               color: "rgba(50,209,92,0.15)",
             },
           },
-           x: {
-             ticks: {
-               // Lower label opacity for the X-axis coordinates (more subtle than the lines).
-               color: "rgba(244,246,255,0.4)",
-               callback: function (value) {
-                 const raw = this && typeof this.getLabelForValue === "function" ? this.getLabelForValue(value) : value;
-                 return formatXAxisTimeLabel(raw);
-               },
-               maxRotation: 0,
-               minRotation: 90,
-               padding: 8,
-             },
-             grid: {
+          x: {
+            ticks: {
+              // Lower label opacity for the X-axis coordinates (more subtle than the lines).
+              color: "rgba(244,246,255,0.4)",
+              maxRotation: 0,
+              minRotation: 90,
+              padding: 8,
+            },
+            grid: {
               color: "rgba(255,255,255,0.08)",
             },
           },
@@ -5583,65 +3911,6 @@
       });
     }
   };
-
-  if (chartStepPrevButton && chartStepPrevButton.dataset.boundClick !== "1") {
-    chartStepPrevButton.dataset.boundClick = "1";
-    const action = () => stepPinnedPoint(-1);
-    chartStepPrevButton.addEventListener("click", (event) => {
-      const until = holdRepeatSuppressClickUntil.get(chartStepPrevButton) || 0;
-      if (until > Date.now()) {
-        event.preventDefault();
-        return;
-      }
-      action();
-    });
-    bindHoldRepeat(chartStepPrevButton, action);
-  }
-  if (chartStepNextButton && chartStepNextButton.dataset.boundClick !== "1") {
-    chartStepNextButton.dataset.boundClick = "1";
-    const action = () => stepPinnedPoint(1);
-    chartStepNextButton.addEventListener("click", (event) => {
-      const until = holdRepeatSuppressClickUntil.get(chartStepNextButton) || 0;
-      if (until > Date.now()) {
-        event.preventDefault();
-        return;
-      }
-      action();
-    });
-    bindHoldRepeat(chartStepNextButton, action);
-  }
-  const bindTvStepMode = (el, mode) => {
-    if (!el || el.dataset.boundChange === "1") {
-      return;
-    }
-    el.dataset.boundChange = "1";
-    el.addEventListener("change", () => {
-      if (el.checked) {
-        setTvStepMode(mode);
-      } else if (tvStepMode === mode) {
-        setTvStepMode("day");
-      }
-    });
-  };
-  bindTvStepMode(tvStepMonth, "month");
-  bindTvStepMode(tvStepDay, "day");
-  bindTvStepMode(tvStepHour, "hour");
-
-  const bindTransportStepMode = (el, mode) => {
-    if (!el || el.dataset.boundChange === "1") {
-      return;
-    }
-    el.dataset.boundChange = "1";
-    el.addEventListener("change", () => {
-      if (el.checked) {
-        setTransportStepMode(mode);
-      } else if (transportStepMode === mode) {
-        setTransportStepMode("day");
-      }
-    });
-  };
-  bindTransportStepMode(transportStepMonth, "month");
-  bindTransportStepMode(transportStepDay, "day");
 
   // Re-render all front-panel cards when the data changes (actual, fan, condenser, etc.).
   const updateMetricCards = () => {
@@ -6098,74 +4367,13 @@
   const updateHistoryStatus = (slug) => {
     const label = slug ? archiveLabelMap.get(slug) : null;
     const text = label || (slug ? String(slug) : "Current");
-    const compactMonthDay = (value) => {
-      const trimmed = String(value || "").trim();
-      if (!trimmed) {
-        return trimmed;
-      }
-      const match = trimmed.match(/^([A-Za-z]{3,9})\s+(\d{1,2})(?:st|nd|rd|th)?(?:,\s*\d{4})?$/);
-      if (!match) {
-        return trimmed;
-      }
-      return `${match[1]} ${match[2]}`;
-    };
-    const mainDisplay = document.body && document.body.classList.contains("tv-mode")
-      ? text
-      : compactMonthDay(text);
     if (chartHistoryStatus) {
-      chartHistoryStatus.textContent = mainDisplay;
+      chartHistoryStatus.textContent = text;
     }
     if (transportHistoryStatus) {
-      transportHistoryStatus.textContent = mainDisplay;
+      transportHistoryStatus.textContent = text;
     }
-    if (transportHistoryMonth || transportHistoryDay) {
-      const trimmed = String(text || "").trim();
-      const match = trimmed.match(/^([A-Za-z]{3,9})\s+(\d{1,2})(?:st|nd|rd|th)?(?:,\s*\d{4})?$/);
-      if (match) {
-        const month = String(match[1] || "").slice(0, 3).toUpperCase();
-        const day = String(match[2] || "");
-        if (transportHistoryMonth) {
-          transportHistoryMonth.textContent = month;
-        }
-        if (transportHistoryDay) {
-          transportHistoryDay.textContent = day;
-        }
-      } else {
-        if (transportHistoryMonth) {
-          transportHistoryMonth.textContent = compactMonthDay(trimmed) || "Current";
-        }
-        if (transportHistoryDay) {
-          transportHistoryDay.textContent = "";
-        }
-      }
-    }
-    if (tvHistoryMonth || tvHistoryDay) {
-      const trimmed = String(text || "").trim();
-      const match = trimmed.match(/^([A-Za-z]{3,9})\s+(\d{1,2})(?:st|nd|rd|th)?(?:,\s*\d{4})?$/);
-      if (match) {
-        if (tvHistoryMonth) {
-          tvHistoryMonth.textContent = String(match[1] || "").toUpperCase();
-        } else if (tvHistoryStatus) {
-          tvHistoryStatus.textContent = String(match[1] || "").toUpperCase();
-        }
-        if (tvHistoryDay) {
-          tvHistoryDay.textContent = String(match[2] || "");
-        }
-        const monthText = String(match[1] || "").toUpperCase();
-        const dayText = String(match[2] || "");
-        setTvStepReadout(monthText, dayText, tvStepTimeValue?.textContent || "");
-      } else {
-        if (tvHistoryMonth) {
-          tvHistoryMonth.textContent = trimmed || "Current";
-        } else if (tvHistoryStatus) {
-          tvHistoryStatus.textContent = trimmed || "Current";
-        }
-        if (tvHistoryDay) {
-          tvHistoryDay.textContent = "";
-        }
-        setTvStepReadout(trimmed || "Current", "", "");
-      }
-    } else if (tvHistoryStatus) {
+    if (tvHistoryStatus) {
       tvHistoryStatus.textContent = text;
     }
   };
@@ -6180,20 +4388,7 @@
     transportPanel.addEventListener("click", (event) => {
       // Don't interfere with actual navigation controls inside the transport panel.
       const target = event.target;
-      if (
-        target &&
-        target.closest &&
-        target.closest("button,select,a,input,textarea,label,.transport-step-modes")
-      ) {
-        return;
-      }
-      // If a history file has been selected, clicking the cassette deck "loads" it (after spin).
-      if (pendingSelectedArchiveSlug && target && target.closest && target.closest("#transport-deck")) {
-        event.preventDefault();
-        const slug = pendingSelectedArchiveSlug;
-        pendingSelectedArchiveSlug = null;
-        scheduleArchiveLoadWithTapeRules(slug);
-        closeHistoryList();
+      if (target && target.closest && target.closest("button,select,a,input,textarea")) {
         return;
       }
       event.preventDefault();
@@ -6223,148 +4418,19 @@
     const length = Array.isArray(labels) ? labels.length : 0;
     const hasPinned = clampIndex(pinnedPointIndex, length) !== null;
     const hasHover = clampIndex(hoverPointIndex, length) !== null;
-    const updateStepValue = (labelValue, idxHint = null) => {
-      if (!chartStepValueEl) {
-        return;
-      }
-      const raw = String(labelValue || "").trim();
-      if (!raw) {
-        chartStepValueEl.textContent = "Step Time";
-        return;
-      }
-
-      const formatTimeFromParsed = (parsed, includeMinutes) => {
-        if (!parsed) {
-          return "";
-        }
-        const hour24 = Number(parsed.hour24);
-        const minute = Number(parsed.minute);
-        if (!Number.isFinite(hour24) || hour24 < 0 || hour24 > 23) {
-          return "";
-        }
-        const ap = hour24 < 12 ? "AM" : "PM";
-        let hour12 = hour24 % 12;
-        if (hour12 === 0) {
-          hour12 = 12;
-        }
-        if (!includeMinutes || !Number.isFinite(minute)) {
-          return `${hour12} ${ap}`;
-        }
-        const mm = Math.max(0, Math.min(59, Math.floor(minute)));
-        return `${hour12}:${String(mm).padStart(2, "0")} ${ap}`;
-      };
-
-      const resolveYear = () => {
-        const yearMatch = raw.match(/\b(20\d{2})\b/);
-        if (yearMatch) {
-          const parsed = Number(yearMatch[1]);
-          return Number.isFinite(parsed) ? parsed : null;
-        }
-        const currentSlug = currentArchiveSlug || dashboardData.generatedDateSlug || "";
-        const d = parseSlugDateUtc(currentSlug);
-        return d ? d.getUTCFullYear() : null;
-      };
-
-      const resolveHourText = () => {
-        const includeMinutes = /:\s*\d{2}\b/.test(raw);
-        const parsed = parseLabelTime(raw);
-        if (parsed) {
-          return formatTimeFromParsed(parsed, includeMinutes);
-        }
-        const hour24 = roundedUpHour24FromLabel(raw);
-        if (hour24 !== null) {
-          return formatHourOnly(hour24);
-        }
-        const idxNumeric = Number(idxHint);
-        if (Number.isFinite(idxNumeric)) {
-          const hourFromIdx = Math.max(0, Math.min(23, Math.floor(idxNumeric)));
-          return formatHourOnly(hourFromIdx);
-        }
-        return "";
-      };
-
-      const resolveDateParts = () => {
-        const year = resolveYear();
-
-        // Prefer explicit YYYY-MM-DD.
-        const iso = raw.match(/\b(20\d{2})-(\d{2})-(\d{2})\b/);
-        if (iso) {
-          const mm = Number(iso[2]);
-          const dd = Number(iso[3]);
-          const monthName =
-            Number.isFinite(mm) && mm >= 1 && mm <= 12 ? MONTH_LABELS_SHORT[mm - 1].toUpperCase() : "";
-          const dayText = Number.isFinite(dd) ? String(dd).padStart(2, "0") : "";
-          const yearText = String(iso[1]);
-          return { monthName, dayText, yearText };
-        }
-
-        // Month name + day (optional weekday).
-        const nameMatch = raw.match(
-          /\b([A-Za-z]{3,9})\s+(\d{1,2})(?:st|nd|rd|th)?(?:,\s*(20\d{2}))?\b/
-        );
-        if (nameMatch) {
-          const monthName = String(nameMatch[1] || "").slice(0, 3).toUpperCase();
-          const dd = Number(nameMatch[2]);
-          const dayText = Number.isFinite(dd) ? String(dd).padStart(2, "0") : "";
-          const yearText = nameMatch[3] ? String(nameMatch[3]) : year ? String(year) : "";
-          return { monthName, dayText, yearText };
-        }
-
-        // Numeric month/day.
-        const mdMatch = raw.match(/\b(\d{1,2})[\/-](\d{1,2})\b/);
-        if (mdMatch) {
-          const mm = Number(mdMatch[1]);
-          const dd = Number(mdMatch[2]);
-          const monthName =
-            Number.isFinite(mm) && mm >= 1 && mm <= 12 ? MONTH_LABELS_SHORT[mm - 1].toUpperCase() : "";
-          const dayText = Number.isFinite(dd) ? String(dd).padStart(2, "0") : "";
-          const yearText = year ? String(year) : "";
-          return { monthName, dayText, yearText };
-        }
-
-        return null;
-      };
-
-      const hourText = resolveHourText();
-      const dateParts = resolveDateParts();
-      if (dateParts && (dateParts.monthName || dateParts.dayText || dateParts.yearText)) {
-        const dateText = `${dateParts.monthName} ${dateParts.dayText} ${dateParts.yearText}`.trim();
-        chartStepValueEl.textContent = hourText ? `${hourText}, ${dateText}` : dateText;
-        return;
-      }
-
-      // Fall back to something readable if we can't parse date components.
-      chartStepValueEl.textContent = hourText ? `${hourText}, ${raw}` : raw;
-    };
-
     if (hasPinned || hasHover) {
       const idx = getSelectedIndex();
       const label = valueAt(labels, idx, null);
       if (label) {
         updateTimestampDisplay(String(label));
-        updateStepValue(label, idx);
-        if (tvHistoryHour) {
-          const hour24 = roundedUpHour24FromLabel(label);
-          tvHistoryHour.textContent = hour24 === null ? "" : formatHourOnly(hour24);
-        }
-        const hour24 = roundedUpHour24FromLabel(label);
-        const timeText = hour24 === null ? "" : formatHourOnly(hour24);
-        setTvStepReadout(tvStepMonthValue?.textContent || "", tvStepDayValue?.textContent || "", timeText);
         return;
       }
     }
-    // No selection: show default (latest) timepoint for the step label.
-    const defaultIdx = getDefaultSelectedIndex();
-    updateStepValue(valueAt(labels, defaultIdx, ""), defaultIdx);
     const fallback =
       dashboardData.generatedTimestamp ||
       (currentArchiveSlug ? archiveLabelMap.get(currentArchiveSlug) : null) ||
       "History: current data";
     updateTimestampDisplay(fallback);
-    if (tvHistoryHour) {
-      tvHistoryHour.textContent = "";
-    }
-    setTvStepReadout(tvStepMonthValue?.textContent || "", tvStepDayValue?.textContent || "", "");
   };
 
   const formatHourLabel = (label) => {
@@ -6401,38 +4467,6 @@
     }
     return text;
   };
-
-  function formatXAxisTimeLabel(label) {
-    const text = String(label || "").trim();
-    if (!text) {
-      return "";
-    }
-    let match = text.match(/(\d{1,2})\s*:\s*(\d{2})\s*(AM|PM)\b/i);
-    if (match) {
-      const hh = Number(match[1]);
-      const mm = match[2];
-      const ap = match[3].toUpperCase();
-      return `${hh}:${mm} ${ap}`;
-    }
-    match = text.match(/(\d{1,2})\s*(AM|PM)\b/i);
-    if (match) {
-      return `${Number(match[1])} ${match[2].toUpperCase()}`;
-    }
-    match = text.match(/\b(\d{1,2})\s*:\s*(\d{2})\b/);
-    if (match) {
-      const hour24 = Number(match[1]);
-      const minute = match[2];
-      if (Number.isFinite(hour24) && hour24 >= 0 && hour24 <= 23) {
-        const ap = hour24 < 12 ? "AM" : "PM";
-        let hour12 = hour24 % 12;
-        if (hour12 === 0) {
-          hour12 = 12;
-        }
-        return `${hour12}:${minute} ${ap}`;
-      }
-    }
-    return text;
-  }
 
   const parseLabelTime = (label) => {
     const text = String(label || "").trim();
@@ -6575,7 +4609,7 @@
       selectionIndicatorEl.style.opacity = "0.9";
       selectionIndicatorEl.style.userSelect = "none";
       selectionIndicatorEl.textContent = "";
-      selectionIndicatorEl.title = "Hover the chart to preview a reading. Click to pin. Use Clear Pin to reset.";
+      selectionIndicatorEl.title = "Hover the chart to preview a reading. Click to pin. Use Clear Pin or select Latest to reset.";
       appendControl(selectionIndicatorEl);
     }
 
@@ -6597,12 +4631,19 @@
       });
     }
 
-    // Hour picker removed (the old "Latest" control lived here).
-    const existingHourPicker = document.getElementById("hour-picker");
-    if (existingHourPicker) {
-      existingHourPicker.remove();
+    if (!hourPickerEl) {
+      hourPickerEl = document.createElement("select");
+      hourPickerEl.id = "hour-picker";
+      hourPickerEl.style.marginLeft = "10px";
+      hourPickerEl.style.borderRadius = "8px";
+      hourPickerEl.style.padding = "6px 10px";
+      hourPickerEl.style.border = "1px solid #1a1a20";
+      hourPickerEl.style.background = "#0d0d12";
+      hourPickerEl.style.color = "#f4f6ff";
+      hourPickerEl.style.maxWidth = "220px";
+      hourPickerEl.title = "Pick a specific reading to pin.";
+      appendControl(hourPickerEl);
     }
-    hourPickerEl = null;
 
     if (!prevDayButtonEl) {
       prevDayButtonEl = document.createElement("button");
@@ -6612,22 +4653,7 @@
       prevDayButtonEl.textContent = "<<";
       prevDayButtonEl.style.marginLeft = "10px";
       prevDayButtonEl.title = "Previous day";
-      const action = () => {
-        if (transportStepMode === "month") {
-          navigateArchiveByMonths(-1);
-        } else {
-          navigateArchiveByDays(-1);
-        }
-      };
-      prevDayButtonEl.addEventListener("click", (event) => {
-        const until = holdRepeatSuppressClickUntil.get(prevDayButtonEl) || 0;
-        if (until > Date.now()) {
-          event.preventDefault();
-          return;
-        }
-        action();
-      });
-      bindHoldRepeat(prevDayButtonEl, action);
+      prevDayButtonEl.addEventListener("click", () => navigateArchiveByDays(-1));
       prevDayButtonEl.style.marginLeft = "0";
       appendNavControl(prevDayButtonEl);
     }
@@ -6640,94 +4666,12 @@
       nextDayButtonEl.textContent = ">>";
       nextDayButtonEl.style.marginLeft = "6px";
       nextDayButtonEl.title = "Next day";
-      const action = () => {
-        if (transportStepMode === "month") {
-          navigateArchiveByMonths(1);
-        } else {
-          navigateArchiveByDays(1);
-        }
-      };
-      nextDayButtonEl.addEventListener("click", (event) => {
-        const until = holdRepeatSuppressClickUntil.get(nextDayButtonEl) || 0;
-        if (until > Date.now()) {
-          event.preventDefault();
-          return;
-        }
-        action();
-      });
-      bindHoldRepeat(nextDayButtonEl, action);
+      nextDayButtonEl.addEventListener("click", () => navigateArchiveByDays(1));
       nextDayButtonEl.style.marginLeft = "0";
       appendNavControl(nextDayButtonEl);
     }
 
     syncArchiveNavButtons();
-  };
-
-  const syncStepButtons = () => {
-    if (!chartStepPrevButton && !chartStepNextButton) {
-      return;
-    }
-    const labels = getChartLabels();
-    const length = Array.isArray(labels) ? labels.length : 0;
-    const current = clampIndex(
-      pinnedPointIndex !== null ? pinnedPointIndex : hoverPointIndex,
-      length
-    );
-    const hasData = length > 0;
-
-    const hasAdjacentDay = (delta) => {
-      const slugs = getSortedArchiveSlugs();
-      const idx = getCurrentArchiveIndex(slugs);
-      if (idx < 0) {
-        return false;
-      }
-      const nextIdx = idx + Number(delta || 0);
-      return nextIdx >= 0 && nextIdx < slugs.length && Boolean(slugs[nextIdx]);
-    };
-
-    if (chartStepPrevButton) {
-      // Keep enabled at the left edge if a previous day exists so we can "scroll" across days.
-      const canStepPrevPoint = hasData && current !== null && current > 0;
-      const canWrapPrevDay = hasData && current !== null && current <= 0 && hasAdjacentDay(-1);
-      chartStepPrevButton.disabled = !(canStepPrevPoint || canWrapPrevDay);
-    }
-    if (chartStepNextButton) {
-      // Keep enabled at the right edge if a next day exists so we can "scroll" across days.
-      const canStepNextPoint = hasData && current !== null && current < length - 1;
-      const canWrapNextDay = hasData && current !== null && current >= length - 1 && hasAdjacentDay(1);
-      chartStepNextButton.disabled = !(canStepNextPoint || canWrapNextDay);
-    }
-  };
-
-  const stepPinnedPoint = (delta) => {
-    const labels = getChartLabels();
-    const length = Array.isArray(labels) ? labels.length : 0;
-    if (length <= 0) {
-      return;
-    }
-    const base =
-      clampIndex(pinnedPointIndex, length) ??
-      clampIndex(hoverPointIndex, length) ??
-      (length - 1);
-    const desired = base + Number(delta || 0);
-    if (desired < 0) {
-      const moved = navigateArchiveByDaysWithPinnedIndex(-1, length - 1);
-      if (moved) {
-        suppressHoverUntilLeave();
-      }
-      return;
-    }
-    if (desired >= length) {
-      const moved = navigateArchiveByDaysWithPinnedIndex(1, 0);
-      if (moved) {
-        suppressHoverUntilLeave();
-      }
-      return;
-    }
-    const next = Math.max(0, Math.min(length - 1, desired));
-    setSelectedPoint(next, next, true);
-    suppressHoverUntilLeave();
-    syncStepButtons();
   };
 
   const syncHourPickerOptions = () => {
@@ -6738,16 +4682,23 @@
     const labels = getChartLabels();
     if (!Array.isArray(labels) || labels.length === 0) {
       hourPickerEl.innerHTML = "";
+      const opt = document.createElement("option");
+      opt.value = "";
+      opt.textContent = "Latest";
+      hourPickerEl.appendChild(opt);
       hourPickerEl.disabled = true;
-      hourPickerEl.style.display = "none";
       return;
     }
 
     hourPickerEl.disabled = false;
-    hourPickerEl.style.display = "";
     hourPickerEl.innerHTML = "";
+    const latestOpt = document.createElement("option");
+    latestOpt.value = "";
     const lastLabel = labels[labels.length - 1];
     const lastHour24 = roundedUpHour24FromLabel(lastLabel);
+    const lastHourText = lastHour24 === null ? "" : formatHourOnly(lastHour24);
+    latestOpt.textContent = lastHourText ? `Latest (${lastHourText})` : "Latest";
+    hourPickerEl.appendChild(latestOpt);
 
     const byHour = new Map();
     labels.forEach((label, idx) => {
@@ -6758,18 +4709,6 @@
       // Keep the latest point in that rounded-up hour.
       byHour.set(hour24, idx);
     });
-
-    const defaultHour24 = (() => {
-      if (lastHour24 !== null && byHour.has(lastHour24)) {
-        return lastHour24;
-      }
-      for (let hour24 = 23; hour24 >= 0; hour24 -= 1) {
-        if (byHour.has(hour24)) {
-          return hour24;
-        }
-      }
-      return 0;
-    })();
 
     for (let hour24 = 0; hour24 <= 23; hour24 += 1) {
       const opt = document.createElement("option");
@@ -6784,14 +4723,13 @@
     const selectedPinned = clampIndex(pinnedPointIndex, labels.length);
     if (selectedPinned !== null) {
       const hour24 = roundedUpHour24FromLabel(labels[selectedPinned]);
-      hourPickerEl.value =
-        hour24 !== null && byHour.has(hour24) ? `H${hour24}` : `H${defaultHour24}`;
+      hourPickerEl.value = hour24 === null ? "" : `H${hour24}`;
     } else {
-      hourPickerEl.value = `H${defaultHour24}`;
+      hourPickerEl.value = "";
     }
 
-    // Match the orange selection accents when no pin is set.
-    hourPickerEl.style.color = selectedPinned === null ? "#ffb347" : "#f4f6ff";
+    // Make the "Latest" selection match the orange selection accents.
+    hourPickerEl.style.color = hourPickerEl.value === "" ? "#ffb347" : "#f4f6ff";
     syncArchiveNavButtons();
   };
 
@@ -6816,19 +4754,16 @@
       const label = valueAt(labels, pinned, "");
       selectionIndicatorEl.textContent = `Pinned: ${formatHourLabel(label)}`;
       selectionIndicatorEl.style.color = "#ffb347";
-      syncStepButtons();
       return;
     }
     if (hovered !== null) {
       const label = valueAt(labels, hovered, "");
       selectionIndicatorEl.textContent = `Hover: ${formatHourLabel(label)}`;
       selectionIndicatorEl.style.color = "#ffb347";
-      syncStepButtons();
       return;
     }
     selectionIndicatorEl.textContent = "";
     selectionIndicatorEl.style.color = "";
-    syncStepButtons();
     syncHourPickerOptions();
   };
 
@@ -7066,16 +5001,9 @@
         button.addEventListener("click", (event) => {
           event.preventDefault();
           if (entry.slug) {
-            pendingSelectedArchiveSlug = null;
-            setActiveArchiveItem(entry.slug);
-            closeHistoryList();
-            // Let the history panel fully close before the tape animation starts.
-            if (typeof requestAnimationFrame === "function") {
-              requestAnimationFrame(() => scheduleArchiveLoadWithTapeRules(entry.slug));
-            } else {
-              setTimeout(() => scheduleArchiveLoadWithTapeRules(entry.slug), 0);
-            }
-            return;
+            updateHistoryStatus(entry.slug);
+            currentArchiveSlug = entry.slug;
+            loadDashboardData(entry.slug);
           }
           closeHistoryList();
         });
@@ -7102,7 +5030,6 @@
       return;
     }
     dashboardData = data;
-    pendingSelectedArchiveSlug = null;
     currentArchiveSlug = slugHint || data.generatedDateSlug || currentArchiveSlug;
     const labels = getChartLabels();
     const length = Array.isArray(labels) ? labels.length : 0;
@@ -7127,19 +5054,12 @@
     }
     pinnedPointIndex = clampIndex(pinnedPointIndex, length);
     hoverPointIndex = pinnedPointIndex;
-    if (pendingPinnedIndexAfterArchiveLoad !== null) {
-      pinnedPointIndex = clampIndex(pendingPinnedIndexAfterArchiveLoad, length);
-      hoverPointIndex = pinnedPointIndex;
-      pendingPinnedIndexAfterArchiveLoad = null;
-      saveUiState();
-    }
     const isArchiveLoad = Boolean(slugHint);
     renderArchiveList();
     updateHistoryStatus(currentArchiveSlug);
     syncArchiveNavButtons();
     updateTimestampFromSelection();
     updateSelectionIndicator();
-    syncStepButtons();
     bindUsageSlotControls();
     bindChartSwapControls();
     renderUsageSlotChart();
@@ -7166,6 +5086,10 @@
     autoplayToggle.classList.toggle("active", autoplayEnabled);
     autoplayToggle.classList.toggle("off", !autoplayEnabled);
     autoplayToggle.textContent = autoplayEnabled ? "Auto-play: On" : "Auto-play: Off";
+    const deck = document.getElementById("transport-deck");
+    if (deck) {
+      deck.classList.toggle("playing", Boolean(autoplayEnabled));
+    }
   };
 
   const bindAutoplayInteractions = () => {
@@ -7193,119 +5117,6 @@
           ensureAutoplayScheduled();
         }
       });
-    }
-  };
-
-  const getHelpChatState = () => {
-    const labels = getChartLabels();
-    const length = Array.isArray(labels) ? labels.length : 0;
-    const pinned = clampIndex(pinnedPointIndex, length);
-    const pinnedLabel = pinned !== null ? valueAt(labels, pinned, "") : "";
-    const modes = typeof enabledModes !== "undefined" ? Array.from(enabledModes || []) : [];
-    const archiveSlug = currentArchiveSlug || dashboardData.generatedDateSlug || "";
-    const isTvMode = Boolean(document.body && document.body.classList.contains("tv-mode"));
-    const chartsAreSwapped = Boolean(document.body && document.body.classList.contains("charts-swapped"));
-    const historyVisible = Boolean(canvas && canvas.style.display !== "none");
-    return {
-      viewMode: isTvMode ? "tv" : "normal",
-      chartsSwapped: chartsAreSwapped,
-      historyChartVisible: historyVisible,
-      archiveSlug,
-      pinnedIndex: pinned,
-      pinnedLabel,
-      enabledModes: modes,
-    };
-  };
-
-  const bindHelpChat = () => {
-    if (!helpChatPanel || !helpChatToggle || !helpChatForm) {
-      return;
-    }
-    if (helpChatPanel.dataset.bound === "1") {
-      return;
-    }
-    helpChatPanel.dataset.bound = "1";
-
-    helpChatToggle.addEventListener("click", () => {
-      const isHidden = helpChatPanel.classList.contains("hidden");
-      setHelpChatOpen(isHidden);
-      if (isHidden && (!helpChatMessages || helpChatMessages.childElementCount === 0)) {
-        appendHelpChatMessage(
-          "assistant",
-          "Ask me how to use the dashboard. I can only answer using the operator manual."
-        );
-      }
-    });
-    if (helpChatClose) {
-      helpChatClose.addEventListener("click", () => setHelpChatOpen(false));
-    }
-
-    // Close on Escape when chat is open and focus is inside it.
-    window.addEventListener("keydown", (event) => {
-      if (event.key !== "Escape") {
-        return;
-      }
-      if (!helpChatPanel || helpChatPanel.classList.contains("hidden")) {
-        return;
-      }
-      const active = document.activeElement;
-      if (active && helpChatPanel.contains(active)) {
-        event.preventDefault();
-        setHelpChatOpen(false);
-      }
-    });
-
-    helpChatForm.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      if (helpChatBusy) {
-        return;
-      }
-      const question = String(helpChatInput?.value || "").trim();
-      if (!question) {
-        return;
-      }
-      if (helpChatInput) {
-        helpChatInput.value = "";
-      }
-      appendHelpChatMessage("user", question);
-      const placeholder = appendHelpChatMessage("assistant", "…");
-      helpChatBusy = true;
-      if (helpChatInput) helpChatInput.disabled = true;
-      if (helpChatSend) helpChatSend.disabled = true;
-      try {
-        await loadHelpManual();
-        const matched = keywordLookupHelp(question);
-        const text = matched || HELP_CHAT_NO_MATCH;
-        if (placeholder) {
-          setHelpChatMessageContent(placeholder, "assistant", text);
-        } else {
-          appendHelpChatMessage("assistant", text);
-        }
-      } catch (err) {
-        const manualUrlRaw = helpChatPanel?.dataset?.manualUrl || "dashboard_operator_manual.md";
-        const manualUrl = new URL(manualUrlRaw, window.location.href).toString();
-        const msg = `Help manual is not reachable (${manualUrl}). Ensure the manual file is hosted at that URL.`;
-        if (placeholder) {
-          setHelpChatMessageContent(placeholder, "assistant", msg);
-        } else {
-          appendHelpChatMessage("assistant", msg);
-        }
-      } finally {
-        helpChatBusy = false;
-        if (helpChatInput) helpChatInput.disabled = false;
-        if (helpChatSend) helpChatSend.disabled = false;
-        if (helpChatInput) helpChatInput.focus();
-      }
-    });
-    if (helpChatClear) {
-      helpChatClear.addEventListener("click", (event) => {
-        event.preventDefault();
-        clearHelpChatMessages();
-      });
-    }
-    if (helpChatTagToggle) {
-      helpChatTagToggle.addEventListener("change", syncTagToggle);
-      syncTagToggle();
     }
   };
 
@@ -7337,8 +5148,8 @@
   bindTransportHistoryToggle();
   bindArchiveKeyboardShortcuts();
   bindTvControls();
+  bindSwapControls();
   bindAutoplayInteractions();
-  bindHelpChat();
   updateAutoplayToggle();
   ensureAutoplayScheduled();
 })();
