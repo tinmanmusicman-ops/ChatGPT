@@ -2660,18 +2660,22 @@ def build_dashboard_html(
         display: flex;
         align-items: flex-end;
         gap: 12px;
+        margin-left: -32px;
+        margin-bottom: 8px;
       }}
       /* TV-mode tape reader (shows cassette spin in the bottom bar). */
       .tv-transport-deck {{
         display: none;
       }}
       body.tv-mode #tv-transport-deck.transport-deck {{
+      
         display: block;
         width: 260px;
         height: 122px;
         border-radius: 14px;
         pointer-events: none;
         opacity: 0.98;
+        transform: translate(-86px, 22px);
       }}
       body.tv-mode .tv-file-select {{
         display: flex;
@@ -2770,6 +2774,7 @@ def build_dashboard_html(
         display: none;
       }}
       body.tv-mode .tv-nav-overlay {{
+       
         display: flex;
         align-items: center;
         justify-content: center;
@@ -2829,9 +2834,10 @@ def build_dashboard_html(
         outline-offset: 2px;
       }}
       body.tv-mode .tv-nav-overlay .tv-nav-row {{
+        margin-top: 12px;
         display: flex;
         align-items: center;
-        justify-content: center;
+        justify-content: bottom;
         gap: 28px;
       }}
       body.tv-mode .tv-nav-overlay .tv-step-value {{
@@ -3102,8 +3108,8 @@ def build_dashboard_html(
       .chart-history.expanded .history-lists-row {{
         display: flex;
         position: absolute;
-        left: 140px;
-        right: 0;
+        left: 220px;
+        right: 10px;
         bottom: calc(100% + 10px);
         z-index: 600;
         background: #2f3136;
