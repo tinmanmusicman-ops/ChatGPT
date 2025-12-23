@@ -515,10 +515,21 @@ if (tvControlsLabel) {
   const tvStepMonth = document.getElementById("tv-step-month");
   const tvStepDay = document.getElementById("tv-step-day");
   const tvStepHour = document.getElementById("tv-step-hour");
+  const tvStepMonthValue = document.getElementById("tv-step-month-value");
+  const tvStepDayValue = document.getElementById("tv-step-day-value");
+  const tvStepTimeValue = document.getElementById("tv-step-time-value");
   const tvStepValueText = document.getElementById("tv-step-value-text");
   const setTvStepReadout = (labelText) => {
+    const text = labelText || "";
     if (tvStepValueText) {
-      tvStepValueText.textContent = labelText || "";
+      tvStepValueText.textContent = text;
+      return true;
+    }
+    // Backward compatibility: if the older Month/Day/Time markup is present, stuff the raw label into the first slot.
+    if (tvStepMonthValue || tvStepDayValue || tvStepTimeValue) {
+      if (tvStepMonthValue) tvStepMonthValue.textContent = text;
+      if (tvStepDayValue) tvStepDayValue.textContent = "";
+      if (tvStepTimeValue) tvStepTimeValue.textContent = "";
       return true;
     }
     return false;
