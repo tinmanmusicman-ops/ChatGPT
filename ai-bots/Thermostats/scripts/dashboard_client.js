@@ -37,8 +37,11 @@
   const helpChatPanel = document.getElementById("help-chat-panel");
   const helpChatClose = document.getElementById("help-chat-close");
   const helpChatMessages = document.getElementById("help-chat-messages");
+  const helpChatStatus = document.getElementById("help-chat-status");
   const helpChatForm = document.getElementById("help-chat-form");
   const helpChatInput = document.getElementById("help-chat-input");
+  const helpChatClear = document.getElementById("help-chat-clear");
+  const helpChatTagToggle = document.getElementById("help-chat-tag-toggle");
   const helpChatSend = document.getElementById("help-chat-send");
   let helpChatBusy = false;
   let helpChatMarkdownConfigured = false;
@@ -46,6 +49,52 @@
   let helpChatManualText = null;
   let helpChatManualSections = null;
   let helpChatManualLoadPromise = null;
+  const defaultHelpChatStatusText = helpChatStatus?.textContent || "";
+  const clearHelpChatMessages = () => {
+    if (helpChatMessages) {
+      helpChatMessages.innerHTML = "";
+    }
+    if (helpChatStatus) {
+      helpChatStatus.textContent = defaultHelpChatStatusText;
+    }
+    if (helpChatInput) {
+      helpChatInput.value = "";
+      helpChatInput.focus();
+    }
+    syncTagToggle();
+  };
+
+  const wrapTagLines = (container) => {
+    if (!container || container.dataset.tagsWrapped === "1") {
+      return;
+    }
+    Array.from(container.querySelectorAll("p")).forEach((p) => {
+      const text = (p.textContent || "").trim();
+      if (text.toLowerCase().startsWith("[tags:")) {
+        const wrapper = document.createElement("div");
+        wrapper.className = "tag-line";
+        wrapper.textContent = text;
+        p.replaceWith(wrapper);
+      }
+    });
+    container.dataset.tagsWrapped = "1";
+  };
+  const syncTagToggle = () => {
+    if (!helpChatPanel || !helpChatTagToggle) {
+      return;
+    }
+    helpChatPanel.classList.toggle("hide-tags", helpChatTagToggle.checked);
+  };
+  // Remove tag-line text before the chatbot renders so the checkbox controls actual content flow.
+  const filterTagLines = (text) => {
+    if (!helpChatTagToggle?.checked) {
+      return text;
+    }
+    return String(text || "")
+      .split("\n")
+      .filter((line) => !line.trim().toLowerCase().startsWith("[tags:"))
+      .join("\n");
+  };
 
   const enhanceHelpChatDocSections = (container) => {
     if (!container || container.dataset.docEnhanced === "1") {
@@ -134,6 +183,14 @@
         node = next;
       }
 
+      wrapHeadingSections(
+        body,
+        "H3",
+        "doc-subsection",
+        "doc-subsection-summary",
+        "doc-subsection-body"
+      );
+
       h2.remove();
     });
 
@@ -205,8 +262,8 @@
     return sections;
   };
 
-  const loadHelpManual = async () => {
-    if (helpChatManualText && helpChatManualSections) {
+  const loadHelpManual = async (forceReload = false) => {
+    if (!forceReload && helpChatManualText && helpChatManualSections) {
       return;
     }
     if (helpChatManualLoadPromise) {
@@ -214,31 +271,37 @@
       return;
     }
 
-    const inlineEl = document.getElementById("help-chat-manual-inline");
-    if (inlineEl) {
-      try {
-        const payload = JSON.parse(inlineEl.textContent || "{}");
-        const inlineText = typeof payload?.text === "string" ? payload.text : "";
-        if (inlineText.trim()) {
-          helpChatManualText = inlineText;
-          helpChatManualSections = parseHelpManualSections(inlineText);
-          return;
-        }
-      } catch (err) {
-        // Fall back to fetching the manual URL.
-      }
-    }
+    helpChatManualText = null;
+    helpChatManualSections = null;
 
     const manualUrlRaw = helpChatPanel?.dataset?.manualUrl || "dashboard_operator_manual.md";
     const manualUrl = new URL(manualUrlRaw, window.location.href).toString();
     helpChatManualLoadPromise = (async () => {
-      const resp = await fetch(manualUrl, { cache: "no-store" });
-      if (!resp.ok) {
-        throw new Error(`manual fetch failed (HTTP ${resp.status})`);
+      try {
+        const resp = await fetch(manualUrl, { cache: "no-store" });
+        if (!resp.ok) {
+          throw new Error(`manual fetch failed (HTTP ${resp.status})`);
+        }
+        const text = await resp.text();
+        helpChatManualText = text;
+        helpChatManualSections = parseHelpManualSections(text);
+        return;
+      } catch (fetchErr) {
+        if (forceReload) {
+          throw fetchErr;
+        }
+        const inlineEl = document.getElementById("help-chat-manual-inline");
+        if (inlineEl) {
+          const payload = JSON.parse(inlineEl.textContent || "{}");
+          const inlineText = typeof payload?.text === "string" ? payload.text : "";
+          if (inlineText.trim()) {
+            helpChatManualText = inlineText;
+            helpChatManualSections = parseHelpManualSections(inlineText);
+            return;
+          }
+        }
+        throw fetchErr;
       }
-      const text = await resp.text();
-      helpChatManualText = text;
-      helpChatManualSections = parseHelpManualSections(text);
     })();
 
     try {
@@ -249,45 +312,114 @@
   };
 
   const keywordLookupHelp = (query) => {
-    const q = String(query || "").trim().toLowerCase();
-    const tokens = tokenizeHelpQuery(q);
-    if (!tokens.length) {
+    const rawNormalized = String(query || "")
+      .toLowerCase()
+      .replace(/[^\w\s]/g, " ")
+      .trim();
+    const rawWords = rawNormalized.split(/\s+/).filter(Boolean);
+    if (!rawWords.length) {
       return null;
     }
     if (!helpChatManualSections || !helpChatManualSections.length) {
       return null;
     }
 
-    const synonymMap = {
-      tv: ["tv", "display", "fullscreen", "full-screen", "television"],
-      display: ["display", "tv", "fullscreen", "full-screen", "screen"],
-      tape: ["tape", "cassette", "transport", "rewind", "fast-forward", "spin"],
-      rewind: ["rewind", "tape", "cassette", "transport", "spin"],
-      chart: ["chart", "charts", "history chart", "usage chart"],
-      charts: ["chart", "charts", "history chart", "usage chart"],
-    };
-    const expanded = tokens.flatMap((t) => synonymMap[t] || [t]).map((t) => String(t).toLowerCase());
-
-    const scored = [];
+    const tagVocabulary = new Set();
     for (const section of helpChatManualSections) {
-      const title = String(section.title || "").toLowerCase();
-      const tags = new Set((section.tags || []).map((t) => String(t).toLowerCase()));
-      let score = 0;
-      for (const term of expanded) {
-        if (!term) continue;
-        if (tags.has(term)) score += 3;
-        if (title.includes(term)) score += 2;
+      if (!Array.isArray(section.tags)) {
+        continue;
       }
-      if (score > 0) {
-        scored.push({ score, section });
-      }
+      section.tags.forEach((tag) => {
+        const normalizedTag = String(tag || "").toLowerCase().trim();
+        if (normalizedTag) {
+          tagVocabulary.add(normalizedTag);
+        }
+      });
     }
-    scored.sort((a, b) => b.score - a.score);
-    if (!scored.length) {
+    if (!tagVocabulary.size) {
       return null;
     }
 
-    const picked = scored.slice(0, 3).map((s) => s.section.body).filter(Boolean);
+    const levenshteinDistance = (a, b) => {
+      const rows = a.length + 1;
+      const cols = b.length + 1;
+      const dist = Array.from({ length: rows }, () => Array(cols).fill(0));
+      for (let i = 0; i < rows; i += 1) {
+        dist[i][0] = i;
+      }
+      for (let j = 0; j < cols; j += 1) {
+        dist[0][j] = j;
+      }
+      for (let i = 1; i < rows; i += 1) {
+        for (let j = 1; j < cols; j += 1) {
+          const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+          dist[i][j] = Math.min(
+            dist[i - 1][j] + 1,
+            dist[i][j - 1] + 1,
+            dist[i - 1][j - 1] + cost
+          );
+        }
+      }
+      return dist[rows - 1][cols - 1];
+    };
+
+    const similarity = (a, b) => {
+      const maxLength = Math.max(a.length, b.length);
+      if (maxLength === 0) {
+        return 1;
+      }
+      const distance = levenshteinDistance(a, b);
+      return 1 - distance / maxLength;
+    };
+
+    const tagList = Array.from(tagVocabulary);
+    const correctedWords = rawWords.map((word) => {
+      if (tagVocabulary.has(word)) {
+        return word;
+      }
+      let bestMatch = word;
+      let bestScore = 0;
+      for (const candidate of tagList) {
+        const score = similarity(word, candidate);
+        if (score > bestScore) {
+          bestScore = score;
+          bestMatch = candidate;
+        }
+      }
+      return bestScore >= 0.8 ? bestMatch : word;
+    });
+
+    const correctedQuery = correctedWords.join(" ");
+    const tokens = correctedQuery.split(/\s+/).filter(Boolean);
+    if (!tokens.length) {
+      return null;
+    }
+
+    const keywords = tokens.filter((token) => tagVocabulary.has(token));
+    if (!keywords.length) {
+      return null;
+    }
+
+    const matches = helpChatManualSections.filter((section) => {
+      const tags = new Set(
+        (section.tags || [])
+          .map((t) => String(t || "").toLowerCase().trim())
+          .filter(Boolean)
+      );
+      if (!tags.size) {
+        return false;
+      }
+      if (keywords.length === 1) {
+        return tags.has(keywords[0]);
+      }
+      return keywords.every((keyword) => tags.has(keyword));
+    });
+
+    if (!matches.length) {
+      return null;
+    }
+
+    const picked = matches.map((section) => section.body).filter(Boolean);
     return picked.length ? picked.join("\n\n---\n\n") : null;
   };
 
@@ -310,7 +442,7 @@
     if (!el) {
       return;
     }
-    const messageText = String(text ?? "");
+    const messageText = filterTagLines(String(text ?? ""));
 
     if (
       role === "assistant" &&
@@ -328,6 +460,7 @@
         a.rel = "noopener noreferrer";
       });
       enhanceHelpChatDocSections(el);
+      wrapTagLines(el);
       if (!el.innerHTML) {
         el.textContent = messageText;
       }
@@ -353,6 +486,10 @@
       return;
     }
     helpChatPanel.classList.toggle("hidden", !open);
+    if (open) {
+      loadHelpManual(true).catch(() => {});
+      syncTagToggle();
+    }
     if (open && helpChatInput) {
       setTimeout(() => helpChatInput.focus(), 0);
     }
@@ -4649,6 +4786,16 @@
         if (helpChatInput) helpChatInput.focus();
       }
     });
+    if (helpChatClear) {
+      helpChatClear.addEventListener("click", (event) => {
+        event.preventDefault();
+        clearHelpChatMessages();
+      });
+    }
+    if (helpChatTagToggle) {
+      helpChatTagToggle.addEventListener("change", syncTagToggle);
+      syncTagToggle();
+    }
   };
 
   if (chartControlButtons) {

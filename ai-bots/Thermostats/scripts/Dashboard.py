@@ -3260,6 +3260,39 @@ def build_dashboard_html(
         padding: 12px 12px 10px;
         border-bottom: 1px solid rgba(255,255,255,0.10);
       }}
+      .help-chat-actions {{
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }}
+      .help-chat-tag-toggle {{
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        opacity: 0.8;
+      }}
+      .help-chat-tag-toggle span {{
+        color: rgba(244,246,255,0.8);
+      }}
+      .help-chat-tag-toggle input {{
+        width: 14px;
+        height: 14px;
+        accent-color: #66ff99;
+      }}
+      .help-chat-tag-toggle input:checked + span {{
+        color: #66ff99;
+      }}
+      .help-chat-panel.hide-tags .tag-line {{
+        display: none;
+      }}
+      .help-chat-actions {{
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }}
       .help-chat-title {{
         font-size: 12px;
         letter-spacing: 0.08em;
@@ -3459,8 +3492,23 @@ def build_dashboard_html(
         cursor: pointer;
         white-space: nowrap;
       }}
+      #help-chat-clear {{
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.14);
+        background: rgba(255,255,255,0.12);
+        color: rgba(244,246,255,0.92);
+        padding: 10px 12px;
+        font-size: 13px;
+        cursor: pointer;
+        white-space: nowrap;
+      }}
       #help-chat-send:hover,
       #help-chat-send:focus-visible {{
+        border-color: rgba(154, 215, 255, 0.55);
+        background: rgba(154, 215, 255, 0.10);
+      }}
+      #help-chat-clear:hover,
+      #help-chat-clear:focus-visible {{
         border-color: rgba(154, 215, 255, 0.55);
         background: rgba(154, 215, 255, 0.10);
       }}
@@ -3480,12 +3528,19 @@ def build_dashboard_html(
             <div class="help-chat-title">Dashboard Help</div>
             <div class="help-chat-subtitle">Answers come only from the operator manual.</div>
           </div>
-          <button id="help-chat-close" type="button" aria-label="Close help chat">×</button>
+          <div class="help-chat-actions">
+            <label class="help-chat-tag-toggle">
+              <input id="help-chat-tag-toggle" type="checkbox" checked />
+              <span>tags</span>
+            </label>
+            <button id="help-chat-close" type="button" aria-label="Close help chat">×</button>
+          </div>
         </div>
         <div id="help-chat-messages" aria-live="polite"></div>
         <div id="help-chat-status">Tip: try keywords like "chart", "display", "rewind", or "cassette".</div>
         <form id="help-chat-form" class="help-chat-form" autocomplete="off">
           <input id="help-chat-input" type="text" placeholder="Ask a question…" aria-label="Ask a dashboard question" />
+          <button id="help-chat-clear" type="button">Clear</button>
           <button id="help-chat-send" type="submit">Send</button>
         </form>
       </div>
