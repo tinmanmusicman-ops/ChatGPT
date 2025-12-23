@@ -525,19 +525,6 @@ if (tvControlsLabel) {
     if (tvStepTimeValue) tvStepTimeValue.textContent = timeText || "";
     return Boolean(tvStepMonthValue || tvStepDayValue || tvStepTimeValue);
   };
-  const buildChartStepReadout = () => {
-    if (!chartStepValueEl) {
-      return "";
-    }
-    const parts = [];
-    const month = (tvStepMonthValue?.textContent || "").trim();
-    const day = (tvStepDayValue?.textContent || "").trim();
-    const time = (tvStepTimeValue?.textContent || "").trim();
-    if (month) parts.push(month);
-    if (day) parts.push(day);
-    if (time) parts.push(time);
-    return parts.length ? parts.join(" ") : "";
-  };
   const isChartHistoryUiHidden = () =>
     document.body && document.body.classList.contains("hide-chart-history");
   const chartArea = document.getElementById("history");
@@ -3759,18 +3746,13 @@ if (tvControlsLabel) {
     const length = Array.isArray(labels) ? labels.length : 0;
     const hasPinned = clampIndex(pinnedPointIndex, length) !== null;
     const hasHover = clampIndex(hoverPointIndex, length) !== null;
-    const updateStepValue = (labelValue, idxHint = null) => {
-      if (!chartStepValueEl) {
-        return;
-      }
-      const readout = buildChartStepReadout();
-      if (readout) {
-        chartStepValueEl.textContent = readout;
-        return;
-      }
-      const rawValue = labelValue == null ? "" : String(labelValue);
-      chartStepValueEl.textContent = rawValue || "Step Time";
-    };
+      const updateStepValue = (labelValue, idxHint = null) => {
+        if (!chartStepValueEl) {
+          return;
+        }
+        const rawValue = labelValue == null ? "" : String(labelValue);
+        chartStepValueEl.textContent = rawValue || "Step Time";
+      };
 
     if (hasPinned || hasHover) {
       const idx = getSelectedIndex();
