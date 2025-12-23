@@ -3537,7 +3537,8 @@ def build_dashboard_html(
           </div>
         </div>
         <div id="help-chat-messages" aria-live="polite"></div>
-        <div id="help-chat-status">Tip: try keywords like "chart", "display", "rewind", or "cassette".</div>
+        <div id="help-chat-status">Tip: try keywords like "chart", "display, "rewind", or "cassette".<br>
+        For technical docs just type "tech". </div>
         <form id="help-chat-form" class="help-chat-form" autocomplete="off">
           <input id="help-chat-input" type="text" placeholder="Ask a question…" aria-label="Ask a dashboard question" />
           <button id="help-chat-clear" type="button">Clear</button>
