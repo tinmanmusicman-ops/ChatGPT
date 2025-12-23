@@ -1771,27 +1771,25 @@ def build_dashboard_html(
       
       #chartcontrols {{
         margin-top: 50PX;
-        margin-left: 200PX;
+        margin-left: 300PX;
         max-width: none;
         width: 80%;
         position: relative;
         z-index: 30;
         padding: 1px;
         display: grid;
-        grid-template-columns: 1fr;
-        gap: 2px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 4px 6px;
         font-size: 15px;
         color: #f4f6ff;
-
-
-
       }}
       #chartcontrols .chart-control {{
-        width: 60%;
-        justify-content: flex-start;
-        padding: 3px 8px;
-        font-size: 16px;
+        width: 100%;
+        justify-content: center;
+        padding: 2px 8px;
+        font-size: 11px;
         line-height: 1;
+        text-align: center;
       }}
       #chartcontrols #autoplay-toggle {{
         grid-column: 1 / -1;
@@ -1802,12 +1800,12 @@ def build_dashboard_html(
       }}
       #chartcontrols {{
         min-width: 0;
-        margin-top: -45px;
-        margin-left: 0;
+        margin-top: -25px;
+        margin-left: 40px;
         margin-right: 0;
-        justify-self: end;
+        justify-self: start;
         width: 240px;
-        transform: translateX(60px);
+        transform: none;
       }}
       .controls-transport-wrap .chart-history {{
         grid-area: history;
@@ -1819,7 +1817,8 @@ def build_dashboard_html(
         z-index: 10;
         transform: none;
         min-width: 0;
-        justify-self: center;
+        justify-self: end;
+        margin-right: 12px;
       }}
       .transport-panel {{
         height: 210px;
@@ -2013,17 +2012,19 @@ def build_dashboard_html(
         max-width: 1120px;
         width: 100%;
         display: grid;
-        grid-template-columns: 320px 400px 240px;
+        grid-template-columns: 280px 400px 320px;
         grid-template-areas:
-          "transport usage controls"
+          "controls usage transport"
           "history history history";
         align-items: flex-start;
-        column-gap: 0;
+        column-gap: 18px;
         row-gap: 10px;
-        justify-content: space-between;
+        justify-content: center;
         margin-top: 20px;
         margin-bottom: 18px;
-        transform: translateX(-15px);
+        transform: none;
+        padding: 0 12px;
+        box-sizing: border-box;
         border: 0;
       }}
       .usage-frame-wrap {{
@@ -2615,29 +2616,33 @@ def build_dashboard_html(
           height: clamp(360px, 40cqi, 600px);
         }}
       }}
-      /* TV mode chart controls (mode toggles) shown on the right. */
+      /* TV mode chart controls (mode toggles) shown below the TV screen on the left. */
       .tv-chartcontrols-overlay {{
         display: none;
       }}
       body.tv-mode .tv-chartcontrols-overlay {{
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         grid-auto-rows: auto;
         gap: 6px 6px;
-        padding: 5px;
+        padding: 6px;
         border-radius: 12px;
         border: 1px solid rgba(255,255,255,0.12);
         background: rgba(0,0,0,0.24);
         backdrop-filter: blur(8px);
-        width: 300px;
+        width: 320px;
+        position: fixed;
+        left: 34px;
+        bottom: 18px;
+        z-index: 10070;
         justify-content: start;
-
+        align-items: stretch;
       }}
       body.tv-mode .tv-chartcontrols-overlay .chart-control {{
         width: 100%;
         text-align: left;
-        font-size: 11px;
-        padding: 2px 6px;
+        font-size: 10px;
+        padding: 3px 8px;
         letter-spacing: 0.2px;
         white-space: nowrap;
       }}
@@ -2652,7 +2657,7 @@ def build_dashboard_html(
         bottom: 15px;
         z-index: 10060;
         align-items: flex-end;
-        justify-content: space-between;
+        justify-content: flex-end;
         gap: 12px;
         pointer-events: auto;
       }}
@@ -2660,8 +2665,9 @@ def build_dashboard_html(
         display: flex;
         align-items: flex-end;
         gap: 12px;
-        margin-left: -32px;
+        margin-left: auto;
         margin-bottom: 8px;
+        transform: none;
       }}
       /* TV-mode tape reader (shows cassette spin in the bottom bar). */
       .tv-transport-deck {{
@@ -2675,7 +2681,7 @@ def build_dashboard_html(
         border-radius: 14px;
         pointer-events: none;
         opacity: 0.98;
-        transform: translate(-86px, 22px);
+        transform: none;
       }}
       body.tv-mode .tv-file-select {{
         display: flex;
@@ -2774,7 +2780,6 @@ def build_dashboard_html(
         display: none;
       }}
       body.tv-mode .tv-nav-overlay {{
-       
         display: flex;
         align-items: center;
         justify-content: center;
@@ -2837,7 +2842,7 @@ def build_dashboard_html(
         margin-top: 12px;
         display: flex;
         align-items: center;
-        justify-content: bottom;
+        justify-content: center;
         gap: 28px;
       }}
       body.tv-mode .tv-nav-overlay .tv-step-value {{
