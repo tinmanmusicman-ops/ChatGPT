@@ -183,14 +183,6 @@
         node = next;
       }
 
-      wrapHeadingSections(
-        body,
-        "H3",
-        "doc-subsection",
-        "doc-subsection-summary",
-        "doc-subsection-body"
-      );
-
       h2.remove();
     });
 
@@ -271,37 +263,34 @@
       return;
     }
 
+    const inlineEl = document.getElementById("help-chat-manual-inline");
+    if (!forceReload && inlineEl) {
+      try {
+        const payload = JSON.parse(inlineEl.textContent || "{}");
+        const inlineText = typeof payload?.text === "string" ? payload.text : "";
+        if (inlineText.trim()) {
+          helpChatManualText = inlineText;
+          helpChatManualSections = parseHelpManualSections(inlineText);
+          return;
+        }
+      } catch (err) {
+        // Fall back to fetching the manual URL.
+      }
+    }
+
     helpChatManualText = null;
     helpChatManualSections = null;
 
     const manualUrlRaw = helpChatPanel?.dataset?.manualUrl || "dashboard_operator_manual.md";
     const manualUrl = new URL(manualUrlRaw, window.location.href).toString();
     helpChatManualLoadPromise = (async () => {
-      try {
-        const resp = await fetch(manualUrl, { cache: "no-store" });
-        if (!resp.ok) {
-          throw new Error(`manual fetch failed (HTTP ${resp.status})`);
-        }
-        const text = await resp.text();
-        helpChatManualText = text;
-        helpChatManualSections = parseHelpManualSections(text);
-        return;
-      } catch (fetchErr) {
-        if (forceReload) {
-          throw fetchErr;
-        }
-        const inlineEl = document.getElementById("help-chat-manual-inline");
-        if (inlineEl) {
-          const payload = JSON.parse(inlineEl.textContent || "{}");
-          const inlineText = typeof payload?.text === "string" ? payload.text : "";
-          if (inlineText.trim()) {
-            helpChatManualText = inlineText;
-            helpChatManualSections = parseHelpManualSections(inlineText);
-            return;
-          }
-        }
-        throw fetchErr;
+      const resp = await fetch(manualUrl, { cache: "no-store" });
+      if (!resp.ok) {
+        throw new Error(`manual fetch failed (HTTP ${resp.status})`);
       }
+      const text = await resp.text();
+      helpChatManualText = text;
+      helpChatManualSections = parseHelpManualSections(text);
     })();
 
     try {
@@ -419,7 +408,7 @@
       return null;
     }
 
-    const picked = matches.map((section) => section.body).filter(Boolean);
+    const picked = matches.slice(0, 3).map((section) => section.body).filter(Boolean);
     return picked.length ? picked.join("\n\n---\n\n") : null;
   };
 
@@ -506,6 +495,11 @@
   const transportStepDay = document.getElementById("transport-step-day");
   const tvControls = document.getElementById("tv-controls");
   const tvControlsLabel = document.getElementById("tv-controls-label");
+if (tvControlsLabel) {
+  tvControlsLabel.textContent = "";
+  tvControlsLabel.style.display = "none";
+}
+
   const tvControlsSwap = document.getElementById("tv-controls-swap");
   const tvArchivePrevButton = document.getElementById("tv-archive-prev");
   const tvArchiveNextButton = document.getElementById("tv-archive-next");
