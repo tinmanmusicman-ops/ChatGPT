@@ -515,25 +515,13 @@ if (tvControlsLabel) {
   const tvStepMonth = document.getElementById("tv-step-month");
   const tvStepDay = document.getElementById("tv-step-day");
   const tvStepHour = document.getElementById("tv-step-hour");
-  const tvStepValue = document.getElementById("tv-step-value");
-  const tvStepMonthValue = document.getElementById("tv-step-month-value");
-  const tvStepDayValue = document.getElementById("tv-step-day-value");
-  const tvStepTimeValue = document.getElementById("tv-step-time-value");
-  const setTvStepReadout = (monthText, dayText, timeText) => {
-    if (tvStepMonthValue) tvStepMonthValue.textContent = monthText || "";
-    if (tvStepDayValue) tvStepDayValue.textContent = dayText || "";
-    if (tvStepTimeValue) tvStepTimeValue.textContent = timeText || "";
-    return Boolean(tvStepMonthValue || tvStepDayValue || tvStepTimeValue);
-  };
-  const getTvStepInlineText = () => {
-    const monthText = (tvStepMonthValue?.textContent || "").trim();
-    const dayText = (tvStepDayValue?.textContent || "").trim();
-    const timeText = (tvStepTimeValue?.textContent || "").trim();
-    const parts = [];
-    if (monthText) parts.push(monthText);
-    if (dayText) parts.push(dayText);
-    if (timeText) parts.push(timeText);
-    return parts.join(" ");
+  const tvStepValueText = document.getElementById("tv-step-value-text");
+  const setTvStepReadout = (labelText) => {
+    if (tvStepValueText) {
+      tvStepValueText.textContent = labelText || "";
+      return true;
+    }
+    return false;
   };
   const isChartHistoryUiHidden = () =>
     document.body && document.body.classList.contains("hide-chart-history");
@@ -1019,23 +1007,6 @@ if (tvControlsLabel) {
     }
     const key = match[1].slice(0, 3).toUpperCase();
     return WEEKDAY_ABBREV_MAP[key] || "";
-  };
-  const extractMonthDayParts = (value) => {
-    const trimmed = String(value || "").trim();
-    if (!trimmed) {
-      return { month: "", day: "" };
-    }
-    const parts = trimmed.split(/\s+/);
-    let startIdx = 0;
-    if (parts.length > 1 && parseWeekdayFromLabel(parts[0])) {
-      startIdx = 1;
-    }
-    const monthCandidate = parts[startIdx] || "";
-    const dayCandidate = parts[startIdx + 1] || "";
-    return {
-      month: monthCandidate ? monthCandidate.slice(0, 3).toUpperCase() : "",
-      day: dayCandidate,
-    };
   };
   const getAvailableArchiveSlugs = () => {
     const dates = getArchiveDates();
@@ -3671,7 +3642,6 @@ if (tvControlsLabel) {
     }
     if (tvHistoryMonth || tvHistoryDay) {
       const trimmed = String(text || "").trim();
-      const weekdayLabel = parseWeekdayFromLabel(trimmed);
       const match = trimmed.match(
         /^(?:[A-Za-z]{3,9}\s+)?([A-Za-z]{3,9})\s+(\d{1,2})(?:st|nd|rd|th)?(?:,\s*\d{4})?$/
       );
@@ -3684,9 +3654,6 @@ if (tvControlsLabel) {
         if (tvHistoryDay) {
           tvHistoryDay.textContent = String(match[2] || "");
         }
-        const monthText = String(match[1] || "").toUpperCase();
-        const dayText = weekdayLabel || String(match[2] || "");
-        setTvStepReadout(monthText, dayText, tvStepTimeValue?.textContent || "");
       } else {
         if (tvHistoryMonth) {
           tvHistoryMonth.textContent = trimmed || "Current";
@@ -3696,8 +3663,8 @@ if (tvControlsLabel) {
         if (tvHistoryDay) {
           tvHistoryDay.textContent = "";
         }
-        setTvStepReadout(trimmed || "Current", weekdayLabel || "", "");
       }
+      setTvStepReadout(String(text || ""));
     } else if (tvHistoryStatus) {
       tvHistoryStatus.textContent = text;
     }
@@ -3756,51 +3723,38 @@ if (tvControlsLabel) {
     const length = Array.isArray(labels) ? labels.length : 0;
     const hasPinned = clampIndex(pinnedPointIndex, length) !== null;
     const hasHover = clampIndex(hoverPointIndex, length) !== null;
-    const updateStepValue = (labelValue, idxHint = null) => {
-      if (!chartStepValueEl) {
-        return;
-      }
-      const inlineText = getTvStepInlineText();
-      if (inlineText) {
-        chartStepValueEl.textContent = inlineText;
-        return;
-      }
-      const rawValue = labelValue == null ? "" : String(labelValue);
-      chartStepValueEl.textContent = rawValue || "Step Time";
-    };
+  const updateStepValue = (labelValue) => {
+    if (!chartStepValueEl) {
+      return;
+    }
+    const rawValue = labelValue == null ? "" : String(labelValue);
+    chartStepValueEl.textContent = rawValue || "Step Time";
+  };
 
     if (hasPinned || hasHover) {
       const idx = getSelectedIndex();
       const label = valueAt(labels, idx, null);
       if (label) {
-        updateTimestampDisplay(String(label));
+        const labelText = String(label);
+        updateTimestampDisplay(labelText);
         const hour24 = roundedUpHour24FromLabel(label);
         const timeText = hour24 === null ? "" : formatHourOnly(hour24);
         if (tvHistoryHour) {
           tvHistoryHour.textContent = timeText;
         }
-        const { month: monthText, day: dayText } = extractMonthDayParts(label);
-        setTvStepReadout(
-          monthText || tvStepMonthValue?.textContent || "",
-          dayText || tvStepDayValue?.textContent || "",
-          timeText
-        );
-        updateStepValue(label, idx);
+        setTvStepReadout(labelText);
+        updateStepValue(labelText);
         return;
       }
     }
     // No selection: show default (latest) timepoint for the step label.
     const defaultIdx = getDefaultSelectedIndex();
     const defaultLabel = valueAt(labels, defaultIdx, "");
+    const defaultLabelText = defaultLabel == null ? "" : String(defaultLabel);
     const hour24 = roundedUpHour24FromLabel(defaultLabel);
     const timeText = hour24 === null ? "" : formatHourOnly(hour24);
-    const { month: defaultMonth, day: defaultDay } = extractMonthDayParts(defaultLabel);
-    setTvStepReadout(
-      defaultMonth || tvStepMonthValue?.textContent || "",
-      defaultDay || tvStepDayValue?.textContent || "",
-      timeText
-    );
-    updateStepValue(defaultLabel, defaultIdx);
+    setTvStepReadout(defaultLabelText);
+    updateStepValue(defaultLabelText);
     const fallback =
       dashboardData.generatedTimestamp ||
       (currentArchiveSlug ? archiveLabelMap.get(currentArchiveSlug) : null) ||
