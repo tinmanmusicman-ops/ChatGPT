@@ -515,10 +515,23 @@ if (tvControlsLabel) {
   const tvStepMonth = document.getElementById("tv-step-month");
   const tvStepDay = document.getElementById("tv-step-day");
   const tvStepHour = document.getElementById("tv-step-hour");
+  const tvStepValue = document.getElementById("tv-step-value");
   const tvStepMonthValue = document.getElementById("tv-step-month-value");
   const tvStepDayValue = document.getElementById("tv-step-day-value");
   const tvStepTimeValue = document.getElementById("tv-step-time-value");
-  const tvStepValueText = document.getElementById("tv-step-value-text");
+  let tvStepValueText = document.getElementById("tv-step-value-text");
+
+  // If an older Month/Day/Time stack is present, replace it with a single span for the raw label.
+  if (!tvStepValueText && tvStepValue) {
+    const span = document.createElement("span");
+    span.id = "tv-step-value-text";
+    span.className = "tv-step-text";
+    span.textContent = "Step Time";
+    tvStepValue.innerHTML = "";
+    tvStepValue.appendChild(span);
+    tvStepValueText = span;
+  }
+
   const setTvStepReadout = (labelText) => {
     const text = labelText || "";
     if (tvStepValueText) {
