@@ -525,6 +525,19 @@ if (tvControlsLabel) {
     if (tvStepTimeValue) tvStepTimeValue.textContent = timeText || "";
     return Boolean(tvStepMonthValue || tvStepDayValue || tvStepTimeValue);
   };
+  const buildChartStepReadout = () => {
+    if (!chartStepValueEl) {
+      return "";
+    }
+    const parts = [];
+    const month = (tvStepMonthValue?.textContent || "").trim();
+    const day = (tvStepDayValue?.textContent || "").trim();
+    const time = (tvStepTimeValue?.textContent || "").trim();
+    if (month) parts.push(month);
+    if (day) parts.push(day);
+    if (time) parts.push(time);
+    return parts.length ? parts.join(" ") : "";
+  };
   const isChartHistoryUiHidden = () =>
     document.body && document.body.classList.contains("hide-chart-history");
   const chartArea = document.getElementById("history");
@@ -1009,6 +1022,23 @@ if (tvControlsLabel) {
     }
     const key = match[1].slice(0, 3).toUpperCase();
     return WEEKDAY_ABBREV_MAP[key] || "";
+  };
+  const extractMonthDayParts = (value) => {
+    const trimmed = String(value || "").trim();
+    if (!trimmed) {
+      return { month: "", day: "" };
+    }
+    const parts = trimmed.split(/\s+/);
+    let startIdx = 0;
+    if (parts.length > 1 && parseWeekdayFromLabel(parts[0])) {
+      startIdx = 1;
+    }
+    const monthCandidate = parts[startIdx] || "";
+    const dayCandidate = parts[startIdx + 1] || "";
+    return {
+      month: monthCandidate ? monthCandidate.slice(0, 3).toUpperCase() : "",
+      day: dayCandidate,
+    };
   };
   const getAvailableArchiveSlugs = () => {
     const dates = getArchiveDates();
@@ -3733,6 +3763,11 @@ if (tvControlsLabel) {
       if (!chartStepValueEl) {
         return;
       }
+      const readout = buildChartStepReadout();
+      if (readout) {
+        chartStepValueEl.textContent = readout;
+        return;
+      }
       const rawValue = labelValue == null ? "" : String(labelValue);
       chartStepValueEl.textContent = rawValue || "Step Time";
     };
@@ -3742,20 +3777,33 @@ if (tvControlsLabel) {
       const label = valueAt(labels, idx, null);
       if (label) {
         updateTimestampDisplay(String(label));
-        updateStepValue(label, idx);
-        if (tvHistoryHour) {
-          const hour24 = roundedUpHour24FromLabel(label);
-          tvHistoryHour.textContent = hour24 === null ? "" : formatHourOnly(hour24);
-        }
         const hour24 = roundedUpHour24FromLabel(label);
         const timeText = hour24 === null ? "" : formatHourOnly(hour24);
-        setTvStepReadout(tvStepMonthValue?.textContent || "", tvStepDayValue?.textContent || "", timeText);
+        if (tvHistoryHour) {
+          tvHistoryHour.textContent = timeText;
+        }
+        const { month: monthText, day: dayText } = extractMonthDayParts(label);
+        setTvStepReadout(
+          monthText || tvStepMonthValue?.textContent || "",
+          dayText || tvStepDayValue?.textContent || "",
+          timeText
+        );
+        updateStepValue(label, idx);
         return;
       }
     }
     // No selection: show default (latest) timepoint for the step label.
     const defaultIdx = getDefaultSelectedIndex();
-    updateStepValue(valueAt(labels, defaultIdx, ""), defaultIdx);
+    const defaultLabel = valueAt(labels, defaultIdx, "");
+    const hour24 = roundedUpHour24FromLabel(defaultLabel);
+    const timeText = hour24 === null ? "" : formatHourOnly(hour24);
+    const { month: defaultMonth, day: defaultDay } = extractMonthDayParts(defaultLabel);
+    setTvStepReadout(
+      defaultMonth || tvStepMonthValue?.textContent || "",
+      defaultDay || tvStepDayValue?.textContent || "",
+      timeText
+    );
+    updateStepValue(defaultLabel, defaultIdx);
     const fallback =
       dashboardData.generatedTimestamp ||
       (currentArchiveSlug ? archiveLabelMap.get(currentArchiveSlug) : null) ||
@@ -3764,7 +3812,6 @@ if (tvControlsLabel) {
     if (tvHistoryHour) {
       tvHistoryHour.textContent = "";
     }
-    setTvStepReadout(tvStepMonthValue?.textContent || "", tvStepDayValue?.textContent || "", "");
   };
 
   const formatHourLabel = (label) => {
