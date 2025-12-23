@@ -993,31 +993,10 @@ if (tvControlsLabel) {
   ];
 
   const WEEKDAY_LABELS_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  const MONTH_ABBREV_TO_INDEX = MONTH_LABELS_SHORT.reduce((map, label, idx) => {
-    map[label.toUpperCase()] = idx;
-    return map;
-  }, {});
   const WEEKDAY_ABBREV_MAP = WEEKDAY_LABELS_SHORT.reduce((map, label) => {
     map[label.toUpperCase()] = label;
     return map;
   }, {});
-
-  const deriveWeekdayFromParts = (yearValue, monthName, dayText) => {
-    const trimmedMonth = String(monthName || "").slice(0, 3).toUpperCase();
-    const monthIndex = MONTH_ABBREV_TO_INDEX[trimmedMonth];
-    const parsedDay = Number(dayText);
-    if (!Number.isFinite(parsedDay) || parsedDay < 1 || parsedDay > 31 || monthIndex === undefined) {
-      return "";
-    }
-    const parsedYear = Number(yearValue);
-    const resolvedYear = Number.isFinite(parsedYear) ? parsedYear : new Date().getFullYear();
-    const date = new Date(resolvedYear, monthIndex, parsedDay);
-    if (!Number.isFinite(date.getTime())) {
-      return "";
-    }
-    const weekdayLabel = WEEKDAY_LABELS_SHORT[date.getDay()];
-    return weekdayLabel || "";
-  };
 
   const parseWeekdayFromLabel = (value) => {
     const trimmed = String(value || "").trim();
@@ -3754,133 +3733,8 @@ if (tvControlsLabel) {
       if (!chartStepValueEl) {
         return;
       }
-      const raw = String(labelValue || "").trim();
-      if (!raw) {
-        chartStepValueEl.textContent = "Step Time";
-        return;
-      }
-
-      const formatTimeFromParsed = (parsed, includeMinutes) => {
-        if (!parsed) {
-          return "";
-        }
-        const hour24 = Number(parsed.hour24);
-        const minute = Number(parsed.minute);
-        if (!Number.isFinite(hour24) || hour24 < 0 || hour24 > 23) {
-          return "";
-        }
-        const ap = hour24 < 12 ? "AM" : "PM";
-        let hour12 = hour24 % 12;
-        if (hour12 === 0) {
-          hour12 = 12;
-        }
-        if (!includeMinutes || !Number.isFinite(minute)) {
-          return `${hour12} ${ap}`;
-        }
-        const mm = Math.max(0, Math.min(59, Math.floor(minute)));
-        return `${hour12}:${String(mm).padStart(2, "0")} ${ap}`;
-      };
-
-      const resolveYear = () => {
-        const yearMatch = raw.match(/\b(20\d{2})\b/);
-        if (yearMatch) {
-          const parsed = Number(yearMatch[1]);
-          return Number.isFinite(parsed) ? parsed : null;
-        }
-        const currentSlug = currentArchiveSlug || dashboardData.generatedDateSlug || "";
-        const d = parseSlugDateUtc(currentSlug);
-        return d ? d.getUTCFullYear() : null;
-      };
-
-      const resolvedYear = resolveYear();
-
-      const resolveHourText = () => {
-        const includeMinutes = /:\s*\d{2}\b/.test(raw);
-        const parsed = parseLabelTime(raw);
-        if (parsed) {
-          return formatTimeFromParsed(parsed, includeMinutes);
-        }
-        const hour24 = roundedUpHour24FromLabel(raw);
-        if (hour24 !== null) {
-          return formatHourOnly(hour24);
-        }
-        const idxNumeric = Number(idxHint);
-        if (Number.isFinite(idxNumeric)) {
-          const hourFromIdx = Math.max(0, Math.min(23, Math.floor(idxNumeric)));
-          return formatHourOnly(hourFromIdx);
-        }
-        return "";
-      };
-
-      const resolveDateParts = () => {
-        const year = resolvedYear;
-
-        // Prefer explicit YYYY-MM-DD.
-        const iso = raw.match(/\b(20\d{2})-(\d{2})-(\d{2})\b/);
-        if (iso) {
-          const mm = Number(iso[2]);
-          const dd = Number(iso[3]);
-          const monthName =
-            Number.isFinite(mm) && mm >= 1 && mm <= 12 ? MONTH_LABELS_SHORT[mm - 1].toUpperCase() : "";
-          const dayText = Number.isFinite(dd) ? String(dd).padStart(2, "0") : "";
-          const yearText = String(iso[1]);
-          return { monthName, dayText, yearText };
-        }
-
-        // Month name + day (optional weekday).
-        const nameMatch = raw.match(
-          /\b([A-Za-z]{3,9})\s+(\d{1,2})(?:st|nd|rd|th)?(?:,\s*(20\d{2}))?\b/
-        );
-        if (nameMatch) {
-          const monthName = String(nameMatch[1] || "").slice(0, 3).toUpperCase();
-          const dd = Number(nameMatch[2]);
-          const dayText = Number.isFinite(dd) ? String(dd).padStart(2, "0") : "";
-          const yearText = nameMatch[3] ? String(nameMatch[3]) : year ? String(year) : "";
-          return { monthName, dayText, yearText };
-        }
-
-        // Numeric month/day.
-        const mdMatch = raw.match(/\b(\d{1,2})[\/-](\d{1,2})\b/);
-        if (mdMatch) {
-          const mm = Number(mdMatch[1]);
-          const dd = Number(mdMatch[2]);
-          const monthName =
-            Number.isFinite(mm) && mm >= 1 && mm <= 12 ? MONTH_LABELS_SHORT[mm - 1].toUpperCase() : "";
-          const dayText = Number.isFinite(dd) ? String(dd).padStart(2, "0") : "";
-          const yearText = year ? String(year) : "";
-          return { monthName, dayText, yearText };
-        }
-
-        return null;
-      };
-
-      const hourText = resolveHourText();
-      const dateParts = resolveDateParts();
-      let weekdayLabel = "";
-      const dayLabel = (dateParts?.dayText || "").trim();
-      if (dateParts) {
-        weekdayLabel = deriveWeekdayFromParts(resolvedYear, dateParts.monthName, dayLabel);
-      }
-      if (!weekdayLabel) {
-        weekdayLabel = parseWeekdayFromLabel(raw);
-      }
-      const segments = [];
-      if (weekdayLabel) {
-        segments.push(weekdayLabel);
-      }
-      if (dayLabel) {
-        segments.push(dayLabel);
-      }
-      if (hourText) {
-        segments.push(hourText);
-      }
-      if (segments.length) {
-        chartStepValueEl.textContent = segments.join(" ");
-        return;
-      }
-
-      // Fall back to something readable if we can't parse date components.
-      chartStepValueEl.textContent = hourText ? `${hourText}, ${raw}` : raw;
+      const rawValue = labelValue == null ? "" : String(labelValue);
+      chartStepValueEl.textContent = rawValue || "Step Time";
     };
 
     if (hasPinned || hasHover) {
