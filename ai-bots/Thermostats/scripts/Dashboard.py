@@ -2587,7 +2587,8 @@ def build_dashboard_html(
       body.tv-mode .tv-frame-wrap {{
         display: block !important;
         position: fixed;
-        inset: 14px 34px 74px 34px;
+        /* Reserve enough space below the TV screen for the cassette transport. */
+        inset: 4px 34px 115px 34px;
         z-index: 9999;
       }}
       body.tv-mode .tv-frame-wrap .chart-wrap.tv-frame {{
@@ -2679,12 +2680,13 @@ def build_dashboard_html(
         width: 260px;
         height: 122px;
         border-radius: 14px;
-        pointer-events: none;
+        pointer-events: auto;
         opacity: 0.98;
         transform: none;
+        cursor: pointer;
       }}
       body.tv-mode .tv-file-select {{
-        display: flex;
+        display: none;
         flex-direction: column;
         gap: 2px;
         padding: 6px 10px;
@@ -2694,6 +2696,9 @@ def build_dashboard_html(
         backdrop-filter: blur(8px);
         width: 320px;
         box-sizing: border-box;
+      }}
+      body.tv-mode .tv-file-select.open {{
+        display: flex;
       }}
       body.tv-mode .tv-file-select-title {{
         font-size: 10px;
@@ -2768,6 +2773,11 @@ def build_dashboard_html(
         max-height: none;
         overflow: visible;
         display: block;
+      }}
+      body.tv-mode #tv-file-select .chart-history.expanded .history-lists-row {{
+        left: auto;
+        right: 0;
+        width: min(520px, calc(100vw - 34px - 34px - 260px - 40px));
       }}
       body.tv-mode #tv-file-select .chart-history h4 {{
         display: none;
