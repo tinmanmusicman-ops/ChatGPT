@@ -2977,6 +2977,12 @@ def build_dashboard_html(
         box-shadow: none;
         color: #fff5c7;
       }}
+      /* Home-page history picker: keep it left and narrow so it won't cover the transport. */
+      .chart-top-row .chart-history {{
+        max-width: 520px;
+        margin-left: 0;
+        margin-right: auto;
+      }}
       .chart-wrap.tv-frame .chart-history {{
         position: absolute;
         margin-top: 10px;
@@ -3113,14 +3119,17 @@ def build_dashboard_html(
       .chart-history.expanded .history-lists-row {{
         display: flex;
         position: absolute;
-        left: 220px;
-        right: 10px;
+        left: 0;
+        right: auto;
         bottom: calc(100% + 10px);
         z-index: 600;
         background: #2f3136;
         border: 1px solid rgba(255, 255, 255, 0.2);
         border-radius: 14px;
         padding: 12px 14px;
+        width: min(520px, calc(100vw - 48px));
+        max-height: min(340px, 60vh);
+        overflow: auto;
         box-shadow:
           0 14px 30px rgba(0, 0, 0, 0.45),
           inset 0 1px 2px rgba(255, 255, 255, 0.15);
