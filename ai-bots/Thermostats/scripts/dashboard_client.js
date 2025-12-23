@@ -3812,10 +3812,23 @@ if (tvControlsLabel) {
 
       const hourText = resolveHourText();
       const dateParts = resolveDateParts();
-      if (dateParts && (dateParts.monthName || dateParts.dayText || dateParts.yearText)) {
-        const dateText = `${dateParts.monthName} ${dateParts.dayText} ${dateParts.yearText}`.trim();
-        chartStepValueEl.textContent = hourText ? `${hourText}, ${dateText}` : dateText;
-        return;
+      if (dateParts) {
+        const monthLabel = (dateParts.monthName || "").trim();
+        const dayLabel = (dateParts.dayText || "").trim();
+        const segments = [];
+        if (monthLabel) {
+          segments.push(monthLabel);
+        }
+        if (dayLabel) {
+          segments.push(dayLabel);
+        }
+        if (hourText) {
+          segments.push(hourText);
+        }
+        if (segments.length) {
+          chartStepValueEl.textContent = segments.join(" ");
+          return;
+        }
       }
 
       // Fall back to something readable if we can't parse date components.
