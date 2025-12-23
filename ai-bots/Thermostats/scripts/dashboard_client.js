@@ -2862,7 +2862,9 @@ if (tvControlsLabel) {
                color: "rgba(244,246,255,0.4)",
                callback: function (value) {
                  const raw = this && typeof this.getLabelForValue === "function" ? this.getLabelForValue(value) : value;
-                 return formatXAxisTimeLabel(raw);
+          //       return formatXAxisTimeLabel(raw);
+           
+                 return formatXAxisTimeLabel(" ");
                },
                maxRotation: 0,
                minRotation: 90,
