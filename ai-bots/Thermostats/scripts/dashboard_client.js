@@ -1253,6 +1253,24 @@ if (tvControlsLabel) {
     });
   };
 
+  let tvTransportToggleBound = false;
+  const bindTvTransportHistoryToggle = () => {
+    const tvTransportDeck = document.getElementById("tv-transport-deck");
+    if (!tvTransportDeck || tvTransportToggleBound) {
+      return;
+    }
+    tvTransportToggleBound = true;
+    tvTransportDeck.title = "Click to select a history file";
+    tvTransportDeck.addEventListener("click", (event) => {
+      const target = event.target;
+      if (target && target.closest && target.closest("button,select,a,input,textarea")) {
+        return;
+      }
+      event.preventDefault();
+      toggleHistoryList();
+    });
+  };
+
   let archiveKeyHandlerBound = false;
   const isEditableTarget = (target) => {
     const el = target;
@@ -1674,6 +1692,7 @@ if (tvControlsLabel) {
     showTvControlsHint(10000);
     mountTvHistory();
     bindTvHistoryToggle();
+    bindTvTransportHistoryToggle();
 
     if (!tvKeyHandlerBound) {
       tvKeyHandlerBound = true;
