@@ -587,6 +587,9 @@ if (tvControlsLabel) {
     if (chartHistoryList) {
       chartHistoryList.classList.toggle("hidden", !historyExpanded);
     }
+    if (tvFileSelect) {
+      tvFileSelect.classList.toggle("open", historyExpanded);
+    }
     if (chartHistoryToggle) {
       chartHistoryToggle.classList.toggle("history-visible", historyExpanded);
     }
