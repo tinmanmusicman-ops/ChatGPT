@@ -525,6 +525,16 @@ if (tvControlsLabel) {
     if (tvStepTimeValue) tvStepTimeValue.textContent = timeText || "";
     return Boolean(tvStepMonthValue || tvStepDayValue || tvStepTimeValue);
   };
+  const getTvStepInlineText = () => {
+    const monthText = (tvStepMonthValue?.textContent || "").trim();
+    const dayText = (tvStepDayValue?.textContent || "").trim();
+    const timeText = (tvStepTimeValue?.textContent || "").trim();
+    const parts = [];
+    if (monthText) parts.push(monthText);
+    if (dayText) parts.push(dayText);
+    if (timeText) parts.push(timeText);
+    return parts.join(" ");
+  };
   const isChartHistoryUiHidden = () =>
     document.body && document.body.classList.contains("hide-chart-history");
   const chartArea = document.getElementById("history");
@@ -3746,13 +3756,18 @@ if (tvControlsLabel) {
     const length = Array.isArray(labels) ? labels.length : 0;
     const hasPinned = clampIndex(pinnedPointIndex, length) !== null;
     const hasHover = clampIndex(hoverPointIndex, length) !== null;
-      const updateStepValue = (labelValue, idxHint = null) => {
-        if (!chartStepValueEl) {
-          return;
-        }
-        const rawValue = labelValue == null ? "" : String(labelValue);
-        chartStepValueEl.textContent = rawValue || "Step Time";
-      };
+    const updateStepValue = (labelValue, idxHint = null) => {
+      if (!chartStepValueEl) {
+        return;
+      }
+      const inlineText = getTvStepInlineText();
+      if (inlineText) {
+        chartStepValueEl.textContent = inlineText;
+        return;
+      }
+      const rawValue = labelValue == null ? "" : String(labelValue);
+      chartStepValueEl.textContent = rawValue || "Step Time";
+    };
 
     if (hasPinned || hasHover) {
       const idx = getSelectedIndex();
@@ -4401,6 +4416,9 @@ if (tvControlsLabel) {
       const label = entry.label || entry.slug || "Unknown";
       const slug = entry.slug || "";
       const monthKey = getMonthKeyFromSlug(slug) || getMonthKeyFromLabel(label);
+      if (!monthKey) {
+        return;
+      }
       const monthLabel = getMonthLabel(monthKey);
       if (!monthGroups.has(monthKey)) {
         monthGroups.set(monthKey, []);
@@ -4437,7 +4455,10 @@ if (tvControlsLabel) {
 
     // Render month picker
     const monthListEl = chartHistoryMonthList;
-    const monthKeys = Array.from(monthGroups.keys()).sort().reverse();
+    const monthKeys = Array.from(monthGroups.keys())
+      .filter(Boolean)
+      .sort()
+      .reverse();
     const limitedMonthKeys = monthKeys.slice(0, 12);
     if (monthListEl) {
       monthListEl.innerHTML = "";
@@ -4461,14 +4482,7 @@ if (tvControlsLabel) {
     }
 
     // Render entries for the current month only.
-    if (!currentMonthKey && archiveDates.length) {
-      const firstEntry = archiveDates[0];
-      currentMonthKey =
-        getMonthKeyFromSlug(firstEntry.slug) ||
-        getMonthKeyFromLabel(firstEntry.label) ||
-        "";
-    }
-    if (currentMonthKey && !limitedMonthKeys.includes(currentMonthKey)) {
+    if (!currentMonthKey || !limitedMonthKeys.includes(currentMonthKey)) {
       currentMonthKey = limitedMonthKeys[0] || currentMonthKey;
     }
     chartHistoryList.innerHTML = "";
