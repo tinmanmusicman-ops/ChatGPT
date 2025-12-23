@@ -413,9 +413,29 @@
   "latestFan": "O",
   "latestCooling": 1,
   "latestCondenserState": "On",
-  "generatedTimestamp": "Friday Dec 19 2025 11:57:14 PM",
-  "generatedDateSlug": "2025-12-19",
+  "generatedTimestamp": "Tuesday Dec 23 2025 01:48:40 AM",
+  "generatedDateSlug": "2025-12-23",
   "archiveDates": [
+    {
+      "slug": "4",
+      "label": "4"
+    },
+    {
+      "slug": "2025-12-23",
+      "label": "Dec 23, 2025"
+    },
+    {
+      "slug": "2025-12-22",
+      "label": "Dec 22, 2025"
+    },
+    {
+      "slug": "2025-12-21",
+      "label": "Dec 21, 2025"
+    },
+    {
+      "slug": "2025-12-20",
+      "label": "Dec 20, 2025"
+    },
     {
       "slug": "2025-12-19",
       "label": "Dec 19, 2025"

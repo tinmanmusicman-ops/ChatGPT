@@ -413,9 +413,13 @@
   "latestFan": "O",
   "latestCooling": 1,
   "latestCondenserState": "On",
-  "generatedTimestamp": "Friday Dec 19 2025 11:57:14 PM",
-  "generatedDateSlug": "2025-12-19",
+  "generatedTimestamp": "Saturday Dec 20 2025 04:02:52 PM",
+  "generatedDateSlug": "2025-12-20",
   "archiveDates": [
+    {
+      "slug": "2025-12-20",
+      "label": "Dec 20, 2025"
+    },
     {
       "slug": "2025-12-19",
       "label": "Dec 19, 2025"
