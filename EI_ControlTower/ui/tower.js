@@ -29,7 +29,8 @@ const jobButtons = {
     "verify-company": "/tower/verify-company",
     "process-fax": "/tower/fax-queue",
     "facility-check": "/tower/facility-check",
-    "targeted-resume": "/tower/targeted-resume"
+    "targeted-resume": "/tower/targeted-resume",
+    "yahoo-forwarder": "/tower/yahoo-forwarder"
 };
 
 Object.entries(jobButtons).forEach(([id, endpoint]) => {

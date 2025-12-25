@@ -120,6 +120,19 @@ def targeted_resume():
     return jsonify({"status": "launched"})
 
 
+@app.route("/tower/yahoo-forwarder")
+def yahoo_forwarder():
+    job_pipeline.run_yahoo_forwarder()
+    return jsonify({"status": "launched"})
+
+
+@app.route("/tower/craigslist-forwarder")
+def craigslist_forwarder():
+    # Backward-compatible alias for the renamed YahooForwarder project.
+    job_pipeline.run_yahoo_forwarder()
+    return jsonify({"status": "launched"})
+
+
 @app.route("/tower/push-ss")
 def push_ss():
     job_pipeline.stub()

@@ -7,6 +7,7 @@ when possible; otherwise they are saved as strings.
 
 from pathlib import Path
 from typing import Iterable, List, Optional, Set, Tuple
+import copy
 import os
 
 base_dir = Path(__file__).resolve().parent
@@ -721,6 +722,7 @@ class ConfigEditor:
         self.path_var = tk.StringVar()
         self.key_var = tk.StringVar()
         self.val_var = tk.StringVar()
+        self.rule_var = tk.StringVar()
         self.status_var = tk.StringVar()
         self.type_var = tk.StringVar(value="auto")
         self.theme_var = tk.StringVar(value=self.current_theme)
@@ -731,6 +733,8 @@ class ConfigEditor:
         self._color_picker = None
         self.view_menu = None
         self.user_theme_data = {}
+        self._selected_rule_index: Optional[int] = None
+        self._rule_selector_indexes: list[int] = []
         self.dirty = False
         self._build_ui()
         default_config = initial_config or (self.base_dir / "config.json")
@@ -868,7 +872,20 @@ class ConfigEditor:
             ).grid(row=0, column=idx + 1, sticky="w", padx=(0, 8))
         ttk.Button(form, text="Add/Update", command=self.add_update_action).grid(row=0, column=4, padx=(4, 4))
         ttk.Button(form, text="Edit JSON", command=self.edit_json_action).grid(row=0, column=5, padx=(4, 4))
-        ttk.Button(form, text="Delete Selected", command=self.delete_action).grid(row=0, column=6)
+        ttk.Button(form, text="Clone Rule", command=self.clone_selected_action).grid(row=0, column=6, padx=(4, 4))
+        ttk.Button(form, text="Delete Selected", command=self.delete_action).grid(row=0, column=7)
+
+        rule_opts = ttk.Frame(form)
+        rule_opts.grid(row=2, column=0, columnspan=8, sticky="w", pady=(6, 0))
+        ttk.Label(rule_opts, text="Rule:").grid(row=0, column=0, sticky="w", padx=(0, 6))
+        self.rule_combo = ttk.Combobox(
+            rule_opts,
+            state="readonly",
+            textvariable=self.rule_var,
+            width=32,
+        )
+        self.rule_combo.grid(row=0, column=1, sticky="w")
+        self.rule_combo.bind("<<ComboboxSelected>>", self.on_rule_select)
 
         chatbot_row = ttk.Frame(top)
         chatbot_row.grid(row=4, column=0, sticky="ew", pady=(4, 0))
@@ -999,6 +1016,7 @@ class ConfigEditor:
             self.type_var.set("auto")
             self.on_type_change(key_hint=key)
         self.set_status(f"Editing {key}", kind="info")
+        self._refresh_rule_selector_for_provider(key)
 
     def add_update_action(self):
         key = self.key_var.get().strip()
@@ -1133,6 +1151,222 @@ class ConfigEditor:
         self.refresh_tree()
         self.set_status("Deleted selection", kind="info")
         self.set_dirty(True)
+
+    def clone_selected_action(self):
+        self.clone_selected_rule()
+
+    def on_rule_select(self, event=None):
+        selection = self.rule_combo.current()
+        if selection is None or selection < 0:
+            self._selected_rule_index = None
+            return
+        if selection >= len(self._rule_selector_indexes):
+            self._selected_rule_index = None
+            return
+        self._selected_rule_index = self._rule_selector_indexes[selection]
+
+    def _refresh_rule_selector_for_provider(self, provider_key: str) -> None:
+        self._rule_selector_indexes = []
+        self._selected_rule_index = None
+        if not hasattr(self, "rule_combo"):
+            return
+        self.rule_combo["values"] = []
+        self.rule_var.set("")
+
+        provider_key = str(provider_key or "").strip()
+        if not provider_key:
+            return
+        provider_val = self.data.get(provider_key)
+        if not isinstance(provider_val, dict):
+            return
+        forward_rules = provider_val.get("forward_rules")
+        if not isinstance(forward_rules, list) or not forward_rules:
+            return
+
+        labels: list[str] = []
+        for idx, rule in enumerate(forward_rules):
+            if isinstance(rule, dict):
+                name = str(rule.get("name") or f"Rule {idx + 1}").strip()
+            else:
+                name = f"Rule {idx + 1}"
+            labels.append(name)
+            self._rule_selector_indexes.append(idx)
+
+        self.rule_combo["values"] = labels
+        self.rule_combo.current(0)
+        self._selected_rule_index = 0
+
+    def _select_tree_key(self, key: str) -> None:
+        for tree_item in self.tree.get_children(""):
+            row_key, _ = self.tree.item(tree_item, "values")
+            if str(row_key) == key:
+                self.tree.selection_set(tree_item)
+                self.tree.see(tree_item)
+                break
+
+    def _unique_rule_name(self, forward_rules: list, base_name: str) -> str:
+        base = (base_name or "Rule").strip() or "Rule"
+        existing: Set[str] = set()
+        for rule in forward_rules:
+            if isinstance(rule, dict):
+                existing.add(str(rule.get("name") or "").strip())
+
+        candidate = f"{base} Copy"
+        if candidate not in existing:
+            return candidate
+        i = 2
+        while True:
+            candidate = f"{base} Copy {i}"
+            if candidate not in existing:
+                return candidate
+            i += 1
+
+    def _edit_rule_json_dialog(self, provider_key: str, rule_index: int) -> None:
+        provider_val = self.data.get(provider_key)
+        if not isinstance(provider_val, dict):
+            messagebox.showwarning("Edit Rule", "Provider config is not a JSON object.", parent=self.root)
+            return
+        forward_rules = provider_val.get("forward_rules")
+        if not isinstance(forward_rules, list) or not (0 <= rule_index < len(forward_rules)):
+            messagebox.showwarning("Edit Rule", "Selected rule could not be found.", parent=self.root)
+            return
+        rule = forward_rules[rule_index]
+        if not isinstance(rule, dict):
+            messagebox.showwarning("Edit Rule", "Selected rule is not a JSON object.", parent=self.root)
+            return
+
+        dlg = tk.Toplevel(self.root)
+        rule_name = str(rule.get("name") or f"Rule {rule_index + 1}").strip()
+        dlg.title(f"Edit Rule JSON: {provider_key} / {rule_name}")
+        dlg.geometry("560x420")
+        dlg.transient(self.root)
+        dlg.grab_set()
+
+        theme = self._get_theme()
+        txt = tk.Text(dlg, wrap="word", background=theme.get("entry_bg"), foreground=theme.get("entry_fg"))
+        txt.insert("1.0", json.dumps(rule, indent=2))
+        txt.pack(fill="both", expand=True, padx=10, pady=10)
+
+        btns = ttk.Frame(dlg)
+        btns.pack(fill="x", padx=10, pady=(0, 10))
+
+        def on_save():
+            raw = txt.get("1.0", "end").strip()
+            try:
+                parsed_val = json.loads(raw)
+            except Exception as exc:
+                messagebox.showerror("Invalid JSON", f"Could not parse JSON:\n{exc}", parent=dlg)
+                return
+            if not isinstance(parsed_val, dict):
+                messagebox.showerror("Invalid Rule", "Rule must be a JSON object (dict).", parent=dlg)
+                return
+            forward_rules[rule_index] = parsed_val
+            self.set_dirty(True)
+            self.refresh_tree()
+            self._select_tree_key(provider_key)
+            self._refresh_rule_selector_for_provider(provider_key)
+            if hasattr(self, "rule_combo") and isinstance(self.rule_combo["values"], (list, tuple)):
+                if len(self.rule_combo["values"]) > rule_index:
+                    self.rule_combo.current(rule_index)
+                    self._selected_rule_index = rule_index
+            self.set_status(f"Updated rule {provider_key} / {parsed_val.get('name', rule_name)}", kind="success")
+            dlg.destroy()
+
+        txt.bind("<Control-Return>", lambda e: on_save())
+        txt.bind("<Control-KP_Enter>", lambda e: on_save())
+
+        ttk.Button(btns, text="Save", command=on_save).pack(side="right", padx=(6, 0))
+        ttk.Button(btns, text="Cancel", command=dlg.destroy).pack(side="right")
+
+    def clone_selected_rule(self):
+        selection = self.tree.selection()
+        if len(selection) != 1:
+            messagebox.showwarning(
+                "Clone Rule",
+                "Please select exactly ONE provider in the list.",
+                parent=self.root,
+            )
+            return
+
+        item = selection[0]
+        provider_key, _ = self.tree.item(item, "values")
+        provider_key = str(provider_key or "").strip()
+        if not provider_key or provider_key not in self.data:
+            messagebox.showwarning(
+                "Clone Rule",
+                "Selected provider could not be found in the current config data.",
+                parent=self.root,
+            )
+            return
+
+        provider_val = self.data.get(provider_key)
+        if not isinstance(provider_val, dict):
+            messagebox.showwarning(
+                "Clone Rule",
+                "Selected provider value is not a JSON object; expected a provider configuration object.",
+                parent=self.root,
+            )
+            return
+
+        forward_rules = provider_val.get("forward_rules")
+        if not isinstance(forward_rules, list) or not forward_rules:
+            messagebox.showwarning(
+                "Clone Rule",
+                'No "forward_rules" list found for this provider (or it is empty).',
+                parent=self.root,
+            )
+            return
+
+        rule_index: Optional[int] = None
+        if self._selected_rule_index is not None and 0 <= self._selected_rule_index < len(forward_rules):
+            rule_index = self._selected_rule_index
+        elif len(forward_rules) == 1:
+            rule_index = 0
+
+        if rule_index is None:
+            messagebox.showwarning(
+                "Clone Rule",
+                "No rule context is selected. Pick a rule from the Rule dropdown first.",
+                parent=self.root,
+            )
+            return
+
+        source_rule = forward_rules[rule_index]
+        if not isinstance(source_rule, dict):
+            messagebox.showwarning(
+                "Clone Rule",
+                "Selected rule is not a JSON object; expected a rule dict.",
+                parent=self.root,
+            )
+            return
+
+        try:
+            cloned_rule = copy.deepcopy(source_rule)
+            base_name = str(source_rule.get("name") or "Rule").strip()
+            new_name = self._unique_rule_name(forward_rules, base_name)
+            cloned_rule["name"] = new_name
+            forward_rules.append(cloned_rule)
+            new_index = len(forward_rules) - 1
+            try:
+                self.refresh_tree()
+                self._select_tree_key(provider_key)
+                self._refresh_rule_selector_for_provider(provider_key)
+
+                if hasattr(self, "rule_combo") and isinstance(self.rule_combo["values"], (list, tuple)):
+                    if len(self.rule_combo["values"]) > new_index:
+                        self.rule_combo.current(new_index)
+                        self._selected_rule_index = new_index
+
+                self.set_dirty(True)
+                self.set_status(f"Cloned rule {base_name} -> {new_name}", kind="success")
+                self._edit_rule_json_dialog(provider_key, new_index)
+            except Exception:
+                if 0 <= new_index < len(forward_rules):
+                    forward_rules.pop(new_index)
+                raise
+        except Exception as exc:
+            messagebox.showerror("Clone Rule failed", str(exc), parent=self.root)
+            self.set_status("Clone Rule failed", kind="error")
 
     # History helpers -------------------------------------------------
     def _load_history(self):

@@ -1,25 +1,22 @@
 Timothy Inman
 Oceanside, CA | timothy.inman@email.com | (619) 894-6798 | https://www.linkedin.com/in/timothy-inman-7abb46372/
 
-December 14, 2025
+December 24, 2025
 
-Hello Team,
 
-Jerry.ai Hiring Team
-Palo Alto, CA
+Dear Hiring Team,
 
-Dear Jerry.ai Team,
+I am excited to apply for the Senior AI Engineer position at Underdog.io. Your mission to build agentic AI that truly helps Managed Service Providers (MSPs) resonates deeply with my own philosophy: AI should empower humans, not replace them. With over 15 years in automation and software engineering—including recent years designing and shipping production-grade AI/ML systems—I am eager to help Underdog.io deliver intelligent tools that give IT engineers their time back.
 
-I am excited to apply for the Software Engineer I (Entry) position at Jerry. As a human-centered automation engineer with a passion for building scalable, user-first software, I am eager to contribute to Jerry’s mission of radically simplifying car ownership through AI-powered innovation.
+My experience aligns closely with your needs:
+- **Agentic AI & LLM Integration:** I have built end-to-end automation frameworks and agentic systems that combine LLMs (OpenAI, Anthropic, Mistral) with custom orchestration layers. My recent work includes context-aware workflow engines, prompt engineering, and RAG pipelines optimized for speed, cost, and reliability.
+- **Human-in-the-Loop Design:** I specialize in embedding escalation, guardrails, and empathy into AI workflows—ensuring that automation acts responsibly and always knows when to defer to human expertise. My dashboards and automation tools are designed for accessibility and clarity, with human oversight at their core.
+- **Production-Grade Systems:** From Python-based automation launched via batch/cloud triggers to scalable dashboards and multi-site configuration tools, I have a proven track record of shipping robust, maintainable solutions. I am comfortable with FastAPI, Celery, PostgreSQL, Docker, and AWS, and have hands-on experience with LangChain, LlamaIndex, and Pinecone.
+- **MSP & Automation Empathy:** Having automated complex workflows for both technical and non-technical users, I intuitively understand the pain points of overworked IT engineers. My approach always prioritizes user impact and operational safety over model hype.
 
-Throughout my career, I have designed and delivered automation solutions that blend technical excellence with a focus on the end user. My experience includes building Python-driven automation frameworks, developing interactive dashboards with JavaScript and Chart.js, and optimizing data workflows for both internal teams and external clients. At Best Buy, I was recognized for my ability to quickly deliver high-impact solutions—completing a 10-month special project in just 2 months by automating complex Excel workflows. My work has always centered on making technology accessible, efficient, and empowering for people.
+I am particularly drawn to Underdog.io’s focus on balancing autonomy with safety, reducing hallucinations, and embedding empathy into AI interactions. I thrive in cross-functional teams and pride myself on translating technical complexity into user value—ensuring that every feature shipped solves a real problem for real users.
 
-I am particularly drawn to Jerry’s commitment to combining AI with human agents to create seamless, high-quality experiences for millions of users. Your rapid growth, modern tech stack, and culture of mentorship and merit-based advancement are exactly what I am seeking as I transition into a software engineering role. While I am familiar with Python, JavaScript, and automation tools, I am eager to deepen my skills in React, Node, AWS, and TypeScript, and to learn from the talented engineers at Jerry.
-
-I thrive in fast-paced, high-growth environments and am motivated by the opportunity to make an immediate impact. My curiosity, hustle, and pride in building robust, user-focused software align perfectly with Jerry’s values. I am excited to join a team that is not only transforming an industry but also values learning, collaboration, and real-world impact from day one.
-
-Thank you for considering my application. I look forward to the opportunity to discuss how my background and passion for technology can contribute to Jerry’s continued success.
+Thank you for considering my application. I would love to discuss how my background in agentic AI, automation, and human-centered design can help Underdog.io transform MSP workflows and deliver AI that actually works.
 
 Sincerely,
-
-Timothy Inman
+Timothy N Inman

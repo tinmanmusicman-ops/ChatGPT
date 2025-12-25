@@ -111,3 +111,17 @@ def run_targeted_resume():
     )
 
     return {"status": "launched", "script": "Resume.py"}
+
+
+def run_yahoo_forwarder():
+    run_and_stream(
+        "Yahoo Forwarder",
+        str(AI_BOTS_ROOT / "YahooForwarder" / "scripts" / "yahoo_forwarder.py")
+    )
+
+    return {"status": "launched", "script": "yahoo_forwarder.py"}
+
+
+def run_craigslist_forwarder():
+    # Backward-compatible alias for the renamed YahooForwarder project.
+    return run_yahoo_forwarder()

@@ -46,6 +46,7 @@
   let helpChatBusy = false;
   let helpChatMarkdownConfigured = false;
   const HELP_CHAT_NO_MATCH = "No documentation matches that term.";
+  const HELP_CHAT_MAX_MATCHES = 10
   let helpChatManualText = null;
   let helpChatManualSections = null;
   let helpChatManualLoadPromise = null;
@@ -408,7 +409,10 @@
       return null;
     }
 
-    const picked = matches.slice(0, 3).map((section) => section.body).filter(Boolean);
+    const picked = matches
+      .slice(0, HELP_CHAT_MAX_MATCHES)
+      .map((section) => section.body)
+      .filter(Boolean);
     return picked.length ? picked.join("\n\n---\n\n") : null;
   };
 
