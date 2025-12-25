@@ -2516,6 +2516,9 @@ def build_dashboard_html(
       body.charts-swapped #tv-hands-logo {{
         display: block;
       }}
+      body.tv-mode #tv-hands-logo {{
+        display: block;
+      }}
       @media (max-width: 680px) {{
         #tv-hands-logo {{
           display: none !important;
