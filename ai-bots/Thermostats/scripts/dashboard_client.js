@@ -555,9 +555,9 @@ if (tvControlsLabel) {
     document.body && document.body.classList.contains("hide-chart-history");
   const chartArea = document.getElementById("history");
   const autoplayToggle = document.getElementById("autoplay-toggle");
-  const AUTOPLAY_IDLE_MS = 60_000;
-  const AUTOPLAY_TARGET_MS = 30_000; // target duration for a full autoplay cycle
-  const AUTOPLAY_MIN_STEP_MS = 400; // fastest we'll cycle points
+  const AUTOPLAY_IDLE_MS = 10_000;
+  const AUTOPLAY_TARGET_MS = 10_000; // target duration for a full autoplay cycle
+  const AUTOPLAY_MIN_STEP_MS = 100; // fastest we'll cycle points
   const AUTOPLAY_SEQUENCE = [
     { modes: ["setpoint"] },
     { modes: ["actual"] },
@@ -615,6 +615,16 @@ if (tvControlsLabel) {
   const ctx = canvas ? canvas.getContext("2d") : null;
   const toggleHistoryBtn = document.getElementById("toggle-history");
   const handsLogoTop = document.querySelector(".hands-logo-top");
+  const setHandsFrameActive = (active) => {
+    const on = Boolean(active);
+    if (handsLogoTop) {
+      handsLogoTop.classList.toggle("hidden", !on);
+    }
+    if (document.body) {
+      document.body.classList.toggle("hands-frame-active", on);
+    }
+  };
+  setHandsFrameActive(false);
   const timestampDisplay = document.getElementById("dashboard-timestamp");
   const usageSlotCanvas = document.getElementById("usage-slot-chart");
   const usageSlotCtx = usageSlotCanvas ? usageSlotCanvas.getContext("2d") : null;
@@ -3430,7 +3440,7 @@ if (tvControlsLabel) {
     saveUiState();
   };
 
-  const showChart = () => {
+  const showChart = (schedule = true) => {
     if (!chart) {
       createChart();
     }
@@ -3444,13 +3454,12 @@ if (tvControlsLabel) {
       toggleHistoryBtn.textContent = "Hide History Chart";
       toggleHistoryBtn.classList.add("history-visible");
     }
-    if (handsLogoTop) {
-      handsLogoTop.classList.remove("hidden");
+    if (schedule) {
+      scheduleAutoplay();
     }
-    scheduleAutoplay();
   };
 
-  const hideChart = () => {
+  const hideChart = (stopPlayback = true) => {
     if (canvas) {
       canvas.style.display = "none";
     }
@@ -3458,13 +3467,13 @@ if (tvControlsLabel) {
       toggleHistoryBtn.textContent = "Show History Chart";
       toggleHistoryBtn.classList.remove("history-visible");
     }
-    if (handsLogoTop) {
-      handsLogoTop.classList.add("hidden");
+    if (stopPlayback) {
+      stopAutoplay();
     }
-    stopAutoplay();
   };
 
   const stopAutoplay = (preserveModes = false) => {
+    setHandsFrameActive(false);
     if (autoplayTimer) {
       clearInterval(autoplayTimer);
       autoplayTimer = null;
@@ -3527,19 +3536,19 @@ if (tvControlsLabel) {
       if (!segment) {
         return;
       }
+      const isHandsFrame = Boolean(segment.pauseMs);
+      setHandsFrameActive(isHandsFrame);
       if (segment.pauseMs) {
         if (autoplayTimer) {
           clearInterval(autoplayTimer);
           autoplayTimer = null;
         }
-        hideChart();
-        if (handsLogoTop) {
-          handsLogoTop.classList.remove("hidden");
-        }
+        hideChart(false);
         setTimeout(() => {
           // Move to next segment after pause
+          setHandsFrameActive(false);
           autoplaySegmentIndex = (autoplaySegmentIndex + 1) % AUTOPLAY_SEQUENCE.length;
-          showChart();
+          showChart(false);
           setModeSet(AUTOPLAY_SEQUENCE[autoplaySegmentIndex % AUTOPLAY_SEQUENCE.length].modes || [], true);
           autoplayIndex = 0;
           startAutoplay(true);

@@ -2513,10 +2513,7 @@ def build_dashboard_html(
         pointer-events: none;
         filter: drop-shadow(0 10px 16px rgba(0,0,0,0.55));
       }}
-      body.charts-swapped #tv-hands-logo {{
-        display: block;
-      }}
-      body.tv-mode #tv-hands-logo {{
+      body.hands-frame-active #tv-hands-logo {{
         display: block;
       }}
       @media (max-width: 680px) {{
@@ -3582,7 +3579,7 @@ def build_dashboard_html(
         {cards}
       </div>
       <div class="hands-logo-slot" aria-hidden="true">
-        <div class="hands-logo-top"></div>
+        <div class="hands-logo-top hidden"></div>
       </div>
         
       <div id="history" class="history-panel">
