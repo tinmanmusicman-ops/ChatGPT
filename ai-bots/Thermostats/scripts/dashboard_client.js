@@ -3619,7 +3619,9 @@ if (tvControlsLabel) {
   };
 
   const markInteraction = () => {
-    stopAutoplay(true);
+    const shouldExitAutoplay =
+      Boolean(autoplayTimer) || Boolean(savedModesBeforeAutoplay);
+    stopAutoplay(!shouldExitAutoplay);
     scheduleAutoplay();
   };
 
