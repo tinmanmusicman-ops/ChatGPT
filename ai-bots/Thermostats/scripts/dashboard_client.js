@@ -3588,6 +3588,17 @@ if (tvControlsLabel) {
       clearTimeout(autoplayIdleTimer);
     }
     autoplayIdleTimer = setTimeout(() => {
+      const needsBigTv =
+        document.body && document.body.classList.contains("hide-big-chart");
+      if (needsBigTv) {
+        document.body.classList.remove("hide-big-chart");
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            startAutoplay(true);
+          });
+        });
+        return;
+      }
       startAutoplay(true);
     }, AUTOPLAY_IDLE_MS);
   };
