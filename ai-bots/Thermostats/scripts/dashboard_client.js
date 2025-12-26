@@ -3502,11 +3502,13 @@ if (tvControlsLabel) {
       autoplaySegmentIndex = 0;
     }
     if (wasAutoplaySessionActive) {
-      if (tvModeActive) {
-        exitTvMode();
-      }
-      if (document.body) {
-        document.body.classList.add("hide-big-chart");
+      if (!preserveModes) {
+        if (tvModeActive) {
+          exitTvMode();
+        }
+        if (document.body) {
+          document.body.classList.add("hide-big-chart");
+        }
       }
     }
   };
