@@ -555,8 +555,8 @@ if (tvControlsLabel) {
     document.body && document.body.classList.contains("hide-chart-history");
   const chartArea = document.getElementById("history");
   const autoplayToggle = document.getElementById("autoplay-toggle");
-  const AUTOPLAY_IDLE_MS = 10_000;
-  const AUTOPLAY_TARGET_MS = 10_000; // target duration for a full autoplay cycle
+  const AUTOPLAY_IDLE_MS = 3_000;
+  const AUTOPLAY_TARGET_MS = 3_000; // target duration for a full autoplay cycle
   const AUTOPLAY_MIN_STEP_MS = 100; // fastest we'll cycle points
   const AUTOPLAY_SEQUENCE = [
     { modes: ["setpoint"] },
@@ -564,7 +564,7 @@ if (tvControlsLabel) {
     { modes: ["outside"] },
     { modes: ["cooling"] },
     { modes: ["fan"] },
-    { pauseMs: 10_000 }, // show hands/logo for 10s with chart hidden
+    { pauseMs: 1_000 }, // show hands/logo for 10s with chart hidden
     { modes: ["actual", "outside"] },           // options 2 + 3
     { modes: ["actual", "outside", "cooling"] }, // then add option 4
   ];
