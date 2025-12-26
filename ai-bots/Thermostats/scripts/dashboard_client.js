@@ -561,14 +561,20 @@ if (tvControlsLabel) {
   const AUTOPLAY_SEQUENCE = [
     { modes: ["setpoint"] },
     { modes: ["actual"] },
-    { modes: ["outside"] },
     { modes: ["cooling"] },
     { modes: ["fan"] },
-    { pauseMs: 5_000 }, // show hands/logo for 10s with chart hidden
-    { modes: ["actual", "outside"] },           // options 2 + 3
-    { modes: ["actual", "outside", "cooling"] }, // then add option 4
-  ];
-  let autoplayEnabled = true;
+    { pauseMs: 3_000 }, // show hands/logo for 10s with chart hidden
+	{ modes: ["setpoint", "outside"]},           // options 2 + 3
+    { modes: ["actual", "outside"]  },
+    { modes: ["cooling", "outside"] },
+    { modes: ["fan" , "outside"]   },
+    { pauseMs: 3_000 }, // show hands/logo for 10s with chart hidden
+	{ modes: ["setpoint", "actual", "outside"]},           // options 2 
+	{ modes: ["setpoint", "actual", "cooling", "outside"]},           	
+	{ modes: ["setpoint", "actual", "cooling", "fan","outside"]},     
+	{ pauseMs: 5_000 }, // show hands/logo for 10s with chart hidden
+
+  ];  let autoplayEnabled = true;
   let autoplayTimer = null;
   let autoplayIdleTimer = null;
   let autoplayIndex = 0;
