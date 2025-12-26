@@ -564,7 +564,7 @@ if (tvControlsLabel) {
     { modes: ["outside"] },
     { modes: ["cooling"] },
     { modes: ["fan"] },
-    { pauseMs: 1_000 }, // show hands/logo for 10s with chart hidden
+    { pauseMs: 5_000 }, // show hands/logo for 10s with chart hidden
     { modes: ["actual", "outside"] },           // options 2 + 3
     { modes: ["actual", "outside", "cooling"] }, // then add option 4
   ];
