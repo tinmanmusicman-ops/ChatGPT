@@ -3473,6 +3473,7 @@ if (tvControlsLabel) {
   };
 
   const stopAutoplay = (preserveModes = false) => {
+    const wasAutoplaySessionActive = Boolean(savedModesBeforeAutoplay);
     setHandsFrameActive(false);
     if (autoplayTimer) {
       clearInterval(autoplayTimer);
@@ -3494,11 +3495,13 @@ if (tvControlsLabel) {
       savedModesBeforeAutoplay = null;
       autoplaySegmentIndex = 0;
     }
-    if (tvModeActive) {
-      exitTvMode();
-    }
-    if (document.body) {
-      document.body.classList.add("hide-big-chart");
+    if (wasAutoplaySessionActive) {
+      if (tvModeActive) {
+        exitTvMode();
+      }
+      if (document.body) {
+        document.body.classList.add("hide-big-chart");
+      }
     }
   };
 
