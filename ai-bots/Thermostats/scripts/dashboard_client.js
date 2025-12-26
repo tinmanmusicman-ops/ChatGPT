@@ -555,7 +555,7 @@ if (tvControlsLabel) {
     document.body && document.body.classList.contains("hide-chart-history");
   const chartArea = document.getElementById("history");
   const autoplayToggle = document.getElementById("autoplay-toggle");
-  const AUTOPLAY_IDLE_MS = 3_000;
+  const AUTOPLAY_IDLE_MS = 10_000;
   const AUTOPLAY_TARGET_MS = 3_000; // target duration for a full autoplay cycle
   const AUTOPLAY_MIN_STEP_MS = 100; // fastest we'll cycle points
   const AUTOPLAY_SEQUENCE = [
@@ -3494,6 +3494,12 @@ if (tvControlsLabel) {
       savedModesBeforeAutoplay = null;
       autoplaySegmentIndex = 0;
     }
+    if (tvModeActive) {
+      exitTvMode();
+    }
+    if (document.body) {
+      document.body.classList.add("hide-big-chart");
+    }
   };
 
   const highlightPoint = (index) => {
@@ -3588,10 +3594,8 @@ if (tvControlsLabel) {
       clearTimeout(autoplayIdleTimer);
     }
     autoplayIdleTimer = setTimeout(() => {
-      const needsBigTv =
-        document.body && document.body.classList.contains("hide-big-chart");
-      if (needsBigTv) {
-        document.body.classList.remove("hide-big-chart");
+      if (!tvModeActive) {
+        enterTvMode();
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
             startAutoplay(true);

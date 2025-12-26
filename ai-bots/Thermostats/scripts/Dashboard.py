@@ -2500,18 +2500,15 @@ def build_dashboard_html(
       #tv-hands-logo {{
         display: none;
         position: absolute;
-        top: 22px;
-        right: 38px;
-        width: 250px;
-        height: 64px;
+        inset: 0;
         background-image: url("../../../Images/Hands.png");
         background-repeat: no-repeat;
-        background-position: right center;
+        background-position: center;
         background-size: contain;
         opacity: 0.9;
-        z-index: 4;
+        z-index: 6;
         pointer-events: none;
-        filter: drop-shadow(0 10px 16px rgba(0,0,0,0.55));
+        filter: drop-shadow(0 18px 26px rgba(0,0,0,0.65));
       }}
       body.hands-frame-active #tv-hands-logo {{
         display: block;
@@ -3549,7 +3546,7 @@ def build_dashboard_html(
       }}
     </style>
   </head>
-  <body class="hide-big-chart hide-chart-history">
+  <body class="hide-chart-history">
     <div class="container">
       <button id="help-chat-toggle" type="button" aria-haspopup="dialog" aria-controls="help-chat-panel">Help Chat</button>
       <div id="help-chat-panel" class="hidden" role="dialog" aria-label="Dashboard Help Chat" data-manual-url="{HELP_CHAT_MANUAL_URL}">
