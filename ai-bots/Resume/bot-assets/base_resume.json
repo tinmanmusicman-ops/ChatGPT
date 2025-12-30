@@ -1,7 +1,7 @@
 {
   "name": "Timothy N Inman",
   "title": "Automation Engineer",
-  "summary": "Human-centered Automation Engineer who understands that people aren\u2019t being replaced \u2014 their roles are evolving. I design AI/EI workflows where automated systems where automated systems handle execution while people guide, oversee, and validate the process. My work focuses on building scalable automation, optimizing data workflows, and creating accessible, human-guided systems that improve efficiency without removing the human element.",
+  "summary": "Operations and customer-systems professional specializing in stabilizing workflows, diagnosing system issues, and improving reliability in complex, real-world environments. Known for calm judgment, cross-team coordination, and translating system behavior into practical outcomes for customers and leadership. Daily work includes supervised use of OpenAI Codex for human-guided automation, analysis, and workflow acceleration.",
   "contact": {
     "name": "Timothy N Inman",
     "location": "Oceanside, CA",
@@ -10,31 +10,31 @@
     "linkedin": "https://www.linkedin.com/in/timothy-inman-7abb46372/"
   },
   "skills": [
-    "Automation",
-    "GENESYS Cloud",
-    "MS Dynamics/CRM",
-    "Scripting",
-    "C#.NET",
-    "VBA",
+    "Operations support",
+    "workflow stabilization",
+    "system troubleshooting",
+    "customer issue resolution",
+    "cross-team coordination",
+    "root-cause analysis",
+    "documentation and process improvement",
     "Python",
-    "HTML/CSS",
-    "Team Foundation Server",
-    "JavaScript",
-    "Cross Functional Collaboration",
-    "Business Planning",
-    "Zapier",
-    "Shopify",
-    "Make"
+    "Excel (advanced)",
+    "PowerShell",
+    "SQL (basic)",
+    "REST APIs",
+    "JSON",
+    "Git/GitHub",
+    "OpenAI Codex, Genesys, Dynamics CRM, ServiceNow, dashboards and reporting tools"
   ],
   "achievements_2024_2025": [
-    "Designed and built automated HVAC/Thermostat dashboards with runtime analysis, condenser cost calculation, weather API integration, and animated Chart.js visuals.",
-    "Built automation frameworks for recruiters and employers including resume analyzers, job-lead processors, scoring tools, and Excel workflow engines.",
-    "Implemented end-to-end Python automation systems launched through batch files, enabling zero-cost workflow orchestration.",
-    "Developed self-updating dashboards, Google Drive push utilities, JSON-driven configuration engines, and multi-site thermostat configuration tools.",
-    "Created demonstration modes with automated cycling, dataset animations, UI transitions, and accessibility-focused layouts.",
-    "Standardized ID, naming, and schema structures across all automation projects to ensure clarity and maintainability.",
-    "Developed HTML/JavaScript dashboards with interactive legends, tooltips, high-contrast modes, and responsive UI components.",
-    "Demonstrated Human-EI engineering workflows where the human directs architecture and EI executes development tasks."
+    "Delivered automated HVAC/Thermostat dashboards to improve visibility, adding runtime analysis, condenser cost calculation, weather API integration, and animated Chart.js visuals.",
+    "Streamlined recruiter and employer workflows with automation frameworks, including resume analyzers, job-lead processors, scoring tools, and Excel workflow engines.",
+    "Enabled zero-cost workflow orchestration with end-to-end automation launched through batch files, using Python where appropriate.",
+    "Reduced manual upkeep with self-updating dashboards, Drive push utilities, JSON-driven configuration engines, and multi-site thermostat configuration tools.",
+    "Improved demos and stakeholder review with automated cycling, dataset animations, UI transitions, and accessibility-focused layouts.",
+    "Improved clarity and maintainability by standardizing IDs, naming, and schema structures across automation projects.",
+    "Delivered accessible, responsive dashboards with interactive legends, tooltips, high-contrast modes, and responsive UI components, using HTML/JavaScript where appropriate.",
+    "Demonstrated human-guided EI workflows where the human directs architecture and EI executes development tasks."
   ],
   "experience": [
     {
@@ -44,11 +44,11 @@
       "end": "September 2025",
       "title": "Customer Care Senior Advisor",
       "highlights": [
-        "Managed incoming and outgoing calls in all financial and technical queues, achieving consistent 100 percent CSAT through empathy and meaningful connection.",
-        "Ranked #1 in recent call center performance metrics and consistently top 10 each month.",
-        "Collaborated with leadership on process improvements to increase productivity and accuracy.",
-        "Delivered a 10-month special project in 2 months by developing an automated Excel solution.",
-        "Completed training in November 2019; promoted to Senior Advisor in February 2020."
+        "Maintained consistent 100% CSAT across financial and technical queues by handling inbound and outbound calls with empathy and strong issue ownership.",
+        "Led performance metrics as the #1 advisor while remaining consistently in the top 10 monthly.",
+        "Improved productivity and accuracy by partnering with leadership on process improvements.",
+        "Completed a 10-month special project in 2 months by redesigning the workflow and automating in Excel.",
+        "Advanced quickly from training (Nov 2019) to Senior Advisor promotion (Feb 2020)."
       ]
     },
     {
@@ -58,7 +58,7 @@
       "end": "September 2019",
       "title": "Electronics Sales Associate",
       "highlights": [
-        "Managed the Photo Center and drove technology improvements that increased customer satisfaction by 50 percent."
+        "Increased customer satisfaction by 50% by managing the Photo Center and driving targeted technology improvements."
       ]
     },
     {
@@ -68,7 +68,7 @@
       "end": "February 2018",
       "title": "Owner",
       "highlights": [
-        "Developed innovative workflow and home automation solutions."
+        "Delivered workflow and home-automation solutions tailored to client needs."
       ]
     },
     {
@@ -78,10 +78,10 @@
       "end": "March 2017",
       "title": "Software Developer",
       "highlights": [
-        "Supported Tyler employees during implementation cycles.",
-        "Developed productivity solutions for municipalities across the U.S.",
-        "Architected a custom solution eliminating dependency on third-party software.",
-        "Researched and implemented replacement forms engine for Tyler Forms."
+        "Kept implementation cycles moving by supporting Tyler employees through deployments and issue resolution.",
+        "Improved productivity for municipalities nationwide by delivering practical support and solutions.",
+        "Eliminated dependency on third-party software by architecting a custom replacement solution.",
+        "Improved forms reliability by researching and implementing a replacement forms engine for Tyler Forms."
       ]
     },
     {
@@ -91,9 +91,9 @@
       "end": "August 2004",
       "title": "Laser Room Department Manager",
       "highlights": [
-        "Managed print production using high-speed OCE laser printers.",
-        "Automated manual mail presorting processes, cutting processing time in half.",
-        "Automated daily print workflows, reducing labor burden and improving throughput."
+        "Kept print production on schedule by managing high-speed OCE laser printer operations.",
+        "Cut mail presorting time in half by automating previously manual processes.",
+        "Improved throughput and reduced labor burden by automating daily print workflows."
       ]
     }
   ],
@@ -106,16 +106,16 @@
     {
       "program": "Generative AI Mastermind",
       "provider": "Outskill",
-      "date": "October 18\u201319, 2025"
+      "date": "October 18–19, 2025"
     }
   ],
   "certifications": [
-    "The Fundamentals of ChatGPT \u2014 Alison \u2014 10/24/2025",
-    "Introduction to AI in Business \u2014 Alison \u2014 10/25/2025",
-    "AI: Preparing for the Future of Work \u2014 Alison \u2014 10/25/2025",
-    "AI for Marketing \u2014 Alison \u2014 10/26/2025",
-    "Shopify for Beginners \u2014 Alison \u2014 10/27/2025",
-    "WordPress \u2014 Alison \u2014 10/28/2025",
-    "Python \u2014 Alison \u2014 10/29/2025"
+    "The Fundamentals of ChatGPT — Alison — 10/24/2025",
+    "Introduction to AI in Business — Alison — 10/25/2025",
+    "AI: Preparing for the Future of Work — Alison — 10/25/2025",
+    "AI for Marketing — Alison — 10/26/2025",
+    "Shopify for Beginners — Alison — 10/27/2025",
+    "WordPress — Alison — 10/28/2025",
+    "Python — Alison — 10/29/2025"
   ]
 }

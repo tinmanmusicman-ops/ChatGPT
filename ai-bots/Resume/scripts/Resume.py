@@ -846,7 +846,7 @@ def normalize_dashes(text: str) -> str:
 
 HEADING_TITLES = {
     "SUMMARY": ["SUMMARY"],
-    "Key Skills": ["Key Skills"],
+    "Core Skills": ["Core Skills", "Key Skills"],
     "Recent Achievements": ["Recent Achievements"],
     "Professional Experience": ["Professional Experience"],
     "EDUCATION": ["EDUCATION"],
@@ -857,7 +857,7 @@ HEADING_TITLES = {
 
 ORDERED_SECTIONS = [
     "SUMMARY",
-    "Key Skills",
+    "Core Skills",
     "Recent Achievements",
     "Professional Experience",
     "EDUCATION",
@@ -920,7 +920,7 @@ def _flush_bullets(bullets: list[str], story: list, body_style: ParagraphStyle) 
             leftIndent=0.25 * inch,
             bulletFontName="Helvetica",
             bulletFontSize=11,
-            bulletColor=colors.black,
+            bulletColor=body_style.textColor,
         )
     )
 
@@ -938,6 +938,26 @@ def build_summary_lines(base_resume: Dict[str, Any]) -> list[str]:
 
 def build_skills_lines(base_resume: Dict[str, Any]) -> list[str]:
     return [f"- {skill}" for skill in base_resume.get("skills", [])]
+
+
+def build_compact_skills_lines(base_resume: Dict[str, Any]) -> list[str]:
+    skills = base_resume.get("skills")
+    if not isinstance(skills, list) or not skills:
+        return []
+
+    core_skills = [str(item).strip() for item in skills[:7] if str(item).strip()]
+    tools_and_systems = [str(item).strip() for item in skills[7:] if str(item).strip()]
+
+    lines: list[str] = []
+    core_line = ", ".join(core_skills)
+    if core_line:
+        lines.append(core_line)
+
+    tools_line = ", ".join(tools_and_systems)
+    if tools_line:
+        lines.append(f"Systems & Tools: {tools_line}")
+
+    return lines
 
 
 def build_achievements_lines(base_resume: Dict[str, Any]) -> list[str]:
@@ -1078,10 +1098,10 @@ def save_pdf_resume(text: str, output_path: Path) -> None:
     doc = SimpleDocTemplate(
         str(output_path),
         pagesize=letter,
-        rightMargin=inch,
-        leftMargin=inch,
-        topMargin=inch,
-        bottomMargin=inch,
+        rightMargin=0.25 * inch,
+        leftMargin=0.25 * inch,
+        topMargin=0.75 * inch,
+        bottomMargin=0.75 * inch,
     )
 
     story: list = [Paragraph(name, name_style)]
@@ -1095,8 +1115,8 @@ def save_pdf_resume(text: str, output_path: Path) -> None:
     def fallback_lines(heading: str) -> list[str]:
         if heading == "SUMMARY":
             return build_summary_lines(base_resume)
-        if heading == "Key Skills":
-            return build_skills_lines(base_resume)
+        if heading == "Core Skills":
+            return build_compact_skills_lines(base_resume)
         if heading == "Recent Achievements":
             return build_achievements_lines(base_resume)
         if heading == "Professional Experience":
@@ -1116,6 +1136,17 @@ def save_pdf_resume(text: str, output_path: Path) -> None:
         if not section_lines:
             return
         story.append(Paragraph(section_heading, heading_style))
+        if section_heading == "Core Skills":
+            skills_style = ParagraphStyle(
+                "SkillsText",
+                parent=body_style,
+                fontSize=7,
+                leading=8.5,
+                spaceAfter=2,
+            )
+            for line in section_lines:
+                story.append(Paragraph(line, skills_style))
+            return
         bullets: list[str] = []
         for line in section_lines:
             if re.match(r"^[-•]\s+", line):

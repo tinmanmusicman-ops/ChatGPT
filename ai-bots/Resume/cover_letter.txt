@@ -1,22 +1,22 @@
-Timothy Inman
+Hiring Manager
 Oceanside, CA | timothy.inman@email.com | (619) 894-6798 | https://www.linkedin.com/in/timothy-inman-7abb46372/
 
-December 24, 2025
+Core Platform Team – Applied Intelligence
 
+December 30, 2025
 
-Dear Hiring Team,
+Dear Hiring Manager,
 
-I am excited to apply for the Senior AI Engineer position at Underdog.io. Your mission to build agentic AI that truly helps Managed Service Providers (MSPs) resonates deeply with my own philosophy: AI should empower humans, not replace them. With over 15 years in automation and software engineering—including recent years designing and shipping production-grade AI/ML systems—I am eager to help Underdog.io deliver intelligent tools that give IT engineers their time back.
+I am excited to apply for the Systems Support Engineer I position with your Applied Intelligence group. With a strong background in systems troubleshooting, automation, and operations support, I am confident in my ability to monitor and optimize ETL pipelines and graph database infrastructures while delivering exceptional reliability and customer experience.
 
-My experience aligns closely with your needs:
-- **Agentic AI & LLM Integration:** I have built end-to-end automation frameworks and agentic systems that combine LLMs (OpenAI, Anthropic, Mistral) with custom orchestration layers. My recent work includes context-aware workflow engines, prompt engineering, and RAG pipelines optimized for speed, cost, and reliability.
-- **Human-in-the-Loop Design:** I specialize in embedding escalation, guardrails, and empathy into AI workflows—ensuring that automation acts responsibly and always knows when to defer to human expertise. My dashboards and automation tools are designed for accessibility and clarity, with human oversight at their core.
-- **Production-Grade Systems:** From Python-based automation launched via batch/cloud triggers to scalable dashboards and multi-site configuration tools, I have a proven track record of shipping robust, maintainable solutions. I am comfortable with FastAPI, Celery, PostgreSQL, Docker, and AWS, and have hands-on experience with LangChain, LlamaIndex, and Pinecone.
-- **MSP & Automation Empathy:** Having automated complex workflows for both technical and non-technical users, I intuitively understand the pain points of overworked IT engineers. My approach always prioritizes user impact and operational safety over model hype.
+Throughout my career, I have specialized in stabilizing complex workflows and diagnosing system issues in high-availability environments. At Best Buy, I provided on-call support for technical systems, consistently achieving 100% customer satisfaction and leading root-cause analysis for critical incidents. My experience at Tyler Technologies further honed my troubleshooting skills, where I supported enterprise deployments, automated manual processes, and ensured system uptime for municipal clients nationwide.
 
-I am particularly drawn to Underdog.io’s focus on balancing autonomy with safety, reducing hallucinations, and embedding empathy into AI interactions. I thrive in cross-functional teams and pride myself on translating technical complexity into user value—ensuring that every feature shipped solves a real problem for real users.
+I am proficient in Linux/UNIX administration and have extensive hands-on experience with Python scripting to automate monitoring, reporting, and remediation tasks. My recent projects include developing automated dashboards, integrating REST APIs, and building self-updating configuration engines—all with a focus on long-term simplification and reliability. I am also familiar with datacenter operations, standard internet protocols, and server configuration security best practices.
 
-Thank you for considering my application. I would love to discuss how my background in agentic AI, automation, and human-centered design can help Underdog.io transform MSP workflows and deliver AI that actually works.
+I am particularly drawn to your team’s mission of scaling operations through automation and robust support. My calm judgment, cross-team coordination, and commitment to detailed documentation align well with your needs for incident tracking and continuous improvement.
+
+Thank you for considering my application. I look forward to the opportunity to discuss how my skills and experience can contribute to the ongoing success and reliability of your Core Platform team.
 
 Sincerely,
+
 Timothy N Inman
