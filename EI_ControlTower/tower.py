@@ -2,6 +2,7 @@ import subprocess
 import sys
 import threading
 import time
+import os
 from datetime import datetime, timedelta
 from flask import Flask, send_from_directory, jsonify
 from pathlib import Path
@@ -21,7 +22,9 @@ app = Flask(__name__)
 BASE_DIR = Path(__file__).resolve().parent
 UI_DIR = BASE_DIR / "ui"
 IMAGES_DIR = BASE_DIR.parent / "Images"
-BASE_OUTPUT_DIR = BASE_DIR.parent / "ai-bots" / "Resume"
+DEFAULT_RESUME_OUTPUT_DIR = Path(r"C:\!!!!!!!!!!!!!!!!!!!!!!!!!Stuff")
+BASE_OUTPUT_DIR = Path(os.environ.get("HSST_RESUME_OUTPUT_DIR", str(DEFAULT_RESUME_OUTPUT_DIR)))
+BASE_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 AI_BOTS_ROOT = BASE_DIR.parent / "ai-bots"
 DASHBOARD_SCRIPT_PATH = AI_BOTS_ROOT / "Thermostats" / "scripts" / "Dashboard.py"
 
