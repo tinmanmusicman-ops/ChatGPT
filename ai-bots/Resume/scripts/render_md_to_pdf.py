@@ -31,7 +31,7 @@ _REPO_ROOT = _find_repo_root(_SCRIPT_DIR)
 
 DEFAULT_INPUT_MD = _RESUME_DIR / "bot-assets" / "resume_target.md"
 DEFAULT_SOURCE_MD = _RESUME_DIR / "bot-assets" / "resume.md"
-DEFAULT_OUTPUT_PDF = _REPO_ROOT / "resume.pdf"
+DEFAULT_OUTPUT_PDF = _RESUME_DIR / "resume.pdf"
 
 
 def _register_mono_font() -> str:

@@ -34,8 +34,10 @@ _REPO_ROOT = _find_repo_root(_SCRIPT_DIR)
 
 DEFAULT_SOURCE_MD = _RESUME_DIR / "bot-assets" / "resume.md"
 DEFAULT_TARGET_MD = _RESUME_DIR / "bot-assets" / "resume_target.md"
-DEFAULT_OUTPUT_PDF = _REPO_ROOT / "resume.pdf"
+DEFAULT_OUTPUT_PDF = _RESUME_DIR / "resume.pdf"
 DEFAULT_RENDERER = _SCRIPT_DIR / "render_md_to_pdf.py"
+DEFAULT_COVER_LETTER_MD = _RESUME_DIR / "bot-assets" / "cover_letter_target.md"
+DEFAULT_COVER_LETTER_PDF = _RESUME_DIR / "cover_letter.pdf"
 
 
 @dataclass(frozen=True)
@@ -189,12 +191,17 @@ def _build_messages(job_description: str, original_md: str, plan: TailorPlan) ->
         "Editable lines (line_number -> current_line_text):\n"
         f"{json.dumps(editable_lines, ensure_ascii=False, indent=2)}\n\n"
         "Output format (JSON only):\n"
-        "{\"edits\": {\"<line_number>\": \"<replacement line>\", ...}}\n\n"
+        "{\"edits\": {\"<line_number>\": \"<replacement line>\", ...}, \"cover_letter_md\": \"...\"}\n\n"
         "Rules for edits:\n"
         "- Only include keys for lines you want to change.\n"
         "- Keys must be line numbers from the editable set.\n"
         "- Values must be a single line of text (no newline characters).\n"
         "- Do not include markdown fences.\n"
+        "\nCover letter rules:\n"
+        "- Return `cover_letter_md` as Markdown text (may include newlines).\n"
+        "- Do NOT invent a company name; address as \"Hiring Manager\".\n"
+        "- Keep it concise (3-5 short paragraphs).\n"
+        "- Do not include markdown code fences.\n"
     )
     return [{"role": "system", "content": system}, {"role": "user", "content": user}]
 
@@ -219,7 +226,7 @@ def _extract_first_json_object(text: str) -> dict[str, Any]:
     return parsed
 
 
-def _tailor_markdown(md_text: str, job_description: str, *, model: str, temperature: float) -> str:
+def _tailor_markdown(md_text: str, job_description: str, *, model: str, temperature: float) -> tuple[str, str]:
     if OpenAI is None:
         raise RuntimeError("openai package is required for tailoring but is not installed.")
     api_key = os.environ.get("OPENAI_API_KEY", "").strip()
@@ -231,12 +238,21 @@ def _tailor_markdown(md_text: str, job_description: str, *, model: str, temperat
     plan = _compute_plan(lines)
     messages = _build_messages(job_description, md_text, plan)
 
-    resp = client.chat.completions.create(
-        model=model,
-        temperature=temperature,
-        max_tokens=6000,
-        messages=messages,
-    )
+    try:
+        resp = client.chat.completions.create(
+            model=model,
+            temperature=temperature,
+            max_tokens=6000,
+            messages=messages,
+            response_format={"type": "json_object"},
+        )
+    except TypeError:
+        resp = client.chat.completions.create(
+            model=model,
+            temperature=temperature,
+            max_tokens=6000,
+            messages=messages,
+        )
     content = resp.choices[0].message.content or ""
     payload = _extract_first_json_object(content)
     edits = payload.get("edits")
@@ -276,7 +292,8 @@ def _tailor_markdown(md_text: str, job_description: str, *, model: str, temperat
         if index not in plan.allowed_indices and out != src:
             raise ValueError(f"Unexpected change outside allowed lines at {index + 1}.")
 
-    return "\n".join(updated)
+    cover_letter_md = str(payload.get("cover_letter_md") or "").strip()
+    return "\n".join(updated), cover_letter_md
 
 
 def _render(md_path: Path, pdf_path: Path, renderer_path: Path) -> None:
@@ -298,10 +315,19 @@ def main() -> int:
     parser.add_argument("--target", type=Path, default=DEFAULT_TARGET_MD)
     parser.add_argument("--pdf", type=Path, default=DEFAULT_OUTPUT_PDF)
     parser.add_argument("--renderer", type=Path, default=DEFAULT_RENDERER)
+    parser.add_argument("--cover-letter-md", type=Path, default=DEFAULT_COVER_LETTER_MD)
+    parser.add_argument("--cover-letter-pdf", type=Path, default=DEFAULT_COVER_LETTER_PDF)
     parser.add_argument("--job-description-file", type=Path, default=None)
     parser.add_argument("--model", type=str, default="gpt-4.1")
     parser.add_argument("--temperature", type=float, default=0.2)
     args = parser.parse_args()
+
+    try:
+        sys.stdout.reconfigure(line_buffering=True)  # type: ignore[attr-defined]
+    except Exception:
+        pass
+
+    print("[INFO] Targeted resume pipeline started.", flush=True)
 
     args.target.parent.mkdir(parents=True, exist_ok=True)
     args.target.write_text(args.source.read_text(encoding="utf-8"), encoding="utf-8")
@@ -311,10 +337,31 @@ def main() -> int:
     else:
         job_description = _read_clipboard()
 
-    tailored = _tailor_markdown(args.target.read_text(encoding="utf-8"), job_description, model=args.model, temperature=args.temperature)
-    args.target.write_text(tailored, encoding="utf-8")
+    print("[INFO] Tailoring resume.md -> resume_target.md (text-only).", flush=True)
+    tailored_md, cover_letter_md = _tailor_markdown(
+        args.target.read_text(encoding="utf-8"),
+        job_description,
+        model=args.model,
+        temperature=args.temperature,
+    )
+    args.target.write_text(tailored_md, encoding="utf-8")
 
+    print("[INFO] Rendering resume_target.md -> resume.pdf.", flush=True)
     _render(args.target, args.pdf, args.renderer)
+
+    if cover_letter_md:
+        args.cover_letter_md.parent.mkdir(parents=True, exist_ok=True)
+        args.cover_letter_md.write_text(
+            cover_letter_md + ("" if cover_letter_md.endswith("\n") else "\n"),
+            encoding="utf-8",
+        )
+        print("[INFO] Rendering cover letter -> cover_letter.pdf.", flush=True)
+        _render(args.cover_letter_md, args.cover_letter_pdf, args.renderer)
+
+    files = [{"name": args.pdf.name, "label": "Resume PDF"}]
+    if args.cover_letter_pdf.exists():
+        files.append({"name": args.cover_letter_pdf.name, "label": "Cover Letter PDF"})
+    print(json.dumps({"files": files}), flush=True)
     return 0
 
 

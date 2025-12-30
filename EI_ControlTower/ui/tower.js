@@ -86,7 +86,7 @@ function updateLogPanel(text) {
 
             if (filesPayload) {
                 const links = filesPayload
-                    .map(file => `<a class="log-file-link" href="/view/${encodeURIComponent(file.name)}">${file.label}</a>`)
+                    .map(file => `<a class="log-file-link" href="/view/${encodeURIComponent(file.name)}" target="_blank" rel="noreferrer">${file.label}</a>`)
                     .join(" | ");
                 rendered = links;
             } else {

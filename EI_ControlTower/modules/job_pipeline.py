@@ -25,7 +25,7 @@ def run_and_stream(label: str, script_path: str):
 
     try:
         process = subprocess.Popen(
-            [sys.executable, script_path],
+            [sys.executable, "-u", script_path],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
@@ -107,10 +107,10 @@ def run_facility_check():
 def run_targeted_resume():
     run_and_stream(
         "Targeted Resume",
-        str(AI_BOTS_ROOT / "Resume" / "scripts" / "Resume.py")
+        str(AI_BOTS_ROOT / "Resume" / "scripts" / "tailor_md_pipeline.py")
     )
 
-    return {"status": "launched", "script": "Resume.py"}
+    return {"status": "launched", "script": "tailor_md_pipeline.py"}
 
 
 def run_yahoo_forwarder():
