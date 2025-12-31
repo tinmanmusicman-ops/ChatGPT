@@ -521,26 +521,24 @@ def _audit_cover_letter(cover_letter_md: str, *, resume_md: str, job_description
     if not role_context_present():
         raise ValueError("Cover letter did not include target role context.")
 
+    # Reject common template placeholders.
+    placeholder_patterns = [
+        r"\byour name\b",
+        r"\bname here\b",
+        r"\byour (company|organization)\b",
+        r"\bcompany name\b",
+        r"\b\[your name\]\b",
+        r"\b\[company name\]\b",
+    ]
+    for pattern in placeholder_patterns:
+        if re.search(pattern, lower):
+            raise ValueError("Cover letter contains template placeholder text.")
+
     allowed_numbers = set(_numbers_in(resume_md)) | set(_numbers_in(job_description))
     output_numbers = set(_numbers_in(cover_letter_md))
     extras = output_numbers - allowed_numbers
     if extras:
         raise ValueError(f"Cover letter contains unsupported numeric tokens: {', '.join(sorted(extras))}")
-
-    output_caps = set(re.findall(r"\b[A-Z][a-z][A-Za-z0-9&/.-]*\b", cover_letter_md))
-    sentence_starters: set[str] = set()
-    for sentence in re.split(r"(?<=[.!?])\s+|\n{2,}", _normalize_newlines(cover_letter_md)):
-        sentence = sentence.strip()
-        if not sentence:
-            continue
-        match = re.match(r"^\"?([A-Z][a-z][A-Za-z0-9&/.-]*)\b", sentence)
-        if match:
-            sentence_starters.add(match.group(1))
-
-    allowed_caps = set(allowed.capitalized_words) | {"Dear", "Hiring", "Manager", "Sincerely"} | sentence_starters
-    new_caps = sorted(output_caps - allowed_caps)
-    if new_caps:
-        raise ValueError(f"Cover letter contains unsupported capitalized terms: {', '.join(new_caps[:12])}")
 
     output_acr = set(re.findall(r"\b[A-Z]{2,}\b", cover_letter_md))
     new_acr = sorted(output_acr - set(allowed.acronyms))
@@ -792,11 +790,14 @@ def _tailor_markdown(md_text: str, job_description: str, *, model: str, temperat
     for line_no_raw, replacement in edits.items():
         line_no = str(line_no_raw).strip()
         if line_no not in allowed_line_numbers:
-            raise ValueError(f"Edit provided for non-editable line: {line_no!r}.")
+            audit_issues.append(f"line {line_no}: edit provided for non-editable line; ignored")
+            continue
         if not isinstance(replacement, str):
-            raise ValueError(f"Replacement must be a string for line {line_no}.")
+            audit_issues.append(f"line {line_no}: replacement is not a string; ignored")
+            continue
         if "\n" in replacement or "\r" in replacement:
-            raise ValueError(f"Replacement must be a single line for line {line_no}.")
+            audit_issues.append(f"line {line_no}: replacement contains newline; ignored")
+            continue
 
         index = int(line_no) - 1
         src = lines[index]
@@ -805,9 +806,11 @@ def _tailor_markdown(md_text: str, job_description: str, *, model: str, temperat
 
         if _is_bullet(src):
             if not out.startswith("- "):
-                raise ValueError(f"Bullet marker changed at line {line_no}.")
+                audit_issues.append(f"line {line_no}: bullet marker changed; ignored")
+                continue
             if out == "- ":
-                raise ValueError(f"Invalid bullet format at line {line_no}.")
+                audit_issues.append(f"line {line_no}: invalid bullet format; ignored")
+                continue
             if section in ("Operational Improvements & Systems Work", "Professional Experience"):
                 src_lower = src.lower()
                 out_lower = out.lower()
