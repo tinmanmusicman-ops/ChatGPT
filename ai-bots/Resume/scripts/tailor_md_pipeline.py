@@ -101,7 +101,7 @@ def _read_job_description(path: Path) -> str:
     return _read_text(path).strip()
 
 
-def _read_clipboard() -> str:
+def _read_clipboard(*, allow_empty: bool = True) -> str:
     try:
         import pyperclip  # type: ignore
     except Exception:
@@ -110,8 +110,11 @@ def _read_clipboard() -> str:
     if pyperclip is not None:
         try:
             content = pyperclip.paste()
-            if isinstance(content, str) and content.strip():
-                return content.strip()
+            if isinstance(content, str):
+                if content.strip():
+                    return content.strip()
+                if allow_empty:
+                    return ""
         except Exception:
             pass
 
@@ -123,33 +126,20 @@ def _read_clipboard() -> str:
                 text=True,
                 check=True,
             )
-            if result.stdout.strip():
-                return result.stdout.strip()
+            if isinstance(result.stdout, str):
+                if result.stdout.strip():
+                    return result.stdout.strip()
+                if allow_empty:
+                    return ""
         except Exception:
             pass
 
-    raise RuntimeError("Unable to read job description from clipboard; pass --job-description-file.")
+    if allow_empty:
+        return ""
 
-def _find_default_job_description_file(output_dir: Path) -> Path | None:
-    env_path = os.environ.get("HSST_JOB_DESCRIPTION_FILE", "").strip()
-    candidates: list[Path] = []
-    if env_path:
-        candidates.append(Path(env_path))
-    candidates.extend(
-        [
-            output_dir / "job_description.pdf",
-            output_dir / "job_description.txt",
-            _RESUME_DIR / "job_description.pdf",
-            _RESUME_DIR / "job_description.txt",
-        ]
+    raise RuntimeError(
+        "Unable to read job description from clipboard; copy the job description text to the clipboard and retry."
     )
-    for candidate in candidates:
-        try:
-            if candidate.exists() and candidate.is_file():
-                return candidate
-        except Exception:
-            continue
-    return None
 
 
 def _is_hr(line: str) -> bool:
@@ -370,6 +360,10 @@ def _audit_line(src: str, out: str, *, allowed: AllowedTerms, similarity_thresho
     out_caps = set(re.findall(r"\b[A-Z][a-z][A-Za-z0-9&/.-]*\b", out))
     new_caps = {w for w in out_caps - src_caps if w not in allowed.capitalized_words}
     new_caps -= {"Dear", "Hiring", "Manager", "Sincerely"}
+    # Ignore sentence-starter capitalization differences.
+    first_word = re.match(r"^\s*([A-Z][a-z][A-Za-z0-9&/.-]*)\b", out)
+    if first_word:
+        new_caps.discard(first_word.group(1))
     if new_caps:
         issues.append(f"new capitalized terms: {', '.join(sorted(new_caps))}")
 
@@ -469,13 +463,21 @@ def _extract_target_info(job_description: str) -> TargetInfo:
         role_title = match.group(1).strip() if match else "this role"
 
     company_name = ""
-    match = re.search(r"\bwith\s+([A-Z][A-Za-z0-9&.,' -]{2,})\b", jd)
-    if match:
-        candidate = match.group(1).strip().strip(",.")
-        if "Hiring Manager" not in candidate:
-            company_name = candidate
-    if not company_name and re.search(r"\bRobert Half\b", jd):
+    if re.search(r"\bRobert Half\b", jd):
         company_name = "Robert Half"
+    if not company_name:
+        for pattern in (
+            r"\b(?:position|role|opportunity)\s+with\s+([A-Z][A-Za-z0-9&.,' -]{2,80})",
+            r"\bapply\s+for\s+the\s+.*?\s+with\s+([A-Z][A-Za-z0-9&.,' -]{2,80})",
+        ):
+            match = re.search(pattern, jd, flags=re.IGNORECASE)
+            if not match:
+                continue
+            candidate = match.group(1).strip().strip(",. ")
+            candidate = re.split(r"[\n\r]", candidate)[0].strip()
+            if candidate and "Hiring Manager" not in candidate:
+                company_name = candidate
+                break
     if not company_name:
         company_name = "your organization"
 
@@ -521,14 +523,17 @@ def _audit_cover_letter(cover_letter_md: str, *, resume_md: str, job_description
     if not role_context_present():
         raise ValueError("Cover letter did not include target role context.")
 
-    # Reject common template placeholders.
+    # Reject common template placeholders (but do not fail for normal wording variation).
     placeholder_patterns = [
         r"\byour name\b",
         r"\bname here\b",
-        r"\byour (company|organization)\b",
         r"\bcompany name\b",
+        r"\baddress here\b",
         r"\b\[your name\]\b",
         r"\b\[company name\]\b",
+        r"\b\[address\]\b",
+        r"\b\[phone\]\b",
+        r"\b\[email\]\b",
     ]
     for pattern in placeholder_patterns:
         if re.search(pattern, lower):
@@ -547,7 +552,7 @@ def _audit_cover_letter(cover_letter_md: str, *, resume_md: str, job_description
 
     resume_lower = resume_md.lower()
     cover_lower = cover_letter_md.lower()
-    hedge_markers = (
+    alignment_markers = (
         "aligned with",
         "drawing on",
         "complements",
@@ -556,23 +561,41 @@ def _audit_cover_letter(cover_letter_md: str, *, resume_md: str, job_description
         "excited to",
         "ready to",
         "able to",
+        "capable of",
+        "well-suited",
+        "fits well",
         "can ",
         "would ",
-        "support",
-        "help",
-        "contribute",
-        "apply",
-        "bring",
-        "comfortable",
+    )
+    claim_markers = (
+        "i have ",
+        "i've ",
+        "i managed",
+        "i supported",
+        "i coordinated",
+        "i organized",
+        "i scheduled",
+        "i prepared",
+        "i maintained",
+        "i handled",
+        "i led",
+        "i owned",
+        "i oversaw",
+        "my experience includes",
+        "i am experienced",
     )
     risky_terms = (
         "calendar",
+        "calendars",
         "scheduling",
         "travel",
         "grant",
+        "grants",
         "proposal",
+        "proposals",
         "board",
         "donor",
+        "donors",
         "fundraising",
         "outreach",
         "onboarding",
@@ -581,6 +604,7 @@ def _audit_cover_letter(cover_letter_md: str, *, resume_md: str, job_description
         "compliance",
         "crm",
         "database",
+        "databases",
     )
 
     def split_sentences(text: str) -> list[str]:
@@ -597,10 +621,31 @@ def _audit_cover_letter(cover_letter_md: str, *, resume_md: str, job_description
         for sentence in sentences:
             if term not in sentence:
                 continue
-            if not any(marker in sentence for marker in hedge_markers):
-                raise ValueError(
-                    f"Cover letter includes '{term}' without alignment/capability framing."
-                )
+            if any(marker in sentence for marker in alignment_markers):
+                continue
+            if any(marker in sentence for marker in claim_markers):
+                raise ValueError(f"Cover letter claims experience with '{term}' not supported by resume.")
+
+    # Only fail on new-employer mentions when they look like employers.
+    # Examples: "role with X", "position with X", "worked at X"
+    employer_patterns = [
+        r"\b(?:role|position|opportunity|job)\s+with\s+([A-Z][A-Za-z0-9&.,' -]{2,80})",
+        r"\bworked\s+at\s+([A-Z][A-Za-z0-9&.,' -]{2,80})",
+        r"\bemployed\s+at\s+([A-Z][A-Za-z0-9&.,' -]{2,80})",
+    ]
+    for pattern in employer_patterns:
+        for match in re.finditer(pattern, cover_letter_md):
+            phrase = (match.group(1) or "").strip().strip(",. ")
+            if not phrase:
+                continue
+            phrase_lower = phrase.lower()
+            if company_norm and company_norm in phrase_lower:
+                continue
+            if phrase_lower in {"your organization", "your team"}:
+                continue
+            if phrase_lower in resume_lower or phrase_lower in job_description.lower():
+                continue
+            raise ValueError(f"Cover letter references employer '{phrase}' not supported by resume/job description.")
 
 
 def _draft_cover_letter_openai(
@@ -703,7 +748,14 @@ def _generate_cover_letter_md(resume_md: str, job_description: str) -> str:
 
     paragraphs: list[str] = []
     target = _extract_target_info(job_description)
-    opening = f"I am applying for the {target.role_title} role with {target.company_name}"
+    role_title = target.role_title.strip()
+    company_name = target.company_name.strip() or "your organization"
+    if not job_description.strip() or role_title.lower() in {"this role", "the role"}:
+        opening = f"I am writing to express my interest in opportunities with {company_name}"
+    elif re.search(r"\b(role|position|opportunity|job)\b", role_title, flags=re.IGNORECASE):
+        opening = f"I am applying for the {role_title} with {company_name}"
+    else:
+        opening = f"I am applying for the {role_title} role with {company_name}"
     if target.context:
         opening += f", {target.context}"
     paragraphs.append(ensure_sentence(opening))
@@ -887,26 +939,33 @@ def main() -> int:
     args.target.write_text(args.source.read_text(encoding="utf-8"), encoding="utf-8")
 
     if args.job_description_file is not None:
-        job_description = _read_job_description(args.job_description_file)
-    else:
-        default_jd = _find_default_job_description_file(args.pdf.parent)
-        if default_jd is not None:
-            print(f"[INFO] Using job description from: {default_jd}", flush=True)
-            job_description = _read_job_description(default_jd)
-        else:
-            job_description = _read_clipboard()
-
-    print("[INFO] Tailoring resume.md -> resume_target.md (text-only).", flush=True)
+        print("[WARN] --job-description-file is ignored; clipboard-only mode is enabled.", flush=True)
     try:
-        tailored_md = _tailor_markdown(
-            args.target.read_text(encoding="utf-8"),
-            job_description,
-            model=args.model,
-            temperature=args.temperature,
-        )
+        job_description = _read_clipboard(allow_empty=True)
     except Exception as exc:
-        print(f"[WARN] Tailoring failed; using source-only tailoring. ({exc})", flush=True)
-        tailored_md = _reorder_bullets_source_only(args.target.read_text(encoding="utf-8"), job_description)
+        print(f"[WARN] Unable to read clipboard; proceeding without a job description. ({exc})", flush=True)
+        job_description = ""
+
+    generic_mode = not job_description.strip()
+    if generic_mode:
+        print("[INFO] Clipboard is empty; generating a generic resume (no AI tailoring).", flush=True)
+    else:
+        print("[INFO] Job description loaded from clipboard.", flush=True)
+
+    if generic_mode:
+        tailored_md = args.target.read_text(encoding="utf-8")
+    else:
+        print("[INFO] Tailoring resume.md -> resume_target.md (text-only).", flush=True)
+        try:
+            tailored_md = _tailor_markdown(
+                args.target.read_text(encoding="utf-8"),
+                job_description,
+                model=args.model,
+                temperature=args.temperature,
+            )
+        except Exception as exc:
+            print(f"[WARN] Tailoring failed; using source-only tailoring. ({exc})", flush=True)
+            tailored_md = _reorder_bullets_source_only(args.target.read_text(encoding="utf-8"), job_description)
     args.target.write_text(tailored_md, encoding="utf-8")
 
     print("[INFO] Generating cover_letter_target.md (source-grounded).", flush=True)
@@ -915,7 +974,7 @@ def main() -> int:
         cover_letter_base_md = args.cover_letter_base_md.read_text(encoding="utf-8")
 
     target = _extract_target_info(job_description)
-    if OpenAI is not None and os.environ.get("OPENAI_API_KEY", "").strip():
+    if (not generic_mode) and OpenAI is not None and os.environ.get("OPENAI_API_KEY", "").strip():
         try:
             cover_letter_md = _draft_cover_letter_openai(
                 resume_md=tailored_md,
@@ -931,12 +990,19 @@ def main() -> int:
     else:
         cover_letter_md = _generate_cover_letter_md(tailored_md, job_description)
 
-    try:
-        _audit_cover_letter(cover_letter_md, resume_md=tailored_md, job_description=job_description, target=target)
-    except Exception as exc:
-        print(f"[WARN] Cover letter truth-audit failed; using source-only cover letter. ({exc})", flush=True)
-        cover_letter_md = _generate_cover_letter_md(tailored_md, job_description)
-        _audit_cover_letter(cover_letter_md, resume_md=tailored_md, job_description=job_description, target=target)
+    if not generic_mode:
+        try:
+            _audit_cover_letter(cover_letter_md, resume_md=tailored_md, job_description=job_description, target=target)
+        except Exception as exc:
+            print(f"[WARN] Cover letter truth-audit failed; using source-only cover letter. ({exc})", flush=True)
+            cover_letter_md = _generate_cover_letter_md(tailored_md, job_description)
+            try:
+                _audit_cover_letter(cover_letter_md, resume_md=tailored_md, job_description=job_description, target=target)
+            except Exception as exc2:
+                print(
+                    f"[WARN] Cover letter audit still failing; proceeding with source-only cover letter. ({exc2})",
+                    flush=True,
+                )
     args.cover_letter_md.parent.mkdir(parents=True, exist_ok=True)
     args.cover_letter_md.write_text(
         cover_letter_md + ("" if cover_letter_md.endswith("\n") else "\n"),

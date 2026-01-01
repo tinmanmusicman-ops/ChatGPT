@@ -34,6 +34,7 @@ DRIVE_SCOPES = ["https://www.googleapis.com/auth/drive.file"]
 SCRIPT_DIR = Path(__file__).resolve().parent
 ARCHIVE_DIR_NAME = "chart hist"
 ARCHIVE_DIR = SCRIPT_DIR.parent / "Web" / ARCHIVE_DIR_NAME
+ARCHIVE_INDEX_FILENAME = "archive_index.json"
 INLINE_CLIENT_SCRIPT_DEFAULT = False
 NUMERIC_RE = re.compile(r"-?\d+(?:\.\d+)?")
 DATE_FORMATS = (
@@ -3881,9 +3882,13 @@ def run_live_dashboard() -> None:
         archive_json.write_text(json.dumps(dashboard_payload, indent=2), encoding="utf-8")
         dashboard_data_path = public_dir / "dashboard_data.json"
         dashboard_data_path.write_text(json.dumps(dashboard_payload, indent=2), encoding="utf-8")
+        archive_index_path = _write_archive_index(archive_dir)
         # Automatically stage/commit/push the public HTML and archive copy so repo and remote stay in sync with each generation.
         dashboard_script_path = SCRIPT_DIR / "dashboard_client.js"
-        git_autopush(public_copy, extra_paths=[archive_target, dashboard_data_path, dashboard_script_path])
+        git_autopush(
+            public_copy,
+            extra_paths=[archive_target, archive_index_path, dashboard_data_path, dashboard_script_path],
+        )
     except Exception as exc:
         logger.warning("Failed to write or push public copy %s (%s)", public_copy, exc)
     print(f"Dashboard generated at: {target_path.resolve()}")
@@ -4021,6 +4026,11 @@ def run_test_mode_dashboard() -> None:
     public_dir.mkdir(parents=True, exist_ok=True)
     public_copy = public_dir / "dashboard_public.html"
     build_dashboard_html(headers, latest_row, history_rows, public_copy)
+    try:
+        index_path = _write_archive_index(ARCHIVE_DIR)
+        logger.info("Wrote archive index to %s", index_path)
+    except Exception as exc:
+        logger.warning("Unable to write archive index for %s (%s)", ARCHIVE_DIR, exc)
     print(f"Dashboard generated (test_mode) at: {target_path.resolve()}")
     logger.info("test_mode HTML generated from cached payload %s", payload_path)
 
@@ -4031,6 +4041,41 @@ def _format_archive_label(slug: str) -> str:
         return parsed.strftime("%b %d, %Y")
     except ValueError:
         return slug
+
+
+def _build_archive_dates_for_dir(archive_dir: Path) -> List[dict]:
+    slugs: set[str] = set()
+    if archive_dir.exists():
+        for entry in archive_dir.glob("*.json"):
+            if entry.name.lower() == ARCHIVE_INDEX_FILENAME.lower():
+                continue
+            if entry.stem:
+                slugs.add(entry.stem)
+
+    dated: list[tuple[date, str]] = []
+    other: list[str] = []
+    for slug in slugs:
+        try:
+            dated.append((datetime.strptime(slug, "%Y-%m-%d").date(), slug))
+        except ValueError:
+            other.append(slug)
+
+    dated.sort(key=lambda t: t[0], reverse=True)
+    other.sort(reverse=True)
+    ordered = [slug for _, slug in dated] + other
+    return [{"slug": slug, "label": _format_archive_label(slug)} for slug in ordered]
+
+
+def _write_archive_index(archive_dir: Path) -> Path:
+    archive_dir.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "generatedAt": datetime.now().isoformat(timespec="seconds"),
+        "archivePath": ARCHIVE_DIR_NAME,
+        "archiveDates": _build_archive_dates_for_dir(archive_dir),
+    }
+    target = archive_dir / ARCHIVE_INDEX_FILENAME
+    target.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    return target
 
 
 def run_projected_range(
@@ -4093,11 +4138,23 @@ def run_projected_range(
             ",".join(str(h) for h in summary["condenserHours"]) or "-",
         )
 
+    # Keep an external index up to date so the dashboard can refresh archive options without regenerating HTML.
+    try:
+        index_path = _write_archive_index(archive_dir)
+        logger.info("Wrote archive index to %s", index_path)
+    except Exception as exc:
+        logger.warning("Unable to write archive index for %s (%s)", archive_dir, exc)
+
     return summaries
 
 
 def main(argv: Optional[List[str]] = None) -> None:
     parser = argparse.ArgumentParser(description="Thermostat dashboard generator")
+    parser.add_argument(
+        "--rebuild-archive-index",
+        action="store_true",
+        help="Regenerate chart hist/archive_index.json from current archive JSON files and exit.",
+    )
     parser.add_argument(
         "--project-date",
         metavar="YYYY-MM-DD",
@@ -4145,6 +4202,10 @@ def main(argv: Optional[List[str]] = None) -> None:
         help="How to select a delta from --request-deltas on request days (default: random).",
     )
     args = parser.parse_args(argv)
+    if bool(getattr(args, "rebuild_archive_index", False)):
+        index_path = _write_archive_index(ARCHIVE_DIR)
+        print(f"Archive index written to: {index_path.resolve()}")
+        return
     request_deltas: Optional[List[float]] = None
     if args.request_deltas:
         try:

@@ -21,6 +21,7 @@
   const archivePathHref = encodeURI(archivePathRaw);
   const buildArchiveJsonUrl = (slug) =>
     slug ? `${archivePathHref}/${slug}.json?v=${Date.now()}` : null;
+  const buildArchiveIndexUrl = () => `${archivePathHref}/archive_index.json?v=${Date.now()}`;
   const logEl = document.getElementById("js-log");
   // Logging helper that writes to the console and the hidden dashboard log area.
   const logMessage = (message, level = "log") => {
@@ -31,6 +32,58 @@
     }
     console[level](message);
   };
+
+  const coerceArchiveDates = (payload) => {
+    const raw =
+      Array.isArray(payload) ? payload : payload && Array.isArray(payload.archiveDates) ? payload.archiveDates : null;
+    if (!Array.isArray(raw)) {
+      return null;
+    }
+    const out = [];
+    raw.forEach((entry) => {
+      if (!entry) {
+        return;
+      }
+      if (typeof entry === "string") {
+        const slug = entry.trim();
+        if (!slug) {
+          return;
+        }
+        out.push({ slug, label: slug });
+        return;
+      }
+      if (typeof entry === "object") {
+        const slug = String(entry.slug || "").trim();
+        if (!slug) {
+          return;
+        }
+        const label = String(entry.label || slug).trim();
+        out.push({ slug, label });
+      }
+    });
+    return out.length ? out : null;
+  };
+
+  async function refreshArchiveDatesFromIndex() {
+    const url = buildArchiveIndexUrl();
+    try {
+      const resp = await fetch(url, { cache: "no-store" });
+      if (!resp.ok) {
+        return false;
+      }
+      const payload = await resp.json();
+      const nextDates = coerceArchiveDates(payload);
+      if (!nextDates) {
+        return false;
+      }
+      dashboardData.archiveDates = nextDates;
+      renderArchiveList();
+      syncArchiveNavButtons();
+      return true;
+    } catch (err) {
+      return false;
+    }
+  }
 
   // Embedded help chat (client-side; operator manual only).
   const helpChatToggle = document.getElementById("help-chat-toggle");
@@ -4818,6 +4871,7 @@ if (tvControlsLabel) {
   }
 
   applyDashboardData(dashboardData);
+  refreshArchiveDatesFromIndex();
   bindTransportHistoryToggle();
   bindArchiveKeyboardShortcuts();
   bindTvControls();
