@@ -8,8 +8,8 @@ namespace DiskInsight;
 
 internal static class DiskAnalyzer
 {
-    private sealed record FileEntry(string FullPath, long SizeBytes);
-    private sealed class ExtensionStats
+    internal sealed record FileEntry(string FullPath, long SizeBytes);
+    internal sealed class ExtensionStats
     {
         public long TotalBytes { get; private set; }
         public int FileCount { get; private set; }
@@ -29,22 +29,106 @@ internal static class DiskAnalyzer
         }
     }
 
+    internal sealed record ScanResult(
+        string[] Roots,
+        List<FileEntry> Files,
+        Dictionary<string, ExtensionStats> StatsByExtension);
+
     public static string BuildReport()
+    {
+        var scan = BuildScanResult();
+        return BuildReport(scan);
+    }
+
+    public static ScanResult BuildScanResult()
+    {
+        var roots = GetScanRoots()
+            .Where(Directory.Exists)
+            .Where(IsOnCDrive)
+            .ToArray();
+
+        var (files, statsByExtension) = ScanRoots(roots);
+        return new ScanResult(roots, files, statsByExtension);
+    }
+
+    public static string BuildReport(ScanResult scan)
     {
         var report = new StringBuilder(16_384);
 
         AppendDiskSummary(report);
         report.AppendLine();
 
-        var roots = GetScanRoots()
-            .Where(Directory.Exists)
-            .Where(IsOnCDrive)
-            .ToArray();
-        var (files, statsByExtension) = ScanRoots(roots);
-
-        AppendLargestFiles(report, files);
+        AppendLargestFiles(report, scan.Files);
         report.AppendLine();
-        AppendExtensionSummary(report, statsByExtension);
+        AppendExtensionSummary(report, scan.StatsByExtension);
+
+        return report.ToString();
+    }
+
+    public static string BuildExtensionDetailsReport(ScanResult scan, string extension)
+    {
+        var normalized = NormalizeExtension(extension);
+        var rows = scan.Files
+            .Where(f => string.Equals(NormalizeExtension(Path.GetExtension(f.FullPath)), normalized, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        var report = new StringBuilder(16_384);
+        report.AppendLine($"Extension Details: {normalized}");
+        report.AppendLine();
+        report.AppendLine($"Scan Roots: {scan.Roots.Length}");
+        foreach (var root in scan.Roots.OrderBy(r => r, StringComparer.OrdinalIgnoreCase))
+        {
+            report.AppendLine($"  {root}");
+        }
+
+        report.AppendLine();
+        report.AppendLine($"Files: {rows.Count}");
+
+        var totalBytes = rows.Sum(r => r.SizeBytes);
+        report.AppendLine($"Total Size: {FormatGb(totalBytes)}");
+
+        var byFolder = rows
+            .Select(r => new { Folder = Path.GetDirectoryName(r.FullPath) ?? "<unknown>", r.SizeBytes })
+            .GroupBy(x => x.Folder, StringComparer.OrdinalIgnoreCase)
+            .Select(g => new { Folder = g.Key, FileCount = g.Count(), TotalBytes = g.Sum(x => x.SizeBytes) })
+            .OrderByDescending(x => x.TotalBytes)
+            .ThenBy(x => x.Folder, StringComparer.OrdinalIgnoreCase)
+            .Take(20)
+            .ToList();
+
+        report.AppendLine();
+        report.AppendLine("Top Folders (by total size)");
+        if (byFolder.Count == 0)
+        {
+            report.AppendLine("  (No files found.)");
+        }
+        else
+        {
+            foreach (var item in byFolder)
+            {
+                report.AppendLine($"  {FormatGb(item.TotalBytes),10}  {item.FileCount,6} files  {item.Folder}");
+            }
+        }
+
+        var largest = rows
+            .OrderByDescending(r => r.SizeBytes)
+            .ThenBy(r => r.FullPath, StringComparer.OrdinalIgnoreCase)
+            .Take(20)
+            .ToList();
+
+        report.AppendLine();
+        report.AppendLine("Largest Files");
+        if (largest.Count == 0)
+        {
+            report.AppendLine("  (No files found.)");
+        }
+        else
+        {
+            foreach (var file in largest)
+            {
+                report.AppendLine($"  {FormatGb(file.SizeBytes),10}  {file.FullPath}");
+            }
+        }
 
         return report.ToString();
     }
@@ -249,4 +333,19 @@ internal static class DiskAnalyzer
 
     private static string FormatGb(long bytes)
         => $"{bytes / (1024d * 1024d * 1024d):0.00} GB";
+
+    private static string NormalizeExtension(string? ext)
+    {
+        if (string.IsNullOrWhiteSpace(ext))
+        {
+            return "<no extension>";
+        }
+
+        if (ext == "<no extension>")
+        {
+            return ext;
+        }
+
+        return ext.StartsWith('.') ? ext.ToLowerInvariant() : "." + ext.ToLowerInvariant();
+    }
 }

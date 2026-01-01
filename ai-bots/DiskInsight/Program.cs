@@ -12,7 +12,7 @@ internal static class Program
         Application.EnableVisualStyles();
         Application.SetCompatibleTextRenderingDefault(false);
 
-        Application.Run(new MainForm());
+        using var eiService = new EiCommentaryService();
+        Application.Run(new MainForm(eiService));
     }
 }
-

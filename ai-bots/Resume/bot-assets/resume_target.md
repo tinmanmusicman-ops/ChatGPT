@@ -6,16 +6,16 @@ https://www.linkedin.com/in/timothy-inman-7abb46372/
 ---
 <!-- render: leading=10.5 spaceAfter=0.2 blank=2 listAfter=3.5 -->
 ## Operations & Customer Systems Specialist
-Operations and customer-systems professional specializing in stabilizing workflows, diagnosing system issues, and improving reliability in complex, real-world environments. Known for calm judgment, cross-team coordination, and translating system behavior into practical outcomes for customers and leadership. Daily work includes supervised use of OpenAI Codex and ChatGPT for human-guided automation, analysis, and workflow acceleration.
+Operations and customer-systems professional specializing in stabilizing workflows, diagnosing system issues, and improving reliability in complex, real-world environments. Known for calm judgment, cross-team coordination, and translating system behavior into practical outcomes for customers and leadership. Daily work includes supervised use of OpenAI Codex and ChatGPT for human-guided automation, analysis, and workflow acceleration, closely aligned with the requirements of privacy-safe, read-only AI commentary features such as the 'Analyze with EI' action described in your role.
 ## Core Skills
-Operations support, workflow stabilization, system troubleshooting, customer issue resolution, cross-team coordination, root-cause analysis, documentation and process improvement
+Operations support, workflow stabilization, system troubleshooting, customer issue resolution, cross-team coordination, root-cause analysis, documentation and process improvement, supervised AI integration
 ## Systems & Tools
-Python, Excel (advanced), PowerShell, SQL (basic), REST APIs, JSON, Git/GitHub, OpenAI Codex, ChatGPT, HSST, Genesys, Dynamics CRM, ServiceNow, Adobe Central Output Server, DocOrigin, Tyler Munis (ERP), Dashboards and reporting tools
+Python, Excel (advanced), PowerShell, SQL (basic), REST APIs, JSON, Git/GitHub, OpenAI Codex, ChatGPT, HSST, Genesys, Dynamics CRM, ServiceNow, Adobe Central Output Server, DocOrigin, Tyler Munis (ERP), Dashboards and reporting tools, privacy-focused automation
 ## Operational Improvements & Systems Work
 - Automated manual workflows to reduce operational overhead and improve consistency across recurring tasks.
 - Designed and maintained operational dashboards to surface system health, trends, and actionable signals.
-- Integrated supervised automation to accelerate analysis, scripting, documentation, and workflow design while maintaining human control.
-- Improved reliability by identifying root causes of recurring system and process failures and implementing durable fixes.
+- Integrated supervised automation to accelerate analysis, scripting, documentation, and workflow design while maintaining human control and privacy safeguards.
+- Improved reliability by identifying root causes of recurring system and process failures and implementing durable, privacy-conscious fixes.
 
 ## Professional Experience
 ---
