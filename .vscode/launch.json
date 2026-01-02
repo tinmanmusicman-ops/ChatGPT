@@ -23,6 +23,17 @@
       "cwd": "${fileDirname}",
       "console": "integratedTerminal",
       "args": []
+    },
+    {
+      "name": "Launch C# (.NET)",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "${workspaceFolder}/ai-bots/DiskInsight/bin/Debug/net8.0-windows/DiskInsight.dll",
+      "preLaunchTask": "build DiskInsight (Debug)",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "console": "integratedTerminal"
     }
   ]
 }

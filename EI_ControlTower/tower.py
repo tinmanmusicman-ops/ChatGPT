@@ -14,7 +14,8 @@ from modules import (
     thermostat,
     security_notify,
     config_manager,
-    logger
+    logger,
+    task_scheduler,
 )
 
 app = Flask(__name__)
@@ -212,6 +213,14 @@ def config_refresh():
 def stinky_bath():
     logger.stub()
     return jsonify({"status": "ok", "action": "stinky_bath stub called"})
+
+
+@app.route("/tower/scheduled-tasks")
+def scheduled_tasks():
+    try:
+        return jsonify({"status": "ok", "tasks": task_scheduler.list_hsst_tasks_payload()})
+    except Exception as exc:
+        return jsonify({"status": "error", "error": str(exc), "tasks": []}), 500
 
 
 # -------------------------
