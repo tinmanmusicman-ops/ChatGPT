@@ -10,7 +10,7 @@ Operations and customer-systems professional specializing in stabilizing workflo
 ## Core Skills
 Operations support, workflow stabilization, system troubleshooting, customer issue resolution, cross-team coordination, root-cause analysis, documentation and process improvement
 ## Systems & Tools
-Python, Excel (advanced), PowerShell, SQL (basic), REST APIs, JSON, Git/GitHub, OpenAI Codex, ChatGPT, HSST, Genesys, Dynamics CRM, ServiceNow, Adobe Central Output Server, DocOrigin, Tyler Munis (ERP), Dashboards and reporting tools
+Python, Excel (advanced), PowerShell, SQL (basic), REST APIs, JSON, Git/GitHub, OpenAI Codex, ChatGPT, HSST, Genesys, Dynamics CRM, ServiceNow, Adobe Central Output Server, DocOrigin, Linux, Tyler Munis (ERP), Tyler Content Manager, Dashboards and reporting tools
 ## Operational Improvements & Systems Work
 - Automated manual workflows to reduce operational overhead and improve consistency across recurring tasks.
 - Designed and maintained operational dashboards to surface system health, trends, and actionable signals.
@@ -19,7 +19,7 @@ Python, Excel (advanced), PowerShell, SQL (basic), REST APIs, JSON, Git/GitHub, 
 
 ## Professional Experience
 ---
-### Best Buy - Customer Care Senior Advisor  
+### Best Buy Health - Customer Care Senior Advisor  
 *2019 – 2025*
 - Delivered high-volume customer and systems support while maintaining 100% CSAT through clear communication and effective issue resolution.
 - Ranked #1 in performance metrics and consistently placed in the top tier for quality and efficiency.

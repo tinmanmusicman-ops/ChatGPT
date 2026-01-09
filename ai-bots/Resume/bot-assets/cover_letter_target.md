@@ -1,12 +1,14 @@
 # Dear Hiring Manager,
 
-I am excited to submit my application for the "Analyze with EI" feature development role at your organization. The requirements for this position—particularly the focus on privacy-safe, read-only AI commentary for process analysis—are closely aligned with my background in operations support, workflow stabilization, and supervised AI integration.
+I am excited to apply for the Sales - Customer Success Manager position at Agiloft. Your mission to deliver data-first contract lifecycle management solutions aligns closely with my background in operations support, customer systems, and cross-functional collaboration. With a proven record of building strong customer relationships, stabilizing workflows, and driving operational improvements, I am confident in my ability to contribute to Agiloft’s commitment to customer engagement, retention, and growth.
 
-Throughout my career, I have specialized in diagnosing system issues, improving reliability, and translating complex system behavior into actionable insights for both customers and leadership. My daily work includes the supervised use of OpenAI Codex and ChatGPT for automation and analysis, with a strong emphasis on maintaining human control and privacy safeguards. This experience directly complements the need for a privacy-focused, user-initiated EI analysis feature as described in your job posting.
+In my role as Customer Care Senior Advisor at Best Buy, I consistently delivered high-volume customer and systems support while maintaining 100% CSAT through clear communication, relationship management, and effective issue resolution. My experience includes identifying patterns in customer issues, documenting fixes, and collaborating across teams to reduce repeat incidents and drive engagement—directly supporting Agiloft’s focus on proactive customer engagement and risk mitigation.
 
-I have a proven track record of integrating automation and AI tools into operational workflows while ensuring that all enhancements remain optional, non-intrusive, and secure. My experience designing dashboards, automating manual processes, and isolating new features—without disrupting existing logic—will help ensure that the "Analyze with EI" action is implemented in a way that is both robust and user-friendly. Additionally, my familiarity with REST APIs, JSON, and dependency injection aligns well with your architectural requirements for isolating EI logic and maintaining configurability.
+Throughout my career, I have acted as a liaison between end users, engineering teams, and leadership, translating operational needs into practical solutions. At Tyler Technologies, I supported mission-critical systems for municipal clients, built internal tools to improve support turnaround, and ensured alignment between technical changes and real-world requirements. These experiences have honed my ability to manage multiple accounts, advocate for customer needs, and work collaboratively to deliver measurable impact.
 
-I am enthusiastic about the opportunity to contribute to your organization by delivering a feature that enhances process insight while upholding the highest standards of privacy and operational safety.
+I am particularly drawn to Agiloft’s emphasis on data-driven insights, cross-functional teamwork, and a customer-first mindset. My daily work with operational dashboards, workflow automation, and supervised AI tools has equipped me to guide feature adoption and leverage data to drive meaningful change for customers.
+
+Thank you for considering my application. I look forward to the opportunity to contribute to Agiloft’s continued success as a trusted leader in contract lifecycle management.
 
 Sincerely,  
 Timothy B. Inman

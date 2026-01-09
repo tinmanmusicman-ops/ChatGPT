@@ -6,25 +6,25 @@ https://www.linkedin.com/in/timothy-inman-7abb46372/
 ---
 <!-- render: leading=10.5 spaceAfter=0.2 blank=2 listAfter=3.5 -->
 ## Operations & Customer Systems Specialist
-Operations and customer-systems professional specializing in stabilizing workflows, diagnosing system issues, and improving reliability in complex, real-world environments. Known for calm judgment, cross-team coordination, and translating system behavior into practical outcomes for customers and leadership. Daily work includes supervised use of OpenAI Codex and ChatGPT for human-guided automation, analysis, and workflow acceleration, closely aligned with the requirements of privacy-safe, read-only AI commentary features such as the 'Analyze with EI' action described in your role.
+Operations and customer-systems professional with a strong record of stabilizing workflows, diagnosing system issues, and improving reliability in complex environments—aligned with the customer-centric and cross-functional focus of the Customer Success Manager role at Agiloft. Known for calm judgment, cross-team coordination, and translating system behavior into practical outcomes for customers and leadership. Daily work includes supervised use of OpenAI Codex and ChatGPT for human-guided automation, analysis, and workflow acceleration.
 ## Core Skills
-Operations support, workflow stabilization, system troubleshooting, customer issue resolution, cross-team coordination, root-cause analysis, documentation and process improvement, supervised AI integration
+Operations support, workflow stabilization, system troubleshooting, customer issue resolution, relationship building, cross-team coordination, root-cause analysis, documentation and process improvement
 ## Systems & Tools
-Python, Excel (advanced), PowerShell, SQL (basic), REST APIs, JSON, Git/GitHub, OpenAI Codex, ChatGPT, HSST, Genesys, Dynamics CRM, ServiceNow, Adobe Central Output Server, DocOrigin, Tyler Munis (ERP), Dashboards and reporting tools, privacy-focused automation
+Python, Excel (advanced), PowerShell, SQL (basic), REST APIs, JSON, Git/GitHub, OpenAI Codex, ChatGPT, HSST, Genesys, Dynamics CRM, ServiceNow, Adobe Central Output Server, DocOrigin, Linux, Tyler Munis (ERP), Tyler Content Manager, Dashboards and reporting tools
 ## Operational Improvements & Systems Work
 - Automated manual workflows to reduce operational overhead and improve consistency across recurring tasks.
 - Designed and maintained operational dashboards to surface system health, trends, and actionable signals.
-- Integrated supervised automation to accelerate analysis, scripting, documentation, and workflow design while maintaining human control and privacy safeguards.
-- Improved reliability by identifying root causes of recurring system and process failures and implementing durable, privacy-conscious fixes.
+- Integrated supervised automation to accelerate analysis, scripting, documentation, and workflow design while maintaining human control.
+- Improved reliability by identifying root causes of recurring system and process failures and implementing durable fixes.
 
 ## Professional Experience
 ---
 ### Best Buy - Customer Care Senior Advisor  
 *2019 – 2025*
-- Delivered high-volume customer and systems support while maintaining 100% CSAT through clear communication and effective issue resolution.
+- Delivered high-volume customer and systems support while maintaining 100% CSAT through clear communication, relationship management, and effective issue resolution.
 - Ranked #1 in performance metrics and consistently placed in the top tier for quality and efficiency.
 - Accelerated delivery of a 10-month operational initiative into a 2-month timeline by redesigning workflows and removing bottlenecks.
-- Reduced repeat incidents by identifying patterns, documenting fixes, and coordinating across teams.
+- Reduced repeat incidents by identifying patterns, documenting fixes, and collaborating across teams to drive engagement and retention.
 ### Walmart - Electronics Sales Associate  
 Oceanside, CA  
 *February 2018 - September 2019*

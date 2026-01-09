@@ -34,6 +34,20 @@
       "cwd": "${workspaceFolder}",
       "stopAtEntry": false,
       "console": "integratedTerminal"
+    },
+    {
+      "name": "Launch PainRadar (WPF)",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "${workspaceFolder}/ai-bots/PainRadar/bin/Debug/net8.0-windows/PainRadar.dll",
+      "preLaunchTask": "build PainRadar (Debug)",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "console": "integratedTerminal",
+      "env": {
+        "PAINRADAR_CONFIG_PATH": "${workspaceFolder}/ai-bots/shared/global.json"
+      }
     }
   ]
 }

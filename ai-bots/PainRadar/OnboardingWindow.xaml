@@ -1,0 +1,130 @@
+<Window x:Class="PainRadar.OnboardingWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Welcome to PainRadar"
+        Width="720" Height="520"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        Background="#000000"
+        Foreground="#E5E7EB"
+        FontSize="{Binding UiFontSize}">
+    <Window.Resources>
+        <SolidColorBrush x:Key="PanelBg" Color="#0B1220"/>
+        <SolidColorBrush x:Key="Border" Color="#334155"/>
+        <SolidColorBrush x:Key="Text" Color="#E5E7EB"/>
+        <SolidColorBrush x:Key="MutedText" Color="#94A3B8"/>
+        <SolidColorBrush x:Key="Link" Color="#14B8A6"/>
+
+        <Style TargetType="{x:Type Button}">
+            <Setter Property="Background" Value="#111827"/>
+            <Setter Property="Foreground" Value="{StaticResource Text}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Border}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                              TextElement.Foreground="{TemplateBinding Foreground}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#1F2937"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="{x:Type TextBlock}">
+            <Setter Property="TextWrapping" Value="Wrap"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="16">
+        <Border Background="{StaticResource PanelBg}" BorderBrush="{StaticResource Border}" BorderThickness="1" CornerRadius="12" Padding="18">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <StackPanel Grid.Row="0" Margin="0,0,0,12">
+                    <TextBlock Text="PainRadar" FontSize="22" FontWeight="SemiBold"/>
+                    <TextBlock Foreground="{StaticResource MutedText}" Margin="0,6,0,0"
+                               Text="Use the Search box (top-left) to focus the scan, then click Scan. This app surfaces companies that show operational pain in job descriptions (and optional enrichment sources) and lets you explore the strongest signals."/>
+                    <TextBlock Foreground="{StaticResource MutedText}" Margin="0,6,0,0"
+                               Text="SMB mode is on by default: results are filtered toward small/mid-size companies (~5–200 employees) and enterprise/brand indicators are excluded."/>
+                </StackPanel>
+
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <TextBlock Text="What to do" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,8"/>
+
+                        <StackPanel Margin="0,0,0,10">
+                            <TextBlock Text="1) Click into the Search box (we’ll focus it for you when you close this) and type a keyword describing the function you care about."/>
+                            <TextBlock Text="2) Pick sources (Remotive / RemoteOK / The Muse). Optionally enable Reddit and Google Reviews for enrichment." Margin="0,6,0,0"/>
+                            <TextBlock Text="3) Click Scan. Watch the status bar for progress and partial failures (sources can be temporarily unavailable)." Margin="0,6,0,0"/>
+                            <TextBlock Text="4) Sort by TotalScore and click a row to see matched keywords + full description + source links on the right." Margin="0,6,0,0"/>
+                            <TextBlock Text="5) Click the JobTitle hyperlink to open the posting in your browser." Margin="0,6,0,0"/>
+                        </StackPanel>
+
+                        <TextBlock Text="Good search examples" FontSize="16" FontWeight="SemiBold" Margin="0,8,0,8"/>
+                        <UniformGrid Columns="2" HorizontalAlignment="Stretch">
+                            <Border Background="#111827" BorderBrush="{StaticResource Border}" BorderThickness="1" CornerRadius="10" Padding="12" Margin="0,0,10,10">
+                                <StackPanel>
+                                    <TextBlock Text="Operations / Back Office" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                                    <TextBlock Foreground="{StaticResource MutedText}" Text="operations, back office, admin, process, workflow"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Background="#111827" BorderBrush="{StaticResource Border}" BorderThickness="1" CornerRadius="10" Padding="12" Margin="0,0,0,10">
+                                <StackPanel>
+                                    <TextBlock Text="Customer Support" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                                    <TextBlock Foreground="{StaticResource MutedText}" Text="support, customer success, CX, helpdesk"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Background="#111827" BorderBrush="{StaticResource Border}" BorderThickness="1" CornerRadius="10" Padding="12" Margin="0,0,10,10">
+                                <StackPanel>
+                                    <TextBlock Text="Finance / Billing" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                                    <TextBlock Foreground="{StaticResource MutedText}" Text="billing, invoicing, accounts payable, reconciliation"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Background="#111827" BorderBrush="{StaticResource Border}" BorderThickness="1" CornerRadius="10" Padding="12" Margin="0,0,0,10">
+                                <StackPanel>
+                                    <TextBlock Text="Sales Ops / RevOps" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                                    <TextBlock Foreground="{StaticResource MutedText}" Text="revops, sales ops, CRM, lead routing"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Background="#111827" BorderBrush="{StaticResource Border}" BorderThickness="1" CornerRadius="10" Padding="12" Margin="0,0,10,0">
+                                <StackPanel>
+                                    <TextBlock Text="Logistics / Warehouse" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                                    <TextBlock Foreground="{StaticResource MutedText}" Text="warehouse, logistics, dispatch, inventory"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Background="#111827" BorderBrush="{StaticResource Border}" BorderThickness="1" CornerRadius="10" Padding="12">
+                                <StackPanel>
+                                    <TextBlock Text="IT / Internal Tools" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                                    <TextBlock Foreground="{StaticResource MutedText}" Text="internal tools, IT, service desk, automation"/>
+                                </StackPanel>
+                            </Border>
+                        </UniformGrid>
+
+                        <TextBlock Text="Tips" FontSize="16" FontWeight="SemiBold" Margin="0,14,0,8"/>
+                        <TextBlock Foreground="{StaticResource MutedText}" Text="If you get too many results, increase Min Total. If you get none, set Min Total to 0 and try broader search terms. Higher TotalScore generally indicates stronger operational pain signals in the text."/>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,14,0,0">
+                    <Button Content="Got it — focus Search" Width="190" IsDefault="True" Click="GotIt_Click"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
