@@ -135,15 +135,35 @@ internal static class DiskAnalyzer
 
     private static void AppendDiskSummary(StringBuilder report)
     {
-        var drive = new DriveInfo("C");
-        var total = drive.TotalSize;
-        var free = drive.TotalFreeSpace;
-        var used = total - free;
+        report.AppendLine("Disk Summary");
+        report.AppendLine($"  {"Drive",5}  {"Total",12}  {"Free",12}");
 
-        report.AppendLine("Disk Summary (C:\\)");
-        report.AppendLine($"  Total: {FormatGb(total)}");
-        report.AppendLine($"  Used : {FormatGb(used)}");
-        report.AppendLine($"  Free : {FormatGb(free)}");
+        foreach (var drive in new[] { "C", "D" })
+        {
+            var (total, free) = TryGetDriveSpace(drive);
+            var label = $"{drive}:\\";
+            var totalText = total is { } totalBytes ? FormatGb(totalBytes) : "n/a";
+            var freeText = free is { } freeBytes ? FormatGb(freeBytes) : "n/a";
+            report.AppendLine($"  {label,5}  {totalText,12}  {freeText,12}");
+        }
+    }
+
+    private static (long? Total, long? Free) TryGetDriveSpace(string drive)
+    {
+        try
+        {
+            var info = new DriveInfo(drive);
+            if (!info.IsReady)
+            {
+                return (null, null);
+            }
+
+            return (info.TotalSize, info.TotalFreeSpace);
+        }
+        catch
+        {
+            return (null, null);
+        }
     }
 
     private static void AppendLargestFiles(StringBuilder report, List<FileEntry> files)

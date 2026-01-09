@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using DiskInsight.Monitoring.Ui;
 
 namespace DiskInsight;
 
@@ -22,6 +23,9 @@ internal sealed class MainForm : Form
         StartupApps,
     }
 
+    private readonly TabControl _tabs;
+    private readonly TabPage _outputTab;
+    private readonly TabPage _monitoringTab;
     private readonly TextBox _output;
     private readonly ToolStrip _navigationStrip;
     private readonly ToolStripButton _backToDiskSummaryButton;
@@ -34,6 +38,7 @@ internal sealed class MainForm : Form
     private readonly IEiCommentaryService _eiCommentaryService;
     private float _outputFontSizePt;
     private Font? _outputFont;
+    private Font? _menuFont;
     private bool _hoveringPath;
     private bool _isRunning;
     private ContentMode _contentMode;
@@ -82,6 +87,8 @@ internal sealed class MainForm : Form
         };
 
         var menu = new MenuStrip { Dock = DockStyle.Top };
+        _menuFont = new Font(menu.Font.FontFamily, 14f, menu.Font.Style);
+        menu.Font = _menuFont;
         var functions = new ToolStripMenuItem("&Functions");
         _functionsDiskReportMenuItem = new ToolStripMenuItem("Disk Report (Read-Only Scan)");
         _functionsDiskReportMenuItem.Click += async (_, _) => await RunDiskReportAsync();
@@ -131,8 +138,21 @@ internal sealed class MainForm : Form
         menu.Items.Add(view);
         MainMenuStrip = menu;
 
-        Controls.Add(_output);
-        Controls.Add(_navigationStrip);
+        _outputTab = new TabPage("Output");
+        _outputTab.Controls.Add(_output);
+        _outputTab.Controls.Add(_navigationStrip);
+
+        _monitoringTab = new TabPage("Monitoring");
+        _monitoringTab.Controls.Add(new MonitoringDashboardTab());
+
+        _tabs = new TabControl
+        {
+            Dock = DockStyle.Fill,
+        };
+        _tabs.TabPages.Add(_outputTab);
+        _tabs.TabPages.Add(_monitoringTab);
+
+        Controls.Add(_tabs);
         Controls.Add(menu);
 
         _output.ContextMenuStrip = CreateOutputContextMenu();
@@ -206,6 +226,7 @@ internal sealed class MainForm : Form
         if (disposing)
         {
             _outputFont?.Dispose();
+            _menuFont?.Dispose();
         }
 
         base.Dispose(disposing);

@@ -83,7 +83,8 @@ internal static class ProcessScanner
                         CpuUsagePercent: r.CpuUsagePercent,
                         TotalCpuTime: r.TotalCpuTime,
                         StartTime: r.StartTime))
-                    .OrderByDescending(i => i.WorkingSetBytes ?? -1)
+                    .OrderByDescending(i => i.CpuUsagePercent ?? -1)
+                    .ThenByDescending(i => i.WorkingSetBytes ?? -1)
                     .ThenBy(i => i.Pid ?? int.MaxValue)
                     .ToList();
 
@@ -97,7 +98,8 @@ internal static class ProcessScanner
                     TotalCpuUsagePercent: totalCpuUsagePercent,
                     Instances: instances);
             })
-            .OrderByDescending(g => g.TotalWorkingSetBytes)
+            .OrderByDescending(g => g.TotalCpuUsagePercent ?? -1)
+            .ThenByDescending(g => g.TotalWorkingSetBytes)
             .ThenBy(g => g.Name, StringComparer.OrdinalIgnoreCase)
             .ToList();
     }

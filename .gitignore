@@ -54,5 +54,16 @@ __pycache__/
 /ai-bots/Thermostats/Web/TBI-dashboard_public.html
 /ai-bots/Thermostats/scripts/Dashboard_modified.py
 
+# PainRadar: ignore build outputs (keep source)
+/ai-bots/PainRadar/**/bin/
+/ai-bots/PainRadar/**/obj/
+/ai-bots/PainRadar/painradar.log
+
+# DiskInsight: ignore publish outputs (binaries)
+/ai-bots/DiskInsight/publish/
+
+# Shared secrets/config (not in git)
+/ai-bots/shared/
+
 # Allow bridge folder contents to be tracked regardless of extension
 !/bridge/
