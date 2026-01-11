@@ -9,7 +9,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 
-class EatReminderWorker(
+class EatWorker(
     context: Context,
     workerParams: WorkerParameters
 ) : CoroutineWorker(context, workerParams) {
@@ -60,7 +60,7 @@ class EatReminderWorker(
     }
 
     companion object {
-        const val WORK_NAME = "EatReminderWorker"
+        const val WORK_NAME = "EatWorker"
         const val CHANNEL_ID = "eat_reminder_channel"
         const val NOTIFICATION_ID = 2048
         private const val NOTIFICATION_TEXT = "Eat"
