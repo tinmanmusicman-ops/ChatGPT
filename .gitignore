@@ -54,6 +54,9 @@ __pycache__/
 /ai-bots/Thermostats/Web/TBI-dashboard_public.html
 /ai-bots/Thermostats/scripts/Dashboard_modified.py
 
+# Android build outputs that should stay local
+/ai-bots/Eat/**/build/
+
 # PainRadar: ignore build outputs (keep source)
 /ai-bots/PainRadar/**/bin/
 /ai-bots/PainRadar/**/obj/
