@@ -105,6 +105,13 @@ internal sealed class ProcessCpuUsageSampler
         }
     }
 
+    public void Reset()
+    {
+        lock (_gate)
+        {
+            _stateByPid.Clear();
+        }
+    }
+
     private sealed record SampleState(TimeSpan LastTotalCpu, long LastTick);
 }
-

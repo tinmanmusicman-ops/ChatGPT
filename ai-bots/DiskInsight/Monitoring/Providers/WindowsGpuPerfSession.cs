@@ -33,8 +33,19 @@ internal sealed class WindowsGpuPerfSession
         {
             lock (_gate)
             {
-                return _lastError;
+                    return _lastError;
+                }
             }
+        }
+
+    public void Reset()
+    {
+        lock (_gate)
+        {
+            _lastRead = null;
+            _lastReadTick = 0;
+            _lastError = null;
+            _lastSummaryLogTick = 0;
         }
     }
 

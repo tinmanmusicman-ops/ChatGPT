@@ -21,6 +21,8 @@ public sealed class MonitoringDashboardTab : UserControl
     private readonly StackedBarControl _networkBar;
     private readonly Label _cpuStatusLabel;
     private readonly Label _gpuStatusLabel;
+    private readonly Label _intelGpuNameLabel;
+    private readonly Label _nvidiaGpuNameLabel;
     private readonly CpuTemperatureProvider _cpuProvider = new();
     private readonly CpuUsageProvider _cpuUsageProvider = new();
     private readonly GpuUsageProvider _gpuUsageProvider = new();
@@ -175,6 +177,18 @@ public sealed class MonitoringDashboardTab : UserControl
             ForeColor = SystemColors.GrayText,
             Padding = new Padding(10, 0, 10, 0),
             Text = "GPU Fan: n/a",
+        };
+        _intelGpuNameLabel = new Label
+        {
+            AutoSize = true,
+            ForeColor = SystemColors.GrayText,
+            Text = "Intel graphics",
+        };
+        _nvidiaGpuNameLabel = new Label
+        {
+            AutoSize = true,
+            ForeColor = SystemColors.GrayText,
+            Text = "NVIDIA GPU",
         };
         var gpuStatusHeightPx = _gpuStatusLabel.Height;
         _gpuStatusLabel.AutoSize = false;
@@ -348,6 +362,66 @@ public sealed class MonitoringDashboardTab : UserControl
         gpuProcHost.Controls.Add(_gpuProcessList);
         gpuProcHost.Controls.Add(gpuProcLabel);
 
+        var gpuMetricLabelRow = new TableLayoutPanel
+        {
+            Dock = DockStyle.Bottom,
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            ColumnCount = 6,
+            RowCount = 1,
+            Margin = Padding.Empty,
+            Padding = new Padding(10, 0, 10, 0),
+        };
+        for (var c = 0; c < gpuMetricLabelRow.ColumnCount; c++)
+        {
+            gpuMetricLabelRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100f / gpuMetricLabelRow.ColumnCount));
+        }
+        gpuMetricLabelRow.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+
+        var legendLabels = new[] { "Usg", "Tmp", "CPU", "Usg", "Tmp", "CPU" };
+        for (var i = 0; i < legendLabels.Length; i++)
+        {
+            var label = new Label
+            {
+                Dock = DockStyle.Fill,
+                Text = legendLabels[i],
+                ForeColor = SystemColors.GrayText,
+                Font = new Font(Font.FontFamily, Font.SizeInPoints, FontStyle.Regular),
+                TextAlign = ContentAlignment.MiddleCenter,
+                Margin = new Padding(4, 0, 4, 0),
+            };
+            gpuMetricLabelRow.Controls.Add(label, i, 0);
+        }
+
+        var gpuNameRow = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Top,
+            Height = (int)Math.Round(0.26 * DeviceDpi),
+            FlowDirection = FlowDirection.LeftToRight,
+            WrapContents = false,
+            Padding = new Padding(10, 0, 10, 0),
+        };
+        gpuNameRow.Controls.Add(_intelGpuNameLabel);
+        gpuNameRow.Controls.Add(_nvidiaGpuNameLabel);
+
+        var gpuNameArea = new Panel
+        {
+            Dock = DockStyle.Top,
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            Padding = new Padding(10, 0, 10, 0),
+        };
+        gpuNameArea.Controls.Add(gpuNameRow);
+
+        var gpuBarHost = new Panel
+        {
+            Dock = DockStyle.Fill,
+            Margin = Padding.Empty,
+            Padding = Padding.Empty,
+        };
+        gpuBarHost.Controls.Add(gpuMetricLabelRow);
+        gpuBarHost.Controls.Add(_gpuBars);
+
         var memHeightPx = (int)Math.Round(0.65 * DeviceDpi);
         var memHost = new Panel
         {
@@ -449,7 +523,8 @@ public sealed class MonitoringDashboardTab : UserControl
         _gpuStatusLabel.Dock = DockStyle.Top;
         gpuTitle.Margin = Padding.Empty;
         _gpuStatusLabel.Margin = Padding.Empty;
-        gpuPanel.Controls.Add(_gpuBars);
+        gpuPanel.Controls.Add(gpuBarHost);
+        gpuPanel.Controls.Add(gpuNameArea);
         gpuPanel.Controls.Add(_gpuStatusLabel);
         gpuPanel.Controls.Add(gpuTitle);
 
@@ -530,12 +605,7 @@ public sealed class MonitoringDashboardTab : UserControl
         HandleCreated += (_, _) => UpdateRefreshTimerState();
         HandleDestroyed += (_, _) => UpdateRefreshTimerState();
 
-        UpdateRefreshTimerState();
-
-        _ = SnapshotCpuAsync();
-        _ = SnapshotMemoryAsync();
-        _ = SnapshotDrivesAsync();
-        _ = SnapshotNetworkAsync();
+        RestartTelemetryLoop();
     }
 
     private static void CenterCpuInfoLine(
@@ -677,6 +747,49 @@ public sealed class MonitoringDashboardTab : UserControl
         }
     }
 
+    private void RestartTelemetryLoop()
+    {
+        ProcessCpuUsageSampler.Shared.Reset();
+        WindowsGpuPerfSession.Shared.Reset();
+        LibreHardwareGpuSession.Shared.Reset();
+        HwinfoSharedMemorySession.Shared.Reset();
+
+        _snapshotInFlight = false;
+        _memoryInFlight = false;
+        _drivesInFlight = false;
+        _networkInFlight = false;
+
+        Array.Fill(_lastCoreUsage, null);
+        Array.Fill(_lastCoreTempC, null);
+        Array.Fill(_lastThreadUsage, null);
+        _lastIntelGpuUsage = null;
+        _lastIntelGpuTempC = null;
+        _lastIntelGpuCpu = null;
+        _lastNvidiaGpuUsage = null;
+        _lastNvidiaGpuTempC = null;
+        _lastNvidiaGpuCpu = null;
+        _lastUsbProxyUsage = null;
+        _lastUsbDriverCpu = null;
+        _lastUsbIoMBps = null;
+
+        _cpuStatusLabel.Text = "CPU Fan: n/a";
+        _gpuStatusLabel.Text = "GPU Fan: n/a";
+        _intelGpuNameLabel.Text = "Intel graphics";
+        _nvidiaGpuNameLabel.Text = "NVIDIA GPU";
+
+        UpdateRefreshTimerState();
+
+        _ = SnapshotCpuAsync();
+        _ = SnapshotMemoryAsync();
+        _ = SnapshotDrivesAsync();
+        _ = SnapshotNetworkAsync();
+
+        _cpuStatusLabel.Invalidate();
+        _cpuStatusLabel.Refresh();
+        _gpuStatusLabel.Invalidate();
+        _gpuStatusLabel.Refresh();
+    }
+
     private async Task SnapshotCpuAsync()
     {
         if (_snapshotInFlight)
@@ -751,6 +864,10 @@ public sealed class MonitoringDashboardTab : UserControl
 
                 _cpuStatusLabel.Text = fan.CpuFanRpm is null ? "CPU Fan: n/a" : $"CPU Fan: {fan.CpuFanRpm.Value} RPM";
                 _gpuStatusLabel.Text = fan.GpuFanRpm is null ? "GPU Fan: n/a" : $"GPU Fan: {fan.GpuFanRpm.Value} RPM";
+                var intelName = string.IsNullOrWhiteSpace(gpu.Intel?.Name) ? "Intel graphics" : gpu.Intel!.Name!.Trim();
+                var nvidiaName = string.IsNullOrWhiteSpace(gpu.Nvidia?.Name) ? "NVIDIA GPU" : gpu.Nvidia!.Name!.Trim();
+                _intelGpuNameLabel.Text = intelName;
+                _nvidiaGpuNameLabel.Text = nvidiaName;
 
                 if (gpu.Intel?.CoreLoadPercent is { } igpuUse)
                 {

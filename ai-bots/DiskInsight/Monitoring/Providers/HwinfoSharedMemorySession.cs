@@ -128,9 +128,28 @@ internal sealed class HwinfoSharedMemorySession : IDisposable
             _lastRead = null;
         }
     }
+
+    public void Reset()
+    {
+        lock (_gate)
+        {
+            try
+            {
+                _reader?.Dispose();
+            }
+            catch
+            {
+            }
+
+            _reader = null;
+            _lastRead = null;
+            _lastReadTick = 0;
+            _lastError = null;
+            _lastRawLogTick = 0;
+        }
+    }
 }
 
 internal sealed record HwinfoReadResult(
     IReadOnlyList<SensorReading> Sensors,
     string? Error);
-

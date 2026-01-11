@@ -33,6 +33,28 @@ internal sealed class LibreHardwareGpuSession : IDisposable
         }
     }
 
+    public void Reset()
+    {
+        lock (_gate)
+        {
+            try
+            {
+                _computer?.Close();
+            }
+            catch
+            {
+            }
+
+            _computer = null;
+            _gpus = null;
+            _lastRead = null;
+            _lastError = null;
+            _lastReadTick = 0;
+            _lastSummaryLogTick = 0;
+            _lastRawLogTick = 0;
+        }
+    }
+
     public GpuReadResult ReadAll()
     {
         lock (_gate)
