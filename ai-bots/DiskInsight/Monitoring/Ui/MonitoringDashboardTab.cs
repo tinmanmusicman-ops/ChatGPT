@@ -28,6 +28,7 @@ public sealed class MonitoringDashboardTab : UserControl
     private readonly MemoryStatusProvider _memoryProvider = new();
     private readonly DriveUsageProvider _driveProvider = new();
     private readonly NetworkUsageProvider _networkProvider = new();
+    private readonly HwinfoFanSpeedProvider _fanSpeedProvider = new();
     private readonly System.Windows.Forms.Timer _refreshTimer;
     private readonly System.Windows.Forms.Timer _memoryTimer;
     private readonly System.Windows.Forms.Timer _networkTimer;
@@ -36,13 +37,13 @@ public sealed class MonitoringDashboardTab : UserControl
     private volatile bool _drivesInFlight;
     private volatile bool _networkInFlight;
     private readonly double?[] _lastCoreUsage = new double?[4];
-    private readonly double?[] _lastCoreTempF = new double?[4];
+    private readonly double?[] _lastCoreTempC = new double?[4];
     private readonly double?[] _lastThreadUsage = new double?[8];
     private double? _lastIntelGpuUsage;
-    private double? _lastIntelGpuTempF;
+    private double? _lastIntelGpuTempC;
     private double? _lastIntelGpuCpu;
     private double? _lastNvidiaGpuUsage;
-    private double? _lastNvidiaGpuTempF;
+    private double? _lastNvidiaGpuTempC;
     private double? _lastNvidiaGpuCpu;
     private double? _lastUsbProxyUsage;
     private double? _lastUsbDriverCpu;
@@ -110,8 +111,8 @@ public sealed class MonitoringDashboardTab : UserControl
         {
             AutoSize = true,
             ForeColor = SystemColors.GrayText,
-            Padding = new Padding(0, 4, 10, 0),
-            Text = "Status: waiting for first snapshot...",
+            Padding = new Padding(10, 4, 10, 0),
+            Text = "CPU Fan: n/a",
         };
 
         _cpuSnapshotButton = new Button
@@ -120,6 +121,15 @@ public sealed class MonitoringDashboardTab : UserControl
             AutoSize = true,
         };
         _cpuSnapshotButton.Click += async (_, _) => await SnapshotCpuAsync();
+
+        var cpuStatusHeightPx = _cpuStatusLabel.Height;
+        _cpuStatusLabel.AutoSize = false;
+        _cpuStatusLabel.Height = cpuStatusHeightPx;
+        _cpuStatusLabel.TextAlign = ContentAlignment.MiddleCenter;
+
+        cpuHeader.AutoSize = false;
+        cpuHeader.Height = cpuStatusHeightPx;
+        cpuHeader.Width = 0;
 
         _cpuCoreBars = new GroupedBarChartControl
         {
@@ -144,17 +154,17 @@ public sealed class MonitoringDashboardTab : UserControl
                 DisplayLabel: "Usg"),
             new BarSeries(
                 Key: "temp",
-                Minimum: 140,
-                Maximum: 220,
-                Units: "\u00B0F",
+                Minimum: 20,
+                Maximum: 105,
+                Units: "\u00B0C",
                 ValueFormat: "0.0",
                 Ranges: new[]
                 {
-                    new GaugeRange(140, 170, Color.FromArgb(0x2E, 0xCC, 0x71)), // green
-                    new GaugeRange(170, 175, Color.FromArgb(0xF1, 0xC4, 0x0F)), // yellow
-                    new GaugeRange(175, 198, Color.FromArgb(0xF3, 0x9C, 0x12)), // orange
-                    new GaugeRange(198, 200, Color.FromArgb(0xE7, 0x4C, 0x3C)), // red
-                    new GaugeRange(200, 220, Color.FromArgb(0xFF, 0x00, 0x00)), // bright red
+                    new GaugeRange(20, 70, Color.FromArgb(0x2E, 0xCC, 0x71)),  // green
+                    new GaugeRange(70, 80, Color.FromArgb(0xF1, 0xC4, 0x0F)),  // yellow
+                    new GaugeRange(80, 90, Color.FromArgb(0xF3, 0x9C, 0x12)),  // orange
+                    new GaugeRange(90, 100, Color.FromArgb(0xE7, 0x4C, 0x3C)), // red
+                    new GaugeRange(100, 105, Color.FromArgb(0xFF, 0x00, 0x00)), // bright red
                 },
                 DisplayLabel: "Tmp"),
         });
@@ -163,9 +173,13 @@ public sealed class MonitoringDashboardTab : UserControl
         {
             AutoSize = true,
             ForeColor = SystemColors.GrayText,
-            Padding = new Padding(0, 0, 10, 0),
-            Text = "GPU: waiting for first snapshot...",
+            Padding = new Padding(10, 0, 10, 0),
+            Text = "GPU Fan: n/a",
         };
+        var gpuStatusHeightPx = _gpuStatusLabel.Height;
+        _gpuStatusLabel.AutoSize = false;
+        _gpuStatusLabel.Height = gpuStatusHeightPx;
+        _gpuStatusLabel.TextAlign = ContentAlignment.MiddleCenter;
 
         _gpuBars = new GroupedBarChartControl
         {
@@ -190,17 +204,17 @@ public sealed class MonitoringDashboardTab : UserControl
                 DisplayLabel: "Usg"),
             new BarSeries(
                 Key: "temp",
-                Minimum: 90,
-                Maximum: 220,
-                Units: "\u00B0F",
+                Minimum: 32,
+                Maximum: 105,
+                Units: "\u00B0C",
                 ValueFormat: "0.0",
                 Ranges: new[]
                 {
-                    new GaugeRange(90, 150, Color.FromArgb(0x2E, 0xCC, 0x71)),  // green
-                    new GaugeRange(150, 165, Color.FromArgb(0xF1, 0xC4, 0x0F)), // yellow
-                    new GaugeRange(165, 185, Color.FromArgb(0xF3, 0x9C, 0x12)), // orange
-                    new GaugeRange(185, 200, Color.FromArgb(0xE7, 0x4C, 0x3C)), // red
-                    new GaugeRange(200, 220, Color.FromArgb(0xFF, 0x00, 0x00)), // bright red
+                    new GaugeRange(32, 66, Color.FromArgb(0x2E, 0xCC, 0x71)),   // green
+                    new GaugeRange(66, 73.5, Color.FromArgb(0xF1, 0xC4, 0x0F)), // yellow
+                    new GaugeRange(73.5, 85, Color.FromArgb(0xF3, 0x9C, 0x12)), // orange
+                    new GaugeRange(85, 93.5, Color.FromArgb(0xE7, 0x4C, 0x3C)), // red
+                    new GaugeRange(93.5, 105, Color.FromArgb(0xFF, 0x00, 0x00)), // bright red
                 },
                 DisplayLabel: "Tmp"),
             new BarSeries(
@@ -271,6 +285,7 @@ public sealed class MonitoringDashboardTab : UserControl
             WrapContents = false,
             Padding = new Padding(0, 0, 0, 8),
         };
+        cpuTopRow.Layout += (_, _) => CenterCpuInfoLine(cpuTopRow, cpuHeader, _cpuStatusLabel, _cpuSnapshotButton);
         cpuTopRow.Controls.Add(cpuHeader);
         cpuTopRow.Controls.Add(_cpuStatusLabel);
         cpuTopRow.Controls.Add(_cpuSnapshotButton);
@@ -278,28 +293,8 @@ public sealed class MonitoringDashboardTab : UserControl
         var chartWidthPx = (int)Math.Round(3.0 * DeviceDpi);
         var chartHeightPx = (int)Math.Round(2.0 * DeviceDpi);
 
-        var cpuChartHost = new Panel
-        {
-            Size = new Size(chartWidthPx, chartHeightPx),
-            MinimumSize = new Size(chartWidthPx, chartHeightPx),
-            MaximumSize = new Size(chartWidthPx, chartHeightPx),
-            Margin = new Padding(0, 6, 12, 0),
-        };
-
         _cpuCoreBars.Dock = DockStyle.Fill;
-        cpuChartHost.Controls.Add(_cpuCoreBars);
-
-        var cpuChartContainer = new Panel
-        {
-            Size = new Size(chartWidthPx, chartHeightPx + cpuTitle.Height),
-            MinimumSize = new Size(chartWidthPx, chartHeightPx + cpuTitle.Height),
-            MaximumSize = new Size(chartWidthPx, chartHeightPx + cpuTitle.Height),
-            Margin = new Padding(0, 6, 12, 0),
-        };
-        cpuChartHost.Margin = Padding.Empty;
-        cpuTitle.Margin = Padding.Empty;
-        cpuChartContainer.Controls.Add(cpuChartHost);
-        cpuChartContainer.Controls.Add(cpuTitle);
+        _cpuCoreBars.MinimumSize = new Size(chartWidthPx, chartHeightPx);
 
         var gpuTitle = new Label
         {
@@ -309,6 +304,8 @@ public sealed class MonitoringDashboardTab : UserControl
             TextAlign = ContentAlignment.MiddleCenter,
             Font = new Font(Font.FontFamily, Font.SizeInPoints + 3f, FontStyle.Bold),
         };
+        _gpuBars.Dock = DockStyle.Fill;
+        _gpuBars.MinimumSize = new Size(chartWidthPx, (int)Math.Round(3.0 * DeviceDpi));
 
         _gpuProcessList = new ListView
         {
@@ -345,38 +342,11 @@ public sealed class MonitoringDashboardTab : UserControl
         var gpuProcHeightPx = (int)Math.Round(1.25 * DeviceDpi);
         var gpuProcHost = new Panel
         {
-            Dock = DockStyle.Bottom,
             Height = gpuProcHeightPx,
             Margin = Padding.Empty,
         };
         gpuProcHost.Controls.Add(_gpuProcessList);
         gpuProcHost.Controls.Add(gpuProcLabel);
-
-        var gpuTotalHeightPx = (int)Math.Round(3.60 * DeviceDpi);
-        var gpuHost = new Panel
-        {
-            Size = new Size(chartWidthPx, gpuTotalHeightPx),
-            MinimumSize = new Size(chartWidthPx, gpuTotalHeightPx),
-            MaximumSize = new Size(chartWidthPx, gpuTotalHeightPx),
-            Margin = new Padding(0, 6, 12, 0),
-        };
-
-        var gpuChartHost = new Panel
-        {
-            Dock = DockStyle.Fill,
-            Margin = Padding.Empty,
-        };
-        _gpuBars.Dock = DockStyle.Fill;
-        gpuChartHost.Controls.Add(_gpuBars);
-
-        _gpuStatusLabel.Dock = DockStyle.Top;
-        _gpuStatusLabel.Margin = Padding.Empty;
-        gpuTitle.Margin = Padding.Empty;
-
-        gpuHost.Controls.Add(gpuChartHost);
-        gpuHost.Controls.Add(gpuProcHost);
-        gpuHost.Controls.Add(_gpuStatusLabel);
-        gpuHost.Controls.Add(gpuTitle);
 
         var memHeightPx = (int)Math.Round(0.65 * DeviceDpi);
         var memHost = new Panel
@@ -415,56 +385,19 @@ public sealed class MonitoringDashboardTab : UserControl
         };
         nHost.Controls.Add(_networkBar);
 
-        var leftStack = new TableLayoutPanel
+        var threadRow = new TableLayoutPanel
         {
-            AutoSize = true,
-            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            Dock = DockStyle.Fill,
             Margin = Padding.Empty,
-            Padding = Padding.Empty,
-            ColumnCount = 1,
-            RowCount = 6,
+            Padding = new Padding(0, 6, 0, 0),
+            ColumnCount = 8,
+            RowCount = 1,
         };
-        leftStack.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, chartWidthPx));
-        leftStack.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        leftStack.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        leftStack.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        leftStack.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        leftStack.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        leftStack.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        leftStack.Controls.Add(cpuChartContainer, 0, 0);
-        leftStack.Controls.Add(gpuHost, 0, 1);
-        leftStack.Controls.Add(memHost, 0, 2);
-        leftStack.Controls.Add(cHost, 0, 3);
-        leftStack.Controls.Add(dHost, 0, 4);
-        leftStack.Controls.Add(nHost, 0, 5);
-
-        var cpuRightPlaceholder = new Panel
+        for (var c = 0; c < threadRow.ColumnCount; c++)
         {
-            Dock = DockStyle.Fill,
-        };
-
-        var threadHeader = new Label
-        {
-            Dock = DockStyle.Top,
-            Height = (int)Math.Round(0.30 * DeviceDpi),
-            Text = "Threads",
-            TextAlign = ContentAlignment.MiddleCenter,
-            Font = new Font(Font.FontFamily, Font.SizeInPoints + 2f, FontStyle.Bold),
-        };
-
-        var threadGrid = new TableLayoutPanel
-        {
-            Dock = DockStyle.Fill,
-            ColumnCount = 2,
-            RowCount = 4,
-            Padding = new Padding(8, 8, 8, 8),
-        };
-        threadGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50f));
-        threadGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50f));
-        for (var r = 0; r < 4; r++)
-        {
-            threadGrid.RowStyles.Add(new RowStyle(SizeType.Percent, 25f));
+            threadRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 12.5f));
         }
+        threadRow.RowStyles.Add(new RowStyle(SizeType.Percent, 100f));
 
         var threadUsageRanges = new[]
         {
@@ -484,51 +417,111 @@ public sealed class MonitoringDashboardTab : UserControl
                 Units = "%",
                 ValueFormat = "0.0",
                 Title = "T" + (i + 1).ToString(),
-                Margin = new Padding(6),
-                MinimumSize = new Size((int)Math.Round(0.90 * DeviceDpi), (int)Math.Round(0.90 * DeviceDpi)),
+                Margin = new Padding(4),
+                MinimumSize = new Size((int)Math.Round(0.60 * DeviceDpi), (int)Math.Round(0.60 * DeviceDpi)),
             };
             gauge.SetRanges(threadUsageRanges);
             _threadGauges[i] = gauge;
-
-            var col = i % 2;
-            var row = i / 2;
-            threadGrid.Controls.Add(gauge, col, row);
+            threadRow.Controls.Add(gauge, i, 0);
         }
 
-        cpuRightPlaceholder.Controls.Add(threadGrid);
-        cpuRightPlaceholder.Controls.Add(threadHeader);
+        var cpuPanel = new Panel
+        {
+            Dock = DockStyle.Fill,
+            Margin = Padding.Empty,
+            Padding = Padding.Empty,
+        };
+        cpuTitle.Dock = DockStyle.Top;
+        cpuTopRow.Dock = DockStyle.Top;
+        cpuTitle.Margin = Padding.Empty;
+        cpuTopRow.Margin = Padding.Empty;
+        cpuPanel.Controls.Add(_cpuCoreBars);
+        cpuPanel.Controls.Add(cpuTopRow);
+        cpuPanel.Controls.Add(cpuTitle);
 
-        var cpuGrid = new TableLayoutPanel
+        var gpuPanel = new Panel
+        {
+            Dock = DockStyle.Fill,
+            Margin = Padding.Empty,
+            Padding = Padding.Empty,
+        };
+        gpuTitle.Dock = DockStyle.Top;
+        _gpuStatusLabel.Dock = DockStyle.Top;
+        gpuTitle.Margin = Padding.Empty;
+        _gpuStatusLabel.Margin = Padding.Empty;
+        gpuPanel.Controls.Add(_gpuBars);
+        gpuPanel.Controls.Add(_gpuStatusLabel);
+        gpuPanel.Controls.Add(gpuTitle);
+
+        var topRowHeightPx = cpuTitle.Height + cpuTopRow.GetPreferredSize(Size.Empty).Height + chartHeightPx + (int)Math.Round(0.20 * DeviceDpi);
+        var threadRowHeightPx = (int)Math.Round(1.15 * DeviceDpi);
+
+        var topRow = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            Margin = Padding.Empty,
+            Padding = Padding.Empty,
+            ColumnCount = 2,
+            RowCount = 1,
+        };
+        topRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50f));
+        topRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50f));
+        topRow.RowStyles.Add(new RowStyle(SizeType.Percent, 100f));
+        topRow.Controls.Add(cpuPanel, 0, 0);
+        topRow.Controls.Add(gpuPanel, 1, 0);
+
+        gpuProcHost.Dock = DockStyle.None;
+        gpuProcHost.Width = (chartWidthPx * 2) + 12;
+        gpuProcHost.Margin = new Padding(0, 6, 0, 0);
+
+        var bottomFlow = new FlowLayoutPanel
         {
             Dock = DockStyle.Top,
             AutoSize = true,
             AutoSizeMode = AutoSizeMode.GrowAndShrink,
-            ColumnCount = 2,
-            RowCount = 2,
+            Margin = Padding.Empty,
+            Padding = Padding.Empty,
+            FlowDirection = FlowDirection.LeftToRight,
+            WrapContents = true,
         };
-        cpuGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, chartWidthPx + 12));
-        cpuGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100f));
-        cpuGrid.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        cpuGrid.RowStyles.Add(new RowStyle(SizeType.Percent, 100f));
+        bottomFlow.Controls.Add(memHost);
+        bottomFlow.Controls.Add(cHost);
+        bottomFlow.Controls.Add(dHost);
+        bottomFlow.Controls.Add(nHost);
+        bottomFlow.Controls.Add(gpuProcHost);
 
-        cpuGrid.Controls.Add(cpuTopRow, 0, 0);
-        cpuGrid.SetColumnSpan(cpuTopRow, 2);
-        cpuGrid.Controls.Add(leftStack, 0, 1);
-        cpuGrid.Controls.Add(cpuRightPlaceholder, 1, 1);
-
-        var cpuScrollHost = new Panel
+        var bottomScrollHost = new Panel
         {
             Dock = DockStyle.Fill,
             AutoScroll = true,
+            Margin = Padding.Empty,
+            Padding = Padding.Empty,
         };
-        cpuScrollHost.Controls.Add(cpuGrid);
-        cpuPage.Controls.Add(cpuScrollHost);
+        bottomScrollHost.Controls.Add(bottomFlow);
 
-        cpuScrollHost.MouseEnter += (_, _) =>
+        var layoutRoot = new TableLayoutPanel
         {
-            try { cpuScrollHost.Focus(); } catch { }
+            Dock = DockStyle.Fill,
+            Margin = Padding.Empty,
+            Padding = Padding.Empty,
+            ColumnCount = 1,
+            RowCount = 3,
         };
-        EnableMouseWheelScrolling(cpuGrid, cpuScrollHost);
+        layoutRoot.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100f));
+        layoutRoot.RowStyles.Add(new RowStyle(SizeType.Absolute, topRowHeightPx));
+        layoutRoot.RowStyles.Add(new RowStyle(SizeType.Absolute, threadRowHeightPx));
+        layoutRoot.RowStyles.Add(new RowStyle(SizeType.Percent, 100f));
+        layoutRoot.Controls.Add(topRow, 0, 0);
+        layoutRoot.Controls.Add(threadRow, 0, 1);
+        layoutRoot.Controls.Add(bottomScrollHost, 0, 2);
+
+        cpuPage.Controls.Add(layoutRoot);
+
+        bottomScrollHost.MouseEnter += (_, _) =>
+        {
+            try { bottomScrollHost.Focus(); } catch { }
+        };
+        EnableMouseWheelScrolling(bottomFlow, bottomScrollHost);
 
         _metricTabs.TabPages.Add(cpuPage);
         Controls.Add(_metricTabs);
@@ -537,10 +530,49 @@ public sealed class MonitoringDashboardTab : UserControl
         HandleCreated += (_, _) => UpdateRefreshTimerState();
         HandleDestroyed += (_, _) => UpdateRefreshTimerState();
 
+        UpdateRefreshTimerState();
+
         _ = SnapshotCpuAsync();
         _ = SnapshotMemoryAsync();
         _ = SnapshotDrivesAsync();
         _ = SnapshotNetworkAsync();
+    }
+
+    private static void CenterCpuInfoLine(
+        FlowLayoutPanel row,
+        Control leftSpacer,
+        Label infoLabel,
+        Control rightControl)
+    {
+        if (row.ClientSize.Width <= 0)
+        {
+            return;
+        }
+
+        var innerWidth = row.ClientSize.Width - row.Padding.Horizontal;
+        if (innerWidth <= 0)
+        {
+            return;
+        }
+
+        var rightTotal = rightControl.Width + rightControl.Margin.Horizontal;
+        var leftMargin = leftSpacer.Margin.Horizontal;
+        var desiredLeftTotal = rightTotal;
+        var leftWidth = Math.Max(0, desiredLeftTotal - leftMargin);
+
+        if (leftSpacer.Width != leftWidth)
+        {
+            leftSpacer.Width = leftWidth;
+        }
+
+        var leftTotal = leftWidth + leftMargin;
+        var infoTotal = innerWidth - leftTotal - rightTotal;
+        var infoWidth = Math.Max(0, infoTotal - infoLabel.Margin.Horizontal);
+
+        if (infoLabel.Width != infoWidth)
+        {
+            infoLabel.Width = infoWidth;
+        }
     }
 
     private static void EnableMouseWheelScrolling(Control root, ScrollableControl scrollHost)
@@ -625,7 +657,7 @@ public sealed class MonitoringDashboardTab : UserControl
 
     private void UpdateRefreshTimerState()
     {
-        if (!IsHandleCreated || IsDisposed)
+        if (IsDisposed)
         {
             return;
         }
@@ -658,25 +690,27 @@ public sealed class MonitoringDashboardTab : UserControl
             var tempTask = Task.Run(_cpuProvider.Snapshot);
             var usageTask = Task.Run(() => _cpuUsageProvider.ReadCoreUsagePercentById(expectedCores: 8));
             var gpuTask = Task.Run(_gpuUsageProvider.Read);
-            await Task.WhenAll(tempTask, usageTask, gpuTask);
+            var fanTask = Task.Run(_fanSpeedProvider.Read);
+            await Task.WhenAll(tempTask, usageTask, gpuTask, fanTask);
 
             var snapshot = tempTask.Result;
             var usageByCore = usageTask.Result;
             var gpu = gpuTask.Result;
+            var fan = fanTask.Result;
 
             if (!IsDisposed)
             {
                 var logicalLoads = _logicalCpuProvider.ReadUsagePercentPerLogicalProcessor();
 
-                var coreTempsF = new double?[4];
+                var coreTempsC = new double?[4];
                 foreach (var core in snapshot.Cpu.Cores)
                 {
-                    if (core.Id < 0 || core.Id >= coreTempsF.Length)
+                    if (core.Id < 0 || core.Id >= coreTempsC.Length)
                     {
                         continue;
                     }
 
-                    coreTempsF[core.Id] = Math.Round((core.TempC * 9d / 5d) + 32d, 1);
+                    coreTempsC[core.Id] = Math.Round(core.TempC, 1);
                 }
 
                 // Hold last known values if a particular sensor drops out for a tick.
@@ -687,9 +721,9 @@ public sealed class MonitoringDashboardTab : UserControl
                         _lastCoreUsage[i] = use;
                     }
 
-                    if (coreTempsF[i] is { } tf)
+                    if (coreTempsC[i] is { } tc)
                     {
-                        _lastCoreTempF[i] = tf;
+                        _lastCoreTempC[i] = tc;
                     }
                 }
 
@@ -710,10 +744,13 @@ public sealed class MonitoringDashboardTab : UserControl
                 {
                     var group = "C" + (i + 1).ToString();
                     items[(i * 2) + 0] = new GroupedBarItem(group, "use", _lastCoreUsage[i]);
-                    items[(i * 2) + 1] = new GroupedBarItem(group, "temp", _lastCoreTempF[i]);
+                    items[(i * 2) + 1] = new GroupedBarItem(group, "temp", _lastCoreTempC[i]);
                 }
 
                 _cpuCoreBars.SetItems(items);
+
+                _cpuStatusLabel.Text = fan.CpuFanRpm is null ? "CPU Fan: n/a" : $"CPU Fan: {fan.CpuFanRpm.Value} RPM";
+                _gpuStatusLabel.Text = fan.GpuFanRpm is null ? "GPU Fan: n/a" : $"GPU Fan: {fan.GpuFanRpm.Value} RPM";
 
                 if (gpu.Intel?.CoreLoadPercent is { } igpuUse)
                 {
@@ -722,13 +759,10 @@ public sealed class MonitoringDashboardTab : UserControl
 
                 if (gpu.Intel?.CoreTempC is { } igpuTempC)
                 {
-                    _lastIntelGpuTempF = Math.Round((igpuTempC * 9d / 5d) + 32d, 1);
+                    _lastIntelGpuTempC = Math.Round(igpuTempC, 1);
                 }
 
-                if (gpu.Intel?.CpuPercent is { } igpuCpu)
-                {
-                    _lastIntelGpuCpu = igpuCpu;
-                }
+                _lastIntelGpuCpu = gpu.Intel?.CpuPercent;
 
                 if (gpu.Nvidia?.CoreLoadPercent is { } dgpuUse)
                 {
@@ -737,58 +771,47 @@ public sealed class MonitoringDashboardTab : UserControl
 
                 if (gpu.Nvidia?.CoreTempC is { } dgpuTempC)
                 {
-                    _lastNvidiaGpuTempF = Math.Round((dgpuTempC * 9d / 5d) + 32d, 1);
+                    _lastNvidiaGpuTempC = Math.Round(dgpuTempC, 1);
                 }
 
-                if (gpu.Nvidia?.CpuPercent is { } dgpuCpu)
-                {
-                    _lastNvidiaGpuCpu = dgpuCpu;
-                }
+                _lastNvidiaGpuCpu = gpu.Nvidia?.CpuPercent;
 
                 if (gpu.Usb?.CoreLoadPercent is { } usbProxy)
                 {
                     _lastUsbProxyUsage = usbProxy;
+                }
+                else
+                {
+                    _lastUsbProxyUsage = 0d;
                 }
 
                 if (gpu.Usb?.CpuPercent is { } usbCpu)
                 {
                     _lastUsbDriverCpu = usbCpu;
                 }
-
-                if (gpu.Usb?.IoBytesPerSec is { } usbBps)
+                else
                 {
-                    _lastUsbIoMBps = Math.Round(usbBps / (1024d * 1024d), 1);
+                    _lastUsbDriverCpu = 0d;
                 }
 
+                _lastUsbIoMBps = Math.Round(Math.Max(0d, gpu.Usb?.IoBytesPerSec ?? 0d) / (1024d * 1024d), 1);
+
                 // Per-group series:
-                // - Intel: usage + CPU
+                // - Intel: usage + temp + CPU
                 // - NVIDIA: usage + temp + CPU
-                // - USB: usage(proxy) + CPU + USB throughput
+                // - USB: usage(proxy) + CPU + USB video activity MB/s
                 _gpuBars.SetItems(new[]
                 {
                     new GroupedBarItem("Intel", "use", _lastIntelGpuUsage),
+                    new GroupedBarItem("Intel", "temp", _lastIntelGpuTempC),
                     new GroupedBarItem("Intel", "cpu", _lastIntelGpuCpu),
                     new GroupedBarItem("NVIDIA", "use", _lastNvidiaGpuUsage),
-                    new GroupedBarItem("NVIDIA", "temp", _lastNvidiaGpuTempF),
+                    new GroupedBarItem("NVIDIA", "temp", _lastNvidiaGpuTempC),
                     new GroupedBarItem("NVIDIA", "cpu", _lastNvidiaGpuCpu),
                     new GroupedBarItem("USB", "use", _lastUsbProxyUsage),
                     new GroupedBarItem("USB", "cpu", _lastUsbDriverCpu),
                     new GroupedBarItem("USB", "usb", _lastUsbIoMBps),
                 });
-
-                var intelName = string.IsNullOrWhiteSpace(gpu.Intel?.Name) ? "Intel graphics" : gpu.Intel!.Name!.Trim();
-                var nvidiaName = string.IsNullOrWhiteSpace(gpu.Nvidia?.Name) ? "NVIDIA GPU" : gpu.Nvidia!.Name!.Trim();
-                var usbName = string.IsNullOrWhiteSpace(gpu.Usb?.Name) ? "USB display" : gpu.Usb!.Name!.Trim();
-                var intelUseText = _lastIntelGpuUsage is null ? "n/a" : _lastIntelGpuUsage.Value.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) + "%";
-                var intelCpuText = _lastIntelGpuCpu is null ? "n/a" : _lastIntelGpuCpu.Value.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) + "%";
-                var nvidiaUseText = _lastNvidiaGpuUsage is null ? "n/a" : _lastNvidiaGpuUsage.Value.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) + "%";
-                var nvidiaTempText = _lastNvidiaGpuTempF is null ? "n/a" : _lastNvidiaGpuTempF.Value.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) + "\u00B0F";
-                var nvidiaCpuText = _lastNvidiaGpuCpu is null ? "n/a" : _lastNvidiaGpuCpu.Value.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) + "%";
-                var usbProxyText = _lastUsbProxyUsage is null ? "n/a" : _lastUsbProxyUsage.Value.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) + "%";
-                var usbCpuText = _lastUsbDriverCpu is null ? "n/a" : _lastUsbDriverCpu.Value.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) + "%";
-                var usbIoText = _lastUsbIoMBps is null ? "n/a" : _lastUsbIoMBps.Value.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) + " MB/s";
-                var gpuErr = string.IsNullOrWhiteSpace(_gpuUsageProvider.LastError) ? "" : $" | {_gpuUsageProvider.LastError}";
-                _gpuStatusLabel.Text = $"{intelName}: {intelUseText} / CPU {intelCpuText} | {nvidiaName}: {nvidiaUseText} / {nvidiaTempText} / CPU {nvidiaCpuText} | {usbName}: proxy {usbProxyText} / I/O {usbIoText} / CPU {usbCpuText}" + gpuErr;
 
                 UpdateGpuProcessList(gpu.Processes);
 
@@ -800,21 +823,13 @@ public sealed class MonitoringDashboardTab : UserControl
                     }
                 }
 
-                var usageErr = string.IsNullOrWhiteSpace(_cpuUsageProvider.LastError) ? "" : $" | usage: {_cpuUsageProvider.LastError}";
-                var tempErr = string.IsNullOrWhiteSpace(_cpuProvider.LastError) ? "" : $" | temp: {_cpuProvider.LastError}";
-                var loadCount = _lastCoreUsage.Count(v => v is not null);
-                var tempCount = _lastCoreTempF.Count(v => v is not null);
-                var threadCount = _lastThreadUsage.Count(v => v is not null);
-                _cpuStatusLabel.Text = $"Status: OK | cores(load/temp): {loadCount}/4, {tempCount}/4 | threads(load): {threadCount}/8" + usageErr + tempErr;
+                // Status strip is reserved for fan RPM only.
             }
         }
         catch (Exception)
         {
-            var usageErr = string.IsNullOrWhiteSpace(_cpuUsageProvider.LastError) ? "" : $" | usage: {_cpuUsageProvider.LastError}";
-            var tempErr = string.IsNullOrWhiteSpace(_cpuProvider.LastError) ? "" : $" | temp: {_cpuProvider.LastError}";
-            _cpuStatusLabel.Text = "Status: snapshot failed" + usageErr + tempErr;
-            var gpuErr = string.IsNullOrWhiteSpace(_gpuUsageProvider.LastError) ? "" : $" | {_gpuUsageProvider.LastError}";
-            _gpuStatusLabel.Text = "GPU: snapshot failed" + gpuErr;
+            _cpuStatusLabel.Text = "CPU Fan: n/a";
+            _gpuStatusLabel.Text = "GPU Fan: n/a";
         }
         finally
         {

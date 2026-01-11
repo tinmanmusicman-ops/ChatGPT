@@ -6,10 +6,11 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <PublishDir>$(MSBuildProjectDirectory)\publish\Release\$(TargetFramework)\</PublishDir>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="LibreHardwareMonitorLib" Version="0.9.4" />
+    <PackageReference Include="Hwinfo.SharedMemory.Net" Version="2.1.0" />
     <PackageReference Include="System.Management" Version="10.0.1" />
   </ItemGroup>
 </Project>
-

@@ -8,6 +8,7 @@ public sealed class GpuUsageProvider
 {
     private string? _lastError;
     public string? LastError => _lastError;
+    private readonly HwinfoGpuTemperatureProvider _hwinfoIntelTemp = new();
 
     public GpuSnapshot Read()
     {
@@ -31,20 +32,12 @@ public sealed class GpuUsageProvider
                 fromWin: PickWin(win, vendorId: 0x10DE),
                 preferWindowsLoad: true);
 
-            var usb = Merge(
-                fromLhm: null,
-                fromWin: PickWinKind(win, WindowsGpuPerfDeviceKind.UsbOrOther),
-                preferWindowsLoad: true);
+            var usb = BuildUsbSnapshot(win);
 
-            // Replace USB adapter "GPU load" with a proxy that reflects iGPU copy/video-processing activity.
-            if (usb is not null && win.UsbProxyLoadPercent is { } proxy)
+            var intelTempC = _hwinfoIntelTemp.ReadIntelGpuTempC();
+            if (intelTempC is not null && intel is not null)
             {
-                usb = usb with { CoreLoadPercent = Math.Clamp(Math.Round(proxy, 1), 0d, 100d), CoreTempC = null };
-            }
-
-            if (usb is not null)
-            {
-                usb = usb with { IoBytesPerSec = win.UsbDriverIoBytesPerSec is { } bps ? Math.Max(0d, bps) : null };
+                intel = intel with { CoreTempC = intelTempC };
             }
 
             return new GpuSnapshot(
@@ -113,25 +106,6 @@ public sealed class GpuUsageProvider
         return new GpuDeviceSnapshot(Name: match.Name, CoreLoadPercent: load, CoreTempC: null, CpuPercent: cpu, IoBytesPerSec: null);
     }
 
-    private static GpuDeviceSnapshot? PickWinKind(WindowsGpuPerfReadResult read, WindowsGpuPerfDeviceKind kind)
-    {
-        var candidates = read.Devices;
-        if (candidates is null || candidates.Count == 0)
-        {
-            return null;
-        }
-
-        var match = candidates.FirstOrDefault(d => d.Kind == kind);
-        if (match is null)
-        {
-            return null;
-        }
-
-        var load = match.Load3DPercent is { } p ? Math.Clamp(Math.Round(p, 1), 0d, 100d) : (double?)null;
-        var cpu = match.CpuPercent is { } c ? Math.Clamp(Math.Round(c, 1), 0d, 100d) : (double?)null;
-        return new GpuDeviceSnapshot(Name: match.Name, CoreLoadPercent: load, CoreTempC: null, CpuPercent: cpu, IoBytesPerSec: null);
-    }
-
     private static GpuDeviceSnapshot? Merge(GpuDeviceSnapshot? fromLhm, GpuDeviceSnapshot? fromWin, bool preferWindowsLoad)
     {
         if (fromLhm is null)
@@ -151,6 +125,18 @@ public sealed class GpuUsageProvider
             CoreTempC: fromLhm.CoreTempC ?? fromWin.CoreTempC,
             CpuPercent: fromWin.CpuPercent ?? fromLhm.CpuPercent,
             IoBytesPerSec: fromWin.IoBytesPerSec ?? fromLhm.IoBytesPerSec);
+    }
+
+    private static GpuDeviceSnapshot BuildUsbSnapshot(WindowsGpuPerfReadResult win)
+    {
+        var usbLoad = win.UsbProxyLoadPercent is { } p ? Math.Clamp(Math.Round(p, 1), 0d, 100d) : 0d;
+        var usbIo = Math.Max(0d, win.UsbVideoActivityBytesPerSec);
+        return new GpuDeviceSnapshot(
+            Name: "USB",
+            CoreLoadPercent: usbLoad,
+            CoreTempC: null,
+            CpuPercent: 0d,
+            IoBytesPerSec: usbIo);
     }
 }
 

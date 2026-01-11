@@ -52,7 +52,6 @@ internal sealed class WindowsGpuPerfSession
             {
                 var controllers = ReadControllers();
                 var adapterMemory = ReadAdapterMemoryByLuid();
-                var usbDriverPids = ReadUsbDisplayDriverProcessIds().ToArray();
                 var engine = ReadEngineTelemetry();
 
                 var (integratedLuid, discreteLuid, usbOrOtherLuid) = InferPrimaryLuids(adapterMemory);
@@ -98,48 +97,9 @@ internal sealed class WindowsGpuPerfSession
                         topN: 5));
                 }
 
-                if (integratedLuid is not null && usbDriverPids.Length > 0)
-                {
-                    processes.AddRange(BuildUsbDisplayDriverProcesses(
-                        usbDriverPids: usbDriverPids,
-                        integratedLuidKey: integratedLuid,
-                        engine: engine,
-                        sampler: sampler));
-                }
-
-                // USB throughput proxy: sum process IO bytes/sec for the USB display driver host process(es).
-                // This is not guaranteed to equal true USB bus throughput, but it provides a concrete bytes/sec signal
-                // for the USB display stack when no per-adapter USB performance counters are available.
-                double? usbDriverIoBytesPerSec = usbDriverPids.Length > 0
-                    ? ReadProcessIoBytesPerSec(usbDriverPids)
-                    : null;
-
-                // USB display proxy: prefer the GPU engine utilization of the USB display driver host process
-                // (typically WUDFHost.exe in TriggerDisplayGroup) on the iGPU. This tracks the actual "USB feed"
-                // better than the USB adapter's own (often zero) GPU counters.
-                double? usbProxyLoad = null;
-                if (integratedLuid is not null && usbDriverPids.Length > 0)
-                {
-                    var best = 0d;
-                    for (var i = 0; i < usbDriverPids.Length; i++)
-                    {
-                        var pid = usbDriverPids[i];
-                        var p3d = engine.Max3DByLuidPid.TryGetValue(integratedLuid, out var d3) && d3.TryGetValue(pid, out var v3) ? v3 : 0d;
-                        var pCopy = engine.MaxCopyByLuidPid.TryGetValue(integratedLuid, out var dc) && dc.TryGetValue(pid, out var vc) ? vc : 0d;
-                        var pVp = engine.MaxVideoProcessingByLuidPid.TryGetValue(integratedLuid, out var dv) && dv.TryGetValue(pid, out var vv) ? vv : 0d;
-                        best = Math.Max(best, Math.Max(p3d, Math.Max(pCopy, pVp)));
-                    }
-
-                    usbProxyLoad = Math.Clamp(best, 0d, 100d);
-                }
-
-                if (usbProxyLoad is null && integratedLuid is not null)
-                {
-                    // Fallback proxy if we couldn't identify the USB driver PID(s).
-                    var copy = engine.MaxCopyByLuid.TryGetValue(integratedLuid, out var c) ? c : 0d;
-                    var vp = engine.MaxVideoProcessingByLuid.TryGetValue(integratedLuid, out var v) ? v : 0d;
-                    usbProxyLoad = Math.Clamp(copy + vp, 0d, 100d);
-                }
+                // USB proxy: keep simple (no process scan) to avoid stalling the UI loop.
+                var usbProxyLoad = usbOrOtherLoad;
+                var usbVideoActivityBytesPerSec = 0d;
 
                 // CPU percent (sampled): sum CPU% of processes currently using each adapter's engines.
                 double? intelCpu = integratedLuid is not null && engine.ActivePidsByLuid.TryGetValue(integratedLuid, out var ipids)
@@ -150,8 +110,7 @@ internal sealed class WindowsGpuPerfSession
                     ? sampler.SumCpuPercent(dpids)
                     : null;
 
-                // USB driver CPU: UMDF host process for display stack typically shows up as TriggerDisplayGroup.
-                double? usbDriverCpu = usbDriverPids.Length > 0 ? sampler.SumCpuPercent(usbDriverPids) : null;
+                double? usbDriverCpu = null;
 
                 var devices = new List<WindowsGpuPerfDevice>(capacity: 3);
 
@@ -207,7 +166,7 @@ internal sealed class WindowsGpuPerfSession
                 var result = new WindowsGpuPerfReadResult(
                     Devices: devices.ToArray(),
                     UsbProxyLoadPercent: usbProxyLoad,
-                    UsbDriverIoBytesPerSec: usbDriverIoBytesPerSec,
+                    UsbVideoActivityBytesPerSec: usbVideoActivityBytesPerSec,
                     Processes: processes,
                     Error: null);
                 _lastRead = result;
@@ -222,7 +181,7 @@ internal sealed class WindowsGpuPerfSession
                 var result = new WindowsGpuPerfReadResult(
                     Devices: Array.Empty<WindowsGpuPerfDevice>(),
                     UsbProxyLoadPercent: null,
-                    UsbDriverIoBytesPerSec: null,
+                    UsbVideoActivityBytesPerSec: 0d,
                     Processes: Array.Empty<WindowsGpuPerfProcessUsage>(),
                     Error: _lastError);
                 _lastRead = result;
@@ -273,9 +232,9 @@ internal sealed class WindowsGpuPerfSession
                 sb.Append(" usbProxy=").Append(proxy.ToString("0.0", CultureInfo.InvariantCulture)).Append('%');
             }
 
-            if (read.UsbDriverIoBytesPerSec is { } bps)
+            if (read.UsbVideoActivityBytesPerSec > 0d)
             {
-                sb.Append(" usbIoBps=").Append(Math.Round(bps, 0).ToString("0", CultureInfo.InvariantCulture));
+                sb.Append(" usbVideoBps=").Append(Math.Round(read.UsbVideoActivityBytesPerSec, 0).ToString("0", CultureInfo.InvariantCulture));
             }
 
             MonitoringLog.WriteLine(sb.ToString().TrimEnd());
@@ -644,49 +603,6 @@ internal sealed class WindowsGpuPerfSession
         return top;
     }
 
-    private static IReadOnlyList<WindowsGpuPerfProcessUsage> BuildUsbDisplayDriverProcesses(
-        IReadOnlyList<int> usbDriverPids,
-        string integratedLuidKey,
-        EngineTelemetry engine,
-        ProcessCpuUsageSampler sampler)
-    {
-        if (usbDriverPids.Count == 0)
-        {
-            return Array.Empty<WindowsGpuPerfProcessUsage>();
-        }
-
-        engine.MaxAnyByLuidPid.TryGetValue(integratedLuidKey, out var byPid);
-        engine.MaxAnyEngTypeByLuidPid.TryGetValue(integratedLuidKey, out var engByPid);
-
-        var list = new List<WindowsGpuPerfProcessUsage>(capacity: usbDriverPids.Count);
-        for (var i = 0; i < usbDriverPids.Count; i++)
-        {
-            var pid = usbDriverPids[i];
-            if (pid <= 0)
-            {
-                continue;
-            }
-
-            var gpu = byPid is not null && byPid.TryGetValue(pid, out var g) ? Math.Clamp(g, 0d, 100d) : 0d;
-            var eng = engByPid is not null && engByPid.TryGetValue(pid, out var e) && !string.IsNullOrWhiteSpace(e) ? e : "Driver";
-            var name = TryGetProcessName(pid) ?? "WUDFHost.exe";
-            var cpu = sampler.SampleCpuPercent(pid);
-
-            list.Add(new WindowsGpuPerfProcessUsage(
-                GpuLabel: "USB",
-                ProcessId: pid,
-                ProcessName: name,
-                EngineType: eng,
-                GpuPercent: gpu,
-                CpuPercent: cpu));
-        }
-
-        return list
-            .OrderByDescending(p => p.GpuPercent)
-            .ThenByDescending(p => p.CpuPercent ?? 0d)
-            .ToList();
-    }
-
     private static string? TryGetProcessName(int processId)
     {
         if (processId <= 0)
@@ -709,99 +625,6 @@ internal sealed class WindowsGpuPerfSession
             }
 
             return name;
-        }
-        catch
-        {
-            return null;
-        }
-    }
-
-    private static IEnumerable<int> ReadUsbDisplayDriverProcessIds()
-    {
-        var ids = new HashSet<int>();
-        try
-        {
-            using var searcher = new ManagementObjectSearcher(
-                scope: new ManagementScope(@"\\.\root\cimv2"),
-                query: new ObjectQuery("SELECT Name, ProcessId, CommandLine FROM Win32_Process WHERE Name='WUDFHost.exe'"));
-
-            foreach (ManagementObject obj in searcher.Get())
-            {
-                try
-                {
-                    var pidObj = obj["ProcessId"];
-                    if (pidObj is null)
-                    {
-                        continue;
-                    }
-
-                    var pid = Convert.ToInt32(pidObj, CultureInfo.InvariantCulture);
-                    if (pid <= 0)
-                    {
-                        continue;
-                    }
-
-                    var cmd = (obj["CommandLine"] as string) ?? string.Empty;
-                    if (cmd.IndexOf("TriggerDisplayGroup", StringComparison.OrdinalIgnoreCase) >= 0)
-                    {
-                        ids.Add(pid);
-                    }
-                }
-                catch
-                {
-                }
-            }
-        }
-        catch
-        {
-        }
-
-        return ids;
-    }
-
-    private static double? ReadProcessIoBytesPerSec(IReadOnlyList<int> processIds)
-    {
-        if (processIds.Count == 0)
-        {
-            return null;
-        }
-
-        var ids = processIds.Where(p => p > 0).Distinct().ToArray();
-        if (ids.Length == 0)
-        {
-            return null;
-        }
-
-        try
-        {
-            var where = string.Join(" OR ", ids.Select(pid => $"IDProcess={pid}"));
-            using var searcher = new ManagementObjectSearcher(
-                scope: new ManagementScope(@"\\.\root\cimv2"),
-                query: new ObjectQuery("SELECT IDProcess, IOReadBytesPersec, IOWriteBytesPersec, IOOtherBytesPersec FROM Win32_PerfFormattedData_PerfProc_Process WHERE " + where));
-
-            var sum = 0d;
-            var any = false;
-            foreach (ManagementObject obj in searcher.Get())
-            {
-                try
-                {
-                    var readObj = obj["IOReadBytesPersec"];
-                    var writeObj = obj["IOWriteBytesPersec"];
-                    var otherObj = obj["IOOtherBytesPersec"];
-
-                    var read = readObj is null ? 0d : Convert.ToDouble(readObj, CultureInfo.InvariantCulture);
-                    var write = writeObj is null ? 0d : Convert.ToDouble(writeObj, CultureInfo.InvariantCulture);
-                    var other = otherObj is null ? 0d : Convert.ToDouble(otherObj, CultureInfo.InvariantCulture);
-
-                    sum += Math.Max(0d, read) + Math.Max(0d, write) + Math.Max(0d, other);
-                    any = true;
-                }
-                catch
-                {
-                }
-            }
-
-            return any ? Math.Max(0d, sum) : null;
         }
         catch
         {
@@ -922,7 +745,7 @@ internal sealed class WindowsGpuPerfSession
 internal sealed record WindowsGpuPerfReadResult(
     IReadOnlyList<WindowsGpuPerfDevice> Devices,
     double? UsbProxyLoadPercent,
-    double? UsbDriverIoBytesPerSec,
+    double UsbVideoActivityBytesPerSec,
     IReadOnlyList<WindowsGpuPerfProcessUsage> Processes,
     string? Error);
 
