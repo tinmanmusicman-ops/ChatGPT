@@ -15,7 +15,11 @@ object NotificationHelper {
     private const val NOTIFICATION_ID = EatWorker.NOTIFICATION_ID
     private const val ACTION_REQUEST_BASE = 1_000
 
-    private val VISION_CHOICES = listOf("Cloudy", "Low", "Good")
+    private val VISION_CHOICES = listOf("Cloudy", "Moderate", "Almost Clear")
+    private val MEAL_ACTIONS = listOf(
+        MealType.SNACK to "I ate a snack",
+        MealType.MEAL to "I ate a full meal"
+    )
 
     fun showNotification(context: Context) {
         ensureChannel(context)
@@ -38,8 +42,10 @@ object NotificationHelper {
 
         val showingVisionChoices = visionPromptPending && visionStatus == null
         if (!showingVisionChoices) {
-            val ateAction = buildIAteAction(context, ateCompleted, actionIdBase)
-            builder.addAction(ateAction)
+            MEAL_ACTIONS.forEachIndexed { index, pair ->
+                val (mealType, label) = pair
+                builder.addAction(buildMealAction(context, mealType, label, actionIdBase + index))
+            }
         }
 
         when {
@@ -51,14 +57,9 @@ object NotificationHelper {
                 builder.setSubText("Vision: selecting")
                 addVisionChoiceActions(builder, context, actionIdBase)
             }
-            else -> {
-                builder.addAction(buildVisionPromptAction(context, actionIdBase))
-            }
         }
 
-        if (!showingVisionChoices) {
-            builder.addAction(buildDoneAction(context, actionIdBase + ACTION_REQUEST_BASE))
-        }
+        builder.addAction(buildDoneAction(context, actionIdBase + ACTION_REQUEST_BASE))
 
         if (ateCompleted && visionStatus == null && !showingVisionChoices) {
             builder.color = 0xFF4CAF50.toInt()
@@ -83,38 +84,25 @@ object NotificationHelper {
         }
     }
 
-    private fun buildIAteAction(context: Context, ateCompleted: Boolean, actionSeed: Long): NotificationCompat.Action {
-        val ateIntent = Intent(context, NotificationActionReceiver::class.java).apply {
+    private fun buildMealAction(
+        context: Context,
+        mealType: MealType,
+        label: String,
+        actionSeed: Long
+    ): NotificationCompat.Action {
+        val mealIntent = Intent(context, NotificationActionReceiver::class.java).apply {
             action = NotificationActionReceiver.ACTION_ATE
             putExtra(NotificationActionReceiver.EXTRA_ACTION_ID, actionSeed)
+            putExtra(NotificationActionReceiver.EXTRA_MEAL_TYPE, mealType.name)
         }
-        val atePending = PendingIntent.getBroadcast(
+        val mealPending = PendingIntent.getBroadcast(
             context,
-            ACTION_REQUEST_BASE,
-            ateIntent,
+            ACTION_REQUEST_BASE + mealType.ordinal,
+            mealIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-        val ateLabel = if (ateCompleted) "✓ Ate" else "I Ate"
-        val ateIcon = if (ateCompleted) android.R.drawable.presence_online else android.R.drawable.ic_menu_send
-        return NotificationCompat.Action.Builder(ateIcon, ateLabel, atePending).build()
-    }
-
-    private fun buildVisionPromptAction(context: Context, actionSeed: Long): NotificationCompat.Action {
-        val promptIntent = Intent(context, NotificationActionReceiver::class.java).apply {
-            action = NotificationActionReceiver.ACTION_VISION_PROMPT
-            putExtra(NotificationActionReceiver.EXTRA_ACTION_ID, actionSeed + 1)
-        }
-        val promptPending = PendingIntent.getBroadcast(
-            context,
-            ACTION_REQUEST_BASE + 1,
-            promptIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-        return NotificationCompat.Action.Builder(
-            android.R.drawable.ic_menu_search,
-            "How's My Vision?",
-            promptPending
-        ).build()
+        val icon = if (mealType == MealType.MEAL) android.R.drawable.ic_menu_crop else android.R.drawable.ic_menu_add
+        return NotificationCompat.Action.Builder(icon, label, mealPending).build()
     }
 
     private fun addVisionChoiceActions(builder: NotificationCompat.Builder, context: Context, actionSeed: Long) {

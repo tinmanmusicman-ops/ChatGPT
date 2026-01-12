@@ -19,8 +19,10 @@ class EatWorker(
 
     override suspend fun doWork(): Result {
         val intervalMinutes = currentIntervalMinutes()
+        val firedAt = System.currentTimeMillis()
         val timestamp = timestampNow()
         Log.i(TAG, "EatWorker fired for $intervalMinutes minute interval at $timestamp")
+        ReminderPrefs.recordHistoryEntry(applicationContext, HistoryEntry(firedAt, HistoryType.REMINDER))
         ReminderPrefs.resetActionState(applicationContext)
         NotificationHelper.showNotification(applicationContext)
         scheduleNext(intervalMinutes)

@@ -13,33 +13,34 @@ class NotificationActionReceiver : BroadcastReceiver() {
             if (it <= 0L) System.currentTimeMillis() else it
         }
         when (action) {
-            ACTION_ATE -> handleIAte(context, actionId)
-            ACTION_VISION_PROMPT -> handleVisionPrompt(context)
+            ACTION_ATE -> handleIAte(context, intent, actionId)
             ACTION_VISION_CHOICE -> handleVisionChoice(context, intent, actionId)
             ACTION_DONE -> handleDone(context)
         }
     }
 
-    private fun handleIAte(context: Context, actionId: Long) {
+    private fun handleIAte(context: Context, intent: Intent, actionId: Long) {
         if (!ReminderPrefs.isMealActionNew(context, actionId)) {
             Log.i(TAG, "Duplicate 'I Ate' action ignored")
             return
         }
-        Log.i(TAG, "Notification action 'I Ate' triggered")
-        ReminderPrefs.recordMealAcknowledgement(context)
-        ReminderPrefs.setVisionPromptPending(context, false)
-        ReminderPrefs.setEnabled(context, true)
-        ReminderScheduler.schedule(context, ReminderPrefs.getInterval(context))
-        NotificationHelper.showNotification(context)
-    }
-
-    private fun handleVisionPrompt(context: Context) {
-        Log.i(TAG, "Notification action 'How's My Vision?' prompt triggered")
-        if (ReminderPrefs.isVisionPromptPending(context)) {
-            Log.i(TAG, "Vision prompt already visible; ignoring duplicate")
+        val mealLabel = intent.getStringExtra(EXTRA_MEAL_TYPE)
+        val mealType = try {
+            if (mealLabel.isNullOrBlank()) throw IllegalArgumentException("Missing meal type")
+            MealType.valueOf(mealLabel)
+        } catch (ex: Exception) {
+            Log.e(TAG, "Unknown meal type: $mealLabel", ex)
             return
         }
+        Log.i(TAG, "Notification action 'I Ate' triggered: $mealType")
+        ReminderPrefs.recordMealAcknowledgement(context)
+        ReminderPrefs.recordHistoryEntry(
+            context,
+            HistoryEntry(System.currentTimeMillis(), HistoryType.I_ATE, mealType = mealType)
+        )
         ReminderPrefs.setVisionPromptPending(context, true)
+        ReminderPrefs.setEnabled(context, true)
+        ReminderScheduler.schedule(context, ReminderPrefs.getInterval(context))
         NotificationHelper.showNotification(context)
     }
 
@@ -48,9 +49,19 @@ class NotificationActionReceiver : BroadcastReceiver() {
             Log.i(TAG, "Duplicate vision choice ignored")
             return
         }
-        val status = intent.getStringExtra(EXTRA_VISION_STATUS) ?: "UNKNOWN"
+        val status = intent.getStringExtra(EXTRA_VISION_STATUS)
+        if (status.isNullOrBlank()) {
+            Log.e(TAG, "Vision action came without status")
+            return
+        }
         Log.i(TAG, "Notification action 'Vision choice' triggered: $status")
-        ReminderPrefs.recordVisionStatus(context, status)
+        val clarity = VisionClarity.fromLabel(status)
+        if (clarity == null) {
+            Log.e(TAG, "Unknown vision status: $status")
+            return
+        }
+        ReminderPrefs.recordVisionStatus(context, clarity.label)
+        ReminderPrefs.recordHistoryEntry(context, HistoryEntry(System.currentTimeMillis(), HistoryType.VISION, clarity))
         NotificationHelper.showNotification(context)
     }
 
@@ -62,10 +73,10 @@ class NotificationActionReceiver : BroadcastReceiver() {
     companion object {
         private const val TAG = "NotificationActionReceiver"
         const val ACTION_ATE = "com.example.eat.ACTION_ATE"
-        const val ACTION_VISION_PROMPT = "com.example.eat.ACTION_VISION_PROMPT"
         const val ACTION_VISION_CHOICE = "com.example.eat.ACTION_VISION_CHOICE"
         const val ACTION_DONE = "com.example.eat.ACTION_DONE"
         const val EXTRA_VISION_STATUS = "vision_status"
+        const val EXTRA_MEAL_TYPE = "meal_type"
         const val EXTRA_ACTION_ID = "action_id"
     }
 }
