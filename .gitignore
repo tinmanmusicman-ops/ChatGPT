@@ -70,3 +70,7 @@ __pycache__/
 
 # Allow bridge folder contents to be tracked regardless of extension
 !/bridge/
+
+!ai-bots/Eat/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
+!ai-bots/Eat/app/src/main/res/mipmap-*/ic_launcher_background.png
+!ai-bots/Eat/app/src/main/res/mipmap-*/ic_launcher_foreground.png

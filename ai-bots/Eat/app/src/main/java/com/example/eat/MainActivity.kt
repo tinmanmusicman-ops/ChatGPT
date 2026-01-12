@@ -1,16 +1,20 @@
 ﻿package com.example.eat
 
+import android.content.Context
 import android.os.Bundle
 import android.widget.Button
 import android.widget.RadioGroup
 import androidx.appcompat.app.AppCompatActivity
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
     private lateinit var intervalGroup: RadioGroup
+    private val prefs by lazy {
+        getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,12 +30,17 @@ class MainActivity : AppCompatActivity() {
 
     private fun scheduleReminderWorker() {
         val intervalMinutes = selectedIntervalMinutes()
-        val request = PeriodicWorkRequestBuilder<EatWorker>(intervalMinutes, TimeUnit.MINUTES)
+        prefs.edit().putLong(PREF_INTERVAL_KEY, intervalMinutes).apply()
+
+        val request = OneTimeWorkRequestBuilder<EatWorker>()
+            .setInitialDelay(intervalMinutes, TimeUnit.MINUTES)
             .build()
 
-        WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork(
+        val workManager = WorkManager.getInstance(applicationContext)
+        workManager.cancelUniqueWork(EatWorker.WORK_NAME)
+        workManager.enqueueUniqueWork(
             EatWorker.WORK_NAME,
-            ExistingPeriodicWorkPolicy.REPLACE,
+            ExistingWorkPolicy.REPLACE,
             request
         )
     }
@@ -42,6 +51,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun selectedIntervalMinutes(): Long {
         return when (intervalGroup.checkedRadioButtonId) {
+            R.id.interval1 -> 1L
             R.id.interval15 -> 15L
             R.id.interval30 -> 30L
             R.id.interval60 -> 60L
@@ -49,4 +59,5 @@ class MainActivity : AppCompatActivity() {
             else -> 15L
         }
     }
+
 }

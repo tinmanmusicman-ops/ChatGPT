@@ -49,5 +49,15 @@
         "PAINRADAR_CONFIG_PATH": "${workspaceFolder}/ai-bots/shared/global.json"
       }
     }
+    ,
+    {
+      "name": "Install Eat Debug on Emulator",
+      "type": "pwa-node",
+      "request": "launch",
+      "preLaunchTask": "Install Eat Debug on Emulator",
+      "program": "${workspaceFolder}/ai-bots/Eat/scripts/launch_dummy.js",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
+    }
   ]
 }
