@@ -5,6 +5,7 @@ import android.util.Log
 import java.time.LocalDate
 import java.time.ZoneId
 import java.util.Calendar
+import java.util.Random
 
 object ReminderPrefs {
     private const val PREFS_NAME = "EatPrefs"
@@ -20,6 +21,7 @@ object ReminderPrefs {
     private const val DEFAULT_INTERVAL_MINUTES = 15L
     private const val KEY_LAST_MEAL_TYPE = "last_meal_type"
     private const val KEY_HISTORY_ENTRIES = "history_entries"
+    private const val KEY_HISTORY_SEED_RANDOM = "history_seed_random"
     private const val HISTORY_DELIMITER = "|"
     private const val HISTORY_RECORD_SEPARATOR = "\n"
     private const val TAG = "ReminderPrefs"
@@ -181,11 +183,22 @@ object ReminderPrefs {
         val prefs = prefs(context)
         val existing = prefs.getString(KEY_HISTORY_ENTRIES, "") ?: ""
         if (existing.isNotBlank()) return
-        val entries = generateSeedEntries()
+        val seedRandom = getSeedRandom(context)
+        val entries = generateSeedEntries(seedRandom)
         entries.forEach { recordHistoryEntry(context, it) }
     }
 
-    private fun generateSeedEntries(): List<HistoryEntry> {
+    private fun getSeedRandom(context: Context): Long {
+        val prefs = prefs(context)
+        var seed = prefs.getLong(KEY_HISTORY_SEED_RANDOM, Long.MIN_VALUE)
+        if (seed == Long.MIN_VALUE) {
+            seed = System.currentTimeMillis() xor System.nanoTime()
+            prefs.edit().putLong(KEY_HISTORY_SEED_RANDOM, seed).apply()
+        }
+        return seed
+    }
+
+    private fun generateSeedEntries(seed: Long): List<HistoryEntry> {
         val zone = ZoneId.systemDefault()
         val entries = mutableListOf<HistoryEntry>()
         val now = LocalDate.now(zone)
@@ -194,26 +207,63 @@ object ReminderPrefs {
 
         for (dayOffset in 6 downTo 0) {
             val day = now.minusDays(dayOffset.toLong())
+            val daySeed = seed xor day.toEpochDay()
+            val dayRandom = Random(daySeed)
             val visionShift = ((dayOffset % 5) - 2).coerceIn(-2, 2)
             val mealShift = ((dayOffset % 3) - 1).coerceIn(-1, 1)
             val cloudyEndHour = (8 + visionShift).coerceIn(6, 10)
             val mediumEndHour = (16 + visionShift).coerceIn(cloudyEndHour + 2, 20)
             for (hour in 0..22 step 2) {
-                val timestamp = timestampFor(day, hour)
-                val clarity = when {
-                    hour <= cloudyEndHour -> VisionClarity.CLOUDY
-                    hour <= mediumEndHour -> VisionClarity.MODERATE
-                    else -> VisionClarity.ALMOST_CLEAR
-                }
+                val baseTimestamp = timestampFor(day, hour)
+                val jitterMinutes = dayRandom.nextInt(31) - 15 // ±15 minutes
+                val timestamp = (baseTimestamp + jitterMinutes * 60_000L).coerceIn(dayStartMillis(day, zone), dayEndMillis(day, zone))
+                val clarity = pickVisionClarity(dayRandom, hour, cloudyEndHour, mediumEndHour)
                 entries.add(HistoryEntry(timestamp, HistoryType.VISION, clarity = clarity))
             }
             listOf(8, 12, 18).forEach { hour ->
                 val shiftedHour = (hour + mealShift).coerceIn(6, 20)
-                val timestamp = timestampFor(day, shiftedHour)
-                entries.add(HistoryEntry(timestamp, HistoryType.I_ATE, mealType = MealType.MEAL))
+                val baseTimestamp = timestampFor(day, shiftedHour)
+                val jitterMinutes = dayRandom.nextInt(21) - 10 // ±10 min
+                val timestamp = (baseTimestamp + jitterMinutes * 60_000L).coerceIn(dayStartMillis(day, zone), dayEndMillis(day, zone))
+                val mealType = if (dayRandom.nextDouble() < 0.7) MealType.MEAL else MealType.SNACK
+                entries.add(HistoryEntry(timestamp, HistoryType.I_ATE, mealType = mealType))
             }
         }
         return entries.sortedBy { it.timestamp }
+    }
+
+    // Example data randomization helpers (do NOT affect real history)
+    private fun dayStartMillis(day: LocalDate, zone: ZoneId): Long =
+        day.atStartOfDay(zone).toInstant().toEpochMilli()
+
+    private fun dayEndMillis(day: LocalDate, zone: ZoneId): Long =
+        day.plusDays(1).atStartOfDay(zone).toInstant().toEpochMilli() - 1
+
+    private fun pickVisionClarity(
+        random: Random,
+        hour: Int,
+        cloudyEndHour: Int,
+        mediumEndHour: Int
+    ): VisionClarity {
+        val choices = when {
+            hour <= cloudyEndHour -> listOf(
+                VisionClarity.CLOUDY,
+                VisionClarity.CLOUDY,
+                VisionClarity.MODERATE
+            )
+            hour <= mediumEndHour -> listOf(
+                VisionClarity.MODERATE,
+                VisionClarity.MODERATE,
+                VisionClarity.CLOUDY,
+                VisionClarity.ALMOST_CLEAR
+            )
+            else -> listOf(
+                VisionClarity.ALMOST_CLEAR,
+                VisionClarity.ALMOST_CLEAR,
+                VisionClarity.MODERATE
+            )
+        }
+        return choices[random.nextInt(choices.size)]
     }
 
     private fun serializeHistoryEntry(entry: HistoryEntry): String {
