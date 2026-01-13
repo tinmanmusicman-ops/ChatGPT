@@ -74,4 +74,6 @@ __pycache__/
 !ai-bots/Eat/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
 !ai-bots/Eat/app/src/main/res/mipmap-*/ic_launcher_background.png
 !ai-bots/Eat/app/src/main/res/mipmap-*/ic_launcher_foreground.png
+!ai-bots/Eat/app/src/main/AndroidManifest.xml
+!ai-bots/Eat/app/src/main/res/layout/activity_company_analysis.xml
 !ai-bots/Eat/app/src/main/res/layout/activity_main.xml

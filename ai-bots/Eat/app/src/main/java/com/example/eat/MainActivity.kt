@@ -23,9 +23,13 @@ class MainActivity : AppCompatActivity() {
         intervalGroup = findViewById(R.id.intervalGroup)
         val startButton = findViewById<Button>(R.id.startButton)
         val stopButton = findViewById<Button>(R.id.stopButton)
+        val companyButton = findViewById<Button>(R.id.companyButton)
 
         startButton.setOnClickListener { scheduleReminderWorker() }
         stopButton.setOnClickListener { cancelReminderWorker() }
+        companyButton.setOnClickListener {
+            startActivity(Intent(this, CompanyAnalysisActivity::class.java))
+        }
     }
 
     private fun scheduleReminderWorker() {
