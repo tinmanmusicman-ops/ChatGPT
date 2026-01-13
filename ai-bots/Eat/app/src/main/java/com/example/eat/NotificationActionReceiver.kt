@@ -33,6 +33,7 @@ class NotificationActionReceiver : BroadcastReceiver() {
             return
         }
         Log.i(TAG, "Notification action 'I Ate' triggered: $mealType")
+        ReminderPrefs.setLastMealType(context, mealType)
         ReminderPrefs.recordMealAcknowledgement(context)
         ReminderPrefs.recordHistoryEntry(
             context,
@@ -66,7 +67,12 @@ class NotificationActionReceiver : BroadcastReceiver() {
     }
 
     private fun handleDone(context: Context) {
+        if (!ReminderPrefs.hasActiveSelection(context)) {
+            Log.i(TAG, "Notification action 'Done' ignored (no active selection)")
+            return
+        }
         Log.i(TAG, "Notification action 'Done' triggered")
+        ReminderPrefs.resetActionState(context)
         NotificationManagerCompat.from(context).cancel(EatWorker.NOTIFICATION_ID)
     }
 

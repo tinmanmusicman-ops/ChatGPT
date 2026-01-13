@@ -18,6 +18,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        ReminderPrefs.ensureHistorySeeded(this)
 
         intervalGroup = findViewById(R.id.intervalGroup)
         val startButton = findViewById<Button>(R.id.startButton)

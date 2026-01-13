@@ -6,6 +6,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import java.util.Locale
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 
@@ -30,6 +31,7 @@ object NotificationHelper {
         val contentText = buildContentText(ateCompleted, visionStatus, visionPromptPending)
         val actionIdBase = System.currentTimeMillis()
 
+        val selectionActive = ReminderPrefs.hasActiveSelection(context)
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setContentTitle("Eat Reminder")
@@ -41,10 +43,12 @@ object NotificationHelper {
             .setOnlyAlertOnce(true)
 
         val showingVisionChoices = visionPromptPending && visionStatus == null
+        val selectedMeal = ReminderPrefs.getLastMealType(context)
         if (!showingVisionChoices) {
             MEAL_ACTIONS.forEachIndexed { index, pair ->
                 val (mealType, label) = pair
-                builder.addAction(buildMealAction(context, mealType, label, actionIdBase + index))
+                val selected = mealType == selectedMeal
+                builder.addAction(buildMealAction(context, mealType, label, actionIdBase + index, selected))
             }
         }
 
@@ -55,11 +59,11 @@ object NotificationHelper {
             }
             showingVisionChoices -> {
                 builder.setSubText("Vision: selecting")
-                addVisionChoiceActions(builder, context, actionIdBase)
+                addVisionChoiceActions(builder, context, actionIdBase, visionStatus)
             }
         }
 
-        builder.addAction(buildDoneAction(context, actionIdBase + ACTION_REQUEST_BASE))
+        builder.addAction(buildDoneAction(context, actionIdBase + ACTION_REQUEST_BASE, selectionActive))
 
         if (ateCompleted && visionStatus == null && !showingVisionChoices) {
             builder.color = 0xFF4CAF50.toInt()
@@ -88,7 +92,8 @@ object NotificationHelper {
         context: Context,
         mealType: MealType,
         label: String,
-        actionSeed: Long
+        actionSeed: Long,
+        selected: Boolean
     ): NotificationCompat.Action {
         val mealIntent = Intent(context, NotificationActionReceiver::class.java).apply {
             action = NotificationActionReceiver.ACTION_ATE
@@ -101,11 +106,16 @@ object NotificationHelper {
             mealIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-        val icon = if (mealType == MealType.MEAL) android.R.drawable.ic_menu_crop else android.R.drawable.ic_menu_add
-        return NotificationCompat.Action.Builder(icon, label, mealPending).build()
+        val iconRes = if (selected) R.drawable.ic_state_dot_active else R.drawable.ic_state_dot_idle
+        return NotificationCompat.Action.Builder(iconRes, label, mealPending).build()
     }
 
-    private fun addVisionChoiceActions(builder: NotificationCompat.Builder, context: Context, actionSeed: Long) {
+    private fun addVisionChoiceActions(
+        builder: NotificationCompat.Builder,
+        context: Context,
+        actionSeed: Long,
+        selectedVision: String?
+    ) {
         VISION_CHOICES.forEachIndexed { index, label ->
             val choiceIntent = Intent(context, NotificationActionReceiver::class.java).apply {
                 action = NotificationActionReceiver.ACTION_VISION_CHOICE
@@ -118,9 +128,13 @@ object NotificationHelper {
                 choiceIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
+            val normalizedSelected = selectedVision?.trim()?.lowercase(Locale.getDefault())
+            val normalizedLabel = label.lowercase(Locale.getDefault())
+            val selected = normalizedSelected != null && normalizedSelected == normalizedLabel
+            val iconRes = if (selected) R.drawable.ic_state_dot_active else R.drawable.ic_state_dot_idle
             builder.addAction(
                 NotificationCompat.Action.Builder(
-                    android.R.drawable.checkbox_on_background,
+                    iconRes,
                     label,
                     choicePending
                 ).build()
@@ -128,7 +142,7 @@ object NotificationHelper {
         }
     }
 
-    private fun buildDoneAction(context: Context, requestCode: Long): NotificationCompat.Action {
+    private fun buildDoneAction(context: Context, requestCode: Long, enabled: Boolean): NotificationCompat.Action {
         val doneIntent = Intent(context, NotificationActionReceiver::class.java).apply {
             action = NotificationActionReceiver.ACTION_DONE
             putExtra(NotificationActionReceiver.EXTRA_ACTION_ID, requestCode)
@@ -139,8 +153,13 @@ object NotificationHelper {
             doneIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
+        val iconRes = if (enabled) {
+            R.drawable.ic_state_dot_active
+        } else {
+            R.drawable.ic_state_dot_idle
+        }
         return NotificationCompat.Action.Builder(
-            android.R.drawable.ic_menu_close_clear_cancel,
+            iconRes,
             "Done",
             donePending
         ).build()

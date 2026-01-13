@@ -16,11 +16,12 @@ object ReminderPrefs {
     private const val KEY_LAST_MEAL_ACTION = "last_meal_action_id"
     private const val KEY_LAST_VISION_ACTION = "last_vision_action_id"
     private const val DEFAULT_INTERVAL_MINUTES = 15L
-    private const val KEY_HISTORY_DATE = "history_date"
+    private const val KEY_LAST_MEAL_TYPE = "last_meal_type"
     private const val KEY_HISTORY_ENTRIES = "history_entries"
     private const val HISTORY_DELIMITER = "|"
     private const val HISTORY_RECORD_SEPARATOR = "\n"
     private const val TAG = "ReminderPrefs"
+    private const val MILLIS_IN_DAY = 86_400_000L
 
     private fun prefs(context: Context) =
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -79,12 +80,43 @@ object ReminderPrefs {
         return true
     }
 
+    fun setLastMealType(context: Context, mealType: MealType?) {
+        val editor = prefs(context).edit()
+        if (mealType == null) {
+            editor.remove(KEY_LAST_MEAL_TYPE)
+        } else {
+            editor.putString(KEY_LAST_MEAL_TYPE, mealType.name)
+        }
+        editor.apply()
+    }
+
+    fun getLastMealType(context: Context): MealType? {
+        val raw = prefs(context).getString(KEY_LAST_MEAL_TYPE, "") ?: ""
+        if (raw.isBlank()) return null
+        return try {
+            MealType.valueOf(raw)
+        } catch (ex: IllegalArgumentException) {
+            null
+        }
+    }
+
+    fun hasMealSelection(context: Context): Boolean =
+        getLastMealType(context) != null
+
+    fun hasActiveSelection(context: Context): Boolean =
+        hasMealSelection(context) || getVisionStatus(context) != null
+
+    fun clearSelectionState(context: Context) {
+        setLastMealType(context, null)
+    }
+
     fun resetActionState(context: Context) {
         prefs(context).edit().putBoolean(KEY_ATE_DONE, false).apply()
         prefs(context).edit().putBoolean(KEY_VISION_DONE, false).apply()
         prefs(context).edit().remove(KEY_LAST_MEAL_ACTION).remove(KEY_LAST_VISION_ACTION).apply()
         prefs(context).edit().remove(KEY_LAST_VISION).apply()
         setVisionPromptPending(context, false)
+        clearSelectionState(context)
     }
 
     fun startOfDay(timestamp: Long): Long {
@@ -98,37 +130,82 @@ object ReminderPrefs {
         return calendar.timeInMillis
     }
 
+    private fun endOfDay(timestamp: Long): Long {
+        val calendar = Calendar.getInstance().apply {
+            timeInMillis = timestamp
+            set(Calendar.HOUR_OF_DAY, 23)
+            set(Calendar.MINUTE, 59)
+            set(Calendar.SECOND, 59)
+            set(Calendar.MILLISECOND, 999)
+        }
+        return calendar.timeInMillis
+    }
+
     fun recordHistoryEntry(context: Context, entry: HistoryEntry) {
         val prefs = prefs(context)
-        val todayStart = startOfDay(entry.timestamp)
         val editor = prefs.edit()
-        val storedDay = prefs.getLong(KEY_HISTORY_DATE, 0L)
-        if (storedDay != todayStart) {
-            editor.putLong(KEY_HISTORY_DATE, todayStart)
-            editor.putString(KEY_HISTORY_ENTRIES, "")
-        }
         val serialized = serializeHistoryEntry(entry)
         val existing = prefs.getString(KEY_HISTORY_ENTRIES, "") ?: ""
         val updated = if (existing.isBlank()) serialized else "$existing$HISTORY_RECORD_SEPARATOR$serialized"
         editor.putString(KEY_HISTORY_ENTRIES, updated)
         editor.apply()
         Log.d(TAG, "recordHistoryEntry type=${entry.type} clarity=${entry.clarity} ts=${entry.timestamp}")
+        if (entry.mealType != null) {
+            setLastMealType(context, entry.mealType)
+        }
     }
 
     fun getTodayHistory(context: Context): List<HistoryEntry> {
+        val now = System.currentTimeMillis()
+        val start = startOfDay(now)
+        val end = endOfDay(now)
+        return getHistoryEntriesBetween(context, start, end)
+    }
+
+    fun getHistoryEntriesBetween(context: Context, startMillis: Long, endMillis: Long): List<HistoryEntry> {
         val prefs = prefs(context)
-        val todayStart = startOfDay(System.currentTimeMillis())
-        if (prefs.getLong(KEY_HISTORY_DATE, 0L) != todayStart) return emptyList()
+        ensureHistorySeeded(context)
         val raw = prefs.getString(KEY_HISTORY_ENTRIES, "") ?: return emptyList()
         if (raw.isBlank()) return emptyList()
-        val now = System.currentTimeMillis()
         val entries = raw.lines()
             .mapNotNull { parseHistoryEntry(it) }
-            .filter { it.timestamp >= todayStart }
+            .filter { it.timestamp in startMillis..endMillis }
             .sortedBy { it.timestamp }
         val visionCount = entries.count { it.type == HistoryType.VISION }
-        Log.d(TAG, "getTodayHistory total=${entries.size} visionCount=$visionCount range=${todayStart}..$now")
+        Log.d(TAG, "getHistoryEntriesBetween total=${entries.size} visionCount=$visionCount range=${startMillis}..${endMillis}")
         return entries
+    }
+
+    fun ensureHistorySeeded(context: Context) {
+        val prefs = prefs(context)
+        val existing = prefs.getString(KEY_HISTORY_ENTRIES, "") ?: ""
+        if (existing.isNotBlank()) return
+        val entries = generateSeedEntries()
+        entries.forEach { recordHistoryEntry(context, it) }
+    }
+
+    private fun generateSeedEntries(): List<HistoryEntry> {
+        val now = System.currentTimeMillis()
+        val todayStart = startOfDay(now)
+        val startDay = todayStart - MILLIS_IN_DAY * 6
+        val entries = mutableListOf<HistoryEntry>()
+        for (dayOffset in 0..6) {
+            val dayBase = startDay + dayOffset * MILLIS_IN_DAY
+            for (hour in 0..22 step 2) {
+                val timestamp = dayBase + hour * 3_600_000L
+                val clarity = when {
+                    hour < 10 -> VisionClarity.CLOUDY
+                    hour < 18 -> VisionClarity.MODERATE
+                    else -> VisionClarity.ALMOST_CLEAR
+                }
+                entries.add(HistoryEntry(timestamp, HistoryType.VISION, clarity = clarity))
+            }
+            listOf(8, 12, 18).forEach { hour ->
+                val timestamp = dayBase + hour * 3_600_000L
+                entries.add(HistoryEntry(timestamp, HistoryType.I_ATE, mealType = MealType.MEAL))
+            }
+        }
+        return entries.sortedBy { it.timestamp }
     }
 
     private fun serializeHistoryEntry(entry: HistoryEntry): String {
