@@ -24,6 +24,16 @@ class HistoryGraphView @JvmOverloads constructor(
         }
 
     var axisDurationMillis: Long? = null
+    var windowStartMillis: Long? = null
+        set(value) {
+            field = value
+            invalidate()
+        }
+    var windowEndMillis: Long? = null
+        set(value) {
+            field = value
+            invalidate()
+        }
 
     init {
         setWillNotDraw(false)
@@ -112,12 +122,15 @@ class HistoryGraphView @JvmOverloads constructor(
 
         val now = System.currentTimeMillis()
         val defaultStart = ReminderPrefs.startOfDay(now)
-        val duration = axisDurationMillis ?: (now - defaultStart).coerceAtLeast(1L)
-        val startTime = maxOf(now - duration, defaultStart)
-        val totalDuration = (now - startTime).coerceAtLeast(1L).toFloat()
+        val fallbackDuration = axisDurationMillis ?: (now - defaultStart).coerceAtLeast(1L)
+        val fallbackStart = maxOf(now - fallbackDuration, defaultStart)
+        val startTime = windowStartMillis ?: fallbackStart
+        val endReference = windowEndMillis ?: now
+        val endTime = maxOf(endReference, startTime + 1L)
+        val totalDuration = (endTime - startTime).coerceAtLeast(1L).toFloat()
 
         val xForPosition: (Long) -> Float = { timestamp ->
-            val clamped = timestamp.coerceIn(startTime, now)
+            val clamped = timestamp.coerceIn(startTime, endTime)
             left + ((clamped - startTime) / totalDuration) * graphWidth
         }
 
