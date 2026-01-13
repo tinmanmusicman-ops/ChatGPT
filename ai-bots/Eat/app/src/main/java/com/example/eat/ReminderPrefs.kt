@@ -2,6 +2,8 @@ package com.example.eat
 
 import android.content.Context
 import android.util.Log
+import java.time.LocalDate
+import java.time.ZoneId
 import java.util.Calendar
 
 object ReminderPrefs {
@@ -21,7 +23,6 @@ object ReminderPrefs {
     private const val HISTORY_DELIMITER = "|"
     private const val HISTORY_RECORD_SEPARATOR = "\n"
     private const val TAG = "ReminderPrefs"
-    private const val MILLIS_IN_DAY = 86_400_000L
 
     private fun prefs(context: Context) =
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -185,23 +186,30 @@ object ReminderPrefs {
     }
 
     private fun generateSeedEntries(): List<HistoryEntry> {
-        val now = System.currentTimeMillis()
-        val todayStart = startOfDay(now)
-        val startDay = todayStart - MILLIS_IN_DAY * 6
+        val zone = ZoneId.systemDefault()
         val entries = mutableListOf<HistoryEntry>()
-        for (dayOffset in 0..6) {
-            val dayBase = startDay + dayOffset * MILLIS_IN_DAY
+        val now = LocalDate.now(zone)
+        fun timestampFor(day: LocalDate, hour: Int): Long =
+            day.atTime(hour, 0).atZone(zone).toInstant().toEpochMilli()
+
+        for (dayOffset in 6 downTo 0) {
+            val day = now.minusDays(dayOffset.toLong())
+            val visionShift = ((dayOffset % 5) - 2).coerceIn(-2, 2)
+            val mealShift = ((dayOffset % 3) - 1).coerceIn(-1, 1)
+            val cloudyEndHour = (8 + visionShift).coerceIn(6, 10)
+            val mediumEndHour = (16 + visionShift).coerceIn(cloudyEndHour + 2, 20)
             for (hour in 0..22 step 2) {
-                val timestamp = dayBase + hour * 3_600_000L
+                val timestamp = timestampFor(day, hour)
                 val clarity = when {
-                    hour < 10 -> VisionClarity.CLOUDY
-                    hour < 18 -> VisionClarity.MODERATE
+                    hour <= cloudyEndHour -> VisionClarity.CLOUDY
+                    hour <= mediumEndHour -> VisionClarity.MODERATE
                     else -> VisionClarity.ALMOST_CLEAR
                 }
                 entries.add(HistoryEntry(timestamp, HistoryType.VISION, clarity = clarity))
             }
             listOf(8, 12, 18).forEach { hour ->
-                val timestamp = dayBase + hour * 3_600_000L
+                val shiftedHour = (hour + mealShift).coerceIn(6, 20)
+                val timestamp = timestampFor(day, shiftedHour)
                 entries.add(HistoryEntry(timestamp, HistoryType.I_ATE, mealType = MealType.MEAL))
             }
         }
