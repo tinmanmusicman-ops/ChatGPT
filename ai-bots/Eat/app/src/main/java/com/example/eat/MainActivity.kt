@@ -23,13 +23,9 @@ class MainActivity : AppCompatActivity() {
         intervalGroup = findViewById(R.id.intervalGroup)
         val startButton = findViewById<Button>(R.id.startButton)
         val stopButton = findViewById<Button>(R.id.stopButton)
-        val companyButton = findViewById<Button>(R.id.companyButton)
 
         startButton.setOnClickListener { scheduleReminderWorker() }
         stopButton.setOnClickListener { cancelReminderWorker() }
-        companyButton.setOnClickListener {
-            startActivity(Intent(this, CompanyAnalysisActivity::class.java))
-        }
     }
 
     private fun scheduleReminderWorker() {
@@ -73,7 +69,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreateOptionsMenu(menu: android.view.Menu): Boolean {
-        menuInflater.inflate(R.menu.main_menu, menu)
+        menuInflater.inflate(R.menu.main_overflow_menu, menu)
         return true
     }
 
@@ -83,6 +79,18 @@ class MainActivity : AppCompatActivity() {
                 val intent = Intent(this, HistoryActivity::class.java)
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
                 startActivity(intent)
+                true
+            }
+            R.id.action_company_intelligence -> {
+                startActivity(Intent(this, CompanyAnalysisActivity::class.java))
+                true
+            }
+            R.id.action_sleep_schedule -> {
+                startActivity(Intent(this, SleepScheduleActivity::class.java))
+                true
+            }
+            R.id.action_yahoo_forwarder -> {
+                startActivity(Intent(this, YahooForwarderActivity::class.java))
                 true
             }
             else -> super.onOptionsItemSelected(item)

@@ -1,5 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
@@ -19,6 +20,8 @@
         </activity>
         <activity android:name=".HistoryActivity" android:exported="true" />
         <activity android:name=".CompanyAnalysisActivity" android:exported="true" />
+        <activity android:name=".SleepScheduleActivity" android:exported="true" />
+        <activity android:name=".YahooForwarderActivity" android:exported="true" />
         <receiver
             android:name=".BootReceiver"
             android:exported="true">

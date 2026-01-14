@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingWorkPolicy
+import androidx.work.ListenableWorker.Result
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
@@ -24,7 +25,11 @@ class EatWorker(
         Log.i(TAG, "EatWorker fired for $intervalMinutes minute interval at $timestamp")
         ReminderPrefs.recordHistoryEntry(applicationContext, HistoryEntry(firedAt, HistoryType.REMINDER))
         ReminderPrefs.resetActionState(applicationContext)
-        NotificationHelper.showNotification(applicationContext)
+        if (SleepPrefs.isSleepWindowActive(applicationContext)) {
+            Log.i(TAG, "Reminder triggered during sleep window; notification suppressed")
+        } else {
+            NotificationHelper.showNotification(applicationContext)
+        }
         scheduleNext(intervalMinutes)
         return Result.success()
     }

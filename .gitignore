@@ -3,6 +3,7 @@ __pycache__/
 *.pyc
 
 # Local docs / binaries
+*.apk
 *.pdf
 *.docx
 *.zip

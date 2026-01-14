@@ -1,15 +1,15 @@
 package com.example.eat
 
 import android.os.Bundle
-import android.view.View
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
-import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
+import io.noties.markwon.Markwon
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -20,14 +20,21 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
+import java.util.concurrent.TimeUnit
 
 class CompanyAnalysisActivity : AppCompatActivity() {
-    private val client = OkHttpClient()
+    private val client = OkHttpClient.Builder()
+        .connectTimeout(30, TimeUnit.SECONDS)
+        .readTimeout(120, TimeUnit.SECONDS)
+        .writeTimeout(120, TimeUnit.SECONDS)
+        .callTimeout(0, TimeUnit.MILLISECONDS)
+        .build()
     private lateinit var companyInput: EditText
     private lateinit var analyzeButton: Button
-    private lateinit var reportContainer: LinearLayout
     private lateinit var statusText: TextView
     private lateinit var progressBar: ProgressBar
+    private lateinit var reportText: TextView
+    private lateinit var markwon: Markwon
 
     companion object {
         private val PROMPT_TEMPLATE = """
@@ -54,9 +61,10 @@ class CompanyAnalysisActivity : AppCompatActivity() {
         setContentView(R.layout.activity_company_analysis)
         companyInput = findViewById(R.id.companyInput)
         analyzeButton = findViewById(R.id.analyzeButton)
-        reportContainer = findViewById(R.id.reportContainer)
+        reportText = findViewById(R.id.reportText)
         statusText = findViewById(R.id.statusText)
         progressBar = findViewById(R.id.progressBar)
+        markwon = Markwon.create(this)
 
         analyzeButton.setOnClickListener {
             val name = companyInput.text.toString().trim()
@@ -69,7 +77,7 @@ class CompanyAnalysisActivity : AppCompatActivity() {
 
         CompanyAnalysisStorage.load(this)?.let { cache ->
             companyInput.setText(cache.company)
-            displaySections(parseSections(cache.report))
+            displayReport(cache.report)
             showStatus("Loaded last analysis for ${cache.company}", false)
         }
     }
@@ -86,11 +94,11 @@ class CompanyAnalysisActivity : AppCompatActivity() {
             try {
                 val prompt = PROMPT_TEMPLATE.format(companyName)
                 val responseText = withContext(Dispatchers.IO) { fetchReport(prompt) }
-                val sections = parseSections(responseText)
-                displaySections(sections)
+                displayReport(responseText)
                 CompanyAnalysisStorage.save(this@CompanyAnalysisActivity, companyName, responseText)
                 showStatus("Analysis complete for $companyName", false)
             } catch (exc: Exception) {
+                Log.e("CompanyAnalysis", "analysis error", exc)
                 showStatus("Analysis failed: ${exc.message}", true)
             } finally {
                 progressBar.isVisible = false
@@ -105,6 +113,14 @@ class CompanyAnalysisActivity : AppCompatActivity() {
             if (isError) statusText.context.getColor(android.R.color.holo_red_light)
             else statusText.context.getColor(R.color.onSurface)
         )
+    }
+
+    private fun displayReport(rawText: String) {
+        if (rawText.isBlank()) {
+            reportText.text = ""
+            return
+        }
+        markwon.setMarkdown(reportText, rawText.trim())
     }
 
     private suspend fun fetchReport(prompt: String): String {
@@ -131,7 +147,7 @@ class CompanyAnalysisActivity : AppCompatActivity() {
         val userMessage = JSONObject().apply {
             put("role", "user")
             val contentArray = JSONArray()
-            contentArray.put(JSONObject().put("type", "text").put("text", prompt))
+            contentArray.put(JSONObject().put("type", "input_text").put("text", prompt))
             put("content", contentArray)
         }
         return JSONObject().apply {
@@ -174,57 +190,4 @@ class CompanyAnalysisActivity : AppCompatActivity() {
         return parts.joinToString("\n").trim()
     }
 
-    private fun parseSections(rawText: String): List<Section> {
-        val sections = mutableListOf<Section>()
-        var currentTitle: String? = null
-        val currentLines = mutableListOf<String>()
-        rawText.lines().forEach { raw ->
-            val line = raw.trim()
-            if (line.startsWith("## ")) {
-                currentTitle?.let {
-                    if (currentLines.isNotEmpty()) {
-                        sections.add(Section(it, currentLines.toList()))
-                    }
-                }
-                currentLines.clear()
-                currentTitle = line.removePrefix("## ").trim()
-            } else if (line.startsWith("# ")) {
-                // skip top-level heading
-            } else if (line.isNotEmpty()) {
-                if (currentTitle == null) {
-                    currentTitle = "Details"
-                }
-                currentLines.add(line)
-            }
-        }
-        currentTitle?.let {
-            if (currentLines.isNotEmpty()) {
-                sections.add(Section(it, currentLines.toList()))
-            }
-        }
-        return sections
-    }
-
-    private fun displaySections(sections: List<Section>) {
-        reportContainer.removeAllViews()
-        if (sections.isEmpty()) {
-            showStatus("No structured sections were detected.", true)
-            return
-        }
-        sections.forEach { section ->
-            val titleView = TextView(this).apply {
-                text = section.title
-                textSize = 18f
-                setPadding(0, 16, 0, 4)
-            }
-            val bodyView = TextView(this).apply {
-                text = section.lines.joinToString("\n")
-                textSize = 15f
-            }
-            reportContainer.addView(titleView)
-            reportContainer.addView(bodyView)
-        }
-    }
-
-    data class Section(val title: String, val lines: List<String>)
 }

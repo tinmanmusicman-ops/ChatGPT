@@ -42,9 +42,17 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="Last report will appear below."
-        android:textAppearance="?attr/textAppearanceBodyMedium"
-        android:layout_marginTop="12dp"
-        app:layout_constraintTop_toBottomOf="@id/progressBar"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        android:textSize="16sp"
+        android:minHeight="48dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginBottom="12dp"
+        android:lineSpacingExtra="4dp"
+        app:layout_constraintTop_toBottomOf="@id/analyzeButton"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
@@ -58,11 +66,15 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="12dp">
 
-        <LinearLayout
-            android:id="@+id/reportContainer"
+        <TextView
+            android:id="@+id/reportText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical" />
+            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+            android:autoLink="web"
+            android:textIsSelectable="true"
+            android:lineSpacingExtra="4dp"
+            android:padding="4dp" />
     </ScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

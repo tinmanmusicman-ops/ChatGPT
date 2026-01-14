@@ -15,9 +15,17 @@ object ReminderScheduler {
             Log.w(TAG, "Interval must be positive; skipping schedule")
             return
         }
-        Log.i(TAG, "Scheduling EatWorker for $intervalMinutes minute interval")
+        val currentMinutes = SleepPrefs.currentMinutesSinceMidnight()
+        val delayMinutes = if (SleepPrefs.isSleepWindowActive(context, currentMinutes)) {
+            val untilWake = SleepPrefs.minutesUntilWake(context, currentMinutes).coerceAtLeast(1)
+            Log.i(TAG, "Sleep window active; deferring reminder for $untilWake minute(s)")
+            untilWake.toLong()
+        } else {
+            intervalMinutes
+        }
+        Log.i(TAG, "Scheduling EatWorker for $delayMinutes minute delay (requested $intervalMinutes minutes)")
         val request = OneTimeWorkRequestBuilder<EatWorker>()
-            .setInitialDelay(intervalMinutes, TimeUnit.MINUTES)
+            .setInitialDelay(delayMinutes, TimeUnit.MINUTES)
             .build()
 
         WorkManager.getInstance(context)

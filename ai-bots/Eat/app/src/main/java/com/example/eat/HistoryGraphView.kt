@@ -44,6 +44,7 @@ class HistoryGraphView @JvmOverloads constructor(
     private val backgroundPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = ContextCompat.getColor(context, R.color.panelBackground)
     }
+    @Suppress("Range")
     private val gridPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = ContextCompat.getColor(context, R.color.onSurface)
         alpha = 80

@@ -1,7 +1,52 @@
+import groovy.json.JsonSlurper
+import groovy.json.JsonOutput
+
 plugins {
     id "com.android.application"
     id "org.jetbrains.kotlin.android"
 }
+
+def globalConfigFile = ["../Shared/Global.json",
+                        "../shared/Global.json",
+                        "Shared/Global.json",
+                        "shared/Global.json",
+                        "../../Shared/Global.json",
+                        "../../shared/Global.json"]
+        .collect { rootProject.file(it) }
+        .find { it?.exists() }
+def globalConfig = [:]
+if (globalConfigFile?.exists()) {
+    globalConfig = new JsonSlurper().parse(globalConfigFile)
+}
+
+def yahooConfigFile = [
+        "../YahooForwarder/bot-assets/config.json",
+        "../../YahooForwarder/bot-assets/config.json",
+        "YahooForwarder/bot-assets/config.json"
+]
+        .collect { rootProject.file(it) }
+        .find { it?.exists() }
+def yahooConfig = [:]
+def yahooDefaults = [:]
+if (yahooConfigFile?.exists()) {
+    yahooConfig = new JsonSlurper().parse(yahooConfigFile) ?: [:]
+    yahooDefaults = yahooConfig.yahoo ?: [:]
+}
+def yahooForwardRules = (yahooDefaults.forward_rules instanceof List) ? yahooDefaults.forward_rules : []
+def yahooFirstRuleForwardTo = ""
+for (rule in yahooForwardRules) {
+    if (rule instanceof Map) {
+        yahooFirstRuleForwardTo = (rule.forward_to ?: "").toString().trim()
+        if (yahooFirstRuleForwardTo) break
+    }
+}
+def yahooForwardToDefault = yahooDefaults.forward_to ?: yahooConfig.gmail_forwarding?.email ?: yahooFirstRuleForwardTo ?: ""
+def yahooEmailDefault = yahooDefaults.email ?: ""
+def yahooAppPasswordDefault = yahooDefaults.app_password ?: ""
+def yahooImapServerDefault = yahooDefaults.imap_server ?: ""
+def yahooImapPortDefault = (yahooDefaults.imap_port instanceof Number) ? yahooDefaults.imap_port.intValue() : (yahooDefaults.imap_port?.toString()?.toInteger() ?: 993)
+def yahooSmtpServerDefault = yahooDefaults.smtp_server ?: "smtp.mail.yahoo.com"
+def buildStringField = { value -> JsonOutput.toJson(value ?: "") }
 
 android {
     namespace "com.example.eat"
@@ -9,12 +54,18 @@ android {
 
     defaultConfig {
         applicationId "com.example.eat"
-        minSdk 24
+        minSdk 26
         targetSdk 34
         versionCode 1
         versionName "1.0"
-        def openAiKey = project.findProperty("openai.api.key") ?: ""
+        def openAiKey = project.findProperty("openai.api.key") ?: (globalConfig.openai_api_key ?: "")
         buildConfigField("String", "OPENAI_API_KEY", "\"${openAiKey}\"")
+        buildConfigField("String", "YAHOO_EMAIL_DEFAULT", buildStringField(yahooEmailDefault))
+        buildConfigField("String", "YAHOO_APP_PASSWORD_DEFAULT", buildStringField(yahooAppPasswordDefault))
+        buildConfigField("String", "YAHOO_IMAP_SERVER_DEFAULT", buildStringField(yahooImapServerDefault))
+        buildConfigField("int", "YAHOO_IMAP_PORT_DEFAULT", "${yahooImapPortDefault}")
+        buildConfigField("String", "YAHOO_SMTP_SERVER_DEFAULT", buildStringField(yahooSmtpServerDefault))
+        buildConfigField("String", "YAHOO_FORWARD_TO_DEFAULT", buildStringField(yahooForwardToDefault))
     }
 
     buildTypes {
@@ -34,6 +85,13 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
+
+    packagingOptions {
+        resources {
+            excludes += "META-INF/NOTICE.md"
+            excludes += "META-INF/LICENSE.md"
+        }
+    }
 }
 
 dependencies {
@@ -44,4 +102,7 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.6.1"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3"
     implementation "com.squareup.okhttp3:okhttp:4.11.0"
+    implementation "com.sun.mail:android-mail:1.6.7"
+    implementation "com.sun.mail:android-activation:1.6.7"
+    implementation "io.noties.markwon:core:4.6.2"
 }
