@@ -18,6 +18,8 @@ object YahooForwarderStorage {
     private const val MAX_LOG_ENTRIES = 8
     private const val KEY_SETTINGS_SAVED = "settingsSaved"
     private const val DEFAULT_PROCESSED_FOLDER = "YahooForwarder"
+    private const val KEY_FORWARD_ALL = "forwardAll"
+    private const val KEY_ALLOWED_DOMAINS = "allowedDomains"
 
     private fun prefs(context: Context) =
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -64,6 +66,8 @@ object YahooForwarderStorage {
     }
 
     data class Status(val runTimeMillis: Long, val result: String)
+
+    data class FilterSettings(val forwardAll: Boolean, val allowedDomains: List<String>)
 
     fun loadSettings(context: Context): Settings {
         val prefs = prefs(context)
@@ -165,6 +169,39 @@ object YahooForwarderStorage {
 
     fun isConfigured(context: Context): Boolean =
         loadSettings(context).isValid
+
+    fun loadFilterSettings(context: Context): FilterSettings {
+        val prefs = prefs(context)
+        val rawDomains = prefs.getString(KEY_ALLOWED_DOMAINS, "[]") ?: "[]"
+        val domainsArray = try {
+            JSONArray(rawDomains)
+        } catch (_: Exception) {
+            JSONArray()
+        }
+        val domains = mutableListOf<String>()
+        for (i in 0 until domainsArray.length()) {
+            val value = domainsArray.optString(i, "").trim().lowercase()
+            if (value.isNotBlank()) domains.add(value)
+        }
+        return FilterSettings(
+            forwardAll = prefs.getBoolean(KEY_FORWARD_ALL, false),
+            allowedDomains = domains
+        )
+    }
+
+    fun saveFilterSettings(context: Context, filterSettings: FilterSettings) {
+        val domainsArray = JSONArray()
+        filterSettings.allowedDomains
+            .map { it.trim().lowercase() }
+            .filter { it.isNotBlank() }
+            .distinct()
+            .forEach { domainsArray.put(it) }
+
+        prefs(context).edit()
+            .putBoolean(KEY_FORWARD_ALL, filterSettings.forwardAll)
+            .putString(KEY_ALLOWED_DOMAINS, domainsArray.toString())
+            .apply()
+    }
 
     private fun maskEmail(value: String): String {
         val trimmed = value.trim()

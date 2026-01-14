@@ -3,6 +3,7 @@ package com.example.eat
 import android.util.Log
 import java.io.IOException
 import java.util.Date
+import java.util.Locale
 import java.util.Properties
 import javax.mail.Authenticator
 import javax.mail.Flags
@@ -22,11 +23,15 @@ object YahooForwarderEngine {
     private const val TAG = "YahooForwarderEngine"
     private const val TAG_KEYWORD = "FORWARDED_CRAIGSLIST"
     private const val PROCESSED_FOLDER_DEFAULT = "YahooForwarder"
+    private const val UNMATCHED_FOLDER = "_Unread"
 
     data class EngineResult(val forwardedCount: Int, val resultMessage: String)
 
     @Throws(IOException::class, MessagingException::class)
-    fun forwardUnseen(settings: YahooForwarderStorage.Settings): EngineResult {
+    fun forwardUnseen(
+        settings: YahooForwarderStorage.Settings,
+        filterSettings: YahooForwarderStorage.FilterSettings
+    ): EngineResult {
         val store = connectToImap(settings)
         var inbox: Folder? = null
         var processed: Folder? = null
@@ -37,11 +42,18 @@ object YahooForwarderEngine {
                 return EngineResult(0, "No unseen messages found")
             }
 
-            processed = ensureProcessedFolder(store, settings.processedFolder)
+            processed = ensureMailbox(store, settings.processedFolder.ifBlank { PROCESSED_FOLDER_DEFAULT })
+            val unmatched = ensureMailbox(store, UNMATCHED_FOLDER)
             var forwarded = 0
             for (message in unseen) {
+                if (!shouldForwardMessage(message, filterSettings)) {
+                    if (moveMessageSafely(message, inbox, unmatched)) {
+                        Log.i(TAG, "No match; moved message to $UNMATCHED_FOLDER (kept UNREAD)")
+                    }
+                    continue
+                }
                 try {
-                    processMessage(message, settings, processed)
+                    processMessage(message, settings, inbox, processed)
                     forwarded++
                 } catch (ex: Exception) {
                     Log.w(TAG, "Failed to forward message: ${ex.message}", ex)
@@ -85,8 +97,8 @@ object YahooForwarderEngine {
     }
 
     @Throws(MessagingException::class)
-    private fun ensureProcessedFolder(store: javax.mail.Store, folderName: String): Folder {
-        val targetName = folderName.takeIf { it.isNotBlank() } ?: PROCESSED_FOLDER_DEFAULT
+    private fun ensureMailbox(store: javax.mail.Store, mailboxName: String): Folder {
+        val targetName = mailboxName.trim()
         val target = store.getFolder(targetName)
         if (!target.exists()) {
             try {
@@ -102,7 +114,7 @@ object YahooForwarderEngine {
     }
 
     @Throws(IOException::class, MessagingException::class)
-    private fun processMessage(message: Message, settings: YahooForwarderStorage.Settings, processed: Folder) {
+    private fun processMessage(message: Message, settings: YahooForwarderStorage.Settings, inbox: Folder, processed: Folder) {
         val from = message.from?.firstOrNull()?.toString() ?: "unknown"
         val subject = message.subject ?: ""
         val date = message.sentDate?.toString() ?: Date().toString()
@@ -113,7 +125,9 @@ object YahooForwarderEngine {
         val body = extractPlainText(message)
         sendForward(message, body, settings, subject, from, date)
         markMessageFlags(message)
-        copyToProcessed(message, processed)
+        if (!moveMessageSafely(message, inbox, processed)) {
+            Log.w(TAG, "Forwarded but failed to move to ${processed.fullName}")
+        }
     }
 
     @Throws(IOException::class, MessagingException::class)
@@ -191,16 +205,19 @@ object YahooForwarderEngine {
     }
 
     @Throws(MessagingException::class)
-    private fun copyToProcessed(message: Message, processed: Folder) {
+    private fun moveMessageSafely(message: Message, source: Folder, destination: Folder): Boolean {
         try {
-            processed.appendMessages(arrayOf(message))
+            source.copyMessages(arrayOf(message), destination)
         } catch (ex: MessagingException) {
-            Log.w(TAG, "Processed folder append failed: ${ex.message}", ex)
+            Log.w(TAG, "Move failed (copy) to ${destination.fullName}: ${ex.message}", ex)
+            return false
         }
         try {
             message.setFlag(Flags.Flag.DELETED, true)
-        } catch (_: MessagingException) {
+        } catch (ex: MessagingException) {
+            Log.w(TAG, "Move incomplete; copy succeeded but delete failed: ${ex.message}", ex)
         }
+        return true
     }
 
     @Throws(IOException::class, MessagingException::class)
@@ -227,6 +244,32 @@ object YahooForwarderEngine {
             }
         }
         return message.getContent()?.toString() ?: ""
+    }
+
+    private fun shouldForwardMessage(
+        message: Message,
+        filterSettings: YahooForwarderStorage.FilterSettings
+    ): Boolean {
+        if (filterSettings.forwardAll) return true
+        if (filterSettings.allowedDomains.isEmpty()) return false
+        val senderDomain = extractSenderDomain(message) ?: return false
+        return filterSettings.allowedDomains.any { allowed ->
+            senderDomain == allowed || senderDomain.endsWith(".$allowed")
+        }
+    }
+
+    private fun extractSenderDomain(message: Message): String? {
+        val from = message.from?.firstOrNull()
+        val address = (from as? InternetAddress)?.address?.trim().orEmpty().ifBlank {
+            try {
+                InternetAddress.parse(from?.toString().orEmpty(), false).firstOrNull()?.address?.trim().orEmpty()
+            } catch (_: Exception) {
+                ""
+            }
+        }
+        if (address.isBlank() || !address.contains("@")) return null
+        val domain = address.substringAfter("@").trim().lowercase(Locale.ROOT)
+        return domain.ifBlank { null }
     }
 
     private fun buildForwardBody(sender: String, subject: String, date: String, body: String): String {

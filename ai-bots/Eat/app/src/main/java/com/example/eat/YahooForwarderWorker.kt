@@ -42,8 +42,9 @@ class YahooForwarderWorker(context: Context, params: WorkerParameters) :
         }
 
         return try {
+            val filterSettings = YahooForwarderStorage.loadFilterSettings(applicationContext)
             val engineResult = withContext(Dispatchers.IO) {
-                YahooForwarderEngine.forwardUnseen(settings)
+                YahooForwarderEngine.forwardUnseen(settings, filterSettings)
             }
             YahooForwarderStorage.updateLastStatus(
                 applicationContext,

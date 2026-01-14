@@ -13,9 +13,13 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
+import com.google.android.material.checkbox.MaterialCheckBox
+import com.google.android.material.chip.Chip
+import com.google.android.material.chip.ChipGroup
 import com.google.android.material.textfield.TextInputEditText
 import java.text.DateFormat
 import java.util.Date
+import java.util.Locale
 
 class YahooForwarderActivity : AppCompatActivity() {
     private lateinit var settingsContainer: LinearLayout
@@ -28,11 +32,16 @@ class YahooForwarderActivity : AppCompatActivity() {
     private lateinit var imapInput: TextInputEditText
     private lateinit var smtpInput: TextInputEditText
     private lateinit var forwardToInput: TextInputEditText
+    private lateinit var forwardAllCheckbox: MaterialCheckBox
+    private lateinit var domainInput: TextInputEditText
+    private lateinit var addDomainButton: MaterialButton
+    private lateinit var domainChipGroup: ChipGroup
     private lateinit var statusText: TextView
     private var isCollapsedState = false
     private var logEntriesPresent = false
     private var forceShowLog = false
     private val TAG = "YahooForwarderActivity"
+    private val allowedDomains = mutableListOf<String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,6 +60,10 @@ class YahooForwarderActivity : AppCompatActivity() {
             imapInput = findViewById<TextInputEditText>(R.id.imapServerInput)
             smtpInput = findViewById<TextInputEditText>(R.id.smtpServerInput)
             forwardToInput = findViewById<TextInputEditText>(R.id.forwardToInput)
+            forwardAllCheckbox = findViewById(R.id.forwardAllCheckbox)
+            domainInput = findViewById(R.id.domainInput)
+            addDomainButton = findViewById(R.id.addDomainButton)
+            domainChipGroup = findViewById(R.id.domainChipGroup)
             statusText = findViewById<TextView>(R.id.statusText)
             editSettingsButton.setOnClickListener { showSettings() }
 
@@ -59,6 +72,8 @@ class YahooForwarderActivity : AppCompatActivity() {
             runButton.setOnClickListener { runForwarder("Yahoo forwarder run queued") }
 
             loadSettings()
+            loadFilterSettings()
+            wireFilterUi()
             val shouldCollapse = YahooForwarderStorage.hasSavedSettings(this)
             setCollapsed(shouldCollapse)
             logState("onCreate - collapsed=$shouldCollapse")
@@ -80,6 +95,72 @@ class YahooForwarderActivity : AppCompatActivity() {
         imapInput.setText(settings.imapServer)
         smtpInput.setText(settings.smtpServer)
         forwardToInput.setText(settings.forwardTo)
+    }
+
+    private fun loadFilterSettings() {
+        val filterSettings = YahooForwarderStorage.loadFilterSettings(this)
+        forwardAllCheckbox.isChecked = filterSettings.forwardAll
+        allowedDomains.clear()
+        allowedDomains.addAll(filterSettings.allowedDomains)
+        renderAllowedDomains()
+        logState("Forward mode: ${if (filterSettings.forwardAll) "ALL" else "SELECTED"}")
+        logState("Allowed domains loaded: ${filterSettings.allowedDomains.size}")
+    }
+
+    private fun wireFilterUi() {
+        forwardAllCheckbox.setOnCheckedChangeListener { _, _ ->
+            persistFilterSettings()
+        }
+        addDomainButton.setOnClickListener { addDomainFromInput() }
+    }
+
+    private fun addDomainFromInput() {
+        val raw = domainInput.text?.toString()?.trim().orEmpty()
+        if (raw.isBlank()) return
+
+        val normalized = normalizeDomain(raw)
+        if (normalized.isBlank()) return
+        if (allowedDomains.contains(normalized)) return
+
+        allowedDomains.add(normalized)
+        domainInput.setText("")
+        renderAllowedDomains()
+        persistFilterSettings()
+    }
+
+    private fun normalizeDomain(input: String): String {
+        val trimmed = input.trim().lowercase(Locale.ROOT)
+        val candidate = if (trimmed.contains("@")) trimmed.substringAfter("@") else trimmed
+        val cleaned = candidate.trim().trimEnd('.')
+        if (cleaned.isBlank()) return ""
+        if (cleaned.contains(" ")) return ""
+        return cleaned
+    }
+
+    private fun renderAllowedDomains() {
+        domainChipGroup.removeAllViews()
+        allowedDomains.forEach { domain ->
+            val chip = Chip(this).apply {
+                text = domain
+                isCloseIconVisible = true
+                setOnCloseIconClickListener {
+                    allowedDomains.remove(domain)
+                    renderAllowedDomains()
+                    persistFilterSettings()
+                }
+            }
+            domainChipGroup.addView(chip)
+        }
+    }
+
+    private fun persistFilterSettings() {
+        YahooForwarderStorage.saveFilterSettings(
+            this,
+            YahooForwarderStorage.FilterSettings(
+                forwardAll = forwardAllCheckbox.isChecked,
+                allowedDomains = allowedDomains.toList()
+            )
+        )
     }
 
     private fun onSaveClicked() {
