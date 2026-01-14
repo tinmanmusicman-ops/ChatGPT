@@ -170,7 +170,8 @@ object ReminderPrefs {
         ensureHistorySeeded(context)
         val raw = prefs.getString(KEY_HISTORY_ENTRIES, "") ?: return emptyList()
         if (raw.isBlank()) return emptyList()
-        val entries = raw.lines()
+        val rawLines = raw.lines().filter { it.isNotBlank() }
+        val entries = rawLines
             .mapNotNull { parseHistoryEntry(it) }
             .filter { it.timestamp in startMillis..endMillis }
             .sortedBy { it.timestamp }

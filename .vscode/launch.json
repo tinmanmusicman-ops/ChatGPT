@@ -57,6 +57,7 @@
       "preLaunchTask": "Install Eat Debug on Emulator",
       "program": "${workspaceFolder}/ai-bots/Eat/scripts/launch_dummy.js",
       "console": "integratedTerminal",
+      "runtimeExecutable": "C:\\Program Files\\nodejs\\node.exe",
       "internalConsoleOptions": "neverOpen"
     }
   ]

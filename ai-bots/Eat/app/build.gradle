@@ -86,6 +86,10 @@ android {
         jvmTarget = "17"
     }
 
+    buildFeatures {
+        buildConfig true
+    }
+
     packagingOptions {
         resources {
             excludes += "META-INF/NOTICE.md"
