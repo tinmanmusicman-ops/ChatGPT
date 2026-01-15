@@ -1,6 +1,7 @@
 package com.example.eat
 
 import android.os.Bundle
+import android.content.SharedPreferences
 import android.util.Log
 import android.view.MenuItem
 import android.widget.LinearLayout
@@ -26,6 +27,7 @@ class YahooForwarderActivity : AppCompatActivity() {
     private lateinit var editSettingsButton: MaterialButton
     private lateinit var logCard: MaterialCardView
     private lateinit var logText: TextView
+    private lateinit var clearLogButton: MaterialButton
     private lateinit var runButton: MaterialButton
     private lateinit var emailInput: TextInputEditText
     private lateinit var passwordInput: TextInputEditText
@@ -34,14 +36,21 @@ class YahooForwarderActivity : AppCompatActivity() {
     private lateinit var forwardToInput: TextInputEditText
     private lateinit var forwardAllCheckbox: MaterialCheckBox
     private lateinit var domainInput: TextInputEditText
+    private lateinit var folderInput: TextInputEditText
+    private lateinit var domainForwardEmailInput: TextInputEditText
     private lateinit var addDomainButton: MaterialButton
     private lateinit var domainChipGroup: ChipGroup
     private lateinit var statusText: TextView
     private var isCollapsedState = false
-    private var logEntriesPresent = false
-    private var forceShowLog = false
+    private var workLogHasContent = false
     private val TAG = "YahooForwarderActivity"
-    private val allowedDomains = mutableListOf<String>()
+    private val domainRules = mutableListOf<YahooForwarderStorage.DomainRule>()
+    private lateinit var prefs: SharedPreferences
+    private val workLogListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+        if (key == YahooForwarderStorage.getWorkLogKey()) {
+            updateWorkLogDisplay()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,7 +62,7 @@ class YahooForwarderActivity : AppCompatActivity() {
             editSettingsButton = findViewById<MaterialButton>(R.id.editSettingsButton)
             logCard = findViewById<MaterialCardView>(R.id.logCard)
             logText = findViewById<TextView>(R.id.logText)
-            logState("Starting Yahoo Forwarder log")
+            clearLogButton = findViewById(R.id.clearLogButton)
             runButton = findViewById(R.id.runButton)
             emailInput = findViewById<TextInputEditText>(R.id.yahooEmailInput)
             passwordInput = findViewById<TextInputEditText>(R.id.yahooPasswordInput)
@@ -62,6 +71,8 @@ class YahooForwarderActivity : AppCompatActivity() {
             forwardToInput = findViewById<TextInputEditText>(R.id.forwardToInput)
             forwardAllCheckbox = findViewById(R.id.forwardAllCheckbox)
             domainInput = findViewById(R.id.domainInput)
+            folderInput = findViewById(R.id.folderInput)
+            domainForwardEmailInput = findViewById(R.id.domainForwardEmailInput)
             addDomainButton = findViewById(R.id.addDomainButton)
             domainChipGroup = findViewById(R.id.domainChipGroup)
             statusText = findViewById<TextView>(R.id.statusText)
@@ -74,14 +85,18 @@ class YahooForwarderActivity : AppCompatActivity() {
             loadSettings()
             loadFilterSettings()
             wireFilterUi()
+            prefs = YahooForwarderStorage.sharedPreferences(this)
+            prefs.registerOnSharedPreferenceChangeListener(workLogListener)
             val shouldCollapse = YahooForwarderStorage.hasSavedSettings(this)
             setCollapsed(shouldCollapse)
-            logState("onCreate - collapsed=$shouldCollapse")
             refreshStatus()
-            logState("UI log heartbeat")
+            updateWorkLogDisplay()
+            clearLogButton.setOnClickListener {
+                YahooForwarderStorage.clearWorkLog(this)
+                updateWorkLogDisplay()
+            }
         } catch (tp: Throwable) {
-            forceShowLog = true
-            logState("onCreate error: ${tp.message ?: tp::class.java.simpleName}")
+            Log.e(TAG, "onCreate error", tp)
             Toast.makeText(this, "Unable to open Yahoo forwarder", Toast.LENGTH_LONG).show()
             setCollapsed(true)
             refreshStatus()
@@ -100,11 +115,10 @@ class YahooForwarderActivity : AppCompatActivity() {
     private fun loadFilterSettings() {
         val filterSettings = YahooForwarderStorage.loadFilterSettings(this)
         forwardAllCheckbox.isChecked = filterSettings.forwardAll
-        allowedDomains.clear()
-        allowedDomains.addAll(filterSettings.allowedDomains)
-        renderAllowedDomains()
-        logState("Forward mode: ${if (filterSettings.forwardAll) "ALL" else "SELECTED"}")
-        logState("Allowed domains loaded: ${filterSettings.allowedDomains.size}")
+        domainRules.clear()
+        domainRules.addAll(filterSettings.domainRules)
+        renderDomainRules()
+        updateWorkLogDisplay()
     }
 
     private fun wireFilterUi() {
@@ -115,16 +129,27 @@ class YahooForwarderActivity : AppCompatActivity() {
     }
 
     private fun addDomainFromInput() {
-        val raw = domainInput.text?.toString()?.trim().orEmpty()
-        if (raw.isBlank()) return
+        val rawDomain = domainInput.text?.toString()?.trim().orEmpty()
+        val rawFolder = folderInput.text?.toString()?.trim().orEmpty()
+        val rawForwardTo = domainForwardEmailInput.text?.toString()?.trim().orEmpty()
+        if (rawDomain.isBlank() || rawFolder.isBlank()) return
 
-        val normalized = normalizeDomain(raw)
-        if (normalized.isBlank()) return
-        if (allowedDomains.contains(normalized)) return
+        val normalizedDomain = normalizeDomain(rawDomain)
+        val normalizedFolder = rawFolder.trim()
+        if (normalizedDomain.isBlank() || normalizedFolder.isBlank()) return
+        if (domainRules.any { it.domain == normalizedDomain }) return
 
-        allowedDomains.add(normalized)
+        domainRules.add(
+            YahooForwarderStorage.DomainRule(
+                normalizedDomain,
+                normalizedFolder,
+                rawForwardTo
+            )
+        )
         domainInput.setText("")
-        renderAllowedDomains()
+        folderInput.setText("")
+        domainForwardEmailInput.setText("")
+        renderDomainRules()
         persistFilterSettings()
     }
 
@@ -137,20 +162,30 @@ class YahooForwarderActivity : AppCompatActivity() {
         return cleaned
     }
 
-    private fun renderAllowedDomains() {
+    private fun renderDomainRules() {
         domainChipGroup.removeAllViews()
-        allowedDomains.forEach { domain ->
+        domainRules.forEach { rule ->
             val chip = Chip(this).apply {
-                text = domain
+                val label = buildString {
+                    append(rule.domain)
+                    append(" → ")
+                    append(rule.folder)
+                    if (rule.forwardTo.isNotBlank()) {
+                        append(" → ")
+                        append(rule.forwardTo)
+                    }
+                }
+                text = label
                 isCloseIconVisible = true
                 setOnCloseIconClickListener {
-                    allowedDomains.remove(domain)
-                    renderAllowedDomains()
+                    domainRules.remove(rule)
+                    renderDomainRules()
                     persistFilterSettings()
                 }
             }
             domainChipGroup.addView(chip)
         }
+        updateWorkLogDisplay()
     }
 
     private fun persistFilterSettings() {
@@ -158,7 +193,7 @@ class YahooForwarderActivity : AppCompatActivity() {
             this,
             YahooForwarderStorage.FilterSettings(
                 forwardAll = forwardAllCheckbox.isChecked,
-                allowedDomains = allowedDomains.toList()
+                domainRules = domainRules.toList()
             )
         )
     }
@@ -182,7 +217,7 @@ class YahooForwarderActivity : AppCompatActivity() {
         Toast.makeText(this, "Yahoo forwarder saved and scheduled", Toast.LENGTH_SHORT).show()
         setCollapsed(true)
         refreshStatus()
-        logState("Settings saved")
+        Log.i(TAG, "Settings saved")
     }
 
     private fun onTestClicked() {
@@ -200,7 +235,7 @@ class YahooForwarderActivity : AppCompatActivity() {
         WorkManager.getInstance(this)
             .enqueueUniqueWork("YahooForwarderTest", ExistingWorkPolicy.REPLACE, request)
         Toast.makeText(this, toastMessage, Toast.LENGTH_SHORT).show()
-        logState("enqueue worker; message=$toastMessage")
+        Log.i(TAG, "enqueue worker; message=$toastMessage")
     }
 
     private fun refreshStatus() {
@@ -211,64 +246,51 @@ class YahooForwarderActivity : AppCompatActivity() {
             "Never run"
         }
         statusText.text = "$timeText\n${status.result}"
-        logState("Status refreshed: ${status.result}")
-        refreshLog()
+        updateLogVisibility()
     }
 
     override fun onResume() {
         super.onResume()
         refreshStatus()
-        logState("onResume")
+        updateWorkLogDisplay()
     }
 
-    private fun refreshLog() {
-        val entries = YahooForwarderStorage.getStatusHistory(this)
-        logEntriesPresent = entries.isNotEmpty()
-        if (entries.isEmpty()) {
-            logText.text = getString(R.string.yahoo_status_log_empty)
-        } else {
-            val formatter = DateFormat.getDateTimeInstance()
-            logText.text = entries.joinToString("\n\n") { entry ->
-                val entryTime = if (entry.runTimeMillis > 0) {
-                    formatter.format(Date(entry.runTimeMillis))
-                } else {
-                    "Unknown time"
-                }
-                "$entryTime\n${entry.result}"
-            }
-        }
-        updateLogVisibility()
+    override fun onDestroy() {
+        super.onDestroy()
+        prefs.unregisterOnSharedPreferenceChangeListener(workLogListener)
     }
 
     private fun setCollapsed(collapsed: Boolean) {
         settingsContainer.isVisible = !collapsed
         isCollapsedState = collapsed
-        refreshLog()
         updateLogVisibility()
-        logState("setCollapsed -> $collapsed")
     }
 
     private fun showSettings() {
         setCollapsed(false)
-        logState("showSettings")
     }
 
-    private fun logState(message: String) {
-        val trimmed = message.trim()
-        if (trimmed.isEmpty()) return
-        Log.d(TAG, trimmed)
-        YahooForwarderStorage.recordEvent(this, trimmed)
-        runOnUiThread {
-            logText.append("$trimmed\n")
-            updateLogVisibility()
+    private fun updateWorkLogDisplay() {
+        val workLog = YahooForwarderStorage.loadWorkLog(this)
+        val header = buildString {
+            appendLine("Yahoo Forwarder ready")
+            appendLine("Forward mode: ${if (forwardAllCheckbox.isChecked) "ALL" else "SELECTED"}")
+            append("Allowed domains loaded: ${domainRules.size}")
         }
-        if (trimmed.contains("error", ignoreCase = true) || trimmed.contains("unable", ignoreCase = true)) {
-            forceShowLog = true
+        workLogHasContent = workLog.isNotBlank()
+        val display = if (workLogHasContent) {
+            "$header\n$workLog"
+        } else {
+            header
+        }
+        runOnUiThread {
+            logText.text = display
+            updateLogVisibility()
         }
     }
 
     private fun updateLogVisibility() {
-        val showLog = isCollapsedState || forceShowLog || logEntriesPresent
+        val showLog = isCollapsedState || workLogHasContent
         logCard.isVisible = showLog
         editSettingsButton.isVisible = isCollapsedState
     }

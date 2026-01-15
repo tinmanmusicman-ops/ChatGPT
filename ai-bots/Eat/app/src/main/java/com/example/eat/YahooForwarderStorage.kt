@@ -1,8 +1,11 @@
 package com.example.eat
 
 import android.content.Context
+import android.content.SharedPreferences
 import org.json.JSONArray
 import org.json.JSONObject
+import java.text.DateFormat
+import java.util.Date
 
 object YahooForwarderStorage {
     private const val PREFS_NAME = "YahooForwarderPrefs"
@@ -19,10 +22,9 @@ object YahooForwarderStorage {
     private const val KEY_SETTINGS_SAVED = "settingsSaved"
     private const val DEFAULT_PROCESSED_FOLDER = "YahooForwarder"
     private const val KEY_FORWARD_ALL = "forwardAll"
-    private const val KEY_ALLOWED_DOMAINS = "allowedDomains"
-
-    private fun prefs(context: Context) =
-        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    private const val KEY_DOMAIN_RULES = "domainRules"
+    private const val KEY_WORK_LOG = "workLog"
+    private const val MAX_WORK_LOG_LINES = 64
 
     data class Settings(
         val yahooEmail: String,
@@ -67,7 +69,8 @@ object YahooForwarderStorage {
 
     data class Status(val runTimeMillis: Long, val result: String)
 
-    data class FilterSettings(val forwardAll: Boolean, val allowedDomains: List<String>)
+    data class DomainRule(val domain: String, val folder: String, val forwardTo: String)
+    data class FilterSettings(val forwardAll: Boolean, val domainRules: List<DomainRule>)
 
     fun loadSettings(context: Context): Settings {
         val prefs = prefs(context)
@@ -172,35 +175,90 @@ object YahooForwarderStorage {
 
     fun loadFilterSettings(context: Context): FilterSettings {
         val prefs = prefs(context)
-        val rawDomains = prefs.getString(KEY_ALLOWED_DOMAINS, "[]") ?: "[]"
-        val domainsArray = try {
-            JSONArray(rawDomains)
+        val rawRules = prefs.getString(KEY_DOMAIN_RULES, "[]") ?: "[]"
+        val rulesArray = try {
+            JSONArray(rawRules)
         } catch (_: Exception) {
             JSONArray()
         }
-        val domains = mutableListOf<String>()
-        for (i in 0 until domainsArray.length()) {
-            val value = domainsArray.optString(i, "").trim().lowercase()
-            if (value.isNotBlank()) domains.add(value)
+        val rules = mutableListOf<DomainRule>()
+        for (i in 0 until rulesArray.length()) {
+            val obj = rulesArray.optJSONObject(i) ?: continue
+            val domain = obj.optString("domain", "").trim().lowercase()
+            val folder = obj.optString("folder", "").trim()
+            val forwardTo = obj.optString("forward_to", "").trim()
+            if (domain.isNotBlank() && folder.isNotBlank()) {
+                rules.add(DomainRule(domain, folder, forwardTo))
+            }
         }
         return FilterSettings(
             forwardAll = prefs.getBoolean(KEY_FORWARD_ALL, false),
-            allowedDomains = domains
+            domainRules = rules
         )
     }
 
+    private fun prefs(context: Context) =
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+
     fun saveFilterSettings(context: Context, filterSettings: FilterSettings) {
-        val domainsArray = JSONArray()
-        filterSettings.allowedDomains
-            .map { it.trim().lowercase() }
-            .filter { it.isNotBlank() }
-            .distinct()
-            .forEach { domainsArray.put(it) }
+        val rulesArray = JSONArray()
+        filterSettings.domainRules
+            .map {
+                DomainRule(
+                    it.domain.trim().lowercase(),
+                    it.folder.trim(),
+                    it.forwardTo.trim()
+                )
+            }
+            .filter { it.domain.isNotBlank() && it.folder.isNotBlank() }
+            .distinctBy { it.domain }
+            .forEach { rule ->
+                rulesArray.put(
+                    JSONObject().apply {
+                        put("domain", rule.domain)
+                        put("folder", rule.folder)
+                        put("forward_to", rule.forwardTo)
+                    }
+                )
+            }
 
         prefs(context).edit()
             .putBoolean(KEY_FORWARD_ALL, filterSettings.forwardAll)
-            .putString(KEY_ALLOWED_DOMAINS, domainsArray.toString())
+            .putString(KEY_DOMAIN_RULES, rulesArray.toString())
             .apply()
+    }
+
+    fun loadWorkLog(context: Context): String =
+        prefs(context).getString(KEY_WORK_LOG, "") ?: ""
+
+    fun clearWorkLog(context: Context) {
+        prefs(context).edit().putString(KEY_WORK_LOG, "").apply()
+    }
+
+    fun appendWorkLog(context: Context, message: String) {
+        synchronized(this) {
+            val prefs = prefs(context)
+            val existing = prefs.getString(KEY_WORK_LOG, "") ?: ""
+            val builder = StringBuilder()
+            if (existing.isNotBlank()) {
+                builder.append(existing)
+                builder.append("\n")
+            }
+            builder.append("${DateFormat.getDateTimeInstance().format(Date())} $message")
+            val trimmed = trimWorkLog(builder.toString())
+            prefs.edit().putString(KEY_WORK_LOG, trimmed).apply()
+        }
+    }
+
+    fun sharedPreferences(context: Context): SharedPreferences =
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+
+    fun getWorkLogKey(): String = KEY_WORK_LOG
+
+    private fun trimWorkLog(raw: String): String {
+        val lines = raw.split('\n')
+        if (lines.size <= MAX_WORK_LOG_LINES) return raw
+        return lines.takeLast(MAX_WORK_LOG_LINES).joinToString("\n")
     }
 
     private fun maskEmail(value: String): String {

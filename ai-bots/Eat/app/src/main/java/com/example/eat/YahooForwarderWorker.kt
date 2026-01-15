@@ -41,10 +41,12 @@ class YahooForwarderWorker(context: Context, params: WorkerParameters) :
             return Result.retry()
         }
 
+        YahooForwarderStorage.clearWorkLog(applicationContext)
+        YahooForwarderStorage.appendWorkLog(applicationContext, "Job started")
         return try {
             val filterSettings = YahooForwarderStorage.loadFilterSettings(applicationContext)
             val engineResult = withContext(Dispatchers.IO) {
-                YahooForwarderEngine.forwardUnseen(settings, filterSettings)
+                YahooForwarderEngine.forwardUnseen(applicationContext, settings, filterSettings)
             }
             YahooForwarderStorage.updateLastStatus(
                 applicationContext,
@@ -54,27 +56,33 @@ class YahooForwarderWorker(context: Context, params: WorkerParameters) :
             YahooForwarderScheduler.scheduleNext(applicationContext)
             Result.success()
         } catch (ex: IOException) {
+            val statusMessage = "I/O error: ${ex.localizedMessage}"
             Log.w(TAG, "I/O failure during Yahoo forwarding", ex)
+            YahooForwarderStorage.appendWorkLog(applicationContext, statusMessage)
             YahooForwarderStorage.updateLastStatus(
                 applicationContext,
                 timestamp,
-                "I/O error: ${ex.localizedMessage}"
+                statusMessage
             )
             Result.retry()
         } catch (ex: MessagingException) {
+            val statusMessage = "SMTP/IMAP error: ${ex.localizedMessage}"
             Log.w(TAG, "Email protocol error during Yahoo forwarding", ex)
+            YahooForwarderStorage.appendWorkLog(applicationContext, statusMessage)
             YahooForwarderStorage.updateLastStatus(
                 applicationContext,
                 timestamp,
-                "SMPT/IMAP error: ${ex.localizedMessage}"
+                statusMessage
             )
             Result.retry()
         } catch (ex: Exception) {
+            val statusMessage = "Unexpected error: ${ex.localizedMessage}"
             Log.w(TAG, "Unexpected error during Yahoo forwarding", ex)
+            YahooForwarderStorage.appendWorkLog(applicationContext, statusMessage)
             YahooForwarderStorage.updateLastStatus(
                 applicationContext,
                 timestamp,
-                "Unexpected error: ${ex.localizedMessage}"
+                statusMessage
             )
             Result.retry()
         }
