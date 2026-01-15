@@ -93,6 +93,10 @@ class MainActivity : AppCompatActivity() {
                 startActivity(Intent(this, YahooForwarderActivity::class.java))
                 true
             }
+            R.id.action_resume_generator -> {
+                startActivity(Intent(this, ResumeGeneratorActivity::class.java))
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
     }
