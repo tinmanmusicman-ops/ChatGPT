@@ -12,6 +12,115 @@ internal sealed class ProcessCpuUsageSampler
     private readonly object _gate = new();
     private readonly Dictionary<int, SampleState> _stateByPid = new();
 
+    public double? SampleTotalCpuPercentAllProcesses()
+    {
+        var nowTick = Environment.TickCount64;
+
+        Process[] processes;
+        try
+        {
+            processes = Process.GetProcesses();
+        }
+        catch
+        {
+            return null;
+        }
+
+        var cpuCount = Math.Max(1, Environment.ProcessorCount);
+        var samples = new List<(int Pid, TimeSpan TotalCpu)>(capacity: processes.Length);
+        var seenPids = new HashSet<int>();
+
+        foreach (var p in processes)
+        {
+            try
+            {
+                int pid;
+                TimeSpan totalCpu;
+                try
+                {
+                    pid = p.Id;
+                    totalCpu = p.TotalProcessorTime;
+                }
+                catch
+                {
+                    // If we can't read the PID or CPU time, we can't sample it.
+                    continue;
+                }
+
+                if (pid <= 0)
+                {
+                    continue;
+                }
+
+                seenPids.Add(pid);
+                samples.Add((pid, totalCpu));
+            }
+            finally
+            {
+                p.Dispose();
+            }
+        }
+
+        lock (_gate)
+        {
+            double sum = 0;
+            var any = false;
+
+            for (var i = 0; i < samples.Count; i++)
+            {
+                var (pid, totalCpu) = samples[i];
+
+                if (!_stateByPid.TryGetValue(pid, out var state))
+                {
+                    _stateByPid[pid] = new SampleState(totalCpu, nowTick);
+                    continue;
+                }
+
+                var elapsedMs = nowTick - state.LastTick;
+                if (elapsedMs <= 0)
+                {
+                    _stateByPid[pid] = new SampleState(totalCpu, nowTick);
+                    continue;
+                }
+
+                var deltaCpuMs = (totalCpu - state.LastTotalCpu).TotalMilliseconds;
+                _stateByPid[pid] = new SampleState(totalCpu, nowTick);
+
+                if (deltaCpuMs < 0)
+                {
+                    continue;
+                }
+
+                var denom = elapsedMs * cpuCount;
+                var cpuPercent = (deltaCpuMs / denom) * 100d;
+                if (double.IsNaN(cpuPercent) || double.IsInfinity(cpuPercent) || cpuPercent < 0)
+                {
+                    continue;
+                }
+
+                any = true;
+                sum += Math.Clamp(cpuPercent, 0d, 100d);
+            }
+
+            if (_stateByPid.Count > 0 && seenPids.Count > 0)
+            {
+                // Prevent unbounded growth from short-lived processes.
+                var toRemove = _stateByPid.Keys.Where(pid => !seenPids.Contains(pid)).ToArray();
+                for (var i = 0; i < toRemove.Length; i++)
+                {
+                    _stateByPid.Remove(toRemove[i]);
+                }
+            }
+
+            if (!any)
+            {
+                return null;
+            }
+
+            return Math.Clamp(sum, 0d, 100d);
+        }
+    }
+
     public double? SumCpuPercent(IEnumerable<int> processIds)
     {
         if (processIds is null)

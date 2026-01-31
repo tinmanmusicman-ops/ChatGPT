@@ -14,10 +14,12 @@ public sealed class MonitoringDashboardTab : UserControl
     private readonly GroupedBarChartControl _cpuCoreBars;
     private readonly GroupedBarChartControl _gpuBars;
     private readonly ListView _gpuProcessList;
+    private readonly VerticalBarChartControl _totalCpuHistoryChart;
     private readonly GaugeControl[] _threadGauges = new GaugeControl[8];
     private readonly StackedBarControl _memoryBar;
     private readonly StackedBarControl _cDriveBar;
     private readonly StackedBarControl _dDriveBar;
+    private readonly StackedBarControl _batteryBar;
     private readonly StackedBarControl _networkBar;
     private readonly Label _cpuStatusLabel;
     private readonly Label _gpuStatusLabel;
@@ -29,8 +31,10 @@ public sealed class MonitoringDashboardTab : UserControl
     private readonly LogicalProcessorUsageProvider _logicalCpuProvider = new();
     private readonly MemoryStatusProvider _memoryProvider = new();
     private readonly DriveUsageProvider _driveProvider = new();
+    private readonly BatteryStatusProvider _batteryProvider = new();
     private readonly NetworkUsageProvider _networkProvider = new();
     private readonly HwinfoFanSpeedProvider _fanSpeedProvider = new();
+    private readonly ProcessCpuUsageSampler _totalCpuSampler = new();
     private readonly System.Windows.Forms.Timer _refreshTimer;
     private readonly System.Windows.Forms.Timer _memoryTimer;
     private readonly System.Windows.Forms.Timer _networkTimer;
@@ -38,6 +42,8 @@ public sealed class MonitoringDashboardTab : UserControl
     private volatile bool _memoryInFlight;
     private volatile bool _drivesInFlight;
     private volatile bool _networkInFlight;
+    private readonly double?[] _totalCpuHistory = new double?[60];
+    private int _totalCpuHistoryCursor;
     private readonly double?[] _lastCoreUsage = new double?[4];
     private readonly double?[] _lastCoreTempC = new double?[4];
     private readonly double?[] _lastThreadUsage = new double?[8];
@@ -53,6 +59,7 @@ public sealed class MonitoringDashboardTab : UserControl
     private MemoryStatusSnapshot? _lastMemory;
     private DriveUsageSnapshot? _lastCDrive;
     private DriveUsageSnapshot? _lastDDrive;
+    private BatteryStatusSnapshot? _lastBattery;
     private NetworkUsageSnapshot? _lastNetwork;
 
     public MonitoringDashboardTab()
@@ -282,6 +289,15 @@ public sealed class MonitoringDashboardTab : UserControl
             TitleRight = "",
         };
 
+        _batteryBar = new StackedBarControl
+        {
+            Dock = DockStyle.Fill,
+            TitleLeft = "Battery",
+            TitleRight = "",
+            FillBarBackground = true,
+            BarBackgroundColor = Color.FromArgb(0x95, 0xA5, 0xA6), // gray empty
+        };
+
         _networkBar = new StackedBarControl
         {
             Dock = DockStyle.Fill,
@@ -290,6 +306,24 @@ public sealed class MonitoringDashboardTab : UserControl
             FillBarBackground = true,
             BarBackgroundColor = Color.FromArgb(0x34, 0x98, 0xDB), // blue total
         };
+
+        _totalCpuHistoryChart = new VerticalBarChartControl
+        {
+            Dock = DockStyle.Fill,
+            Title = "CPU total (proc sum)",
+            Units = "%",
+            Minimum = 0,
+            Maximum = 100,
+            ValueFormat = "0.0",
+            ShowValueLabels = false,
+        };
+        _totalCpuHistoryChart.SetRanges(new[]
+        {
+            new GaugeRange(0, 60, Color.FromArgb(0x2E, 0xCC, 0x71)),
+            new GaugeRange(60, 75, Color.FromArgb(0xF1, 0xC4, 0x0F)),
+            new GaugeRange(75, 90, Color.FromArgb(0xF3, 0x9C, 0x12)),
+            new GaugeRange(90, 100, Color.FromArgb(0xE7, 0x4C, 0x3C)),
+        });
 
         var cpuTopRow = new FlowLayoutPanel
         {
@@ -450,6 +484,16 @@ public sealed class MonitoringDashboardTab : UserControl
         };
         dHost.Controls.Add(_dDriveBar);
 
+        var batteryHost = new Panel
+        {
+            Size = new Size(chartWidthPx, memHeightPx),
+            MinimumSize = new Size(chartWidthPx, memHeightPx),
+            MaximumSize = new Size(chartWidthPx, memHeightPx),
+            Margin = new Padding(0, 6, 12, 0),
+        };
+        batteryHost.Controls.Add(_batteryBar);
+        RenderBatteryBar(_lastBattery);
+
         var nHost = new Panel
         {
             Size = new Size(chartWidthPx, memHeightPx),
@@ -458,6 +502,17 @@ public sealed class MonitoringDashboardTab : UserControl
             Margin = new Padding(0, 6, 12, 0),
         };
         nHost.Controls.Add(_networkBar);
+
+        var cpuHistoryHeightPx = (int)Math.Round(1.35 * DeviceDpi);
+        var cpuHistoryHost = new Panel
+        {
+            Size = new Size(chartWidthPx, cpuHistoryHeightPx),
+            MinimumSize = new Size(chartWidthPx, cpuHistoryHeightPx),
+            MaximumSize = new Size(chartWidthPx, cpuHistoryHeightPx),
+            Margin = new Padding(0, 6, 12, 0),
+        };
+        cpuHistoryHost.Controls.Add(_totalCpuHistoryChart);
+        RenderTotalCpuHistory();
 
         var threadRow = new TableLayoutPanel
         {
@@ -559,9 +614,11 @@ public sealed class MonitoringDashboardTab : UserControl
             FlowDirection = FlowDirection.LeftToRight,
             WrapContents = true,
         };
+        bottomFlow.Controls.Add(cpuHistoryHost);
         bottomFlow.Controls.Add(memHost);
         bottomFlow.Controls.Add(cHost);
         bottomFlow.Controls.Add(dHost);
+        bottomFlow.Controls.Add(batteryHost);
         bottomFlow.Controls.Add(nHost);
         bottomFlow.Controls.Add(gpuProcHost);
 
@@ -750,6 +807,7 @@ public sealed class MonitoringDashboardTab : UserControl
     private void RestartTelemetryLoop()
     {
         ProcessCpuUsageSampler.Shared.Reset();
+        _totalCpuSampler.Reset();
         WindowsGpuPerfSession.Shared.Reset();
         LibreHardwareGpuSession.Shared.Reset();
         HwinfoSharedMemorySession.Shared.Reset();
@@ -758,6 +816,10 @@ public sealed class MonitoringDashboardTab : UserControl
         _memoryInFlight = false;
         _drivesInFlight = false;
         _networkInFlight = false;
+
+        Array.Fill(_totalCpuHistory, null);
+        _totalCpuHistoryCursor = 0;
+        RenderTotalCpuHistory();
 
         Array.Fill(_lastCoreUsage, null);
         Array.Fill(_lastCoreTempC, null);
@@ -771,6 +833,8 @@ public sealed class MonitoringDashboardTab : UserControl
         _lastUsbProxyUsage = null;
         _lastUsbDriverCpu = null;
         _lastUsbIoMBps = null;
+        _lastBattery = null;
+        RenderBatteryBar(_lastBattery);
 
         _cpuStatusLabel.Text = "CPU Fan: n/a";
         _gpuStatusLabel.Text = "GPU Fan: n/a";
@@ -804,15 +868,28 @@ public sealed class MonitoringDashboardTab : UserControl
             var usageTask = Task.Run(() => _cpuUsageProvider.ReadCoreUsagePercentById(expectedCores: 8));
             var gpuTask = Task.Run(_gpuUsageProvider.Read);
             var fanTask = Task.Run(_fanSpeedProvider.Read);
-            await Task.WhenAll(tempTask, usageTask, gpuTask, fanTask);
+            var totalCpuTask = Task.Run(_totalCpuSampler.SampleTotalCpuPercentAllProcesses);
+            var batteryTask = Task.Run(_batteryProvider.Read);
+            await Task.WhenAll(tempTask, usageTask, gpuTask, fanTask, totalCpuTask, batteryTask);
 
             var snapshot = tempTask.Result;
             var usageByCore = usageTask.Result;
             var gpu = gpuTask.Result;
             var fan = fanTask.Result;
+            var totalCpu = totalCpuTask.Result;
+            var battery = batteryTask.Result;
 
             if (!IsDisposed)
             {
+                AppendTotalCpuHistory(totalCpu);
+                RenderTotalCpuHistory();
+
+                if (battery is not null)
+                {
+                    _lastBattery = battery;
+                }
+                RenderBatteryBar(_lastBattery);
+
                 var logicalLoads = _logicalCpuProvider.ReadUsagePercentPerLogicalProcessor();
 
                 var coreTempsC = new double?[4];
@@ -952,6 +1029,89 @@ public sealed class MonitoringDashboardTab : UserControl
         {
             _snapshotInFlight = false;
         }
+    }
+
+    private void RenderBatteryBar(BatteryStatusSnapshot? snapshot)
+    {
+        if (IsDisposed || _batteryBar is null)
+        {
+            return;
+        }
+
+        try
+        {
+            if (snapshot is null)
+            {
+                _batteryBar.TitleLeft = "Battery";
+                _batteryBar.TitleRight = "n/a";
+                _batteryBar.SetSegments(100, Array.Empty<StackedSegment>());
+                return;
+            }
+
+            var pct = Math.Clamp(snapshot.ChargePercent, 0d, 100d);
+            var charging = snapshot.ChargeStatus.HasFlag(System.Windows.Forms.BatteryChargeStatus.Charging);
+            var left = charging ? "Battery (charging)" : "Battery";
+
+            _batteryBar.TitleLeft = left;
+            _batteryBar.TitleRight = pct.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) + "%";
+
+            _batteryBar.SetSegments(100, new[]
+            {
+                new StackedSegment("charge", pct, GetBatteryFillColor(pct)),
+                new StackedSegment("empty", 100d - pct, Color.FromArgb(0x95, 0xA5, 0xA6)), // gray
+            });
+        }
+        catch
+        {
+            _batteryBar.TitleLeft = "Battery";
+            _batteryBar.TitleRight = "n/a";
+            try { _batteryBar.SetSegments(100, Array.Empty<StackedSegment>()); } catch { }
+        }
+    }
+
+    private static Color GetBatteryFillColor(double percent)
+    {
+        if (percent < 20d)
+        {
+            return Color.FromArgb(0xE7, 0x4C, 0x3C); // red
+        }
+
+        if (percent < 50d)
+        {
+            return Color.FromArgb(0xF1, 0xC4, 0x0F); // yellow
+        }
+
+        return Color.FromArgb(0x2E, 0xCC, 0x71); // green
+    }
+
+    private void AppendTotalCpuHistory(double? cpuPercent)
+    {
+        if (_totalCpuHistory.Length == 0)
+        {
+            return;
+        }
+
+        _totalCpuHistory[_totalCpuHistoryCursor] = cpuPercent;
+        _totalCpuHistoryCursor = (_totalCpuHistoryCursor + 1) % _totalCpuHistory.Length;
+    }
+
+    private void RenderTotalCpuHistory()
+    {
+        if (IsDisposed || _totalCpuHistoryChart is null || _totalCpuHistory.Length == 0)
+        {
+            return;
+        }
+
+        var count = _totalCpuHistory.Length;
+        var items = new BarItem[count];
+        for (var i = 0; i < count; i++)
+        {
+            var idx = (_totalCpuHistoryCursor + i) % count;
+            var label = i == count - 1 ? "now" : "";
+            items[i] = new BarItem(label, _totalCpuHistory[idx]);
+        }
+
+        _totalCpuHistoryChart.SetItems(items);
     }
 
     private async Task SnapshotMemoryAsync()
