@@ -8,6 +8,8 @@ import android.graphics.RectF
 import android.util.AttributeSet
 import android.view.View
 import androidx.core.content.ContextCompat
+import java.text.DateFormat
+import java.util.Date
 
 class HistoryGraphView @JvmOverloads constructor(
     context: Context,
@@ -76,6 +78,11 @@ class HistoryGraphView @JvmOverloads constructor(
         color = 0xFF4CAF50.toInt()
         style = Paint.Style.FILL
     }
+    private val mealTimePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = ContextCompat.getColor(context, R.color.onSurface)
+        textSize = resources.getDimension(R.dimen.history_graph_time_label_size)
+        textAlign = Paint.Align.CENTER
+    }
 
     private val rect = RectF()
     private val path = Path()
@@ -83,7 +90,13 @@ class HistoryGraphView @JvmOverloads constructor(
     private val tickHeight = resources.getDimension(R.dimen.history_graph_tick_height)
     private val dotRadius = resources.getDimension(R.dimen.history_graph_dot_radius)
     private val cornerRadius = resources.getDimension(R.dimen.history_graph_corner_radius)
+    private val timeLabelSpacing = resources.getDimension(R.dimen.history_graph_time_label_spacing)
+    private val timeLabelPadding = resources.getDimension(R.dimen.history_graph_time_label_padding)
+    private val graphVerticalShift = resources.getDimension(R.dimen.history_graph_vertical_shift)
+    private val timeLabelLift = resources.getDimension(R.dimen.history_graph_time_label_lift)
     private val placeholderText = context.getString(R.string.history_graph_empty)
+    private val timeFormatter = DateFormat.getTimeInstance(DateFormat.SHORT)
+    private val extraBottomSpace = resources.displayMetrics.density * 32f
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
@@ -93,12 +106,14 @@ class HistoryGraphView @JvmOverloads constructor(
         val right = width - paddingRight - graphPadding
         val top = paddingTop + graphPadding
         val bottom = height - paddingBottom - graphPadding
+        val contentBottom = bottom - extraBottomSpace
         if (right <= left || bottom <= top) return
+        if (contentBottom <= top + tickHeight + graphPadding) return
 
         rect.set(left, top, right, bottom)
         canvas.drawRoundRect(rect, cornerRadius, cornerRadius, backgroundPaint)
 
-        val tickAreaTop = bottom - tickHeight
+        val tickAreaTop = contentBottom - tickHeight
         val graphBottom = tickAreaTop - graphPadding
         val graphHeight = (graphBottom - top).coerceAtLeast(1f)
         val graphWidth = (right - left).coerceAtLeast(1f)
@@ -106,7 +121,8 @@ class HistoryGraphView @JvmOverloads constructor(
 
         val yForClarity: (VisionClarity) -> Float = { clarity ->
             val ratio = clarity.level.toFloat() / maxLevel
-            graphBottom - ratio * graphHeight
+            val base = graphBottom - ratio * graphHeight
+            maxOf(base - graphVerticalShift, top)
         }
 
         VisionClarity.values().forEach { clarity ->
@@ -114,7 +130,7 @@ class HistoryGraphView @JvmOverloads constructor(
             canvas.drawLine(left, y, right, y, gridPaint)
             canvas.drawText(clarity.label, left + 8f, y - 4f, labelPaint)
         }
-        val ateLabelY = tickAreaTop + tickHeight / 1.5f
+        val ateLabelY = tickAreaTop + tickHeight / 1.5f - graphVerticalShift
         canvas.drawLine(left, ateLabelY, right, ateLabelY, gridPaint)
         canvas.drawText("I Ate", left + 8f, ateLabelY - 4f, ateLabelPaint)
         val ateMarkerY = ateLabelY - tickHeight / 2f
@@ -156,6 +172,13 @@ class HistoryGraphView @JvmOverloads constructor(
                 else -> snackRadius
             }
             canvas.drawCircle(x, ateMarkerY, radius, ateDotPaint)
+            val timeText = timeFormatter.format(Date(entry.timestamp))
+            val textY = ateMarkerY + radius + timeLabelSpacing + timeLabelPadding + mealTimePaint.textSize / 2f - timeLabelLift
+            canvas.save()
+            canvas.translate(x, textY)
+            canvas.rotate(-90f)
+            canvas.drawText(timeText, 0f, 0f, mealTimePaint)
+            canvas.restore()
         }
 
         val hasVisibleEntries = visionEntries.isNotEmpty() || mealEntries.isNotEmpty()

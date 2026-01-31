@@ -32,6 +32,23 @@ object ResumeGeneratorEngine {
 
     data class GeneratedOutput(val resume: String, val coverLetter: String)
 
+    private enum class BaseResumeVariant(
+        val id: Int,
+        val jsonAsset: String,
+        val markdownAsset: String
+    ) {
+        HYBRID_SUPPORT(1, "resume/base_resume1.json", "resume/resume1.md"),
+        AUTOMATION_ENGINEER(2, "resume/base_resume2.json", "resume/resume2.md"),
+        CUSTOMER_SYSTEMS(3, "resume/base_resume3.json", "resume/resume3.md"),
+        INTEGRATION_LEAD(4, "resume/base_resume4.json", "resume/resume4.md"),
+        GENERIC_LABOR(5, "resume/base_resume5.json", "resume/resume5.md");
+
+        companion object {
+            fun fromId(id: Int): BaseResumeVariant =
+                values().firstOrNull { it.id == id } ?: HYBRID_SUPPORT
+        }
+    }
+
     fun detectClosedJobIndicator(jobDescription: String): String? {
         val lowered = jobDescription.lowercase()
         return CLOSED_JOB_INDICATORS.firstOrNull { indicator -> lowered.contains(indicator) }
@@ -39,12 +56,19 @@ object ResumeGeneratorEngine {
 
     @Throws(IOException::class)
     fun generate(context: Context, jobDescription: String): GeneratedOutput {
+        val normalizedJobDescription = jobDescription.trim()
+        if (normalizedJobDescription.equals("none", ignoreCase = true)) {
+            val baseResume = loadBaseResumeMarkdown(context)
+            val baseCoverLetter = loadBaseCoverLetter(context)
+            return GeneratedOutput(baseResume, baseCoverLetter)
+        }
+
         if (BuildConfig.OPENAI_API_KEY.isBlank()) {
             throw IOException("OPENAI_API_KEY missing (same requirement as Company Intelligence tool)")
         }
 
         val baseResumeJson = loadBaseResumeJson(context)
-        val prompt = buildPrompt(jobDescription, baseResumeJson)
+        val prompt = buildPrompt(normalizedJobDescription, baseResumeJson)
         val payload = buildPayload(prompt)
 
         val mediaType = "application/json; charset=utf-8".toMediaType()
@@ -74,6 +98,16 @@ object ResumeGeneratorEngine {
             appendLine("Job description:")
             appendLine(jobDescription.trim())
             appendLine()
+            appendLine(
+                "Focus strictly on the facts already present in the base resume JSON and this job description. Do not introduce new languages, certifications, or experiences that are not already documented."
+            )
+            appendLine(
+                "If the job description asks for a skill or quality not present, highlight existing related strengths instead of inventing anything new."
+            )
+            appendLine()
+            appendLine(
+                "If the base resume contains a LinkedIn URL, include it exactly as provided (e.g. https://www.linkedin.com/…), not as a generic label."
+            )
             append(
                 "Return a JSON object that contains exactly two keys: `resume` and `cover_letter`. " +
                     "Do not wrap the JSON in markdown or code fence. " +
@@ -94,7 +128,8 @@ object ResumeGeneratorEngine {
                     .put(
                         "text",
                         "You are an expert resume writer who adapts a base resume JSON payload " +
-                            "into tailored resumes and cover letters based on job descriptions."
+                            "into tailored resumes and cover letters based on job descriptions. " +
+                            "Only reuse the facts provided in the resume data and job description; do not invent new skills, languages, or experiences."
                     )
             )
             put("content", contentArray)
@@ -114,9 +149,46 @@ object ResumeGeneratorEngine {
     }
 
     private fun loadBaseResumeJson(context: Context): String {
-        context.assets.open("resume/base_resume.json").use { input ->
+        val variant = getBaseResumeVariant(context)
+        context.assets.open(variant.jsonAsset).use { input ->
             return input.bufferedReader(Charsets.UTF_8).readText()
         }
+    }
+
+    private fun loadBaseResumeMarkdown(context: Context): String {
+        val variant = getBaseResumeVariant(context)
+        context.assets.open(variant.markdownAsset).use { input ->
+            return input.bufferedReader(Charsets.UTF_8).readText().trim()
+        }
+    }
+
+    private fun getBaseResumeVariant(context: Context): BaseResumeVariant {
+        val variantId = ResumeGeneratorStorage.loadBaseResumeVariant(context)
+        return BaseResumeVariant.fromId(variantId)
+    }
+
+    private fun loadBaseCoverLetter(context: Context): String {
+        return runCatching {
+            context.assets.open("resume/cover_letter.md").use { input ->
+                input.bufferedReader(Charsets.UTF_8).readText().trim()
+            }
+        }.getOrElse {
+            buildDefaultCoverLetter(context)
+        }
+    }
+
+    private fun buildDefaultCoverLetter(context: Context): String {
+        val name = runCatching {
+            JSONObject(loadBaseResumeJson(context)).optString("name", "")
+        }.getOrElse { "" }.takeIf { it.isNotBlank() } ?: "Candidate"
+        return buildString {
+            appendLine("Dear Hiring Team,")
+            appendLine()
+            appendLine("Please find my attached resume detailing my background.")
+            appendLine()
+            appendLine("Best regards,")
+            appendLine(name)
+        }.trim()
     }
 
     private fun extractText(raw: String): String {

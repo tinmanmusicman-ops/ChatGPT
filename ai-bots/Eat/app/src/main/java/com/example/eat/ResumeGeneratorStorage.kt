@@ -14,6 +14,8 @@ object ResumeGeneratorStorage {
     private const val KEY_COVER_LETTER_PDF_URI = "coverLetterPdfUri"
     private const val KEY_WORK_LOG = "workLog"
     private const val MAX_WORK_LOG_LINES = 128
+    private const val KEY_BASE_RESUME_VARIANT = "baseResumeVariant"
+    private const val DEFAULT_BASE_RESUME_VARIANT = 1
 
     fun sharedPreferences(context: Context): SharedPreferences =
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -86,4 +88,13 @@ object ResumeGeneratorStorage {
         if (lines.size <= MAX_WORK_LOG_LINES) return raw
         return lines.takeLast(MAX_WORK_LOG_LINES).joinToString("\n")
     }
+
+    fun saveBaseResumeVariant(context: Context, variant: Int) {
+        sharedPreferences(context).edit()
+            .putInt(KEY_BASE_RESUME_VARIANT, variant)
+            .apply()
+    }
+
+    fun loadBaseResumeVariant(context: Context): Int =
+        sharedPreferences(context).getInt(KEY_BASE_RESUME_VARIANT, DEFAULT_BASE_RESUME_VARIANT)
 }

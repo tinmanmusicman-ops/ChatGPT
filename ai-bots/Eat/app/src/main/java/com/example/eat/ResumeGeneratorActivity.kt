@@ -14,20 +14,28 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.checkbox.MaterialCheckBox
 import io.noties.markwon.Markwon
 import java.io.File
 
 class ResumeGeneratorActivity : AppCompatActivity() {
     private lateinit var jobDescriptionInput: EditText
     private lateinit var generateButton: MaterialButton
+    private lateinit var clearJobDescriptionButton: MaterialButton
     private lateinit var clearLogButton: MaterialButton
     private lateinit var shareResumePdfButton: MaterialButton
     private lateinit var shareCoverLetterPdfButton: MaterialButton
+    private lateinit var baseResumeOption1: MaterialCheckBox
+    private lateinit var baseResumeOption2: MaterialCheckBox
+    private lateinit var baseResumeOption3: MaterialCheckBox
+    private lateinit var baseResumeOption4: MaterialCheckBox
+    private lateinit var baseResumeOption5: MaterialCheckBox
     private lateinit var resumeOutput: TextView
     private lateinit var coverLetterOutput: TextView
     private lateinit var logText: TextView
     private lateinit var prefs: SharedPreferences
     private lateinit var markwon: Markwon
+    private lateinit var baseResumeOptions: List<Pair<MaterialCheckBox, Int>>
 
     private val prefsListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
         if (key == ResumeGeneratorStorage.getWorkLogKey() ||
@@ -49,12 +57,18 @@ class ResumeGeneratorActivity : AppCompatActivity() {
 
         jobDescriptionInput = findViewById(R.id.jobDescriptionInput)
         generateButton = findViewById(R.id.generateButton)
+        clearJobDescriptionButton = findViewById(R.id.clearJobDescriptionButton)
         clearLogButton = findViewById(R.id.clearLogButton)
         shareResumePdfButton = findViewById(R.id.shareResumePdfButton)
         shareCoverLetterPdfButton = findViewById(R.id.shareCoverLetterPdfButton)
         resumeOutput = findViewById(R.id.resumeOutput)
         coverLetterOutput = findViewById(R.id.coverLetterOutput)
         logText = findViewById(R.id.logText)
+        baseResumeOption1 = findViewById(R.id.baseResumeOption1)
+        baseResumeOption2 = findViewById(R.id.baseResumeOption2)
+        baseResumeOption3 = findViewById(R.id.baseResumeOption3)
+        baseResumeOption4 = findViewById(R.id.baseResumeOption4)
+        baseResumeOption5 = findViewById(R.id.baseResumeOption5)
 
         prefs = ResumeGeneratorStorage.sharedPreferences(this)
         prefs.registerOnSharedPreferenceChangeListener(prefsListener)
@@ -65,9 +79,36 @@ class ResumeGeneratorActivity : AppCompatActivity() {
         refreshOutputs()
         refreshWorkLog()
 
+        baseResumeOptions = listOf(
+            baseResumeOption1 to 1,
+            baseResumeOption2 to 2,
+            baseResumeOption3 to 3,
+            baseResumeOption4 to 4,
+            baseResumeOption5 to 5,
+        )
+        baseResumeOptions.forEach { (option, variantId) ->
+            option.setOnClickListener { updateBaseResumeVariant(variantId) }
+        }
+        val savedVariant = ResumeGeneratorStorage.loadBaseResumeVariant(this)
+        updateBaseResumeVariant(savedVariant, persist = false)
+
         clearLogButton.setOnClickListener {
             ResumeGeneratorStorage.clearWorkLog(this)
             refreshWorkLog()
+        }
+
+        clearJobDescriptionButton.setOnClickListener {
+            jobDescriptionInput.setText("")
+            ResumeGeneratorStorage.saveJobDescription(this, "")
+            ResumeGeneratorStorage.saveOutputs(this, "", "")
+            ResumeGeneratorStorage.savePdfUris(this, "", "")
+            refreshWorkLog()
+            refreshOutputs()
+            Toast.makeText(
+                this,
+                getString(R.string.resume_generator_job_description_cleared),
+                Toast.LENGTH_SHORT
+            ).show()
         }
 
         shareResumePdfButton.setOnClickListener {
@@ -93,6 +134,16 @@ class ResumeGeneratorActivity : AppCompatActivity() {
             ResumeGeneratorStorage.saveJobDescription(this, jd)
             ResumeGeneratorStorage.clearWorkLog(this)
             enqueueGenerationWork()
+        }
+    }
+
+    private fun updateBaseResumeVariant(variant: Int, persist: Boolean = true) {
+        baseResumeOptions.forEach { (checkbox, id) ->
+            checkbox.isChecked = id == variant
+        }
+        if (persist) {
+            ResumeGeneratorStorage.saveBaseResumeVariant(this, variant)
+            ResumeGeneratorStorage.appendWorkLog(this, "Base resume variant set to $variant")
         }
     }
 

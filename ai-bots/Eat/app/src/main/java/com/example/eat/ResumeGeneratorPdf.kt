@@ -34,17 +34,17 @@ object ResumeGeneratorPdf {
         val pdf = PdfDocument()
         try {
             val titlePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD)
+                typeface = Typeface.create(Typeface.SERIF, Typeface.BOLD)
                 textSize = 16f
                 color = android.graphics.Color.BLACK
             }
             val metaPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL)
+                typeface = Typeface.create(Typeface.SERIF, Typeface.NORMAL)
                 textSize = 10f
                 color = android.graphics.Color.DKGRAY
             }
             val bodyPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                typeface = Typeface.create(Typeface.MONOSPACE, Typeface.NORMAL)
+                typeface = Typeface.create(Typeface.SERIF, Typeface.NORMAL)
                 textSize = 11f
                 color = android.graphics.Color.BLACK
             }
@@ -146,17 +146,17 @@ object ResumeGeneratorPdf {
         val pdf = PdfDocument()
         try {
             val titlePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD)
+                typeface = Typeface.create(Typeface.SERIF, Typeface.BOLD)
                 textSize = 16f
                 color = android.graphics.Color.BLACK
             }
             val metaPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL)
+                typeface = Typeface.create(Typeface.SERIF, Typeface.NORMAL)
                 textSize = 10f
                 color = android.graphics.Color.DKGRAY
             }
             val textPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
-                typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL)
+                typeface = Typeface.create(Typeface.SERIF, Typeface.NORMAL)
                 textSize = 12f
                 color = android.graphics.Color.BLACK
             }
@@ -220,8 +220,10 @@ object ResumeGeneratorPdf {
         startY: Float
     ): Float {
         var y = startY
-        canvas.drawText(title, MARGIN, y, titlePaint)
-        y += 16f
+        if (title.isNotBlank()) {
+            canvas.drawText(title, MARGIN, y, titlePaint)
+            y += 16f
+        }
         val timestamp = DateFormat.getDateTimeInstance().format(Date())
         canvas.drawText(timestamp, MARGIN, y, metaPaint)
         return y

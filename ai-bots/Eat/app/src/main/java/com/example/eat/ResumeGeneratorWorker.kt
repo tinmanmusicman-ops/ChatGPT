@@ -53,7 +53,7 @@ class ResumeGeneratorWorker(context: Context, params: WorkerParameters) :
             val resumeUri = ResumeGeneratorPdf.saveMarkdownPdfToDocuments(
                 applicationContext,
                 "resume_$stamp.pdf",
-                "Tailored Resume",
+                "",
                 output.resume
             )
             val coverUri = ResumeGeneratorPdf.saveMarkdownPdfToDocuments(
