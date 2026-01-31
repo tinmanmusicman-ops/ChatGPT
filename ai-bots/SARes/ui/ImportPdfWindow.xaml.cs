@@ -20,18 +20,19 @@ public partial class ImportPdfWindow : Window
     private PdfLayoutMode _currentLayoutMode = PdfLayoutMode.SingleColumn;
     private bool _contextMenuInitialized;
     private bool _isImporting;
-    private bool _isMapStage = true;
+    private readonly string? _initialPdfPath;
 
-    public ImportPdfWindow(AppSettings settings)
+    public ImportPdfWindow(AppSettings settings, string? initialPdfPath = null)
     {
         InitializeComponent();
         _updated = settings;
+        _initialPdfPath = initialPdfPath;
 
         SelectPdfButton.Click += async (_, _) => await SelectPdfAsync();
         ImportButton.Click += async (_, _) => await RunImportAsync();
         ReorderSectionsButton.Click += (_, _) => ReorderSections();
         ManageHeadersButton.Click += (_, _) => OpenHeaderMappingWindow(runImportAfterClose: false);
-        SaveMapButton.Click += (_, _) => SaveMapAndSwitchToImportStage();
+        SaveMapButton.Click += (_, _) => BuildMap();
         SaveButton.Click += (_, _) => SaveTemplate();
         CloseButton.Click += (_, _) => Close();
 
@@ -41,14 +42,17 @@ public partial class ImportPdfWindow : Window
             {
                 await WebViewHelpers.EnsureReadyAsync(PdfWeb);
                 InitializePdfContextMenu();
+
+                if (!string.IsNullOrWhiteSpace(_initialPdfPath) && File.Exists(_initialPdfPath))
+                    await LoadPdfAsync(_initialPdfPath).ConfigureAwait(true);
             }
             catch
             {
             }
         };
 
-        ManageHeadersButton.IsEnabled = false;
-        SaveMapButton.IsEnabled = false;
+        ManageHeadersButton.IsEnabled = true;
+        SaveMapButton.IsEnabled = true;
         HeaderMapListBox.MouseDoubleClick += (_, _) => RemoveSelectedHeaderFromList();
 
         LayoutModeComboBox.ItemsSource = new[]
@@ -65,8 +69,9 @@ public partial class ImportPdfWindow : Window
                 _currentLayoutMode = mode;
         };
 
-        SetStage(mapStage: true);
-        StatusText.Text = "Select a PDF to begin.";
+        ResetHeaderState();
+        LayoutModeComboBox.SelectedValue = _currentLayoutMode;
+        StatusText.Text = "Select a PDF to import.";
     }
 
     public AppSettings UpdatedSettings => _updated;
@@ -100,13 +105,18 @@ public partial class ImportPdfWindow : Window
         if (!File.Exists(pdfPath))
             return;
 
+        await LoadPdfAsync(pdfPath).ConfigureAwait(true);
+    }
+
+    private async Task LoadPdfAsync(string pdfPath)
+    {
         StatusText.Text = "Loading preview...";
         try
         {
             await WebViewHelpers.EnsureReadyAsync(PdfWeb);
             PdfWeb.Source = new Uri(pdfPath);
             PdfWeb.ZoomFactor = 1.25;
-            StatusText.Text = "Preview ready. Right-click the PDF to tag headers or open mapping manually.";
+            StatusText.Text = "Preview ready. Use Manage headers or Build Map to adjust mapping.";
             await TopLeftJustifyWebViewAsync(PdfWeb);
         }
         catch
@@ -116,64 +126,22 @@ public partial class ImportPdfWindow : Window
 
         _currentPdfPath = pdfPath;
         TemplateTextBox.Text = "";
-        ResetHeaderState();
-        SetStage(mapStage: true);
-        ManageHeadersButton.IsEnabled = true;
-        SaveMapButton.IsEnabled = true;
-    }
-
-    private void SetStage(bool mapStage)
-    {
-        _isMapStage = mapStage;
-
-        if (mapStage)
-        {
-            IntroText.Text = "Step 1: tag section headers in the PDF, then Save Map.";
-
-            PdfPreviewPanel.Visibility = Visibility.Visible;
-            PdfGridSplitter.Visibility = Visibility.Visible;
-            PdfColumn.Width = new GridLength(2, GridUnitType.Star);
-            SplitterColumn.Width = new GridLength(10);
-            RightColumn.Width = new GridLength(1, GridUnitType.Star);
-
-            TemplateTitle.Visibility = Visibility.Collapsed;
-            TemplateTextBox.Visibility = Visibility.Collapsed;
-
-            LayoutLabel.Visibility = Visibility.Collapsed;
-            LayoutModeComboBox.Visibility = Visibility.Collapsed;
-            ImportButton.Visibility = Visibility.Collapsed;
-            ReorderSectionsButton.Visibility = Visibility.Collapsed;
-            ManageHeadersButton.Visibility = Visibility.Collapsed;
-            SaveButton.Visibility = Visibility.Collapsed;
-            SaveMapButton.Visibility = Visibility.Visible;
-            return;
-        }
-
-        IntroText.Text = "Step 2: choose layout, run Import, then Save Template.";
-
-        PdfPreviewPanel.Visibility = Visibility.Collapsed;
-        PdfGridSplitter.Visibility = Visibility.Collapsed;
-        PdfColumn.Width = new GridLength(0);
-        SplitterColumn.Width = new GridLength(0);
-        RightColumn.Width = new GridLength(1, GridUnitType.Star);
-
-        TemplateTitle.Visibility = Visibility.Visible;
-        TemplateTextBox.Visibility = Visibility.Visible;
-
-        LayoutLabel.Visibility = Visibility.Visible;
-        LayoutModeComboBox.Visibility = Visibility.Visible;
-        ImportButton.Visibility = Visibility.Visible;
-        ReorderSectionsButton.Visibility = Visibility.Visible;
-        ManageHeadersButton.Visibility = Visibility.Visible;
-        SaveButton.Visibility = Visibility.Visible;
-        SaveMapButton.Visibility = Visibility.Collapsed;
-
-        LayoutModeComboBox.SelectedValue = _currentLayoutMode;
     }
 
     private void ResetHeaderState()
     {
         _currentHeaderAliases.Clear();
+        var saved = (_updated.PdfSectionHeaderAliases ?? Array.Empty<string>())
+            .Select(h => (h ?? "").Trim())
+            .Where(h => h.Length > 0)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        if (saved.Count > 0)
+            _currentHeaderAliases.AddRange(saved);
+        else
+            _currentHeaderAliases.AddRange(_updated.GetPdfHeaderPreset(_updated.SelectedPdfHeaderPresetName));
+
         _currentBulletizedSections.Clear();
         _currentBulletizedSections.AddRange(_updated.GetPdfBulletizePreset(_updated.SelectedPdfHeaderPresetName));
         _currentLayoutMode = _updated.SelectedPdfLayoutMode;
@@ -410,31 +378,19 @@ public partial class ImportPdfWindow : Window
         StatusText.Text = $"Header preset saved: {name}.";
     }
 
-    private void SaveMapAndSwitchToImportStage()
+    private void BuildMap()
     {
-        if (string.IsNullOrWhiteSpace(_currentPdfPath))
-        {
-            StatusText.Text = "Load a PDF before saving the map.";
+        var dlg = new PdfMapBuilderWindow(_updated) { Owner = this };
+        if (dlg.ShowDialog() != true)
             return;
-        }
 
-        _updated = _updated.WithPdfSectionHeaderAliases(_currentHeaderAliases);
+        _updated = dlg.UpdatedSettings;
+        ResetHeaderState();
 
-        var presetName = (_updated.SelectedPdfHeaderPresetName ?? "").Trim();
-        if (presetName.Length == 0)
-            presetName = "Default";
+        if (!string.IsNullOrWhiteSpace(dlg.SelectedPdfPath) && File.Exists(dlg.SelectedPdfPath))
+            _ = LoadPdfAsync(dlg.SelectedPdfPath);
 
-        _updated = _updated
-            .WithPdfBulletizePreset(presetName, _currentBulletizedSections)
-            with
-            {
-                SelectedPdfHeaderPresetName = presetName,
-                SelectedPdfLayoutMode = _currentLayoutMode
-            };
-        AppSettingsStore.Save(_updated);
-
-        SetStage(mapStage: false);
-        StatusText.Text = "Map saved. Choose layout, then Import.";
+        StatusText.Text = "Header map updated.";
     }
 
     private async Task RunImportAsync()

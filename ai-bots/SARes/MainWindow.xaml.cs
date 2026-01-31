@@ -604,7 +604,17 @@ public partial class MainWindow : Window
     {
         SaveCurrentPresetSummary();
 
-        var dlg = new ImportPdfWindow(_settings) { Owner = this };
+        string? initialPdfPath = null;
+        if ((_settings.PdfSectionHeaderAliases ?? Array.Empty<string>()).Count == 0)
+        {
+            var mapDlg = new PdfMapBuilderWindow(_settings) { Owner = this };
+            if (mapDlg.ShowDialog() != true)
+                return;
+            _settings = mapDlg.UpdatedSettings;
+            initialPdfPath = mapDlg.SelectedPdfPath;
+        }
+
+        var dlg = new ImportPdfWindow(_settings, initialPdfPath) { Owner = this };
         dlg.ShowDialog();
         _settings = dlg.UpdatedSettings;
         EnsureAtLeastOneBaseTemplateChoice();
