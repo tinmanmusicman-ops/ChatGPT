@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <AssemblyName>GearRadar</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="tools\\**\\*.cs" />
+    <None Remove="tools\\**\\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\\PainRadar.Core\\PainRadar.Core.csproj" />
+  </ItemGroup>
+
+</Project>
