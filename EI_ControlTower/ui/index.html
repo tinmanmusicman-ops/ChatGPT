@@ -303,6 +303,38 @@ color: #FAEBD7;
     gap: 10px;
 }
 
+.variant-control {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.variant-control label {
+    font-size: 0.85rem;
+    color: #c8c8ff;
+    font-weight: 600;
+}
+
+.variant-actions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.variant-actions select {
+    flex: 1;
+    min-width: 160px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    border: 1px solid #444;
+    background: #111;
+    color: #fff;
+}
+
 .dashboard-left {
   flex: 1;
   display: flex;
@@ -541,6 +573,19 @@ button:hover {
 
             <div class="job-column" id="job-col-2">
               <button id="targeted-resume">Targeted Resume</button>
+              <div class="variant-control">
+                <label for="resume-variant-select">Resume Variant</label>
+                <div class="variant-actions">
+                  <select id="resume-variant-select">
+                    <option value="1">1 – Hybrid support &amp; automation</option>
+                    <option value="2">2 – Automation engineer</option>
+                    <option value="3">3 – Customer systems specialist</option>
+                    <option value="4">4 – Automation &amp; integration lead</option>
+                    <option value="5">5 – Generic labor</option>
+                  </select>
+                  <button id="targeted-resume-variant-btn">Run Variant</button>
+                </div>
+              </div>
               <button id="yahoo-forwarder">Yahoo Forwarder</button>
             </div>
           </div>

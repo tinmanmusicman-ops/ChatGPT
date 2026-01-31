@@ -124,6 +124,15 @@ def targeted_resume():
     return jsonify({"status": "launched"})
 
 
+@app.route("/tower/targeted-resume/variant/<int:variant>")
+def targeted_resume_variant_route(variant):
+    try:
+        job_pipeline.run_targeted_resume_variant(variant)
+    except ValueError as exc:
+        return jsonify({"status": "error", "error": str(exc)}), 400
+    return jsonify({"status": "launched", "variant": variant})
+
+
 @app.route("/tower/yahoo-forwarder")
 def yahoo_forwarder():
     job_pipeline.run_yahoo_forwarder()

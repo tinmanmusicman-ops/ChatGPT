@@ -48,6 +48,17 @@ Object.entries(jobButtons).forEach(([id, endpoint]) => {
 document.getElementById("json-config-btn").onclick = () =>
     callEndpoint("/tower/jason-configuration");
 
+const variantButton = document.getElementById("targeted-resume-variant-btn");
+const variantSelect = document.getElementById("resume-variant-select");
+
+if (variantButton && variantSelect) {
+    variantButton.addEventListener("click", () => {
+        const variant = variantSelect.value;
+        callEndpoint(`/tower/targeted-resume/variant/${variant}`);
+        activateButton(variantButton);
+    });
+}
+
 function updateLogPanel(text) {
     const logOutput = document.getElementById("log-output");
     if (!logOutput) {

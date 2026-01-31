@@ -20,12 +20,15 @@ def append_log(text: str):
         log_file.write(text)
 
 
-def run_and_stream(label: str, script_path: str):
+def run_and_stream(label: str, script_path: str, args: list[str] | None = None):
     append_log(f"=== {label} STARTED ===\n")
 
     try:
+        command = [sys.executable, "-u", script_path]
+        if args:
+            command.extend(args)
         process = subprocess.Popen(
-            [sys.executable, "-u", script_path],
+            command,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
@@ -104,13 +107,28 @@ def run_facility_check():
     return {"status": "launched", "script": "SiteCheck.py"}
 
 
-def run_targeted_resume():
-    run_and_stream(
-        "Targeted Resume",
-        str(AI_BOTS_ROOT / "Resume" / "scripts" / "tailor_md_pipeline.py")
-    )
+def _launch_tailor_pipeline(label: str, extra_args: list[str] | None = None):
+    script_path = str(AI_BOTS_ROOT / "Resume" / "scripts" / "tailor_md_pipeline.py")
+    run_and_stream(label, script_path, args=extra_args)
+    response = {"status": "launched", "script": "tailor_md_pipeline.py"}
+    if extra_args:
+        response["args"] = extra_args
+    return response
 
-    return {"status": "launched", "script": "tailor_md_pipeline.py"}
+
+def run_targeted_resume():
+    return _launch_tailor_pipeline("Targeted Resume")
+
+
+def run_targeted_resume_variant(variant: int):
+    if variant not in range(1, 6):
+        raise ValueError("Resume variant must be between 1 and 5.")
+    response = _launch_tailor_pipeline(
+        f"Targeted Resume (Variant {variant})",
+        extra_args=["--variant", str(variant)],
+    )
+    response["variant"] = variant
+    return response
 
 
 def run_yahoo_forwarder():
