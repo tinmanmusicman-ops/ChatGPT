@@ -1,409 +1,200 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import re
 import os
 import shutil
+import subprocess
 import sys
-from dataclasses import dataclass
+import tempfile
+import re
 from pathlib import Path
 
-from reportlab.lib.pagesizes import letter
-from reportlab.lib.styles import ParagraphStyle
-from reportlab.lib.units import inch
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.platypus import ListFlowable, ListItem, PageBreak, Paragraph, SimpleDocTemplate, Spacer
-
-try:
-    from reportlab.platypus.flowables import HRFlowable
-except Exception:  # pragma: no cover
-    HRFlowable = None  # type: ignore[assignment]
-
-
-def _find_repo_root(start: Path) -> Path:
-    for candidate in [start, *start.parents]:
-        if (candidate / ".git").exists():
-            return candidate
-    return start
-
-_SCRIPT_DIR = Path(__file__).resolve().parent
-_RESUME_DIR = _SCRIPT_DIR.parent
-_REPO_ROOT = _find_repo_root(_SCRIPT_DIR)
-
-DEFAULT_INPUT_MD = _RESUME_DIR / "bot-assets" / "resume_target.md"
-DEFAULT_SOURCE_MD = _RESUME_DIR / "bot-assets" / "resume.md"
 DEFAULT_RESUME_OUTPUT_DIR = Path(r"C:\!!!!!!!!!!!!!!!!!!!!!!!!!Stuff")
 DEFAULT_OUTPUT_DIR = Path(os.environ.get("HSST_RESUME_OUTPUT_DIR", str(DEFAULT_RESUME_OUTPUT_DIR)))
+DEFAULT_INPUT_MD = Path(__file__).resolve().parent / "bot-assets" / "resume_target.md"
+DEFAULT_SOURCE_MD = Path(__file__).resolve().parent / "bot-assets" / "resume.md"
 DEFAULT_OUTPUT_PDF = DEFAULT_OUTPUT_DIR / "resume.pdf"
-
-@dataclass
-class RenderConfig:
-    body_font_size: float = 10.5
-    body_leading: float = 13
-    body_space_after: float = 2
-    blank_spacer: float = 8
-    list_space_before: float = 2
-    list_space_after: float = 6
-
-    name_font_size: float = 16
-    name_leading: float = 18
-    name_space_after: float = 3
-
-    contact_font_size: float = 10
-    contact_leading: float = 11.5
-    contact_space_after: float = 1.5
-
-    h2_font_size: float = 12
-    h2_leading: float = 14
-    h2_space_before: float = 10
-    h2_space_after: float = 6
-
-    h3_font_size: float = 11
-    h3_leading: float = 13
-    h3_space_before: float = 6
-    h3_space_after: float = 2
+DEFAULT_CSS_PATH = Path(__file__).resolve().parent.parent / "resume-dark.css"
+DEFAULT_NORTH_CSS_PATH = Path(__file__).resolve().parent.parent / "resume-north.css"
 
 
-def _apply_preset(config: RenderConfig, preset: str) -> RenderConfig:
-    preset_norm = preset.strip().lower()
-    if preset_norm == "tight":
-        return RenderConfig(
-            body_font_size=config.body_font_size,
-            body_leading=11.5,
-            body_space_after=0.5,
-            blank_spacer=5,
-            list_space_before=1,
-            list_space_after=3.5,
-            name_font_size=config.name_font_size,
-            name_leading=17,
-            name_space_after=2,
-            contact_font_size=config.contact_font_size,
-            contact_leading=11,
-            contact_space_after=1,
-            h2_font_size=config.h2_font_size,
-            h2_leading=13,
-            h2_space_before=7,
-            h2_space_after=4,
-            h3_font_size=config.h3_font_size,
-            h3_leading=12,
-            h3_space_before=5,
-            h3_space_after=1,
-        )
-    return config
+def _find_pandoc_executable() -> Path | None:
+    candidate = shutil.which("pandoc")
+    if candidate:
+        return Path(candidate)
+    if os.name == "nt":
+        fallback = Path(os.environ.get("LOCALAPPDATA", "")) / "Pandoc" / "pandoc.exe"
+        if fallback.exists():
+            return fallback
+    return None
 
 
-def _parse_render_directive(line: str) -> tuple[RenderConfig | None, bool]:
+def _find_wkhtmltopdf_executable() -> Path | None:
+    candidate = shutil.which("wkhtmltopdf")
+    if candidate:
+        return Path(candidate)
+    if os.name == "nt":
+        fallback = Path("C:/Program Files/wkhtmltopdf/bin/wkhtmltopdf.exe")
+        if fallback.exists():
+            return fallback
+    return None
+
+
+_BLOCK_START = re.compile(r"^(#{1,6}\s+\S|-\s+\S)")
+
+
+def _normalize_markdown_for_pandoc(md_text: str) -> str:
     """
-    Supported (line must be standalone):
-      - <!-- render: tight -->
-      - <!-- render: leading=12 spaceAfter=1 blank=6 listAfter=4 -->
-      - <!-- render: fontSize=10.25 leading=12 -->
-      - <!-- render: nameAfter=2 contactLeading=11 contactAfter=1 -->
-    Returns: (config_or_none, is_directive_line)
+    Pandoc's markdown reader treats many block elements as requiring a blank line
+    boundary. The resumes we generate are intentionally compact (no blank lines),
+    which can cause headings/lists to be interpreted as plain text.
     """
-    match = re.match(r"^\s*<!--\s*render\s*:\s*(.*?)\s*-->\s*$", line, flags=re.IGNORECASE)
-    if not match:
-        return None, False
+    lines = md_text.replace("\r\n", "\n").replace("\r", "\n").split("\n")
+    out: list[str] = []
+    for line in lines:
+        stripped = line.rstrip()
+        is_hr = stripped.strip() == "---"
+        is_block_start = bool(_BLOCK_START.match(stripped)) or is_hr
 
-    payload = (match.group(1) or "").strip()
-    if not payload:
-        return RenderConfig(), True
-
-    config = RenderConfig()
-
-    if re.fullmatch(r"tight", payload, flags=re.IGNORECASE):
-        return _apply_preset(config, "tight"), True
-
-    tokens = re.split(r"[,\s]+", payload)
-    for token in tokens:
-        if not token:
-            continue
-        if token.lower() == "tight":
-            config = _apply_preset(config, "tight")
-            continue
-        if "=" not in token:
-            continue
-        key, value = token.split("=", 1)
-        key_norm = key.strip().lower()
-        value_norm = value.strip()
-        try:
-            num = float(value_norm)
-        except ValueError:
-            continue
-
-        if key_norm in ("fontsize", "font_size", "font"):
-            config.body_font_size = num
-        elif key_norm in ("leading", "lineheight", "line_height"):
-            config.body_leading = num
-        elif key_norm in ("spaceafter", "space_after"):
-            config.body_space_after = num
-        elif key_norm in ("blank", "blankspacer", "blank_spacer"):
-            config.blank_spacer = num
-        elif key_norm in ("listbefore", "list_before", "listspacebefore", "list_space_before"):
-            config.list_space_before = num
-        elif key_norm in ("listafter", "list_after", "listspaceafter", "list_space_after"):
-            config.list_space_after = num
-        elif key_norm in ("namefontsize", "name_font_size", "namefont"):
-            config.name_font_size = num
-        elif key_norm in ("nameleading", "name_leading"):
-            config.name_leading = num
-        elif key_norm in ("nameafter", "name_after", "namespaceafter", "name_space_after"):
-            config.name_space_after = num
-        elif key_norm in ("contactfontsize", "contact_font_size", "contactfont"):
-            config.contact_font_size = num
-        elif key_norm in ("contactleading", "contact_leading"):
-            config.contact_leading = num
-        elif key_norm in ("contactafter", "contact_after", "contactspaceafter", "contact_space_after"):
-            config.contact_space_after = num
-
-    return config, True
+        if is_block_start and out and out[-1].strip():
+            out.append("")
+        out.append(stripped)
+        if is_hr:
+            out.append("")
+    return "\n".join(out).rstrip() + "\n"
 
 
-def _make_styles(config: RenderConfig) -> dict[str, ParagraphStyle]:
-    body_style = ParagraphStyle(
-        "Body",
-        fontName="Helvetica",
-        fontSize=config.body_font_size,
-        leading=config.body_leading,
-        spaceAfter=config.body_space_after,
-    )
-    name_style = ParagraphStyle(
-        "Name",
-        parent=body_style,
-        fontName="Helvetica-Bold",
-        fontSize=config.name_font_size,
-        leading=config.name_leading,
-        alignment=1,  # centered
-        spaceAfter=config.name_space_after,
-    )
-    contact_style = ParagraphStyle(
-        "Contact",
-        parent=body_style,
-        fontSize=config.contact_font_size,
-        leading=config.contact_leading,
-        alignment=1,  # centered
-        spaceAfter=config.contact_space_after,
-    )
-    h2_style = ParagraphStyle(
-        "H2",
-        parent=body_style,
-        fontName="Helvetica-Bold",
-        fontSize=config.h2_font_size,
-        leading=config.h2_leading,
-        spaceBefore=config.h2_space_before,
-        spaceAfter=config.h2_space_after,
-    )
-    h3_style = ParagraphStyle(
-        "H3",
-        parent=body_style,
-        fontName="Helvetica-Bold",
-        fontSize=config.h3_font_size,
-        leading=config.h3_leading,
-        spaceBefore=config.h3_space_before,
-        spaceAfter=config.h3_space_after,
-    )
-    italic_style = ParagraphStyle(
-        "Italic",
-        parent=body_style,
-        fontName="Helvetica-Oblique",
-        spaceAfter=6,
-    )
-    salutation_style = ParagraphStyle(
-        "Salutation",
-        parent=body_style,
-        fontName="Helvetica-Bold",
-        spaceAfter=6,
-    )
+def _render_with_pandoc(input_md: Path, output_pdf: Path, css: Path | None) -> None:
+    pandoc = _find_pandoc_executable()
+    wkhtml = _find_wkhtmltopdf_executable()
+    if not pandoc or not wkhtml:
+        missing = []
+        if not pandoc:
+            missing.append("pandoc")
+        if not wkhtml:
+            missing.append("wkhtmltopdf")
+        raise SystemExit(f"Missing required tool(s): {', '.join(missing)}")
 
-    return {
-        "body": body_style,
-        "name": name_style,
-        "contact": contact_style,
-        "h2": h2_style,
-        "h3": h3_style,
-        "italic": italic_style,
-        "salutation": salutation_style,
-    }
+    output_pdf.parent.mkdir(parents=True, exist_ok=True)
+    normalized_md = _normalize_markdown_for_pandoc(input_md.read_text(encoding="utf-8"))
+    with tempfile.NamedTemporaryFile(
+        mode="w",
+        encoding="utf-8",
+        suffix=".md",
+        delete=False,
+    ) as handle:
+        handle.write(normalized_md)
+        tmp_path = Path(handle.name)
 
-
-def _register_mono_font() -> str:
-    candidates = [
-        r"C:\Windows\Fonts\consola.ttf",
-        r"C:\Windows\Fonts\lucon.ttf",
-        r"C:\Windows\Fonts\cour.ttf",
-    ]
-    for path in candidates:
-        if os.path.exists(path):
-            font_name = "ResumeMono"
-            pdfmetrics.registerFont(TTFont(font_name, path))
-            return font_name
-    return "Courier"
-
-
-def render_md_to_pdf(md_path: Path, pdf_path: Path) -> None:
-    text = md_path.read_text(encoding="utf-8").replace("\r\n", "\n").replace("\r", "\n")
-    lines = text.split("\n")
-
-    config = RenderConfig()
-    styles = _make_styles(config)
-    body_style = styles["body"]
-    name_style = styles["name"]
-    contact_style = styles["contact"]
-    h2_style = styles["h2"]
-    h3_style = styles["h3"]
-    italic_style = styles["italic"]
-    salutation_style = styles["salutation"]
-
-    doc = SimpleDocTemplate(
-        str(pdf_path),
-        pagesize=letter,
-        leftMargin=0.75 * inch,
-        rightMargin=0.75 * inch,
-        topMargin=0.75 * inch,
-        bottomMargin=0.75 * inch,
-        title=md_path.name,
-    )
-
-    story: list[object] = []
-    mode: str = "generic"
-    in_contact_block = False
-
-    def is_pagebreak(line: str) -> bool:
-        stripped = line.strip()
-        if stripped == r"\pagebreak":
-            return True
-        if stripped.lower() in ("<!-- pagebreak -->", "<!--pagebreak-->"):
-            return True
-        if stripped == "\f":
-            return True
-        return False
-
-    def add_hr() -> None:
-        story.append(Spacer(1, 6))
-        if HRFlowable is not None:
-            story.append(HRFlowable(width="100%", thickness=0.5, spaceBefore=2, spaceAfter=8))
-        else:
-            story.append(Spacer(1, 10))
-
-    def flush_bullets(items: list[str]) -> None:
-        if not items:
-            return
-        bullet_items = [ListItem(Paragraph(item, body_style)) for item in items]
-        story.append(
-            ListFlowable(
-                bullet_items,
-                bulletType="bullet",
-                leftIndent=0.22 * inch,
-                bulletFontName="Helvetica",
-                bulletFontSize=body_style.fontSize,
-                bulletColor=body_style.textColor,
-                spaceBefore=config.list_space_before,
-                spaceAfter=config.list_space_after,
+    try:
+        wkhtml_opts: list[str] = [
+            "--pdf-engine-opt",
+            "--enable-local-file-access",
+            "--pdf-engine-opt",
+            "--background",
+            "--pdf-engine-opt",
+            "--print-media-type",
+            "--pdf-engine-opt",
+            "--margin-top",
+            "--pdf-engine-opt",
+            "0",
+            "--pdf-engine-opt",
+            "--margin-right",
+            "--pdf-engine-opt",
+            "0",
+            "--pdf-engine-opt",
+            "--margin-bottom",
+            "--pdf-engine-opt",
+            "0",
+            "--pdf-engine-opt",
+            "--margin-left",
+            "--pdf-engine-opt",
+            "0",
+        ]
+        command = [
+            str(pandoc),
+            "-f",
+            "markdown+hard_line_breaks",
+            str(tmp_path),
+            "-o",
+            str(output_pdf),
+            "--pdf-engine",
+            str(wkhtml),
+        ]
+        if css:
+            if not css.exists():
+                raise SystemExit(f"Missing CSS stylesheet: {css}")
+            command.extend(
+                [
+                    "--css",
+                    str(css),
+                ]
             )
-        )
-        items.clear()
-
-    pending_bullets: list[str] = []
-    for raw in lines:
-        line = raw.rstrip("\n")
-        stripped = line.strip()
-
-        next_config, is_directive = _parse_render_directive(line)
-        if is_directive:
-            flush_bullets(pending_bullets)
-            if next_config is not None:
-                config = next_config
-                styles = _make_styles(config)
-                body_style = styles["body"]
-                name_style = styles["name"]
-                contact_style = styles["contact"]
-                h2_style = styles["h2"]
-                h3_style = styles["h3"]
-                italic_style = styles["italic"]
-                salutation_style = styles["salutation"]
-            continue
-
-        if is_pagebreak(line):
-            flush_bullets(pending_bullets)
-            story.append(PageBreak())
-            continue
-
-        if stripped == "---":
-            flush_bullets(pending_bullets)
-            add_hr()
-            in_contact_block = False
-            continue
-
-        if stripped == "":
-            flush_bullets(pending_bullets)
-            story.append(Spacer(1, config.blank_spacer))
-            if mode == "resume":
-                in_contact_block = False
-            continue
-
-        if stripped.startswith("- "):
-            pending_bullets.append(stripped[2:])
-            continue
-
-        flush_bullets(pending_bullets)
-
-        if stripped.startswith("# "):
-            header_text = stripped[2:].strip()
-            if header_text.lower().startswith("dear"):
-                story.append(Paragraph(header_text, salutation_style))
-            elif not story:
-                mode = "resume"
-                in_contact_block = True
-                story.append(Paragraph(header_text, name_style))
-            else:
-                story.append(Paragraph(header_text, h2_style))
-            continue
-
-        if stripped.startswith("## "):
-            story.append(Paragraph(stripped[3:].strip(), h2_style))
-            in_contact_block = False
-            continue
-
-        if stripped.startswith("### "):
-            story.append(Paragraph(stripped[4:].strip(), h3_style))
-            in_contact_block = False
-            continue
-
-        if stripped.startswith("*") and stripped.endswith("*") and len(stripped) >= 2:
-            story.append(Paragraph(stripped.strip("*").strip(), italic_style))
-            continue
-
-        if mode == "resume" and in_contact_block:
-            story.append(Paragraph(stripped, contact_style))
-        else:
-            story.append(Paragraph(stripped, body_style))
-
-    flush_bullets(pending_bullets)
-
-    pdf_path.parent.mkdir(parents=True, exist_ok=True)
-    doc.build(story)
+        command.extend(wkhtml_opts)
+        print(f"[INFO] Running pandoc -> {output_pdf.name}")
+        try:
+            result = subprocess.run(command, check=True, capture_output=True, text=True)
+        except subprocess.CalledProcessError as exc:
+            stdout = exc.stdout.strip() if exc.stdout else "<empty>"
+            stderr = exc.stderr.strip() if exc.stderr else "<empty>"
+            raise SystemExit(
+                f"Pandoc failed (exit {exc.returncode}). stdout: {stdout} stderr: {stderr}"
+            )
+        print("[DEBUG] Pandoc stdout:", result.stdout.strip() or "<empty>")
+        print("[DEBUG] Pandoc stderr:", result.stderr.strip() or "<empty>")
+        print(f"[INFO] Saved {output_pdf}")
+    finally:
+        try:
+            tmp_path.unlink()
+        except Exception:
+            pass
 
 
 def main() -> int:
-    input_md = DEFAULT_INPUT_MD
-    output_pdf = DEFAULT_OUTPUT_PDF
+    import argparse
 
-    argv = sys.argv[1:]
-    if argv:
-        if len(argv) != 2:
-            raise SystemExit("Usage: render_md_to_pdf.py [<input.md> <output.pdf>]")
-        input_md = Path(argv[0])
-        output_pdf = Path(argv[1])
+    parser = argparse.ArgumentParser(description="Render Markdown resume to PDF.")
+    parser.add_argument(
+        "--input",
+        "-i",
+        type=Path,
+        default=DEFAULT_INPUT_MD,
+        help="Source Markdown (default: bot-assets/resume_target.md)",
+    )
+    parser.add_argument(
+        "--output",
+        "-o",
+        type=Path,
+        default=DEFAULT_OUTPUT_PDF,
+        help="Target PDF path (default: resume.pdf)",
+    )
+    parser.add_argument(
+        "--css",
+        "-c",
+        type=Path,
+        default=DEFAULT_CSS_PATH,
+        help="CSS stylesheet for rendering (default: resume-dark.css)",
+    )
+    parser.add_argument(
+        "--ats",
+        action="store_true",
+        help="Convenience flag: render with the ATS-friendly north CSS.",
+    )
+    args = parser.parse_args()
 
-    if not input_md.exists() and input_md.resolve() == DEFAULT_INPUT_MD.resolve() and DEFAULT_SOURCE_MD.exists():
-        input_md.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(DEFAULT_SOURCE_MD, input_md)
+    input_md = args.input
+    output_pdf = args.output
+
+    if not input_md.exists() and input_md.resolve() == DEFAULT_INPUT_MD.resolve():
+        if DEFAULT_SOURCE_MD.exists():
+            input_md.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(DEFAULT_SOURCE_MD, input_md)
 
     if not input_md.exists():
         raise SystemExit(f"Missing input markdown: {input_md}")
 
-    render_md_to_pdf(input_md, output_pdf)
+    css = DEFAULT_NORTH_CSS_PATH if args.ats else args.css
+    _render_with_pandoc(input_md, output_pdf, css=css)
     return 0
 
 

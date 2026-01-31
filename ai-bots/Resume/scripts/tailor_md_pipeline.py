@@ -42,6 +42,12 @@ DEFAULT_RENDERER = _SCRIPT_DIR / "render_md_to_pdf.py"
 DEFAULT_COVER_LETTER_MD = _RESUME_DIR / "bot-assets" / "cover_letter_target.md"
 DEFAULT_COVER_LETTER_BASE_MD = _RESUME_DIR / "bot-assets" / "cover_letter_base.md"
 DEFAULT_COVER_LETTER_PDF = DEFAULT_OUTPUT_DIR / "cover_letter.pdf"
+DARK_CSS_PATH = _RESUME_DIR / "resume-dark.css"
+NORTH_CSS_PATH = _RESUME_DIR / "resume-north.css"
+VARIANT_SOURCE_FILES = {
+    variant: _RESUME_DIR / "bot-assets" / f"resume{variant}.md"
+    for variant in range(1, 6)
+}
 
 _STOPWORDS = {
     "a",
@@ -898,22 +904,32 @@ def _tailor_markdown(md_text: str, job_description: str, *, model: str, temperat
     return "\n".join(updated)
 
 
-def _render(md_path: Path, pdf_path: Path, renderer_path: Path) -> None:
+def _render(
+    md_path: Path,
+    pdf_path: Path,
+    renderer_path: Path,
+    *,
+    css: Path | None = None,
+) -> None:
     if not renderer_path.exists():
         raise FileNotFoundError(f"Missing renderer script: {renderer_path}")
-    if (
-        md_path.resolve() == DEFAULT_TARGET_MD.resolve()
-        and pdf_path.resolve() == DEFAULT_OUTPUT_PDF.resolve()
-        and renderer_path.resolve() == DEFAULT_RENDERER.resolve()
-    ):
-        subprocess.run([sys.executable, str(renderer_path)], check=True)
-        return
-    subprocess.run([sys.executable, str(renderer_path), str(md_path), str(pdf_path)], check=True)
+    command = [
+        sys.executable,
+        str(renderer_path),
+        "--input",
+        str(md_path),
+        "--output",
+        str(pdf_path),
+    ]
+    if css:
+        command.extend(["--css", str(css)])
+    subprocess.run(command, check=True)
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Copy → tailor Markdown (text-only) → render PDF.")
     parser.add_argument("--source", type=Path, default=DEFAULT_SOURCE_MD)
+    parser.add_argument("--variant", type=int, choices=list(VARIANT_SOURCE_FILES.keys()))
     parser.add_argument("--target", type=Path, default=DEFAULT_TARGET_MD)
     parser.add_argument("--pdf", type=Path, default=DEFAULT_OUTPUT_PDF)
     parser.add_argument("--renderer", type=Path, default=DEFAULT_RENDERER)
@@ -924,6 +940,14 @@ def main() -> int:
     parser.add_argument("--model", type=str, default="gpt-4.1")
     parser.add_argument("--temperature", type=float, default=0.2)
     args = parser.parse_args()
+
+    if args.variant is not None:
+        variant_source = VARIANT_SOURCE_FILES.get(args.variant)
+        if variant_source is None or not variant_source.exists():
+            raise FileNotFoundError(
+                f"Resume variant {args.variant} source not available: {variant_source}"
+            )
+        args.source = variant_source
 
     try:
         sys.stdout.reconfigure(line_buffering=True)  # type: ignore[attr-defined]
@@ -1010,12 +1034,18 @@ def main() -> int:
     )
 
     print("[INFO] Rendering resume_target.md -> resume.pdf.", flush=True)
-    _render(args.target, args.pdf, args.renderer)
+    _render(args.target, args.pdf, args.renderer, css=DARK_CSS_PATH)
+    north_pdf_path = args.pdf.parent / "resume-north.pdf"
+    print("[INFO] Rendering resume_target.md -> resume-north.pdf (ATS-friendly).", flush=True)
+    _render(args.target, north_pdf_path, args.renderer, css=NORTH_CSS_PATH)
 
     print("[INFO] Rendering cover letter -> cover_letter.pdf.", flush=True)
     _render(args.cover_letter_md, args.cover_letter_pdf, args.renderer)
 
-    files = [{"name": args.pdf.name, "label": "Resume PDF"}]
+    files = [
+        {"name": args.pdf.name, "label": "Resume PDF"},
+        {"name": north_pdf_path.name, "label": "Resume North PDF"},
+    ]
     if args.cover_letter_pdf.exists():
         files.append({"name": args.cover_letter_pdf.name, "label": "Cover Letter PDF"})
     print(json.dumps({"files": files}), flush=True)

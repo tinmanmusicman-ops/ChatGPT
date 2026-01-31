@@ -4,28 +4,21 @@ Oceanside, CA
 timinman2024@gmail.com | (619) 894-6798
 https://www.linkedin.com/in/timothy-inman-7abb46372/
 ---
-## Hybrid: Customer Support + Automation (AI-Assisted Workflows)
-Hybrid customer support + automation builder with a strong troubleshooting and systems mindset. I translate messy, high-stress issues into clear timelines, root-cause hypotheses, and verifiable audit trails—then automate the repeatable parts with Python/JSON/Excel-style workflows and lightweight dashboards. Known for calm, respectful customer interactions, fast incident triage, and practical fixes that reduce noise and stop bothering people.
+## Reliable General Worker
+Reliable and dependable worker with a consistent work history across fast-paced environments. Known for showing up on time, following instructions, working well with others, and completing tasks as assigned. Adaptable, trainable, and focused on getting the job done safely and correctly.
 ## Core Skills
-- Operations support and technical troubleshooting
-- Workflow stabilization and process improvement
-- system troubleshooting
-- Customer issue resolution and escalation handling
-- cross-team coordination
-- root-cause analysis
-- documentation and process improvement
-- Python
-- Excel (advanced, dashboards, reporting)
-- PowerShell
-- SQL (basic)
-- REST APIs
-- JSON
-- Git/GitHub
-- OpenAI Codex, Genesys, Dynamics CRM, ServiceNow, dashboards and reporting tools
-- Incident triage & root-cause analysis
-- Customer support escalation handling
-- Workflow automation (Python/JSON/Excel) and dashboard creation
-- Audit trails & logging-first debugging
+- Reliability and attendance
+- Following instructions
+- Teamwork
+- Time management
+- Working in fast-paced environments
+- Task completion
+- Basic customer interaction
+- Safety awareness
+- Adaptability
+- Landscaping
+- Dishwasher
+- Willingness to learn
 ## Achievements (2024-2025)
 - Delivered automated HVAC/Thermostat dashboards to improve visibility, adding runtime analysis, condenser cost calculation, weather API integration, and animated Chart.js visuals.
 - Streamlined recruiter and employer workflows with automation frameworks, including resume analyzers, job-lead processors, scoring tools, and Excel workflow engines.
@@ -45,6 +38,10 @@ Carlsbad, CA
 - Improved productivity and accuracy by partnering with leadership on process improvements.
 - Completed a 10-month special project in 2 months by redesigning the workflow and automating in Excel.
 - Advanced quickly from training (Nov 2019) to Senior Advisor promotion (Feb 2020).
+### Frazier Farms - Dishwasher (Part Time)
+Oceanside, CA
+*February 2023 - February 2024*
+- Worked part-time as dishwasher and kitchen support, maintaining cleanliness, following food-safety procedures, assisting kitchen staff, and keeping operations running smoothly during busy periods.
 ### Walmart - Electronics Sales Associate
 Oceanside, CA
 *February 2018 - September 2019*
@@ -75,6 +72,10 @@ Scarborough, ME
 - Kept print production on schedule by managing high-speed OCE laser printer operations.
 - Cut mail presorting time in half by automating previously manual processes.
 - Improved throughput and reduced labor burden by automating daily print workflows.
+### Tukeys Home and Land - Landscaper
+Falmouth, ME
+*July 1995 - August 1997*
+- Performed general landscaping and grounds maintenance including outdoor cleanup, trimming, weeding, and physical labor, using hand tools and basic equipment while following instructions, maintaining safety, and completing tasks reliably in all weather conditions.
 ## Education
 - High School Diploma – Stearns High School – Millinocket, ME
 ## Certifications

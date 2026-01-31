@@ -7,15 +7,15 @@ https://www.linkedin.com/in/timothy-inman-7abb46372/
 ## Hybrid: Customer Support + Automation (AI-Assisted Workflows)
 Hybrid customer support + automation builder with a strong troubleshooting and systems mindset. I translate messy, high-stress issues into clear timelines, root-cause hypotheses, and verifiable audit trails—then automate the repeatable parts with Python/JSON/Excel-style workflows and lightweight dashboards. Known for calm, respectful customer interactions, fast incident triage, and practical fixes that reduce noise and stop bothering people.
 ## Core Skills
-- Operations support and technical troubleshooting
-- Workflow stabilization and process improvement
+- Operations support
+- workflow stabilization
 - system troubleshooting
-- Customer issue resolution and escalation handling
+- customer issue resolution
 - cross-team coordination
 - root-cause analysis
 - documentation and process improvement
 - Python
-- Excel (advanced, dashboards, reporting)
+- Excel (advanced)
 - PowerShell
 - SQL (basic)
 - REST APIs
@@ -24,7 +24,7 @@ Hybrid customer support + automation builder with a strong troubleshooting and s
 - OpenAI Codex, Genesys, Dynamics CRM, ServiceNow, dashboards and reporting tools
 - Incident triage & root-cause analysis
 - Customer support escalation handling
-- Workflow automation (Python/JSON/Excel) and dashboard creation
+- Workflow automation (Python/JSON/Excel)
 - Audit trails & logging-first debugging
 ## Achievements (2024-2025)
 - Delivered automated HVAC/Thermostat dashboards to improve visibility, adding runtime analysis, condenser cost calculation, weather API integration, and animated Chart.js visuals.

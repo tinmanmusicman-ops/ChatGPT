@@ -232,3 +232,32 @@
 2025-12-10 03:59:30,232 [DEBUG] Entering load_config
 2025-12-10 03:59:30,248 [INFO] Configuration loaded successfully.
 2025-12-10 03:59:31,177 [INFO] No unread Primary emails with 'Scam' in the subject.
+2026-01-18 22:04:26,948 [DEBUG] Entering fetch_unread_scam
+2026-01-18 22:04:26,949 [DEBUG] Entering load_config
+2026-01-18 22:04:27,219 [INFO] Configuration loaded successfully.
+2026-01-18 22:07:28,217 [DEBUG] Entering fetch_unread_scam
+2026-01-18 22:07:28,217 [DEBUG] Entering load_config
+2026-01-18 22:07:28,220 [INFO] Configuration loaded successfully.
+2026-01-18 22:13:02,945 [DEBUG] Entering fetch_unread_scam
+2026-01-18 22:13:02,946 [DEBUG] Entering load_config
+2026-01-18 22:13:02,948 [INFO] Configuration loaded successfully.
+2026-01-18 22:14:32,550 [DEBUG] Entering decode_subject
+2026-01-18 22:14:32,551 [DEBUG] Entering strip_scam_prefix
+2026-01-18 22:14:32,551 [DEBUG] Entering extract_body
+2026-01-18 22:14:32,554 [DEBUG] Entering collect_from_blocks
+2026-01-18 22:14:32,554 [INFO] collect_from_blocks: extracted 2 sender blocks.
+2026-01-18 22:14:32,554 [DEBUG] Entering analyze_body
+2026-01-18 22:14:32,562 [DEBUG] Starting new HTTPS connection (1): api.openai.com:443
+2026-01-18 22:14:36,070 [DEBUG] https://api.openai.com:443 "POST /v1/chat/completions HTTP/1.1" 200 None
+2026-01-18 22:14:36,080 [INFO] analyze_body: received response for sender updates@email1.socialsalerep.com.
+2026-01-18 22:14:36,089 [INFO] Evaluation -> sender=updates@email1.socialsalerep.com subject=Part-Time or Full-Time: Online Moderator Position is_scam=True confidence=0.9 summary=The email is likely a scam due to its unsolicited nature and suspicious job offer.
+2026-01-18 22:17:27,994 [DEBUG] Entering send_scam_notification
+2026-01-18 22:17:28,010 [DEBUG] Entering clean_header_value
+2026-01-18 22:17:28,011 [DEBUG] Entering clean_header_value
+2026-01-18 22:17:29,544 [INFO] send_scam_notification: sent analysis reply to tim.inman.2024@gmail.com.
+2026-01-18 22:17:29,545 [INFO] Notification sent to tim.inman.2024@gmail.com about sender=updates@email1.socialsalerep.com subject=Part-Time or Full-Time: Online Moderator Position
+2026-01-18 22:17:29,545 [INFO] Sender: updates@email1.socialsalerep.com | Subject: Scam Fwd: Part-Time or Full-Time: Online Moderator Position | Summary: The email is likely a scam due to its unsolicited nature and suspicious job offer. | Action: Moved to 'Scam' (copied + deleted original).
+2026-01-18 22:19:21,206 [DEBUG] Entering fetch_unread_scam
+2026-01-18 22:19:21,207 [DEBUG] Entering load_config
+2026-01-18 22:19:21,208 [INFO] Configuration loaded successfully.
+2026-01-18 22:20:28,251 [INFO] No unread Primary emails with 'Scam' in the subject.

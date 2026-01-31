@@ -55,14 +55,21 @@ client: Optional[OpenAI] = None
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 AI_BOTS_ROOT = ROOT_DIR.parent
+FLASK_RESUME_OUTPUT_DIR = Path(
+    os.environ.get("HSST_RESUME_OUTPUT_DIR", r"C:\!!!!!!!!!!!!!!!!!!!!!!!!!Stuff")
+)
 SHARED_CONFIG_PATH = AI_BOTS_ROOT / "shared" / "Global.json"
 BOT_ASSETS_DIR = ROOT_DIR / "bot-assets"
 CONFIG_PATH = BOT_ASSETS_DIR / "config.json"
 RESUME_TEXT_OUTPUT_PATH: Optional[Path] = None
 PDF_OUTPUT_PATH: Optional[Path] = None
+PREVIEW_PDF_OUTPUT_PATH: Optional[Path] = None
 COVER_LETTER_PDF_PATH: Optional[Path] = None
 JOB_DESCRIPTION_PDF_PATH: Optional[Path] = None
 JOB_ID: Optional[str] = None
+_PANDOC_EXECUTABLE: Optional[Path] = None
+_WKHTMLTOPDF_EXECUTABLE: Optional[Path] = None
+DARK_CSS_PATH = ROOT_DIR / "resume-dark.css"
 SERVICE_ACCOUNT_SCOPES = (
     "https://www.googleapis.com/auth/spreadsheets",
 )
@@ -97,7 +104,7 @@ JOB_CLOSED_INDICATORS: tuple[str, ...] = (
 
 
 def load_json(path: Path) -> Any:
-    with path.open("r", encoding="utf-8") as handle:
+    with path.open("r", encoding="utf-8-sig") as handle:
         return json.load(handle)
 
 
@@ -1221,15 +1228,121 @@ def save_job_description_pdf(text: str, output_path: Path) -> None:
     save_cover_letter_pdf(text, output_path)
 
 
+def _find_pandoc_executable() -> Optional[Path]:
+    global _PANDOC_EXECUTABLE
+    if _PANDOC_EXECUTABLE and _PANDOC_EXECUTABLE.exists():
+        return _PANDOC_EXECUTABLE
+    candidate = shutil.which("pandoc")
+    if candidate:
+        _PANDOC_EXECUTABLE = Path(candidate)
+        return _PANDOC_EXECUTABLE
+    if platform.system() == "Windows":
+        fallback = Path(os.environ.get("LOCALAPPDATA", "")) / "Pandoc" / "pandoc.exe"
+        if fallback.exists():
+            _PANDOC_EXECUTABLE = fallback
+            return fallback
+    return None
+
+
+def _find_wkhtmltopdf_executable() -> Optional[Path]:
+    global _WKHTMLTOPDF_EXECUTABLE
+    if _WKHTMLTOPDF_EXECUTABLE and _WKHTMLTOPDF_EXECUTABLE.exists():
+        return _WKHTMLTOPDF_EXECUTABLE
+    candidate = shutil.which("wkhtmltopdf")
+    if candidate:
+        _WKHTMLTOPDF_EXECUTABLE = Path(candidate)
+        return Path(candidate)
+    if platform.system() == "Windows":
+        fallback = Path("C:/Program Files/wkhtmltopdf/bin/wkhtmltopdf.exe")
+        if fallback.exists():
+            _WKHTMLTOPDF_EXECUTABLE = fallback
+            return fallback
+    return None
+
+
+def _generate_markdown_pdf(
+    markdown_source: Path,
+    output_path: Path,
+    logger: logging.Logger,
+    *,
+    css: Optional[Path] = None,
+) -> bool:
+    pandoc = _find_pandoc_executable()
+    wkhtml = _find_wkhtmltopdf_executable()
+    if not pandoc or not wkhtml:
+        logger.debug("Pandoc or wkhtmltopdf unavailable; skipping markdown PDF (%s)", output_path.name)
+        return False
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    command = [
+        str(pandoc),
+        "-f",
+        "markdown",
+        str(markdown_source),
+        "-o",
+        str(output_path),
+        "--pdf-engine",
+        str(wkhtml),
+    ]
+    if css and css.exists():
+        command.extend(["--css", str(css)])
+        command.extend(["--pdf-engine-opt", "--enable-local-file-access"])
+    logger.debug(
+        "Running pandoc to generate markdown PDF: %s",
+        " ".join(shlex.quote(arg) for arg in command),
+    )
+    try:
+        result = subprocess.run(command, check=True, capture_output=True, text=True)
+        logger.debug(
+            "Pandoc stdout: %s",
+            result.stdout.strip() or "<empty>",
+        )
+        logger.debug(
+            "Pandoc stderr: %s",
+            result.stderr.strip() or "<empty>",
+        )
+        logger.info("Saved %s", output_path)
+        return True
+    except subprocess.CalledProcessError as exc:  # pragma: no cover
+        stdout = exc.stdout.strip() if exc.stdout else "<empty>"
+        stderr = exc.stderr.strip() if exc.stderr else "<empty>"
+        logger.error(
+            "Pandoc failed to generate %s (exit %s). stdout: %s stderr: %s",
+            output_path.name,
+            exc.returncode,
+            stdout,
+            stderr,
+        )
+        return False
+
+
+def _ensure_preview_pdf(contents: str, logger: logging.Logger) -> None:
+    if PREVIEW_PDF_OUTPUT_PATH:
+        generated = _generate_markdown_pdf(
+            RESUME_TEXT_OUTPUT_PATH,
+            PREVIEW_PDF_OUTPUT_PATH,
+            logger,
+            css=DARK_CSS_PATH,
+        )
+        if not generated:
+            logger.error(
+                "Dark preview PDF generation failed; install Pandoc/wkhtmltopdf or check the CSS file."
+            )
+
+
 def save_output(target: Path, contents: str, logger: logging.Logger) -> None:
     target.write_text(contents, encoding="utf-8")
     logger.info("Saved %s", target)
     if (
         RESUME_TEXT_OUTPUT_PATH is not None
-        and PDF_OUTPUT_PATH is not None
         and target == RESUME_TEXT_OUTPUT_PATH
     ):
-        save_pdf_resume(contents, PDF_OUTPUT_PATH)
+        _ensure_preview_pdf(contents, logger)
+        if PDF_OUTPUT_PATH:
+            _generate_markdown_pdf(
+                RESUME_TEXT_OUTPUT_PATH,
+                PDF_OUTPUT_PATH,
+                logger,
+            )
 
 
 def ensure_openai_module(logger: logging.Logger) -> None:
@@ -1248,10 +1361,12 @@ def main() -> int:
         return 1
 
     logger = configure_logger(config)
-    global RESUME_TEXT_OUTPUT_PATH, PDF_OUTPUT_PATH, COVER_LETTER_PDF_PATH, JOB_DESCRIPTION_PDF_PATH, JOB_ID
+    global RESUME_TEXT_OUTPUT_PATH, PDF_OUTPUT_PATH, PREVIEW_PDF_OUTPUT_PATH, COVER_LETTER_PDF_PATH, JOB_DESCRIPTION_PDF_PATH, JOB_ID
     # Local temp outputs are intentionally stable names for manual reuse.
+    FLASK_RESUME_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     RESUME_TEXT_OUTPUT_PATH = ROOT_DIR / "resume.txt"
-    PDF_OUTPUT_PATH = ROOT_DIR / "resume.pdf"
+    PREVIEW_PDF_OUTPUT_PATH = FLASK_RESUME_OUTPUT_DIR / "resume.pdf"
+    PDF_OUTPUT_PATH = FLASK_RESUME_OUTPUT_DIR / "resume-north.pdf"
     COVER_LETTER_PDF_PATH = ROOT_DIR / "cover_letter.pdf"
     JOB_DESCRIPTION_PDF_PATH = ROOT_DIR / "job_description.pdf"
     JOB_ID = PDF_OUTPUT_PATH.stem if PDF_OUTPUT_PATH else None
@@ -1265,22 +1380,22 @@ def main() -> int:
     start_time: Optional[float] = None
 
     try:
-        ensure_openai_module(logger)
         try:
             job_description = get_job_description_from_clipboard().strip()
         except Exception as exc:  # pragma: no cover
             logger.error("Failed to load job description: %s", exc)
             print("ERROR: Failed to load job description; cannot continue without it.", file=sys.stderr)
             return 1
-        if not job_description:
-            logger.error("Job description is empty; aborting resume generation.")
-            print("ERROR: Job description is empty; aborting resume generation.", file=sys.stderr)
-            return 1
-        closed_phrase = detect_closed_job_indicator(job_description)
+        generic_mode = not job_description or job_description.lower() == "none"
+        if generic_mode:
+            logger.info("Generating generic base resume (clipboard empty or 'none').")
+        else:
+            ensure_openai_module(logger)
+        closed_phrase = detect_closed_job_indicator(job_description) if not generic_mode else None
         if closed_phrase:
             detected_title, detected_company = _extract_job_metadata_from_text(job_description)
             logger.info(
-                "Skipped — job no longer accepting applications (job_title=%s company=%s trigger=\"%s\")",
+                "Skipped – job no longer accepting applications (job_title=%s company=%s trigger=\"%s\")",
                 detected_title,
                 detected_company,
                 closed_phrase,
@@ -1328,7 +1443,17 @@ def main() -> int:
         base_resume = load_json(base_resume_path)
         contact_section = base_resume.get("contact")
         _set_contact_info_cache(contact_section if isinstance(contact_section, dict) else None)
-        payload = generate_documents(base_resume, job_description, config, logger)
+        if generic_mode:
+            resume_md_path = BOT_ASSETS_DIR / "resume.md"
+            cover_letter_md_path = BOT_ASSETS_DIR / "cover_letter_target.md"
+            resume_text = resume_md_path.read_text(encoding="utf-8")
+            cover_letter_text = cover_letter_md_path.read_text(encoding="utf-8")
+            payload = {
+                "resume": resume_text,
+                "cover_letter": normalize_cover_letter_header(cover_letter_text),
+            }
+        else:
+            payload = generate_documents(base_resume, job_description, config, logger)
         resume_output = RESUME_TEXT_OUTPUT_PATH
         cover_letter_output = ROOT_DIR / "cover_letter.txt"
         save_output(resume_output, payload["resume"], logger)
@@ -1362,8 +1487,10 @@ def main() -> int:
                 print("ERROR: Failed to upload PDFs to Drive; see logs for details.", file=sys.stderr)
                 return 1
         logger.info("Resume Engine completed successfully.")
+        if PREVIEW_PDF_OUTPUT_PATH and PREVIEW_PDF_OUTPUT_PATH.exists():
+            print(f"[PDF LINK] /view/{PREVIEW_PDF_OUTPUT_PATH.name}")
         if PDF_OUTPUT_PATH and PDF_OUTPUT_PATH.exists():
-            print(f"[PDF LINK] /view/{PDF_OUTPUT_PATH.name}")
+            print(f"[PDF NORTH] /view/{PDF_OUTPUT_PATH.name}")
         if COVER_LETTER_PDF_PATH and COVER_LETTER_PDF_PATH.exists():
             print(f"[PDF COVER LETTER] /view/{COVER_LETTER_PDF_PATH.name}")
         elapsed = time.perf_counter() - (start_time or time.perf_counter())

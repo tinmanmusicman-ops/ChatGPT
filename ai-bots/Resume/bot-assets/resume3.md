@@ -4,28 +4,20 @@ Oceanside, CA
 timinman2024@gmail.com | (619) 894-6798
 https://www.linkedin.com/in/timothy-inman-7abb46372/
 ---
-## Hybrid: Customer Support + Automation (AI-Assisted Workflows)
-Hybrid customer support + automation builder with a strong troubleshooting and systems mindset. I translate messy, high-stress issues into clear timelines, root-cause hypotheses, and verifiable audit trails—then automate the repeatable parts with Python/JSON/Excel-style workflows and lightweight dashboards. Known for calm, respectful customer interactions, fast incident triage, and practical fixes that reduce noise and stop bothering people.
+## Customer Service & Support Specialist
+Customer service professional with a strong record of calm, empathetic, and effective support in high-volume and high-stress environments. Known for clear communication, strong issue ownership, and consistent customer satisfaction. Focused on resolving customer issues, reducing repeat contacts, and supporting team success through documentation and collaboration.
 ## Core Skills
-- Operations support and technical troubleshooting
-- Workflow stabilization and process improvement
-- system troubleshooting
-- Customer issue resolution and escalation handling
-- cross-team coordination
-- root-cause analysis
-- documentation and process improvement
-- Python
-- Excel (advanced, dashboards, reporting)
-- PowerShell
-- SQL (basic)
-- REST APIs
-- JSON
-- Git/GitHub
-- OpenAI Codex, Genesys, Dynamics CRM, ServiceNow, dashboards and reporting tools
-- Incident triage & root-cause analysis
-- Customer support escalation handling
-- Workflow automation (Python/JSON/Excel) and dashboard creation
-- Audit trails & logging-first debugging
+- Customer service
+- Remote customer support
+- Call center operations
+- Escalation handling
+- Incident resolution
+- Customer empathy and communication
+- Issue ownership
+- Documentation
+- Process adherence
+- Cross-team communication
+- CRM systems
 ## Achievements (2024-2025)
 - Delivered automated HVAC/Thermostat dashboards to improve visibility, adding runtime analysis, condenser cost calculation, weather API integration, and animated Chart.js visuals.
 - Streamlined recruiter and employer workflows with automation frameworks, including resume analyzers, job-lead processors, scoring tools, and Excel workflow engines.

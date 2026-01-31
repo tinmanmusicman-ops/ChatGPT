@@ -1,21 +1,19 @@
-Hiring Manager
+Timothy N Inman
 Oceanside, CA | timothy.inman@email.com | (619) 894-6798 | https://www.linkedin.com/in/timothy-inman-7abb46372/
 
-Core Platform Team – Applied Intelligence
-
-December 30, 2025
+January 24, 2026
 
 Dear Hiring Manager,
 
-I am excited to apply for the Systems Support Engineer I position with your Applied Intelligence group. With a strong background in systems troubleshooting, automation, and operations support, I am confident in my ability to monitor and optimize ETL pipelines and graph database infrastructures while delivering exceptional reliability and customer experience.
+I am excited to submit my application for the Automation Engineer position at C:\!!!!!!!!!!!!!!!!!!!!!!!!!Stuff. With a proven track record in operations support, workflow automation, and customer systems, I am confident in my ability to deliver robust, reliable solutions that drive efficiency and clarity in complex environments.
 
-Throughout my career, I have specialized in stabilizing complex workflows and diagnosing system issues in high-availability environments. At Best Buy, I provided on-call support for technical systems, consistently achieving 100% customer satisfaction and leading root-cause analysis for critical incidents. My experience at Tyler Technologies further honed my troubleshooting skills, where I supported enterprise deployments, automated manual processes, and ensured system uptime for municipal clients nationwide.
+Throughout my career, I have specialized in stabilizing workflows, diagnosing and resolving system issues, and improving reliability for both internal teams and customers. My recent work includes delivering automated dashboards for HVAC and thermostat systems, integrating weather APIs, and building animated, accessible data visualizations. I have also streamlined recruiter and employer workflows with custom automation frameworks, leveraging Python, Excel, and batch scripting to orchestrate end-to-end processes at zero cost.
 
-I am proficient in Linux/UNIX administration and have extensive hands-on experience with Python scripting to automate monitoring, reporting, and remediation tasks. My recent projects include developing automated dashboards, integrating REST APIs, and building self-updating configuration engines—all with a focus on long-term simplification and reliability. I am also familiar with datacenter operations, standard internet protocols, and server configuration security best practices.
+At Best Buy, I consistently maintained a 100% CSAT rating and led performance metrics as the top advisor, demonstrating my commitment to quality and customer satisfaction. My ability to partner with leadership on process improvements and rapidly deliver results—such as completing a 10-month project in just 2 months—reflects my drive and adaptability.
 
-I am particularly drawn to your team’s mission of scaling operations through automation and robust support. My calm judgment, cross-team coordination, and commitment to detailed documentation align well with your needs for incident tracking and continuous improvement.
+I am particularly drawn to your team because of the opportunity to apply my automation expertise in a dynamic setting. My hands-on experience with OpenAI Codex, REST APIs, and a range of automation and reporting tools positions me to make an immediate impact. I thrive in environments where cross-team coordination, clear communication, and practical problem-solving are valued.
 
-Thank you for considering my application. I look forward to the opportunity to discuss how my skills and experience can contribute to the ongoing success and reliability of your Core Platform team.
+Thank you for considering my application. I look forward to the opportunity to discuss how my background and skills can contribute to the continued success of C:\!!!!!!!!!!!!!!!!!!!!!!!!!Stuff.
 
 Sincerely,
 

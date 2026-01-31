@@ -4,28 +4,19 @@ Oceanside, CA
 timinman2024@gmail.com | (619) 894-6798
 https://www.linkedin.com/in/timothy-inman-7abb46372/
 ---
-## Hybrid: Customer Support + Automation (AI-Assisted Workflows)
-Hybrid customer support + automation builder with a strong troubleshooting and systems mindset. I translate messy, high-stress issues into clear timelines, root-cause hypotheses, and verifiable audit trails—then automate the repeatable parts with Python/JSON/Excel-style workflows and lightweight dashboards. Known for calm, respectful customer interactions, fast incident triage, and practical fixes that reduce noise and stop bothering people.
+## AI Workflow & Automation Specialist
+Automation and workflow specialist focused on human-guided AI systems that improve reliability, speed, and clarity in real-world operations. Designs deterministic workflows where humans define intent and AI assists with execution. Emphasizes auditability, reproducibility, and low-friction automation that supports people rather than replacing them.
 ## Core Skills
-- Operations support and technical troubleshooting
-- Workflow stabilization and process improvement
-- system troubleshooting
-- Customer issue resolution and escalation handling
-- cross-team coordination
-- root-cause analysis
-- documentation and process improvement
+- AI-assisted workflows
+- Human-in-the-loop automation
+- Workflow orchestration
+- Deterministic system design
 - Python
-- Excel (advanced, dashboards, reporting)
-- PowerShell
-- SQL (basic)
-- REST APIs
-- JSON
-- Git/GitHub
-- OpenAI Codex, Genesys, Dynamics CRM, ServiceNow, dashboards and reporting tools
-- Incident triage & root-cause analysis
-- Customer support escalation handling
-- Workflow automation (Python/JSON/Excel) and dashboard creation
-- Audit trails & logging-first debugging
+- JSON-driven systems
+- Logging and audit trails
+- Systems analysis
+- Automation tooling integration
+- Operational dashboards
 ## Achievements (2024-2025)
 - Delivered automated HVAC/Thermostat dashboards to improve visibility, adding runtime analysis, condenser cost calculation, weather API integration, and animated Chart.js visuals.
 - Streamlined recruiter and employer workflows with automation frameworks, including resume analyzers, job-lead processors, scoring tools, and Excel workflow engines.
