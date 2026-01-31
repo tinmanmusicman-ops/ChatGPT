@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
         Title="Import Base Resume (PDF)"
-        Width="1200" Height="760"
+        Width="1400" Height="760"
         WindowStartupLocation="CenterOwner"
         Background="#0B1220"
         Foreground="#E5E7EB">
@@ -40,7 +40,8 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <TextBlock Text="Import a PDF, review extracted text, then Save as the base resume template used by all outputs."
+            <TextBlock x:Name="IntroText"
+                       Text="Step 1: tag section headers in the PDF, then Save Map."
                        Foreground="{StaticResource MutedText}"
                        VerticalAlignment="Center"
                        Margin="0,0,12,0"/>
@@ -49,12 +50,12 @@
 
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="10"/>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition x:Name="PdfColumn" Width="2*"/>
+                <ColumnDefinition x:Name="SplitterColumn" Width="10"/>
+                <ColumnDefinition x:Name="RightColumn" Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <Border Grid.Column="0" Background="{StaticResource PanelBg}" BorderBrush="{StaticResource Border}" BorderThickness="1" CornerRadius="10" Padding="8">
+            <Border x:Name="PdfPreviewPanel" Grid.Column="0" Background="{StaticResource PanelBg}" BorderBrush="{StaticResource Border}" BorderThickness="1" CornerRadius="10" Padding="8">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -65,19 +66,32 @@
                 </Grid>
             </Border>
 
-            <GridSplitter Grid.Column="1" Width="10" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent"/>
+            <GridSplitter x:Name="PdfGridSplitter" Grid.Column="1" Width="10" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent"/>
 
             <Border Grid.Column="2" Background="{StaticResource PanelBg}" BorderBrush="{StaticResource Border}" BorderThickness="1" CornerRadius="10" Padding="8">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
-                    <TextBlock Text="Extracted Base Resume Text (internal template)" FontWeight="SemiBold" Margin="0,0,0,6"/>
-                    <TextBox Grid.Row="1" x:Name="TemplateTextBox" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"/>
-                    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">
+                    <TextBlock x:Name="HeaderMappingTitle" Text="Header Mapping (check = force bullets, double-click = remove)" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                    <Border x:Name="HeaderMappingListBorder" Grid.Row="1" Background="#111827" BorderBrush="{StaticResource Border}" BorderThickness="1" CornerRadius="6" Padding="6" Margin="0,0,0,8">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" Height="150">
+                            <ListBox x:Name="HeaderMapListBox"/>
+                        </ScrollViewer>
+                    </Border>
+                    <TextBlock x:Name="TemplateTitle" Grid.Row="2" Text="Extracted Base Resume Text (internal template)" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                    <TextBox x:Name="TemplateTextBox" Grid.Row="3" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"/>
+                    <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">
+                        <TextBlock x:Name="LayoutLabel" Text="Layout:" Foreground="{StaticResource MutedText}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <ComboBox x:Name="LayoutModeComboBox" Height="32" Width="220" Margin="0,0,8,0"/>
+                        <Button x:Name="ImportButton" Content="Import" Height="32" Width="120" Margin="0,0,8,0"/>
                         <Button x:Name="ReorderSectionsButton" Content="Reorder Sections..." Height="32" Width="160" Margin="0,0,8,0"/>
+                        <Button x:Name="ManageHeadersButton" Content="Manage headers..." Height="32" Width="160" Margin="0,0,8,0"/>
+                        <Button x:Name="SaveMapButton" Content="Save Map" Height="32" Width="160" Margin="0,0,8,0"/>
                         <Button x:Name="SaveButton" Content="Save Template" Background="#2563EB" BorderBrush="#1D4ED8" Foreground="White" Height="32" Width="140"/>
                     </StackPanel>
                 </Grid>

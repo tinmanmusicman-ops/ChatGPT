@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
@@ -39,7 +40,13 @@ public sealed class PandocPdfRenderer
             args.Append($"--pdf-engine=\"{_wkhtmltopdfPath}\" ");
             args.Append($"-o \"{outputPdfPath}\"");
 
-            var result = await RunAsync(_pandocPath, args.ToString()).ConfigureAwait(false);
+            var environmentOverrides = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["TMP"] = tempDir,
+                ["TEMP"] = tempDir
+            };
+
+            var result = await RunAsync(_pandocPath, args.ToString(), tempDir, environmentOverrides).ConfigureAwait(false);
             if (result.ExitCode != 0)
                 throw new InvalidOperationException($"Pandoc failed ({result.ExitCode}): {result.StdErr}\n{result.StdOut}".Trim());
         }
@@ -49,7 +56,11 @@ public sealed class PandocPdfRenderer
         }
     }
 
-    private static async Task<(int ExitCode, string StdOut, string StdErr)> RunAsync(string fileName, string arguments)
+    private static async Task<(int ExitCode, string StdOut, string StdErr)> RunAsync(
+        string fileName,
+        string arguments,
+        string? workingDirectory = null,
+        IDictionary<string, string>? environment = null)
     {
         var psi = new ProcessStartInfo
         {
@@ -60,6 +71,20 @@ public sealed class PandocPdfRenderer
             RedirectStandardError = true,
             CreateNoWindow = true
         };
+
+        if (!string.IsNullOrWhiteSpace(workingDirectory))
+            psi.WorkingDirectory = workingDirectory;
+
+        if (environment is not null)
+        {
+            foreach (var kvp in environment)
+            {
+                if (kvp.Value is null)
+                    psi.Environment.Remove(kvp.Key);
+                else
+                    psi.Environment[kvp.Key] = kvp.Value;
+            }
+        }
 
         using var proc = Process.Start(psi);
         if (proc is null)
