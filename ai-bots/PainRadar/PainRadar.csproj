@@ -18,4 +18,8 @@
     <PackageReference Include="Google.Apis.Sheets.v4" Version="1.72.0.3966" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\\PainRadar.Core\\PainRadar.Core.csproj" />
+  </ItemGroup>
+
 </Project>

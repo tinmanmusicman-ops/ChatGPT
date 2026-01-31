@@ -32,12 +32,14 @@ public partial class App : Application
             new RemoteOkJobSource(http),
             new MuseJobSource(http)
         };
+        var coreLog = new AppLoggerAdapter();
 
         var orchestrator = new ScanOrchestrator(
             sources: sources,
             reddit: new RedditSearchService(http),
-            google: new GooglePlacesService(http, config.GooglePlacesApiKey, verboseLogging: Debugger.IsAttached || Environment.GetEnvironmentVariable("PAINRADAR_GOOGLE_DEBUG") == "1"),
-            analyzer: new PainAnalyzer()
+            google: new GooglePlacesService(http, config.GooglePlacesApiKey, verboseLogging: Debugger.IsAttached || Environment.GetEnvironmentVariable("PAINRADAR_GOOGLE_DEBUG") == "1", log: coreLog),
+            analyzer: new PainAnalyzer(),
+            log: coreLog
         );
 
         var settingsDir = !string.IsNullOrWhiteSpace(configPath) ? Path.GetDirectoryName(configPath) : null;
