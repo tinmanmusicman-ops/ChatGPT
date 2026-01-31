@@ -1,0 +1,149 @@
+<Window x:Class="SARes.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="SARes Control Tower"
+        Height="700" Width="1100" MinHeight="600" MinWidth="900"
+        WindowStartupLocation="CenterScreen"
+        Background="#0B1220" Foreground="#E5E7EB"
+        FontSize="14">
+    <DockPanel Margin="12">
+        <Menu DockPanel.Dock="Top" Background="#0F172A" Foreground="#E5E7EB">
+            <MenuItem Header="_File">
+                <MenuItem Header="Templates &amp; Summaries..." Click="TemplatesAndSummaries_Click"/>
+                <MenuItem Header="Import Base Resume (PDF)..." Click="ImportBasePdf_Click"/>
+                <MenuItem Header="Import Base Resume (Markdown)..." Click="ImportBaseMarkdown_Click"/>
+                <MenuItem Header="Manage PDF Header Presets..." Click="ManagePdfHeaderPresets_Click"/>
+                <Separator/>
+                <MenuItem Header="E_xit" Click="Exit_Click"/>
+            </MenuItem>
+            <MenuItem Header="_Help">
+                <MenuItem Header="Help Chat..." Click="HelpChat_Click"/>
+            </MenuItem>
+        </Menu>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="420"/>
+                <ColumnDefinition Width="12"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" Background="#0F172A" BorderBrush="#334155" BorderThickness="1" CornerRadius="10" Padding="12">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <TextBlock Text="Inputs" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,10"/>
+
+                        <TextBlock Text="Base template" Foreground="#94A3B8"/>
+                        <Grid Margin="0,4,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <ComboBox x:Name="BaseTemplateCombo" Height="34" Margin="0,0,8,0"/>
+                            <Button x:Name="ManageTemplatesButton" Grid.Column="1" Content="Manage..." Width="110" Height="34"/>
+                        </Grid>
+
+                        <TextBlock Text="Summary version" Foreground="#94A3B8"/>
+                        <Grid Margin="0,4,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <ComboBox x:Name="PresetCombo" Height="34" Margin="0,0,8,0"/>
+                            <Button x:Name="NewPresetButton" Grid.Column="1" Content="New..." Width="90" Height="34" Margin="0,0,8,0"/>
+                            <Button x:Name="SavePresetButton" Grid.Column="2" Content="Save" Width="90" Height="34"/>
+                        </Grid>
+
+                        <TextBlock Text="AI mode" Foreground="#94A3B8"/>
+                        <StackPanel Margin="0,4,0,12">
+                            <CheckBox x:Name="AiModeCoverLetterOnlyCheckBox"
+                                      Content="Option 1: Cover letter only (no resume tailoring)"
+                                      Foreground="#E5E7EB"
+                                      Margin="0,0,0,6"/>
+                            <CheckBox x:Name="AiModeLightCheckBox"
+                                      Content="Option 2: Light resume keyword tailoring + cover letter"
+                                      Foreground="#E5E7EB"
+                                      Margin="0,0,0,6"/>
+                            <CheckBox x:Name="AiModeHeavyCheckBox"
+                                      Content="Option 3: Heavy resume tailoring + cover letter"
+                                      Foreground="#E5E7EB"/>
+                        </StackPanel>
+
+                        <TextBlock Text="Summary (required)" Foreground="#94A3B8"/>
+                        <TextBox x:Name="SummaryTextBox" Height="160" Margin="0,4,0,12"
+                                 TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"/>
+
+                        <TextBlock Text="Job description (optional). Used for AI cover letter alignment; no special formatting required."
+                                   Foreground="#94A3B8"
+                                   TextWrapping="Wrap"/>
+                        <TextBox x:Name="JobDescriptionTextBox" Height="200" Margin="0,4,0,12"
+                                 TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"/>
+
+                        <TextBlock Text="Output directory" Foreground="#94A3B8"/>
+                        <DockPanel Margin="0,4,0,12">
+                            <TextBox x:Name="OutputDirTextBox" Height="34" IsReadOnly="True" DockPanel.Dock="Left" Margin="0,0,8,0"/>
+                            <Button x:Name="BrowseOutputButton" Content="Browse..." Width="100" Height="34"/>
+                        </DockPanel>
+
+                        <TextBlock Text="Pandoc (auto-detect or set)" Foreground="#94A3B8"/>
+                        <DockPanel Margin="0,4,0,12">
+                            <TextBox x:Name="PandocPathTextBox" Height="34" DockPanel.Dock="Left" Margin="0,0,8,0"/>
+                            <Button x:Name="BrowsePandocButton" Content="Browse..." Width="100" Height="34"/>
+                        </DockPanel>
+
+                        <Button x:Name="GenerateButton" Content="Generate PDFs" Height="42"
+                                Background="#2563EB" BorderBrush="#1D4ED8" Foreground="White" FontWeight="SemiBold"/>
+
+                        <TextBlock x:Name="StatusText" Foreground="#94A3B8" Margin="0,10,0,0" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+
+            <GridSplitter Grid.Column="1" Width="12" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent"/>
+
+            <Border Grid.Column="2" Background="#0F172A" BorderBrush="#334155" BorderThickness="1" CornerRadius="10" Padding="10">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <DockPanel Grid.Row="0" Margin="0,0,0,10">
+                        <TextBlock Text="Preview" FontSize="18" FontWeight="SemiBold" DockPanel.Dock="Left"/>
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="Zoom" Foreground="#94A3B8" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <Slider x:Name="ZoomSlider" Width="160" Minimum="0.3" Maximum="1.6" Value="1.0" SmallChange="0.05" LargeChange="0.2"/>
+                        </StackPanel>
+                    </DockPanel>
+
+            <TabControl Grid.Row="1" x:Name="PreviewTabs" SelectionChanged="PreviewTabs_SelectionChanged">
+                <TabItem Header="Start Here" x:Name="StartHereTab">
+                    <Border Background="#0F1226" BorderBrush="#334155" BorderThickness="1" CornerRadius="10" Padding="16">
+                        <StackPanel>
+                            <TextBlock FontSize="16" FontWeight="SemiBold" Margin="0,0,0,8">Start Here Guide</TextBlock>
+                            <TextBlock Text="The Start Here PDF launches in a floating window so you can keep using the app." TextWrapping="Wrap" Margin="0,0,0,12"/>
+                            <Button x:Name="StartHereLaunchButton" Content="Open Start Here guide" Width="200" Height="36" Margin="0,0,0,12" Background="#2563EB" BorderBrush="#1D4ED8" Foreground="White"/>
+                            <TextBlock x:Name="StartHereStatusText" Foreground="#94A3B8" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+                </TabItem>
+                        <TabItem Header="Resume (Dark)">
+                            <wv2:WebView2 x:Name="ResumeDarkWeb"/>
+                        </TabItem>
+                        <TabItem Header="Resume (ATS)">
+                            <wv2:WebView2 x:Name="ResumeAtsWeb"/>
+                        </TabItem>
+                        <TabItem Header="Cover Letter">
+                            <wv2:WebView2 x:Name="CoverLetterWeb"/>
+                        </TabItem>
+                    </TabControl>
+                </Grid>
+            </Border>
+        </Grid>
+    </DockPanel>
+</Window>

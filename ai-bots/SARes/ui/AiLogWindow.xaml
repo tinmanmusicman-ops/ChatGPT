@@ -1,0 +1,53 @@
+<Window x:Class="SARes.ui.AiLogWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="AI Request"
+        Width="900" Height="560"
+        WindowStartupLocation="CenterOwner"
+        Background="#0B1220"
+        Foreground="#E5E7EB">
+    <Window.Resources>
+        <SolidColorBrush x:Key="PanelBg" Color="#0F172A"/>
+        <SolidColorBrush x:Key="Border" Color="#334155"/>
+        <SolidColorBrush x:Key="MutedText" Color="#94A3B8"/>
+
+        <Style TargetType="{x:Type TextBox}">
+            <Setter Property="Background" Value="{StaticResource PanelBg}"/>
+            <Setter Property="Foreground" Value="#E5E7EB"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Border}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="10,8"/>
+        </Style>
+        <Style TargetType="{x:Type Button}">
+            <Setter Property="Background" Value="#111827"/>
+            <Setter Property="Foreground" Value="#E5E7EB"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Border}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="10,6"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="0,0,0,10">
+            <TextBlock Text="AI request log" FontSize="16" FontWeight="SemiBold"/>
+            <TextBlock x:Name="SubtitleText" Foreground="{StaticResource MutedText}" Margin="0,6,0,0" TextWrapping="Wrap"/>
+        </StackPanel>
+
+        <Border Grid.Row="1" Background="{StaticResource PanelBg}" BorderBrush="{StaticResource Border}" BorderThickness="1" CornerRadius="10" Padding="8">
+            <TextBox x:Name="LogTextBox" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"/>
+        </Border>
+
+        <DockPanel Grid.Row="2" Margin="0,10,0,0">
+            <ProgressBar x:Name="Progress" Height="18" Width="260" IsIndeterminate="True" VerticalAlignment="Center"/>
+            <TextBlock x:Name="StatusText" Foreground="{StaticResource MutedText}" VerticalAlignment="Center" Margin="10,0,0,0"/>
+            <Button x:Name="CloseButton" DockPanel.Dock="Right" Content="Close" Width="110" Height="34" IsEnabled="False"/>
+        </DockPanel>
+    </Grid>
+</Window>
+
