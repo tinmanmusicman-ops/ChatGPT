@@ -60,5 +60,16 @@
       "runtimeExecutable": "C:\\Program Files\\nodejs\\node.exe",
       "internalConsoleOptions": "neverOpen"
     }
+    ,
+    {
+      "name": "Install ConstrainedApp Debug on Emulator",
+      "type": "pwa-node",
+      "request": "launch",
+      "preLaunchTask": "Install ConstrainedApp Debug on Emulator",
+      "program": "${workspaceFolder}/ConstrainedApp/scripts/launch_dummy.js",
+      "console": "integratedTerminal",
+      "runtimeExecutable": "C:\\Program Files\\nodejs\\node.exe",
+      "internalConsoleOptions": "neverOpen"
+    }
   ]
 }

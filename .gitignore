@@ -63,6 +63,12 @@ __pycache__/
 /ai-bots/PainRadar/**/obj/
 /ai-bots/PainRadar/painradar.log
 
+# SARes build/release artifacts
+/ai-bots/SARes/bin/
+/ai-bots/SARes/obj/
+/ai-bots/SARes/release/
+/ai-bots/SARes/installer/*.exe
+/ai-bots/SARes/**/*.User
 # DiskInsight: ignore publish outputs (binaries)
 /ai-bots/DiskInsight/publish/
 
@@ -78,3 +84,20 @@ __pycache__/
 !ai-bots/Eat/app/src/main/AndroidManifest.xml
 !ai-bots/Eat/app/src/main/res/layout/activity_company_analysis.xml
 !ai-bots/Eat/app/src/main/res/layout/activity_main.xml
+
+# Common IDE/build outputs that should stay local
+**/bin/
+**/obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+
+# Gradle build state
+**/.gradle/
+**/build/
+**/local.properties
+
+# SARes packaging artifacts
+/ai-bots/SARes/dist/
