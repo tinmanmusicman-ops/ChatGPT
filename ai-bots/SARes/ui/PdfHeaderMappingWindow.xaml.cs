@@ -18,6 +18,8 @@ public partial class PdfHeaderMappingWindow : Window
     public event EventHandler<HeaderMappingResult>? MappingConfirmed;
     public event EventHandler? MappingCanceled;
 
+    private const string NewMapSentinel = "(new / empty)";
+
     public sealed record HeaderMappingResult(
         IReadOnlyList<string> Headers,
         IReadOnlyList<string> BulletizedSectionTitles,
@@ -35,7 +37,8 @@ public partial class PdfHeaderMappingWindow : Window
         AppSettings settings,
         IEnumerable<string> initialHeaders,
         Action<string, IReadOnlyList<string>, IReadOnlyList<string>> savePreset,
-        string confirmButtonText = "Run Import")
+        string confirmButtonText = "Run Import",
+        bool startEmpty = false)
     {
         InitializeComponent();
         RunImportButton.Content = confirmButtonText;
@@ -54,12 +57,15 @@ public partial class PdfHeaderMappingWindow : Window
             ? _presetMap.Keys
             : ResumeParserDefaults.HeaderPresets.Keys);
 
+        if (startEmpty)
+            _presetNames.Insert(0, NewMapSentinel);
+
         PresetComboBox.ItemsSource = _presetNames;
         PresetComboBox.SelectionChanged += (_, _) =>
         {
             if (_suppressPresetSelection)
                 return;
-            if (PresetComboBox.SelectedItem is string preset)
+            if (PresetComboBox.SelectedItem is string preset && !string.Equals(preset, NewMapSentinel, StringComparison.Ordinal))
                 LoadPreset(preset);
         };
 
@@ -89,12 +95,22 @@ public partial class PdfHeaderMappingWindow : Window
         _customHeaders = new ObservableCollection<HeaderRule>(list.Select(t => new HeaderRule(t, bulletize.Any(b => b.Equals(t, StringComparison.OrdinalIgnoreCase)))));
         CustomHeadersListBox.ItemsSource = _customHeaders;
 
-        var targetPreset = settings.SelectedPdfHeaderPresetName ?? _presetNames.FirstOrDefault();
-        if (targetPreset is not null)
+        if (startEmpty)
         {
             _suppressPresetSelection = true;
-            PresetComboBox.SelectedItem = targetPreset;
+            PresetComboBox.SelectedItem = NewMapSentinel;
             _suppressPresetSelection = false;
+            PresetNameTextBox.Text = "";
+        }
+        else
+        {
+            var targetPreset = settings.SelectedPdfHeaderPresetName ?? _presetNames.FirstOrDefault();
+            if (targetPreset is not null)
+            {
+                _suppressPresetSelection = true;
+                PresetComboBox.SelectedItem = targetPreset;
+                _suppressPresetSelection = false;
+            }
         }
 
         AddHeaderButton.Click += (_, _) => AddCustomHeader();

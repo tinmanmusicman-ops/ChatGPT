@@ -124,7 +124,7 @@ public partial class ImportPdfWindow : Window
 
     private async Task<PdfHeaderMappingWindow.HeaderMappingResult?> PromptForHeaderMappingAsync()
     {
-        var startingHeaders = _updated.GetPdfHeaderPreset(_updated.SelectedPdfHeaderPresetName);
+        var startingHeaders = Array.Empty<string>();
         var headerWindow = new PdfHeaderMappingWindow(
             _updated,
             startingHeaders,
@@ -132,7 +132,8 @@ public partial class ImportPdfWindow : Window
             {
                 _updated = _updated.WithPdfPreset(name, headers, bulletize);
                 AppSettingsStore.Save(_updated);
-            });
+            },
+            startEmpty: true);
         headerWindow.Owner = this;
 
         var tcs = new TaskCompletionSource<PdfHeaderMappingWindow.HeaderMappingResult?>();
