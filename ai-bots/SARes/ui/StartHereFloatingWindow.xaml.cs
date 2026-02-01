@@ -88,4 +88,24 @@ public partial class StartHereFloatingWindow : Window
             </html>
             """;
     }
+
+    private void TitleBar_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        if (e.ChangedButton != System.Windows.Input.MouseButton.Left)
+            return;
+
+        if (e.ClickCount == 2)
+        {
+            WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
+            return;
+        }
+
+        try
+        {
+            DragMove();
+        }
+        catch
+        {
+        }
+    }
 }

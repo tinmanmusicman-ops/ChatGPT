@@ -5,6 +5,7 @@ using System.Windows;
 using Microsoft.Web.WebView2.Wpf;
 using SARes.engine;
 using SARes.ui;
+using System.Windows.Input;
 
 namespace SARes.ui;
 
@@ -572,6 +573,26 @@ public partial class ImportPdfWindow : Window
             await view.CoreWebView2.ExecuteScriptAsync(script);
             await Task.Delay(75);
             await view.CoreWebView2.ExecuteScriptAsync(script);
+        }
+        catch
+        {
+        }
+    }
+
+    private void TitleBar_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.ChangedButton != MouseButton.Left)
+            return;
+
+        if (e.ClickCount == 2)
+        {
+            WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
+            return;
+        }
+
+        try
+        {
+            DragMove();
         }
         catch
         {

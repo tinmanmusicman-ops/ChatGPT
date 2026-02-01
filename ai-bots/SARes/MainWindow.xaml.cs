@@ -2,6 +2,7 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using Microsoft.Web.WebView2.Core;
 using SARes.engine;
@@ -86,12 +87,6 @@ public partial class MainWindow : Window
         };
 
         StatusText.Text = "Ready";
-    }
-
-    private void PreviewTabs_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (StartHereTab.IsSelected)
-            ShowStartHereFloatingWindow();
     }
 
     private void ShowStartHereFloatingWindow()
@@ -896,6 +891,26 @@ public partial class MainWindow : Window
         catch (Exception ex)
         {
             System.Windows.MessageBox.Show(this, ex.Message, "Help Chat", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void TitleBar_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.ChangedButton != MouseButton.Left)
+            return;
+
+        if (e.ClickCount == 2)
+        {
+            WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
+            return;
+        }
+
+        try
+        {
+            DragMove();
+        }
+        catch
+        {
         }
     }
 }

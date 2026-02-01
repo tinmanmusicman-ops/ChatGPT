@@ -1,5 +1,6 @@
 using System.IO;
 using System.Windows;
+using System.Windows.Input;
 using SARes.engine;
 using SARes.ui;
 
@@ -87,6 +88,26 @@ public partial class EditBaseTemplateWindow : Window
         catch (Exception ex)
         {
             StatusText.Text = "Save failed: " + ex.Message;
+        }
+    }
+
+    private void TitleBar_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.ChangedButton != MouseButton.Left)
+            return;
+
+        if (e.ClickCount == 2)
+        {
+            WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
+            return;
+        }
+
+        try
+        {
+            DragMove();
+        }
+        catch
+        {
         }
     }
 }

@@ -6,21 +6,49 @@
         Width="760" Height="900"
         ResizeMode="CanResize"
         WindowStartupLocation="Manual"
-        Background="#0B1220"
-        Foreground="#E5E7EB">
-    <Border Background="#0F1226" BorderBrush="#334155" BorderThickness="1" CornerRadius="12" Padding="12">
+        Background="Transparent"
+        Foreground="#E5E7EB"
+        AllowsTransparency="True"
+        WindowStyle="None">
+    <Border Background="{StaticResource PanelBackgroundBrush}"
+            BorderBrush="{StaticResource PanelBorderBrush}"
+            BorderThickness="1"
+            CornerRadius="14"
+            Padding="0">
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="44"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <DockPanel Grid.Row="0" Margin="0,0,0,8">
-                <TextBlock Text="Start Here Guide" FontSize="16" FontWeight="SemiBold" DockPanel.Dock="Left"/>
-                <Button x:Name="CloseButton" Content="Close" Width="90" Height="28" DockPanel.Dock="Right" Margin="6,0,0,0"/>
-            </DockPanel>
+            <Border x:Name="TitleBar"
+                    Background="{StaticResource AccentBrush}"
+                    CornerRadius="14,14,0,0"
+                    MouseDown="TitleBar_MouseDown">
+                <DockPanel Margin="14,0">
+                    <TextBlock Text="Start Here Guide"
+                               FontSize="16"
+                               FontWeight="SemiBold"
+                               Foreground="White"
+                               VerticalAlignment="Center"
+                               DockPanel.Dock="Left"/>
+                    <Button x:Name="CloseButton"
+                            Content="Close"
+                            Width="86"
+                            Height="30"
+                            DockPanel.Dock="Right"
+                            Margin="0,0,4,0"/>
+                </DockPanel>
+            </Border>
 
-            <wv2:WebView2 x:Name="StartHereWeb" Grid.Row="1"/>
+            <Border Grid.Row="1"
+                    Background="#0F1226"
+                    BorderBrush="#334155"
+                    BorderThickness="1"
+                    CornerRadius="0,0,12,12"
+                    Padding="12">
+                <wv2:WebView2 x:Name="StartHereWeb"/>
+            </Border>
         </Grid>
     </Border>
 </Window>

@@ -2,6 +2,7 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using SARes.engine;
 
 namespace SARes.ui;
@@ -399,5 +400,23 @@ public partial class TemplatesAndSummariesWindow : Window
         }
     }
 
+    private void TitleBar_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.ChangedButton != MouseButton.Left)
+            return;
 
+        if (e.ClickCount == 2)
+        {
+            WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
+            return;
+        }
+
+        try
+        {
+            DragMove();
+        }
+        catch
+        {
+        }
+    }
 }

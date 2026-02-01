@@ -392,4 +392,24 @@ public partial class PdfHeaderMappingWindow : Window
 
         public event PropertyChangedEventHandler? PropertyChanged;
     }
+
+    private void TitleBar_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.ChangedButton != MouseButton.Left)
+            return;
+
+        if (e.ClickCount == 2)
+        {
+            WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
+            return;
+        }
+
+        try
+        {
+            DragMove();
+        }
+        catch
+        {
+        }
+    }
 }
