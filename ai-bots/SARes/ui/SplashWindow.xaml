@@ -28,10 +28,17 @@
             <TextBlock Text="HSST Tailored Resume"
                        FontSize="34"
                        FontWeight="Bold"
-                       Foreground="#FFF5F5F5"
                        HorizontalAlignment="Center"
                        VerticalAlignment="Top"
-                       Margin="0,32,0,0"/>
+                       Margin="0,32,0,0">
+                <TextBlock.Foreground>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                        <GradientStop Color="#E3B18A" Offset="0.0"/>
+                        <GradientStop Color="#9FD6CF" Offset="0.5"/>
+                        <GradientStop Color="#5ED6FF" Offset="1.0"/>
+                    </LinearGradientBrush>
+                </TextBlock.Foreground>
+            </TextBlock>
         </Grid>
     </Border>
 </Window>

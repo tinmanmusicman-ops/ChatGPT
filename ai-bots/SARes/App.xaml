@@ -12,7 +12,7 @@
 <SolidColorBrush x:Key="TabItemBackgroundBrush" Color="#242b1a"/> <!-- calm tabs -->
 
         <Style TargetType="Button">
-            <Setter Property="Background" Value="#242b1a"/>
+            <Setter Property="Background" Value="#565c3c"/>
             <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
             <Setter Property="Foreground" Value="#F8FAFC"/>
             <Setter Property="BorderThickness" Value="1"/>
