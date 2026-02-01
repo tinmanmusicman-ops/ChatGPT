@@ -28,6 +28,10 @@
     <Content Include="assets\**\*.*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Resource Include="assets\splash\bg.png" />
+  </ItemGroup>
+
   <!-- Exclude internal tooling projects from the WPF app build. -->
   <ItemGroup>
     <Compile Remove="tools\**\*.cs" />
