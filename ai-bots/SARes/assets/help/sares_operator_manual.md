@@ -22,10 +22,10 @@ Use the Browse button to change it. The app remembers your selection.
 [tags: import, pdf, base, resume, headers, mapping, columns]
 Use File → Import Base Resume (PDF) to bootstrap your internal base resume Markdown.
 During import, SARes shows a header mapping screen:
+- Highlight each header line in the PDF preview, click "Add selection to header map", then name the map and click Save map before importing.
 - Confirm the section headers used in your resume.
-- Reorder them to match your resume’s order.
+- Reorder them to match your resume's order.
 - Optionally force bullet formatting for sections like Core Skills.
-
 If your PDF is multi-column, choose the layout mode that matches the document.
 
 ## Import base resume (Markdown)
@@ -38,7 +38,7 @@ SARes stores the imported Markdown as an internal base template.
 The header mapping window supports Presets:
 - Pick an existing preset to load headers (and bulletize flags).
 - Edit the list (add/remove/reorder).
-- Click Save Current to store your customized preset for future imports.
+- Click Save map (after naming the map) to store your customized preset for future imports.
 
 ## Force bullets under a header
 [tags: bullets, bulletize, skills, core skills, formatting]

@@ -1,4 +1,4 @@
-# SARes — Start Here
+﻿# SARes â€” Start Here
 This guide is the on-screen onboarding for SARes.
 
 ---
@@ -67,15 +67,14 @@ Fixing structure once in Markdown fixes every future PDF generated from it.
 Use the top menu:
 
 - **File → Import Base Resume (PDF)...**
-  - place cursor in the box left of Bullets and cut and paste the header from your pdf then click add. Do this for each header you have in your pdf.
-  - Optionally force bullet formatting for sections.
-  - Give your layout a name and hit save.
-  - Click import and make adjustemnts to match your resume content...
-  - Click save template.
+  - Highlight each header line in the PDF preview, then click “Add selection to header map” to copy it into the list. Repeat for every section.
+  - Optionally force bullet formatting for any sections that should stay as bullets.
+  - Give your map a name and click **Save map** to capture it for future imports.
+  - Click import, review the extracted Markdown, then Save Template when you are done.
 
 Or:
 
-- **File → Import Base Resume (Markdown)...** if you already have a `.md`.
+- **File â†’ Import Base Resume (Markdown)...** if you already have a `.md`.
 
 ## 3) Choose a base template
 
@@ -110,4 +109,4 @@ Generated files include `-N`, `-L`, or `-H` in the filename.
 
 ## Need help?
 
-Use **Help → Help Chat...** to search the operator manual from inside the app.
+Use **Help â†’ Help Chat...** to search the operator manual from inside the app.

@@ -3,10 +3,11 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
         Title="Import Base Resume (PDF)"
-        Width="1400" Height="820"
+        Width="1780" Height="980"
         WindowStartupLocation="CenterOwner"
         Background="#0B1220"
-        Foreground="#E5E7EB">
+        Foreground="#E5E7EB"
+        FontSize="16">
     <Window.Resources>
         <SolidColorBrush x:Key="PanelBg" Color="#0F172A"/>
         <SolidColorBrush x:Key="Border" Color="#334155"/>
@@ -18,13 +19,16 @@
             <Setter Property="BorderBrush" Value="{StaticResource Border}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="FontSize" Value="16"/>
         </Style>
         <Style TargetType="{x:Type Button}">
             <Setter Property="Background" Value="#111827"/>
             <Setter Property="Foreground" Value="#E5E7EB"/>
             <Setter Property="BorderBrush" Value="{StaticResource Border}"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="Padding" Value="14,10"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Height" Value="46"/>
         </Style>
     </Window.Resources>
 
@@ -36,29 +40,31 @@
         </Grid.RowDefinitions>
 
         <Grid Grid.Row="0" Margin="0,0,0,10">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-            <TextBlock Text="Import a PDF, review extracted text, then Save as the base resume template used by all outputs."
-                       Foreground="{StaticResource MutedText}"
-                       VerticalAlignment="Center"
-                       Margin="0,0,12,0"/>
-            <StackPanel Grid.Column="1" Orientation="Horizontal">
+            <DockPanel LastChildFill="True">
+                <Button x:Name="SelectPdfButton"
+                        DockPanel.Dock="Left"
+                        Content="Select PDF..."
+                        Width="160"
+                        Margin="0,0,12,0"/>
                 <Button x:Name="AddSelectionButton"
-                        Content="Use selection as header"
-                        Margin="0,0,8,0"
-                        Height="30"
-                        Width="180"
+                        DockPanel.Dock="Left"
+                        Content="Add selection to header map"
+                        Width="280"
+                        Margin="0,0,12,0"
                         IsEnabled="False"
-                        ToolTip="Highlight a header in the PDF then click to add it to the current map"/>
-                <Button x:Name="SelectPdfButton" Content="Select PDF..." Height="30" Width="120"/>
-            </StackPanel>
+                        Focusable="False"
+                        IsTabStop="False"
+                        ToolTip="Highlight a header line in the PDF, then click to copy it into the header map."/>
+                <TextBlock Text="Import a PDF, review extracted text, then Save as the base resume template used by all outputs."
+                           Foreground="{StaticResource MutedText}"
+                           VerticalAlignment="Center"
+                           Margin="0,0,12,0"/>
+            </DockPanel>
         </Grid>
 
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1.5*"/>
+                <ColumnDefinition Width="2.6*"/>
                 <ColumnDefinition Width="10"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
@@ -84,10 +90,10 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <TextBlock Text="Extracted Base Resume Text (internal template)" FontWeight="SemiBold" Margin="0,0,0,6"/>
-                    <TextBox Grid.Row="1" x:Name="TemplateTextBox" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"/>
+                    <TextBox Grid.Row="1" x:Name="TemplateTextBox" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" FontSize="15"/>
                     <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">
-                        <Button x:Name="ReorderSectionsButton" Content="Reorder Sections..." Height="32" Width="160" Margin="0,0,8,0"/>
-                        <Button x:Name="SaveButton" Content="Save Template" Background="#2563EB" BorderBrush="#1D4ED8" Foreground="White" Height="32" Width="140"/>
+                        <Button x:Name="ReorderSectionsButton" Content="Reorder Sections..." Width="220" Margin="0,0,10,0"/>
+                        <Button x:Name="SaveButton" Content="Save Template" Background="#2563EB" BorderBrush="#1D4ED8" Foreground="White" Width="190"/>
                     </StackPanel>
                 </Grid>
             </Border>
@@ -95,7 +101,7 @@
 
         <DockPanel Grid.Row="2" Margin="0,10,0,0">
             <TextBlock x:Name="StatusText" Foreground="{StaticResource MutedText}" VerticalAlignment="Center"/>
-            <Button DockPanel.Dock="Right" x:Name="CloseButton" Content="Close" Width="120" Height="34"/>
+            <Button DockPanel.Dock="Right" x:Name="CloseButton" Content="Close" Width="160"/>
         </DockPanel>
     </Grid>
 </Window>

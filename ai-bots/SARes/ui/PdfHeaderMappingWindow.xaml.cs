@@ -265,7 +265,15 @@ public partial class PdfHeaderMappingWindow : Window
         if (string.IsNullOrWhiteSpace(header))
             return;
 
-        Dispatcher.Invoke(() => TryAddHeaderRule(header, forceBullets: false));
+        Dispatcher.Invoke(() =>
+        {
+            AppLog.Info($"MappingWindow AddHeaderFromSelection received: {header.Trim()}");
+            NewHeaderTextBox.Text = header.Trim();
+            ForceBulletsCheckBox.IsChecked = false;
+            NewHeaderTextBox.Focus();
+            AddCustomHeader();
+            NewHeaderTextBox.Focus();
+        });
     }
 
     private void ConfirmMapping()
