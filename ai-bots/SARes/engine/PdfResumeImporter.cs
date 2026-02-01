@@ -240,18 +240,9 @@ public static class PdfResumeImporter
     {
         var output = new List<string>();
         var columnSplitGap = allowColumnSplit ? Math.Max(90, page.Width * 0.25) : double.PositiveInfinity;
-        double? prevCenterY = null;
 
         foreach (var cluster in clusters)
         {
-            if (prevCenterY is not null)
-            {
-                var gap = prevCenterY.Value - cluster.CenterY;
-                var paragraphGap = Math.Max(medianHeight * 2.2, medianHeight + 6);
-                if (gap >= paragraphGap && output.Count > 0 && !string.IsNullOrWhiteSpace(output[^1]))
-                    output.Add("");
-            }
-
             var items = cluster.Items.OrderBy(i => i.Left).ToList();
             if (items.Count == 0)
                 continue;
@@ -285,8 +276,6 @@ public static class PdfResumeImporter
                 if (text.Length > 0)
                     output.Add(text);
             }
-
-            prevCenterY = cluster.CenterY;
         }
 
         return output;

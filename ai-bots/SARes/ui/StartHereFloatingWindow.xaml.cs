@@ -52,8 +52,6 @@ public partial class StartHereFloatingWindow : Window
         }
     }
 
-    private const string StartHerePlaceholderMarker = "SARes start here placeholder (do not edit)";
-
     private string? EnsureUserMarkdownCopy()
     {
         try
@@ -62,81 +60,14 @@ public partial class StartHereFloatingWindow : Window
             if (dir is not null && !Directory.Exists(dir))
                 Directory.CreateDirectory(dir);
 
-            var defaultSource = LocateDefaultMarkdownSource();
-            if (defaultSource is null)
-                return null;
-
             if (!File.Exists(_userMarkdownPath))
-                File.Copy(defaultSource, _userMarkdownPath, overwrite: true);
-
-            if (string.Equals(defaultSource, _defaultMarkdownPath, StringComparison.OrdinalIgnoreCase)
-                && !IsPlaceholderFile(_defaultMarkdownPath))
-            {
-                ArchiveDefaultMarkdownSource();
-            }
+                File.Copy(_defaultMarkdownPath, _userMarkdownPath, overwrite: true);
 
             return _userMarkdownPath;
         }
         catch
         {
             return null;
-        }
-    }
-
-    private string? LocateDefaultMarkdownSource()
-    {
-        if (File.Exists(_defaultMarkdownPath) && !IsPlaceholderFile(_defaultMarkdownPath))
-            return _defaultMarkdownPath;
-
-        var archivedPath = _defaultMarkdownPath + ".source";
-        if (File.Exists(archivedPath))
-            return archivedPath;
-
-        return File.Exists(_defaultMarkdownPath) ? _defaultMarkdownPath : null;
-    }
-
-    private static bool IsPlaceholderFile(string path)
-    {
-        try
-        {
-            foreach (var line in File.ReadLines(path))
-            {
-                if (line.Contains(StartHerePlaceholderMarker, StringComparison.Ordinal))
-                    return true;
-                if (!string.IsNullOrWhiteSpace(line))
-                    break;
-            }
-        }
-        catch
-        {
-        }
-
-        return false;
-    }
-
-    private void ArchiveDefaultMarkdownSource()
-    {
-        var archivedPath = _defaultMarkdownPath + ".source";
-        try
-        {
-            if (!File.Exists(_defaultMarkdownPath))
-                return;
-
-            if (File.Exists(archivedPath))
-                File.Delete(archivedPath);
-
-            File.Move(_defaultMarkdownPath, archivedPath);
-
-            var appDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SARes");
-            var placeholderText = $"""
-<!-- {StartHerePlaceholderMarker} -->
-This file is a placeholder only. The real Start Here content lives in
-{Path.Combine(appDataPath, "start_here.md")}
-""";
-            File.WriteAllText(_defaultMarkdownPath, placeholderText);
-        }
-        catch
-        {
         }
     }
 
