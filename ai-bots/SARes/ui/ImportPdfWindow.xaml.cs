@@ -1,4 +1,6 @@
 using System.IO;
+using System.Text.Json;
+using System.Threading.Tasks;
 using System.Windows;
 using Microsoft.Web.WebView2.Wpf;
 using SARes.engine;
@@ -9,6 +11,7 @@ namespace SARes.ui;
 public partial class ImportPdfWindow : Window
 {
     private AppSettings _updated;
+    private PdfHeaderMappingWindow? _mappingWindow;
 
     public ImportPdfWindow(AppSettings settings)
     {
@@ -16,6 +19,7 @@ public partial class ImportPdfWindow : Window
         _updated = settings;
 
         SelectPdfButton.Click += async (_, _) => await SelectPdfAsync();
+        AddSelectionButton.Click += async (_, _) => await AddSelectionAsHeaderAsync();
         ReorderSectionsButton.Click += (_, _) => ReorderSections();
         SaveButton.Click += (_, _) => SaveTemplate();
         CloseButton.Click += (_, _) => Close();
@@ -45,42 +49,33 @@ public partial class ImportPdfWindow : Window
             return;
 
         StatusText.Text = "Loading preview...";
-            try
-            {
-                await WebViewHelpers.EnsureReadyAsync(PdfWeb);
-                PdfWeb.Source = new Uri(pdfPath);
-                StatusText.Text = "Preview ready. Confirm headers before importing.";
-                await TopLeftJustifyWebViewAsync(PdfWeb);
-            }
+        try
+        {
+            await WebViewHelpers.EnsureReadyAsync(PdfWeb);
+            PdfWeb.Source = new Uri(pdfPath);
+            PdfWeb.ZoomFactor = 1.35;
+            StatusText.Text = "Preview ready. Confirm headers before importing.";
+            await TopLeftJustifyWebViewAsync(PdfWeb);
+        }
         catch
         {
             StatusText.Text = "Preview load failed.";
         }
 
-        var defaultHeaders = _updated.GetPdfHeaderPreset(_updated.SelectedPdfHeaderPresetName);
-
-        var headerWindow = new PdfHeaderMappingWindow(
-            _updated,
-            defaultHeaders,
-            (name, headers, bulletize) =>
-            {
-                _updated = _updated.WithPdfPreset(name, headers, bulletize);
-                AppSettingsStore.Save(_updated);
-            });
-        headerWindow.Owner = this;
-        if (headerWindow.ShowDialog() != true)
+        var mappingResult = await PromptForHeaderMappingAsync();
+        if (mappingResult is null)
         {
             StatusText.Text = "Import canceled.";
             return;
         }
 
-        var customHeaders = headerWindow.ConfirmedHeaders;
+        var customHeaders = mappingResult.Headers;
         _updated = _updated.WithPdfSectionHeaderAliases(customHeaders);
-        var bulletize = headerWindow.BulletizedSectionTitles;
-        var layoutMode = headerWindow.SelectedLayoutMode;
+        var bulletize = mappingResult.BulletizedSectionTitles;
+        var layoutMode = mappingResult.LayoutMode;
         // Do not persist ad-hoc header edits automatically; only save when the user names/saves a preset.
         // Persist the last selected preset for convenience.
-        var selectedPreset = (headerWindow.SelectedPresetName ?? "").Trim();
+        var selectedPreset = (mappingResult.SelectedPresetName ?? "").Trim();
         if (selectedPreset.Length > 0)
         {
             _updated = _updated with { SelectedPdfHeaderPresetName = selectedPreset, SelectedPdfLayoutMode = layoutMode };
@@ -105,6 +100,111 @@ public partial class ImportPdfWindow : Window
             StatusText.Text = "Import failed: " + ex.Message;
             System.Windows.MessageBox.Show(ex.Message, "Import failed", MessageBoxButton.OK, MessageBoxImage.Error);
         }
+    }
+
+    private async Task<PdfHeaderMappingWindow.HeaderMappingResult?> PromptForHeaderMappingAsync()
+    {
+        var headerWindow = new PdfHeaderMappingWindow(
+            _updated,
+            Array.Empty<string>(),
+            (name, headers, bulletize) =>
+            {
+                _updated = _updated.WithPdfPreset(name, headers, bulletize);
+                AppSettingsStore.Save(_updated);
+            });
+        headerWindow.Owner = this;
+
+        var tcs = new TaskCompletionSource<PdfHeaderMappingWindow.HeaderMappingResult?>();
+
+        void OnConfirmed(object? _, PdfHeaderMappingWindow.HeaderMappingResult result)
+        {
+            if (tcs.TrySetResult(result))
+                headerWindow.Close();
+        }
+
+        void OnCanceled(object? _, System.EventArgs args)
+        {
+            if (tcs.TrySetResult(null))
+                headerWindow.Close();
+        }
+
+        void OnClosed(object? _, System.EventArgs args)
+        {
+            if (!tcs.Task.IsCompleted)
+                tcs.TrySetResult(null);
+        }
+
+        headerWindow.MappingConfirmed += OnConfirmed;
+        headerWindow.MappingCanceled += OnCanceled;
+        headerWindow.Closed += OnClosed;
+
+        _mappingWindow = headerWindow;
+        AddSelectionButton.IsEnabled = true;
+        headerWindow.Show();
+
+        var result = await tcs.Task;
+
+        headerWindow.MappingConfirmed -= OnConfirmed;
+        headerWindow.MappingCanceled -= OnCanceled;
+        headerWindow.Closed -= OnClosed;
+        _mappingWindow = null;
+        AddSelectionButton.IsEnabled = false;
+
+        return result;
+    }
+
+    private async Task AddSelectionAsHeaderAsync()
+    {
+        if (_mappingWindow is null)
+        {
+            StatusText.Text = "Open the header map window first.";
+            return;
+        }
+
+        var selection = await CaptureSelectionTextAsync();
+        var header = ToSingleLineOrNull(selection);
+        if (string.IsNullOrWhiteSpace(header))
+        {
+            StatusText.Text = "Select a header line before clicking.";
+            return;
+        }
+
+        _mappingWindow.AddHeaderFromSelection(header);
+        StatusText.Text = $"Added header: {header}";
+    }
+
+    private async Task<string?> CaptureSelectionTextAsync()
+    {
+        if (PdfWeb.CoreWebView2 is null)
+            return null;
+
+        try
+        {
+            var raw = await PdfWeb.CoreWebView2.ExecuteScriptAsync("window.getSelection().toString()");
+            if (string.IsNullOrWhiteSpace(raw))
+                return null;
+
+            return JsonSerializer.Deserialize<string>(raw);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static string? ToSingleLineOrNull(string? text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+            return null;
+
+        foreach (var line in text.Replace("\r", "").Split('\n'))
+        {
+            var trimmed = line.Trim();
+            if (trimmed.Length > 0)
+                return trimmed;
+        }
+
+        return null;
     }
 
     private void SaveTemplate()

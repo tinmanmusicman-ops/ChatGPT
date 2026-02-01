@@ -4,13 +4,26 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using SARes.engine;
+using DataFormats = System.Windows.DataFormats;
+using DataObject = System.Windows.DataObject;
+using TextBox = System.Windows.Controls.TextBox;
 
 namespace SARes.ui;
 
 public partial class PdfHeaderMappingWindow : Window
 {
+    public event EventHandler<HeaderMappingResult>? MappingConfirmed;
+    public event EventHandler? MappingCanceled;
+
+    public sealed record HeaderMappingResult(
+        IReadOnlyList<string> Headers,
+        IReadOnlyList<string> BulletizedSectionTitles,
+        PdfLayoutMode LayoutMode,
+        string? SelectedPresetName);
+
     private readonly ObservableCollection<HeaderRule> _customHeaders;
     private readonly Dictionary<string, IReadOnlyList<string>> _presetMap;
     private readonly Dictionary<string, IReadOnlyList<string>> _bulletizePresetMap;
@@ -84,23 +97,30 @@ public partial class PdfHeaderMappingWindow : Window
             _suppressPresetSelection = false;
         }
 
-        AddHeaderButton.Click += (_, _) => AddHeader();
+        AddHeaderButton.Click += (_, _) => AddCustomHeader();
         EditHeaderButton.Click += (_, _) => EditSelectedHeader();
         RemoveHeaderButton.Click += (_, _) => RemoveSelectedHeader();
         MoveUpButton.Click += (_, _) => MoveSelectedHeader(-1);
         MoveDownButton.Click += (_, _) => MoveSelectedHeader(1);
         ResetButton.Click += (_, _) => ResetHeaders();
         SavePresetButton.Click += (_, _) => SaveCurrentPreset();
-        RunImportButton.Click += (_, _) => { DialogResult = true; };
+        RunImportButton.Click += (_, _) => ConfirmMapping();
+        CancelButton.Click += (_, _) =>
+        {
+            MappingCanceled?.Invoke(this, EventArgs.Empty);
+            Close();
+        };
 
         NewHeaderTextBox.KeyDown += (_, e) =>
         {
             if (e.Key == Key.Enter)
             {
-                AddHeader();
+                AddCustomHeader();
                 e.Handled = true;
             }
         };
+
+        DataObject.AddPastingHandler(NewHeaderTextBox, OnHeaderTextPasting);
 
         CustomHeadersListBox.SelectionChanged += (_, _) => SyncSelectedHeader();
     }
@@ -120,22 +140,6 @@ public partial class PdfHeaderMappingWindow : Window
         foreach (var header in headers)
             _customHeaders.Add(new HeaderRule(header, bulletize.Any(x => x.Equals(header, StringComparison.OrdinalIgnoreCase))));
         PresetNameTextBox.Text = preset;
-    }
-
-    private void AddHeader()
-    {
-        var text = (NewHeaderTextBox.Text ?? "").Trim();
-        if (text.Length == 0)
-            return;
-
-        if (_customHeaders.Any(h => string.Equals(h.Title, text, StringComparison.OrdinalIgnoreCase)))
-            return;
-
-        var rule = new HeaderRule(text, ForceBulletsCheckBox.IsChecked == true);
-        _customHeaders.Add(rule);
-        NewHeaderTextBox.Clear();
-        ForceBulletsCheckBox.IsChecked = false;
-        CustomHeadersListBox.ScrollIntoView(rule);
     }
 
     private void EditSelectedHeader()
@@ -194,6 +198,85 @@ public partial class PdfHeaderMappingWindow : Window
         _customHeaders.Clear();
         foreach (var header in ResumeParserDefaults.SectionTitles)
             _customHeaders.Add(new HeaderRule(header, false));
+    }
+
+    private static string? ExtractSingleLine(string? text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+            return null;
+
+        foreach (var line in text.Replace("\r", "").Split('\n'))
+        {
+            var trimmed = line.Trim();
+            if (trimmed.Length > 0)
+                return trimmed;
+        }
+        return null;
+    }
+
+    private void OnHeaderTextPasting(object? sender, DataObjectPastingEventArgs e)
+    {
+        if (!e.DataObject.GetDataPresent(DataFormats.Text))
+            return;
+
+        if (e.DataObject.GetData(DataFormats.Text) is not string raw)
+            return;
+
+        var single = ExtractSingleLine(raw);
+        if (single is null)
+            return;
+
+        if (sender is TextBox tb)
+        {
+            tb.Text = single;
+            tb.CaretIndex = tb.Text.Length;
+        }
+
+        e.CancelCommand();
+    }
+
+    private void AddCustomHeader()
+    {
+        var text = (NewHeaderTextBox.Text ?? "").Trim();
+        if (!TryAddHeaderRule(text, ForceBulletsCheckBox.IsChecked == true))
+            return;
+
+        NewHeaderTextBox.Clear();
+        ForceBulletsCheckBox.IsChecked = false;
+    }
+
+    private bool TryAddHeaderRule(string header, bool forceBullets)
+    {
+        var normalized = (header ?? "").Trim();
+        if (normalized.Length == 0)
+            return false;
+
+        if (_customHeaders.Any(h => string.Equals(h.Title, normalized, StringComparison.OrdinalIgnoreCase)))
+            return false;
+
+        var rule = new HeaderRule(normalized, forceBullets);
+        _customHeaders.Add(rule);
+        CustomHeadersListBox.ScrollIntoView(rule);
+        return true;
+    }
+
+    public void AddHeaderFromSelection(string header)
+    {
+        if (string.IsNullOrWhiteSpace(header))
+            return;
+
+        Dispatcher.Invoke(() => TryAddHeaderRule(header, forceBullets: false));
+    }
+
+    private void ConfirmMapping()
+    {
+        var result = new HeaderMappingResult(
+            ConfirmedHeaders,
+            BulletizedSectionTitles,
+            SelectedLayoutMode,
+            SelectedPresetName);
+        MappingConfirmed?.Invoke(this, result);
+        Close();
     }
 
     private void SelectPreset(string presetName, bool loadHeaders)
