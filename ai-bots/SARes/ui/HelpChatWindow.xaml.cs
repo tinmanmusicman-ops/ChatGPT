@@ -1,6 +1,7 @@
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using SARes.engine;
 
@@ -347,4 +348,24 @@ public partial class HelpChatWindow : Window
     }
 
     private sealed record MessageMeta(bool IsUser, string RawText);
+
+    private void TitleBar_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.ChangedButton != MouseButton.Left)
+            return;
+
+        if (e.ClickCount == 2)
+        {
+            WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
+            return;
+        }
+
+        try
+        {
+            DragMove();
+        }
+        catch
+        {
+        }
+    }
 }
