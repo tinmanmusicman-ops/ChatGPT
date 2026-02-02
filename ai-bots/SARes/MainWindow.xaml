@@ -15,7 +15,7 @@
         Background="Transparent"
         FontSize="14">
     <WindowChrome.WindowChrome>
-        <shell:WindowChrome CaptionHeight="44"
+        <shell:WindowChrome CaptionHeight="0"
                             CornerRadius="16"
                             GlassFrameThickness="0"
                             ResizeBorderThickness="6"
@@ -33,10 +33,11 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <Border Background="#194217"
-                    Grid.Row="0"
-                    CornerRadius="16,16,0,0"
-                    MouseDown="TitleBar_MouseDown">
+                <Border Background="#194217"
+                        Grid.Row="0"
+                        CornerRadius="16,16,0,0"
+                        MouseDown="TitleBar_MouseDown"
+                        MouseRightButtonUp="TitleBar_MouseRightButtonUp">
                 <DockPanel Margin="16,0">
                     <TextBlock Text="SARes Control Tower"
                                Foreground="#F7F7F7"
@@ -48,27 +49,27 @@
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Center"
                                 DockPanel.Dock="Right">
-                        <Button Width="40" Height="28"
+                        <Button x:Name="MinimizeTitleButton"
+                                Width="40" Height="28"
                                 Margin="0,6,6,6"
-                                Command="{x:Static system:SystemCommands.MinimizeWindowCommand}"
-                                CommandTarget="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
+                                Click="MinimizeTitleButton_Click"
                                 Background="Transparent"
                                 BorderBrush="Transparent">
                             <Path Data="M0,0 L10,0" Stroke="#F7F7F7" StrokeThickness="2"/>
                         </Button>
-                        <Button Width="40" Height="28"
+                        <Button x:Name="MaximizeTitleButton"
+                                Width="40" Height="28"
                                 Margin="0,6,6,6"
-                                Command="{x:Static system:SystemCommands.MaximizeWindowCommand}"
-                                CommandTarget="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
+                                Click="MaximizeTitleButton_Click"
                                 Background="Transparent"
                                 BorderBrush="Transparent">
                             <Rectangle Stroke="#F7F7F7" StrokeThickness="2" Width="12" Height="12"/>
                         </Button>
-                        <Button Width="40" Height="28"
+                        <Button x:Name="TitleCloseButton"
+                                Width="40" Height="28"
                                 Margin="0,6,0,6"
-                                Command="{x:Static system:SystemCommands.CloseWindowCommand}"
-                                CommandTarget="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
-                                Background="Transparent"
+                                Click="CloseWindow_Click"
+                                Background="#000000"
                                 BorderBrush="Transparent">
                             <Path Data="M0,0 L10,10 M0,10 L10,0" Stroke="#F7F7F7" StrokeThickness="2"/>
                         </Button>
