@@ -23,6 +23,7 @@ __pycache__/
 *.xml
 *.bat
 *.json
+!AI-Fit-Site/tower.config.json
 !/ai-bots/Thermostats/Web/dashboard_data.json
 !/ai-bots/Thermostats/Web/chart hist/*.json
 *.txt

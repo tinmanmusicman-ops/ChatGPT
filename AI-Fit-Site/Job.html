@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <title>Tim Inman</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="theme-color" content="#11101a" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -82,6 +84,188 @@
       max-width: 560px;
       line-height: 1.6;
       margin-bottom: 28px;
+    }
+
+    .top-contact {
+      width: min(760px, 100%);
+      margin: 18px auto 26px;
+      padding: 20px 22px;
+      border-radius: 16px;
+      border: 1px solid rgba(103, 232, 249, 0.5);
+      background: rgba(18, 18, 18, 0.85);
+      text-align: center;
+    }
+
+    .top-contact-headline {
+      font-family: "Playfair Display", serif;
+      font-size: 1.4rem;
+      color: var(--text-main);
+      margin-bottom: 8px;
+    }
+
+    .top-contact-subtext {
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: var(--text-muted);
+      max-width: 640px;
+      margin: 0 auto 18px;
+    }
+
+    .top-contact-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: min(360px, 100%);
+      padding: 16px 22px;
+      background: #456b21;
+      border: 1px solid #183c1d;
+      color: #bbc4bf;
+      border-radius: 14px;
+      text-decoration: none;
+      font-size: 1.05rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+    }
+
+    .top-contact-button:hover {
+      filter: brightness(1.03);
+    }
+
+    .top-contact-button:focus-visible {
+      outline: 3px solid rgba(103, 232, 249, 0.45);
+      outline-offset: 3px;
+    }
+
+    .contact-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 3000;
+    }
+
+    .contact-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.72);
+    }
+
+    .contact-dialog {
+      position: relative;
+      width: min(720px, calc(100% - 32px));
+      margin: 10vh auto 0;
+      padding: 18px 18px 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(184, 133, 255, 0.55);
+      background: rgba(17, 16, 26, 0.98);
+      box-shadow: 0 18px 48px rgba(0, 0, 0, 0.55);
+    }
+
+    .contact-close {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: rgba(0, 0, 0, 0.22);
+      color: var(--text-secondary);
+      font-size: 24px;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .contact-title {
+      margin: 0 0 6px;
+      font-family: "Playfair Display", serif;
+      font-size: 1.6rem;
+      color: var(--text-main);
+    }
+
+    .contact-subtitle {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1.5;
+      margin-bottom: 14px;
+      max-width: 60ch;
+    }
+
+    .contact-form {
+      position: relative;
+      display: grid;
+      gap: 12px;
+    }
+
+    .contact-label {
+      display: grid;
+      gap: 6px;
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+    }
+
+    .contact-input,
+    .contact-textarea {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text-secondary);
+      padding: 12px 12px;
+      font-size: 0.95rem;
+      font-family: inherit;
+    }
+
+    .contact-textarea {
+      resize: vertical;
+    }
+
+    .contact-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      align-items: center;
+      margin-top: 4px;
+    }
+
+    .contact-send {
+      padding: 10px 16px;
+      border-radius: 12px;
+      border: 1px solid rgba(103, 232, 249, 0.32);
+      background: rgba(69, 107, 33, 0.9);
+      color: #e8e8e8;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      cursor: pointer;
+    }
+
+    .contact-cancel {
+      padding: 10px 16px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(0, 0, 0, 0.22);
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+
+    .contact-send:disabled,
+    .contact-cancel:disabled,
+    .contact-close:disabled {
+      opacity: 0.55;
+      cursor: default;
+    }
+
+    .contact-status {
+      min-height: 20px;
+      font-size: 0.95rem;
+      color: var(--text-muted);
+    }
+
+    .contact-honeypot {
+      position: absolute;
+      left: -10000px;
+      top: auto;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
     }
 
     .chips {
@@ -321,7 +505,7 @@
     .section .subtitle {
       font-size: 0.95rem;
       color: var(--text-muted);
-      margin-bottom: 40px;
+      margin-bottom: 4px;
     }
 
     .experience-card {
@@ -391,7 +575,8 @@
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 28px;
-      max-width: 900px;
+      width: 100%;
+      max-width: 820px;
     }
 
     .skills-card {
@@ -685,12 +870,74 @@
     background: rgba(255, 255, 255, 0.01);
   }
 
+  .explore-tim {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .explore-title {
+    font-family: "Playfair Display", serif;
+    font-size: 1.1rem;
+    color: var(--text-main);
+    margin-bottom: 12px;
+  }
+
+  .explore-categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .explore-category {
+    cursor: pointer;
+    border-radius: 999px;
+    padding: 8px 14px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .explore-category.active {
+    border-color: rgba(103, 232, 249, 0.65);
+    box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.16);
+  }
+
+  .explore-panel[hidden] {
+    display: none;
+  }
+
+  .explore-prompts {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .explore-prompt {
+    cursor: pointer;
+    text-align: left;
+    border-radius: 12px;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.02);
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+
+  .explore-prompt:hover {
+    border-color: rgba(103, 232, 249, 0.55);
+  }
+
   .ai-response h1,
   .ai-response h2,
   .ai-response h3,
   .ai-response h4 {
     margin: 14px 0 8px;
-    color: var(--text-main);
+    color: #60a5fa;
     font-family: "Playfair Display", serif;
     font-weight: 500;
   }
@@ -718,6 +965,17 @@
     border: 1px solid rgba(255, 255, 255, 0.08);
   }
 
+  .ai-response strong,
+  .ai-response b {
+    color: #fdba74;
+    font-weight: 800;
+  }
+
+  .ai-response .project-tag {
+    color: #34d399;
+    font-weight: 800;
+  }
+
   .ai-response pre {
     margin: 12px 0;
     padding: 12px 14px;
@@ -736,6 +994,75 @@
   .ai-response a {
     color: #8aa0ff;
     text-decoration: underline;
+  }
+
+  @media (max-width: 600px) {
+    body {
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+
+    .page {
+      padding: calc(56px + env(safe-area-inset-top)) 18px 96px;
+    }
+
+    h1 {
+      font-size: 3.1rem;
+      line-height: 1.05;
+    }
+
+    .scroll {
+      display: none;
+    }
+
+    .site-logo {
+      width: 96px;
+      height: 96px;
+      top: calc(12px + env(safe-area-inset-top));
+      left: calc(12px + env(safe-area-inset-left));
+    }
+
+    .top-contact {
+      margin: 14px auto 18px;
+      padding: 16px 16px;
+    }
+
+    .top-contact-button {
+      width: 100%;
+    }
+
+    .skills-grid {
+      grid-template-columns: 1fr;
+      gap: 14px;
+      max-width: 100%;
+    }
+
+    .skills-card {
+      padding: 16px 16px;
+    }
+
+    textarea,
+    input {
+      font-size: 16px;
+    }
+
+    .contact-dialog {
+      margin: calc(4vh + env(safe-area-inset-top)) auto 0;
+      max-height: calc(84vh - env(safe-area-inset-top));
+      overflow: auto;
+    }
+  }
+
+  @media (max-width: 900px) {
+    .skills-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+      max-width: 100%;
+    }
+
+    .skills-card {
+      padding: 18px 18px;
+    }
   }
 
 </style>
@@ -797,6 +1124,13 @@
     <!-- HERO -->
     <div class="eyebrow">Creative technologist with decades of systems experience</div>
     <h1>Timothy B Inman</h1>
+
+    <section class="top-contact" aria-label="Contact Tim">
+      <div class="top-contact-headline">Interested? Reach out directly.</div>
+      <div class="top-contact-subtext">If something you see here aligns with what you're building, hiring for, or exploring, click below and contact me directly.</div>
+      <button id="contactTim" type="button" class="top-contact-button">CONTACT TIM</button>
+    </section>
+
     <div class="role">Creative Technologist & Workflow Engineer</div>
     <div class="tagline">
       Turning messy inputs into polished deliverables through automation, AI-assisted workflows,
@@ -810,18 +1144,119 @@
       <div class="chip">AI-assisted workflows</div>
     </div>
 
+    <div id="contactModal" class="contact-modal" hidden>
+      <div class="contact-backdrop" data-contact-close></div>
+      <div class="contact-dialog" role="dialog" aria-modal="true" aria-labelledby="contactModalTitle">
+        <button type="button" class="contact-close" aria-label="Close" data-contact-close>×</button>
+        <h3 id="contactModalTitle" class="contact-title">Contact Tim</h3>
+        <div class="contact-subtitle">Share the best way to reach you and a quick note. This sends Tim an email directly.</div>
+        <form id="contactForm" class="contact-form">
+          <label class="contact-label contact-honeypot" aria-hidden="true">
+            Website
+            <input id="contactWebsite" class="contact-input" type="text" tabindex="-1" autocomplete="off" />
+          </label>
+          <label class="contact-label">
+            Your name (optional)
+            <input id="contactName" class="contact-input" type="text" autocomplete="name" placeholder="Jane Doe" maxlength="120" />
+          </label>
+          <label class="contact-label">
+            Best way to contact you
+            <input id="contactInfo" class="contact-input" type="text" autocomplete="email" placeholder="Email / phone / LinkedIn" maxlength="220" required />
+          </label>
+          <label class="contact-label">
+            Message (optional)
+            <textarea id="contactMessage" class="contact-textarea" rows="6" placeholder="What caught your attention? What are you hiring for / building?" maxlength="5000"></textarea>
+          </label>
+          <div class="contact-actions">
+            <button id="contactSend" type="submit" class="contact-send">Send</button>
+            <button type="button" class="contact-cancel" data-contact-close>Cancel</button>
+          </div>
+          <div id="contactStatus" class="contact-status" aria-live="polite"></div>
+        </form>
+      </div>
+    </div>
+
 
     <div id="askAiAboutMeCard" class="ai-prompt-card collapsed" data-collapsible aria-label="Ask AI about Timothy B Inman">
-      <button class="ai-prompt-toggle" type="button" aria-expanded="false">
+      <button class="ai-prompt-toggle"  type="button" aria-expanded="false">
         Ask AI about me
       </button>
+      <div id="exploreTim" class="explore-tim" aria-label="Explore Tim">
+        <div class="explore-title">Explore Tim</div>
+        <div class="explore-categories" aria-label="Explore categories">
+          <button type="button" class="explore-category" data-category="quick" aria-expanded="false">Quick Summary</button>
+          <button type="button" class="explore-category" data-category="skills" aria-expanded="false">Skills &amp; Strengths</button>
+          <button type="button" class="explore-category" data-category="projects" aria-expanded="false">Major Projects</button>
+          <button type="button" class="explore-category" data-category="how" aria-expanded="false">How Tim Works</button>
+          <button type="button" class="explore-category" data-category="deep" aria-expanded="false">Deep Evaluation</button>
+        </div>
+
+        <div class="explore-panel" data-category="quick" hidden>
+          <div class="explore-prompts">
+            <button type="button" class="explore-prompt" data-prompt="Give me a quick professional summary of Tim">Give me a quick professional summary of Tim</button>
+            <button type="button" class="explore-prompt" data-prompt="What kind of roles is Tim best suited for?">What kind of roles is Tim best suited for?</button>
+            <button type="button" class="explore-prompt" data-prompt="What makes Tim different from typical candidates?">What makes Tim different from typical candidates?</button>
+          </div>
+        </div>
+
+        <div class="explore-panel" data-category="skills" hidden>
+          <div class="explore-prompts">
+            <button type="button" class="explore-prompt" data-prompt="What are Tim’s core technical skills?">What are Tim’s core technical skills?</button>
+            <button type="button" class="explore-prompt" data-prompt="Explain Tim’s automation and systems expertise">Explain Tim’s automation and systems expertise</button>
+            <button type="button" class="explore-prompt" data-prompt="What technologies has Tim used in production?">What technologies has Tim used in production?</button>
+            <button type="button" class="explore-prompt" data-prompt="Show examples of Tim using his skills in real projects">Show examples of Tim using his skills in real projects</button>
+          </div>
+        </div>
+
+        <div class="explore-panel" data-category="projects" hidden>
+          <div class="explore-prompts">
+            <button type="button" class="explore-prompt" data-projects-mode="group-by-company"
+              data-prompt-summary="In ONE sentence, paint the big picture of Tim’s major projects and the impact they had."
+              data-prompt-deep="List 10-12 distinct major projects/initiatives Tim has worked on (include projects implied by the achievements and supplemental context, not only the job bullets). For each project, include:\n- Project name + company/era\n- The issue/problem (what was broken/slow/risky and why it mattered)\n- Constraints (time, legacy systems, stakeholders, compliance, etc.)\n- Root cause (if known; if unknown, say unknown)\n- What Tim changed / how he fixed it (steps + decision points)\n- Technical implementation details (tools, scripts, data flows, automation approach)\n- Impact/results (metrics if available; otherwise concrete outcomes)\n- Evidence source tag: (work history) or (candidate-provided) or (self-rated)\nRules: do not invent details; if you lack specifics, ask a clarifying question at the end.\nReturn Markdown as a numbered list."
+            >Show all major projects Tim has worked on</button>
+            <button type="button" class="explore-prompt" hidden
+              data-prompt-summary="In ONE sentence, paint the big picture of Tim's major projects and the impact they had. Then list projects grouped by company.\n\nReturn Markdown with this structure:\nOne-sentence summary (no bullets)\n## Projects By Company\n### <Company>\n- <Project> — <what Tim built/did + impact>\n\nRules: don't invent projects; include projects mentioned in work history and supplemental context; if a project is only in supplemental context, tag it (candidate-provided)."
+              data-prompt-deep="Group Tim's projects by company and go deep on the most important ones.\n\nReturn Markdown with this structure:\n## Projects By Company\n### <Company>\n- <Project name>\n  - Issue/problem + why it mattered\n  - Constraints\n  - Root cause (or say unknown)\n  - What Tim changed / how he fixed it\n  - Tools/implementation details\n  - Impact/results (metrics if available)\n  - Evidence tag: (work history) or (candidate-provided) or (self-rated)\n\nRules: don't invent details; if specifics are missing, say unknown and ask 1-2 clarifying questions at the end."
+            >Projects by company</button>
+            <button type="button" class="explore-prompt" data-prompt="What systems has Tim built or replaced?">What systems has Tim built or replaced?</button>
+<!--            <button type="button" class="explore-prompt" data-prompt="Show a deep review of Tim’s Tyler Technologies projects">Show a deep review of Tim’s Tyler Technologies projects</button>
+            <button type="button" class="explore-prompt" data-prompt="Tell me about Tim’s work at Tyler Technologies">Tell me about Tim’s work at Tyler Technologies</button>
+            <button type="button" class="explore-prompt" data-prompt="Tell me about Tim’s work at Best Buy Health">Tell me about Tim’s work at Best Buy Health</button>
+
+-->
+</div>
+        </div>
+
+        <div class="explore-panel" data-category="how" hidden>
+          <div class="explore-prompts">
+            <button type="button" class="explore-prompt" data-prompt="How does Tim approach automation and system design?">How does Tim approach automation and system design?</button>
+            <button type="button" class="explore-prompt" data-prompt="What patterns show across Tim’s career?">What patterns show across Tim’s career?</button>
+            <button type="button" class="explore-prompt" data-prompt="How does Tim reduce operational risk?">How does Tim reduce operational risk?</button>
+            <button type="button" class="explore-prompt" data-prompt="How does Tim work with teams and stakeholders?">How does Tim work with teams and stakeholders?</button>
+          </div>
+        </div>
+
+        <div class="explore-panel" data-category="deep" data-force-deep="true" hidden>
+          <div class="explore-prompts">
+            <button type="button" class="explore-prompt" data-prompt="Deep evaluation of Tim for a technical role">Deep evaluation of Tim for a technical role</button>
+            <button type="button" class="explore-prompt" data-prompt="Deep evaluation of Tim for an automation role">Deep evaluation of Tim for an automation role</button>
+            <button type="button" class="explore-prompt" data-prompt="Where would Tim NOT be a fit?">Where would Tim NOT be a fit?</button>
+            <button type="button" class="explore-prompt" data-prompt="What environments suit Tim best?">What environments suit Tim best?</button>
+            <button type="button" class="explore-prompt" data-prompt="Full deep analysis of Tim’s experience and approach">Full deep analysis of Tim’s experience and approach</button>
+          </div>
+        </div>
+      </div>
       <div class="ai-prompt-body">
         <textarea
           id="personalQuestion"
           placeholder="Type the question you’d like the AI to answer about your work history, strengths, leadership style, or what you bring to the table."
         ></textarea>
         <div class="ai-prompt-actions">
-          <button id="askAboutMe" type="button" class="primary">Ask AI About Me</button>
+          <button id="askAboutMe" style="background-color: rgb(200, 149, 47)"type="button" class="primary">Ask AI About Me</button>
+          <label style="margin-left:12px; font-size:18px;">
+            <input type="checkbox" id="deepMode">
+            Deep evaluation mode
+          </label>
           <span class="job-desc-hint">This prompt is isolated from the job-fit check below.</span>
         </div>
         <div id="personalResponse" class="ai-response">Type a question above, then click the button.</div>
@@ -835,7 +1270,7 @@
         Each role includes queryable AI context — the real story behind the bullet points.
       </div>
 
-      <div class="experience-card">
+      <div class="experience-card" data-skills="Outbound Calling | Office 365 | Customer support | Technical troubleshooting | CSAT/quality metrics | Excel automation | Process improvement | Escalation handling | Root-cause analysis | vba | javascript | HIPAA">
         <div class="exp-header">
           <div class="company">Best Buy Health – Jitterbug Customer Care</div>
           <div class="date">2019–2025</div>
@@ -862,7 +1297,7 @@
         </div>
       </div>
 
-      <div class="experience-card">
+      <div class="experience-card" data-skills="Customer support | Technical troubleshooting | C# | Python | Process improvement | Escalation handling | Root-cause analysis | vba | javascript| xslt | Teams Foundation Server">
         <div class="exp-header">
           <div class="company">Tyler Technologies</div>
           <div class="date">2004–2017</div>
@@ -889,7 +1324,7 @@
         </div>
       </div>
 
-      <div class="experience-card">
+      <div class="experience-card" data-skills="Customer support | Technical troubleshooting | Mail Manager | Postalsoft | Process improvement | scripting | Root-cause analysis | vba">
         <div class="exp-header">
           <div class="company">Direct Mail of Maine – Laser Room Department Manager</div>
           <div class="date">1997–2004</div>
@@ -916,7 +1351,7 @@
         </div>
       </div>
 
-      <div class="experience-card">
+      <div class="experience-card" data-skills="Python | Technical troubleshooting | Melodyne | Pitch Correction | Process improvement | plugins | midi | javascript">
         <div class="exp-header">
           <div class="company">Independent / Self-Directed</div>
           <div class="date">1983–Present</div>
@@ -943,10 +1378,11 @@
         </div>
       </div>
     </div>
-
-    <!-- SKILLS -->
+  <!-- SKILLS -->
+      <div style="margin-top: 4px; text-align: center;">SKILLS</div>
     <div class="section">
-      <div class="skills-grid">
+      <div class="skills-grid">  
+
         <div class="skills-card">
           <h3>STRONG</h3>
           <ul>
@@ -989,8 +1425,7 @@
   </div>
 
 <!-- HONEST FIT ASSESSMENT -->
-<div class="section fit" style="text-align:center; margin-top:140px;">
-
+<div class="section fit" style="text-align:center; margin-top:4px;">
   <h2>Honest Fit Assessment</h2>
 
   <p style="max-width:720px; margin:0 auto 24px; font-size:1rem; line-height:1.7; color:var(--text-muted);">
@@ -1012,7 +1447,7 @@
         <button id="pasteJobDesc" type="button">
           Paste from clipboard
         </button>
-        <button id="evaluateJob" type="button" class="primary">
+        <button id="evaluateJob" style="background-color: rgb(200, 149, 47)" type="button" class="primary">
           Ask AI if I'm a fit
         </button>
       </div>
@@ -1085,6 +1520,16 @@
       let isSendingAboutMe = false;
       let isSendingFit = false;
 
+      const contactTimBtn = document.getElementById("contactTim");
+      const contactModal = document.getElementById("contactModal");
+      const contactForm = document.getElementById("contactForm");
+      const contactWebsiteEl = document.getElementById("contactWebsite");
+      const contactNameEl = document.getElementById("contactName");
+      const contactInfoEl = document.getElementById("contactInfo");
+      const contactMessageEl = document.getElementById("contactMessage");
+      const contactSendBtn = document.getElementById("contactSend");
+      const contactStatusEl = document.getElementById("contactStatus");
+
       pasteJobDescBtn?.addEventListener("click", async () => {
         if (!jobDescriptionEl || !navigator.clipboard) return;
         try {
@@ -1105,6 +1550,14 @@
           const bullets = Array.from(card.querySelectorAll(".bullets li")).map((li) =>
             li.textContent.trim()
           );
+          const jobSkillsAttribute = (card.getAttribute("data-skills") ?? "")
+            .split(/[,|]/g)
+            .map((s) => s.trim())
+            .filter(Boolean);
+          const jobSkillsList = Array.from(card.querySelectorAll(".job-skills li, .job-skill"))
+            .map((el) => el.textContent.replace(/\s+/g, " ").trim())
+            .filter(Boolean);
+          const jobSkills = Array.from(new Set([...jobSkillsAttribute, ...jobSkillsList]));
           const context = card.querySelector(".ai-context");
           const contextText = context
             ? context.textContent.replace(/\s+/g, " ").trim()
@@ -1116,6 +1569,7 @@
               date && `Dates: ${date}`,
               title && `Title: ${title}`,
               bullets.length ? `Highlights: ${bullets.join(" | ")}` : "",
+              jobSkills.length ? `Skills used: ${jobSkills.join(" | ")}` : "",
               contextText ? `AI Notes: ${contextText}` : "",
             ]
               .filter(Boolean)
@@ -1125,8 +1579,92 @@
         return history.join("\n\n");
       };
 
-      const TOWER_BASE_URL = "http://127.0.0.1:5000";
-      const TOWER_ASK_ENDPOINT = `${TOWER_BASE_URL}/tower/ask-ai`;
+      const gatherSkills = () => {
+        const cards = document.querySelectorAll(".skills-grid .skills-card");
+        if (!cards.length) return "";
+
+        const blocks = [];
+        cards.forEach((card) => {
+          const heading = card.querySelector("h3")?.textContent.trim() ?? "";
+          const items = Array.from(card.querySelectorAll("li"))
+            .map((li) => li.textContent.replace(/\s+/g, " ").trim())
+            .filter(Boolean);
+          if (!heading && !items.length) return;
+          blocks.push([heading && `${heading}:`, items.join(" | ")].filter(Boolean).join(" "));
+        });
+
+        return blocks.length ? `Skills:\n${blocks.join("\n")}` : "";
+      };
+
+      let supplementalContextCache = null;
+      const loadSupplementalContext = async () => {
+        if (supplementalContextCache !== null) {
+          return supplementalContextCache;
+        }
+
+        // Optional embedded override (kept out of the visible UI).
+        const embedded = document.getElementById("hsst-supplemental-context");
+        if (embedded?.textContent?.trim()) {
+          supplementalContextCache = embedded.textContent.trim();
+          return supplementalContextCache;
+        }
+
+        // Optional sidecar file (served by Flask at /AI-Fit-Site/ai_context.md).
+        try {
+          const url = new URL("ai_context.md", window.location.href);
+          const response = await fetch(url.toString(), { cache: "no-cache" });
+          if (response.ok) {
+            const text = (await response.text()).trim();
+            supplementalContextCache = text;
+            return supplementalContextCache;
+          }
+        } catch (error) {
+          console.warn("Supplemental context unavailable", error);
+        }
+
+        supplementalContextCache = "";
+        return supplementalContextCache;
+      };
+
+      let towerBaseUrl = "";
+      let towerBasePromise = null;
+
+      const loadTowerConfig = async () => {
+        if (towerBaseUrl) {
+          return towerBaseUrl;
+        }
+
+        if (!towerBasePromise) {
+          towerBasePromise = (async () => {
+            const configUrl = new URL("tower.config.json", window.location.href);
+            const response = await fetch(configUrl.toString(), { cache: "no-cache" });
+            if (!response.ok) {
+              throw new Error("Failed to load tower.config.json");
+            }
+            const json = await response.json();
+            const base = String(json?.towerBaseUrl || "").trim();
+            if (!base) {
+              throw new Error("tower.config.json is missing towerBaseUrl");
+            }
+            towerBaseUrl = base.replace(/\/+$/, "");
+            return towerBaseUrl;
+          })();
+        }
+
+        return towerBasePromise;
+      };
+
+      const getTowerEndpoint = (path) => {
+        if (!towerBaseUrl) {
+          throw new Error("Tower base URL is not configured");
+        }
+        const cleanPath = String(path || "").trim();
+        if (!cleanPath) return towerBaseUrl;
+        return `${towerBaseUrl}${cleanPath.startsWith("/") ? cleanPath : `/${cleanPath}`}`;
+      };
+
+      const getTowerAskEndpoint = () => getTowerEndpoint("/tower/ask-ai");
+      const getTowerContactEndpoint = () => getTowerEndpoint("/tower/contact");
 
       const escapeHtml = (text) => {
         return String(text ?? "")
@@ -1137,7 +1675,7 @@
           .replace(/'/g, "&#39;");
       };
 
-      const renderInlineMarkdown = (text) => {
+      const renderInlineMarkdownCore = (text) => {
         let s = escapeHtml(text);
         s = s.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noreferrer noopener">$1</a>');
         s = s.replace(/`([^`]+)`/g, "<code>$1</code>");
@@ -1148,21 +1686,74 @@
         return s;
       };
 
+      const renderInlineMarkdown = (text) => {
+        const raw = String(text ?? "");
+        let normalizedRaw = raw;
+        let wasFullLineBold = false;
+
+        const fullLineBold = normalizedRaw.match(/^\s*(\*\*|__)\s*([\s\S]*?)\s*\1\s*$/);
+        if (fullLineBold) {
+          wasFullLineBold = true;
+          normalizedRaw = fullLineBold[2];
+        }
+
+        const projectMatch = normalizedRaw.match(/^(?:\*\*|__)?(Project(?:\/Initiative)?)\s*(?:\*\*|__)?\s*:(?:\*\*|__)?\s*(.*)$/i);
+        if (projectMatch) {
+          const label = `${projectMatch[1]}:`;
+          const rest = String(projectMatch[2] ?? "").trim();
+          const restHtml = rest ? renderInlineMarkdownCore(rest) : "";
+          const finalRest = rest
+            ? wasFullLineBold
+              ? `<strong>${restHtml}</strong>`
+              : restHtml
+            : "";
+          return `<span class="project-tag">${escapeHtml(label)}</span>${finalRest ? ` ${finalRest}` : ""}`;
+        }
+
+        const html = renderInlineMarkdownCore(normalizedRaw);
+        return wasFullLineBold ? `<strong>${html}</strong>` : html;
+      };
+
       const renderMarkdown = (markdown) => {
         const lines = String(markdown ?? "").replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
         const out = [];
         let inCode = false;
         let codeLang = "";
         let codeLines = [];
-        let inUl = false;
-        let inOl = false;
+        let listType = null; // "ul" | "ol" | null
+        let listItem = null; // array of rendered lines for current <li>
         let para = [];
 
+        const nextNonEmptyLine = (startIndex) => {
+          for (let i = startIndex; i < lines.length; i++) {
+            const s = String(lines[i] ?? "").trim();
+            if (s) return String(lines[i] ?? "").trimEnd();
+          }
+          return null;
+        };
+
+        const flushListItem = () => {
+          if (!listItem || !listItem.length) {
+            listItem = null;
+            return;
+          }
+          out.push(`<li>${listItem.join("<br>")}</li>`);
+          listItem = null;
+        };
+
+        const ensureList = (type) => {
+          if (listType === type) return;
+          if (listType === "ul") out.push("</ul>");
+          if (listType === "ol") out.push("</ol>");
+          listType = type;
+          out.push(type === "ul" ? "<ul>" : "<ol>");
+        };
+
         const closeLists = () => {
-          if (inUl) out.push("</ul>");
-          if (inOl) out.push("</ol>");
-          inUl = false;
-          inOl = false;
+          flushListItem();
+          if (listType === "ul") out.push("</ul>");
+          if (listType === "ol") out.push("</ol>");
+          listType = null;
         };
 
         const flushPara = () => {
@@ -1182,7 +1773,8 @@
           codeLines = [];
         };
 
-        for (const line of lines) {
+        for (let index = 0; index < lines.length; index++) {
+          const line = lines[index];
           const trimmed = line.trimEnd();
 
           const fence = trimmed.match(/^```(\w+)?\s*$/);
@@ -1206,6 +1798,31 @@
 
           if (!trimmed.trim()) {
             flushPara();
+
+            if (listType && listItem) {
+              const next = nextNonEmptyLine(index + 1);
+              const nextIsUl = !!next && /^\s*[-*+]\s+/.test(next);
+              const nextIsOl = !!next && /^\s*\d+[.)]\s+/.test(next);
+              const nextIsHeading = !!next && /^(#{1,4})\s+/.test(next);
+
+              if (next && !nextIsHeading) {
+                if ((listType === "ul" && nextIsUl) || (listType === "ol" && nextIsOl)) {
+                  continue;
+                }
+
+                // Treat blank lines inside a list as part of the current item when
+                // the next content is a continuation (common in AI output).
+                if (!nextIsUl && !nextIsOl) {
+                  listItem.push("");
+                  continue;
+                }
+              }
+
+              if ((listType === "ul" && nextIsUl) || (listType === "ol" && nextIsOl)) {
+                continue;
+              }
+            }
+
             closeLists();
             continue;
           }
@@ -1222,30 +1839,31 @@
           const ul = trimmed.match(/^\s*[-*+]\s+(.*)$/);
           if (ul) {
             flushPara();
-            if (inOl) {
-              out.push("</ol>");
-              inOl = false;
+
+            // Common AI pattern: bullets under a numbered item without indentation.
+            // Keep the ordered list numbering by treating these as continuation lines.
+            if (listType === "ol" && listItem) {
+              listItem.push(`• ${renderInlineMarkdown(ul[1])}`);
+              continue;
             }
-            if (!inUl) {
-              out.push("<ul>");
-              inUl = true;
-            }
-            out.push(`<li>${renderInlineMarkdown(ul[1])}</li>`);
+
+            flushListItem();
+            ensureList("ul");
+            listItem = [renderInlineMarkdown(ul[1])];
             continue;
           }
 
-          const ol = trimmed.match(/^\s*\d+\.\s+(.*)$/);
+          const ol = trimmed.match(/^\s*\d+[.)]\s+(.*)$/);
           if (ol) {
             flushPara();
-            if (inUl) {
-              out.push("</ul>");
-              inUl = false;
-            }
-            if (!inOl) {
-              out.push("<ol>");
-              inOl = true;
-            }
-            out.push(`<li>${renderInlineMarkdown(ol[1])}</li>`);
+            flushListItem();
+            ensureList("ol");
+            listItem = [renderInlineMarkdown(ol[1])];
+            continue;
+          }
+
+          if (listType && listItem) {
+            listItem.push(renderInlineMarkdown(trimmed));
             continue;
           }
 
@@ -1259,15 +1877,21 @@
         return out.join("\n");
       };
 
-      const callTower = async ({ question, jobDescription }) => {
-        const response = await fetch(TOWER_ASK_ENDPOINT, {
+      const callTower = async ({ question, jobDescription, mode }) => {
+        await loadTowerConfig();
+        const askEndpoint = getTowerAskEndpoint();
+        const supplementalContext = await loadSupplementalContext();
+        const response = await fetch(askEndpoint, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
             question,
+            mode: mode ?? "summary",
             history: gatherHistory(),
+            skills: gatherSkills(),
+            supplementalContext,
             jobDescription: jobDescription ?? "",
           }),
         });
@@ -1279,8 +1903,6 @@
         return data.answer ?? "";
       };
 
-      const ABOUT_ME_GUARDRAILS = `If asked to infer or comment on age, race, gender, health, or other protected attributes,\nstate that the information is not present and cannot be inferred, then stop.\nDo not reframe unless explicitly asked.`;
-
       const askAboutMe = async () => {
         const question = personalQuestionEl?.value?.trim();
         if (!question || isSendingAboutMe) {
@@ -1288,20 +1910,23 @@
           return;
         }
 
+        const deepMode = document.getElementById("deepMode")?.checked;
+        const mode = deepMode ? "deep" : "summary";
+
         isSendingAboutMe = true;
         askAboutMeBtn && (askAboutMeBtn.disabled = true);
         personalResponseEl && (personalResponseEl.textContent = "Thinking...");
 
         try {
-          const wrappedQuestion = `${ABOUT_ME_GUARDRAILS}\n\nUser question:\n${question}`;
-          const answer = await callTower({ question: wrappedQuestion, jobDescription: "" });
+          const answer = await callTower({ question, jobDescription: "", mode });
           personalResponseEl &&
             (personalResponseEl.innerHTML = renderMarkdown(answer || "OpenAI answered without text."));
         } catch (error) {
           console.error(error);
+          const endpoint = getTowerAskEndpoint();
           personalResponseEl &&
             (personalResponseEl.textContent =
-              "We could not reach the AI. Check tower logs or environment settings.");
+              `AI request failed (${endpoint}): ${error?.message || "Unknown error"}`);
         } finally {
           isSendingAboutMe = false;
           askAboutMeBtn && (askAboutMeBtn.disabled = false);
@@ -1328,9 +1953,10 @@
             (fitResponseEl.innerHTML = renderMarkdown(answer || "OpenAI answered without text."));
         } catch (error) {
           console.error(error);
+          const endpoint = getTowerAskEndpoint();
           fitResponseEl &&
             (fitResponseEl.textContent =
-              "We could not reach the AI. Check tower logs or environment settings.");
+              `AI request failed (${endpoint}): ${error?.message || "Unknown error"}`);
         } finally {
           isSendingFit = false;
           evaluateJobBtn && (evaluateJobBtn.disabled = false);
@@ -1346,6 +1972,278 @@
       });
 
       evaluateJobBtn?.addEventListener("click", evaluateJobFit);
+
+      const setContactModalOpen = (open) => {
+        if (!contactModal) return;
+        contactModal.hidden = !open;
+        if (open) {
+          document.body.style.overflow = "hidden";
+          contactStatusEl && (contactStatusEl.textContent = "");
+          contactInfoEl?.focus();
+        } else {
+          document.body.style.overflow = "";
+          contactTimBtn?.focus?.();
+        }
+      };
+
+      contactTimBtn?.addEventListener("click", () => setContactModalOpen(true));
+
+      contactModal?.querySelectorAll?.("[data-contact-close]")?.forEach?.((el) => {
+        el.addEventListener("click", () => setContactModalOpen(false));
+      });
+
+      window.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && contactModal && !contactModal.hidden) {
+          event.preventDefault();
+          setContactModalOpen(false);
+        }
+      });
+
+      let isSendingContact = false;
+      contactForm?.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (isSendingContact) return;
+
+        const contactInfo = contactInfoEl?.value?.trim() || "";
+        const website = contactWebsiteEl?.value?.trim() || "";
+        const name = contactNameEl?.value?.trim() || "";
+        const message = contactMessageEl?.value?.trim() || "";
+
+        if (!contactInfo) {
+          contactStatusEl && (contactStatusEl.textContent = "Please add a way to contact you.");
+          contactInfoEl?.focus();
+          return;
+        }
+
+        isSendingContact = true;
+        contactSendBtn && (contactSendBtn.disabled = true);
+        contactStatusEl && (contactStatusEl.textContent = "Sending...");
+
+        let endpoint = "";
+        try {
+          await loadTowerConfig();
+          endpoint = getTowerContactEndpoint();
+          const response = await fetch(endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              website,
+              name,
+              contact: contactInfo,
+              message,
+              pageUrl: window.location.href,
+            }),
+          });
+
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            throw new Error(data?.error ?? `Server error (${response.status})`);
+          }
+
+          contactStatusEl && (contactStatusEl.textContent = "Sent. Thanks — Tim will get back to you.");
+          contactForm?.reset?.();
+          setTimeout(() => setContactModalOpen(false), 900);
+        } catch (error) {
+          console.error(error);
+          contactStatusEl &&
+            (contactStatusEl.textContent = `Send failed (${endpoint || "tower contact"}): ${error?.message || "Unknown error"}`);
+        } finally {
+          isSendingContact = false;
+          contactSendBtn && (contactSendBtn.disabled = false);
+        }
+      });
+
+      const exploreRoot = document.getElementById("exploreTim");
+      const deepModeEl = document.getElementById("deepMode");
+      const askAiCard = document.getElementById("askAiAboutMeCard");
+      const askAiToggle = askAiCard?.querySelector?.(".ai-prompt-toggle");
+
+      if (deepModeEl) {
+        deepModeEl.checked = false;
+      }
+
+      const ensureAskAiExpanded = () => {
+        if (!askAiCard) return;
+        if (!askAiCard.classList.contains("collapsed")) return;
+        askAiCard.classList.remove("collapsed");
+        askAiToggle?.setAttribute?.("aria-expanded", "true");
+      };
+
+      let lastExploreSelection = null;
+      let lastExploreAppliedPrompt = null;
+
+      const buildAutoSummaryPrompt = (label) => {
+        const clean = String(label || "").trim();
+        return `Answer in ONE sentence. Paint the big picture. ${clean}`.trim();
+      };
+
+      const buildAutoDeepPrompt = (label) => {
+        const clean = String(label || "").trim();
+        return (
+          `${clean}\n\n` +
+          "Go deeper than a summary:\n" +
+          "- Explain the issue/problem and why it mattered.\n" +
+          "- Call out constraints and tradeoffs.\n" +
+          "- Describe what Tim changed (steps/decisions).\n" +
+          "- Include tools/tech/process details.\n" +
+          "- Include outcomes/metrics when available.\n" +
+          "- Do not invent details; if missing, say unknown and ask 1-2 clarifying questions.\n"
+        ).trim();
+      };
+
+      const setPersonalQuestion = (text, { focus = true } = {}) => {
+        if (!personalQuestionEl) return;
+        ensureAskAiExpanded();
+        personalQuestionEl.value = text;
+        if (focus) personalQuestionEl.focus();
+      };
+
+      const runPrompt = (text, forceDeep = false) => {
+        if (!personalQuestionEl) return;
+        setPersonalQuestion(text, { focus: true });
+        lastExploreAppliedPrompt = text;
+
+        if (forceDeep && deepModeEl) {
+          deepModeEl.checked = true;
+        }
+      };
+
+      deepModeEl?.addEventListener?.("change", () => {
+        if (!deepModeEl || !personalQuestionEl || !lastExploreSelection) return;
+        if (lastExploreSelection.forceDeep) {
+          deepModeEl.checked = true;
+          return;
+        }
+
+        if ((personalQuestionEl.value || "") !== (lastExploreAppliedPrompt || "")) {
+          return;
+        }
+
+        const nextText = deepModeEl.checked
+          ? lastExploreSelection.deepPrompt
+          : lastExploreSelection.summaryPrompt;
+
+        if (!nextText) return;
+        setPersonalQuestion(nextText, { focus: false });
+        lastExploreAppliedPrompt = nextText;
+      });
+
+      if (exploreRoot) {
+        const categoryButtons = Array.from(exploreRoot.querySelectorAll(".explore-category"));
+        const panels = Array.from(exploreRoot.querySelectorAll(".explore-panel"));
+
+        const setActiveCategory = (category) => {
+          categoryButtons.forEach((button) => {
+            const isActive = button.dataset.category === category;
+            button.classList.toggle("active", isActive);
+            button.setAttribute("aria-expanded", isActive ? "true" : "false");
+          });
+
+          panels.forEach((panel) => {
+            const isActive = panel.dataset.category === category;
+            panel.hidden = !isActive;
+          });
+        };
+
+        categoryButtons.forEach((button) => {
+          button.addEventListener("click", () => {
+            const category = button.dataset.category;
+            const isAlreadyActive = button.classList.contains("active");
+            setActiveCategory(isAlreadyActive ? null : category);
+          });
+        });
+
+        exploreRoot.addEventListener("click", (event) => {
+          const promptButton = event.target.closest(".explore-prompt");
+          if (!promptButton) return;
+
+          const panel = promptButton.closest(".explore-panel");
+          const forceDeep = (panel?.dataset.forceDeep || "").toLowerCase() === "true";
+
+          // Default to summary mode unless the panel forces deep.
+          if (deepModeEl) deepModeEl.checked = forceDeep ? true : false;
+
+          const basePrompt = (
+            promptButton.dataset.prompt ||
+            promptButton.dataset.promptDeep ||
+            promptButton.dataset.promptSummary ||
+            promptButton.textContent ||
+            ""
+          ).trim();
+
+          let summaryPrompt = (
+            promptButton.dataset.promptSummary ||
+            buildAutoSummaryPrompt(basePrompt)
+          ).trim();
+
+          let deepPrompt = (
+            promptButton.dataset.promptDeep ||
+            buildAutoDeepPrompt(basePrompt)
+          ).trim();
+
+          const projectsMode = String(promptButton.dataset.projectsMode || "").trim().toLowerCase();
+          if (projectsMode === "group-by-company") {
+            summaryPrompt = [
+              "In ONE sentence, paint the big picture of Tim's major projects and the impact they had.",
+              "",
+              "Then list projects grouped by company.",
+              "",
+              "Return Markdown with this exact structure:",
+              "One-sentence summary (no bullets)",
+              "## Projects By Company",
+              "### <Company>",
+              "- Project: **<Project>** — <1 line on what it was + impact>",
+              "",
+              "Rules:",
+              "- Don't invent projects.",
+              "- Include all distinct projects you can find in the work history and supplemental context, even if they are not labeled \"Project:\".",
+              "- When a \"### Project:\" header exists, use that exact project name; otherwise create a short, specific project name and keep it under the correct company.",
+              "- If a project is only supported by supplemental context, tag it (candidate-provided).",
+            ].join("\n");
+
+            deepPrompt = [
+              "Group Tim's projects by company and include ALL projects you can find under each company (do not omit any).",
+              "",
+              "Return Markdown with this exact structure:",
+              "## Projects By Company",
+              "### <Company>",
+              "- Project: **<Project name>** — <1 line on what it was + impact> (Evidence: work history / candidate-provided / self-rated)",
+              "  - Issue/problem + why it mattered",
+              "  - Constraints",
+              "  - Root cause (or say unknown)",
+              "  - What Tim changed / how he fixed it",
+              "  - Tools/implementation details",
+              "  - Impact/results (metrics if available)",
+              "",
+              "Rules:",
+              "- Don't invent details.",
+              "- Use exact project names from supplemental context (\"### Project:\") when available; otherwise create a short, specific project name from the described work.",
+              "- Provide the deep-dive bullets for every project you list; do not skip projects when adding the details.",
+              "- If specifics are missing, say unknown and ask 1-2 clarifying questions at the end.",
+            ].join("\n");
+          }
+
+          lastExploreSelection = {
+            forceDeep,
+            basePrompt,
+            summaryPrompt,
+            deepPrompt,
+          };
+
+          const wantsDeep = forceDeep || !!deepModeEl?.checked;
+
+          let text = "";
+          if (wantsDeep) {
+            text = deepPrompt;
+          } else {
+            text = summaryPrompt;
+          }
+
+          if (!text) return;
+
+          runPrompt(text, forceDeep);
+        });
+      }
     });
   </script>
 </body>
