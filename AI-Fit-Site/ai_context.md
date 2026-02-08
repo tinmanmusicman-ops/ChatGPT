@@ -234,13 +234,13 @@ Process was implemented informally based on operational need and team capability
 Needed the ability to record, produce, and work on music from anywhere within my condo without being tied to a fixed studio location. Existing setup required working from a dedicated music room, which limited flexibility, workflow continuity, and spontaneous creative work.
 
 **What I did:**  
-Designed and assembled a fully portable music production setup that allowed recording, composition, sound design, and editing from any location within the living space. Standardized cabling, device placement, and signal routing so the system could be quickly deployed and packed away without disrupting workflow. Ensured all core tools remained synchronized and accessible regardless of physical location.
+Configured a centralized desktop-based studio environment connected to network-attached storage and a high-speed internal router to enable fast access to all music projects, plugins, and resources across the local network. Standardized project storage and plugin paths so sessions could be opened from any location within the condo via Wi‑Fi. Implemented a laptop-based control setup with audio streaming from the primary studio over the internal network, allowing remote operation of the studio and real-time monitoring from any room. This enabled full access to projects, mixing, and production workflows anywhere in the residence without needing to physically remain in the studio space.
 
 **Tools/Systems:**  
-Portable keyboard/controller setup, laptop-based DAW environment, audio interface, compact monitoring/headphone system, MIDI controllers, and modular cabling for rapid setup and teardown.
+remote desktop using VNC and the Reason plugin that streamed audio from the stuido to me laptop
 
 **Result:**  
-Enabled full music production capability without reliance on a fixed studio, improving creative flexibility and allowing consistent workflow across multiple living-space environments.
+Enabled full music production capability without reliance on a fixed studio, improving creative flexibility and allowing consistent workflow across multiple living-space environments all done wirelessly.
 
 **Evidence/Artifacts:**  
 Operational portable production rig used for ongoing composition, recording, and sound development within multiple locations of the residence.
