@@ -86,6 +86,8 @@ __pycache__/
 !ai-bots/Eat/app/src/main/res/layout/activity_company_analysis.xml
 !ai-bots/Eat/app/src/main/res/layout/activity_main.xml
 
+!tower.config.json
+
 # Common IDE/build outputs that should stay local
 **/bin/
 **/obj/
@@ -99,6 +101,8 @@ __pycache__/
 **/.gradle/
 **/build/
 **/local.properties
+
+/_out/
 
 # SARes packaging artifacts
 /ai-bots/SARes/dist/
