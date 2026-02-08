@@ -8,6 +8,79 @@ public static class HelpManual
     public sealed record Section(string Title, IReadOnlyList<string> Tags, string BodyMarkdown);
 
     private static readonly Regex TagsLineRegex = new(@"^\[tags:\s*(.*?)\]\s*$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+    private static readonly Regex TokenRegex = new(@"[a-z0-9][a-z0-9'-]+", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+    public static string NormalizeToken(string token)
+    {
+        if (string.IsNullOrWhiteSpace(token))
+            return "";
+
+        var lower = token.ToLowerInvariant();
+        var sb = new StringBuilder(lower.Length);
+        foreach (var ch in lower)
+        {
+            if (char.IsLetterOrDigit(ch))
+                sb.Append(ch);
+        }
+
+        var t = sb.ToString();
+        if (t.Length == 0)
+            return "";
+
+        if (t.Length > 3 && t.EndsWith("ies", StringComparison.Ordinal))
+            t = t[..^3] + "y";
+        else if (t.Length > 3 && t.EndsWith("es", StringComparison.Ordinal))
+            t = t[..^2];
+        else if (t.Length > 3 && t.EndsWith("s", StringComparison.Ordinal) && !t.EndsWith("ss", StringComparison.Ordinal))
+            t = t[..^1];
+
+        if (t.Length > 4 && t.EndsWith("ied", StringComparison.Ordinal))
+            t = t[..^3] + "y";
+        else if (t.Length > 3 && t.EndsWith("ed", StringComparison.Ordinal))
+            t = t[..^2];
+
+        if (t.Length > 5 && t.EndsWith("ing", StringComparison.Ordinal))
+            t = t[..^3];
+
+        if (t.EndsWith("at", StringComparison.Ordinal) || t.EndsWith("bl", StringComparison.Ordinal) || t.EndsWith("iz", StringComparison.Ordinal))
+            t += "e";
+        else if (EndsWithDoubleConsonant(t) && !EndsWithOneOf(t, "l", "s", "z"))
+            t = t[..^1];
+
+        if (t.Length > 3 && t.EndsWith("e", StringComparison.Ordinal))
+            t = t[..^1];
+
+        return t;
+
+        static bool EndsWithOneOf(string s, params string[] suffixes)
+        {
+            foreach (var suffix in suffixes)
+            {
+                if (s.EndsWith(suffix, StringComparison.Ordinal))
+                    return true;
+            }
+            return false;
+        }
+
+        static bool EndsWithDoubleConsonant(string s)
+        {
+            if (s.Length < 2)
+                return false;
+            var a = s[^1];
+            var b = s[^2];
+            if (a != b)
+                return false;
+            return IsConsonant(a);
+        }
+
+        static bool IsConsonant(char c)
+        {
+            c = char.ToLowerInvariant(c);
+            if (c is 'a' or 'e' or 'i' or 'o' or 'u')
+                return false;
+            return char.IsLetter(c);
+        }
+    }
 
     public static IReadOnlyList<Section> ParseSections(string manualMarkdown)
     {
@@ -57,7 +130,7 @@ public static class HelpManual
             {
                 var payload = match.Groups[1].Value.Trim();
                 foreach (var tag in payload.Split(',').Select(t => t.Trim()).Where(t => t.Length > 0))
-                    currentTags.Add(tag.ToLowerInvariant());
+                    currentTags.Add(NormalizeToken(tag));
             }
 
             currentBodyLines.Add(line);
@@ -72,7 +145,7 @@ public static class HelpManual
         if (sections is null || sections.Count == 0)
             return null;
 
-        var rawWords = NormalizeQueryWords(question);
+        var rawWords = TokenizeHelpQuery(question);
         if (rawWords.Count == 0)
             return null;
 
@@ -81,9 +154,9 @@ public static class HelpManual
         {
             foreach (var t in s.Tags ?? Array.Empty<string>())
             {
-                var tag = (t ?? "").Trim();
+                var tag = NormalizeToken(t ?? "");
                 if (tag.Length > 0)
-                    vocab.Add(tag.ToLowerInvariant());
+                    vocab.Add(tag);
             }
         }
 
@@ -101,7 +174,7 @@ public static class HelpManual
 
         var matches = sections.Where(s =>
         {
-            var tags = new HashSet<string>((s.Tags ?? Array.Empty<string>()).Select(t => (t ?? "").Trim().ToLowerInvariant()).Where(t => t.Length > 0));
+            var tags = new HashSet<string>((s.Tags ?? Array.Empty<string>()).Select(t => NormalizeToken(t ?? "")).Where(t => t.Length > 0));
             if (tags.Count == 0)
                 return false;
             return keywords.All(tags.Contains);
@@ -129,43 +202,18 @@ public static class HelpManual
         return sb.ToString().TrimEnd();
     }
 
-    private static List<string> NormalizeQueryWords(string question)
+    private static List<string> TokenizeHelpQuery(string question)
     {
-        var normalized = (question ?? "")
-            .ToLowerInvariant()
-            .Replace("\r\n", " ")
-            .Replace("\r", " ")
-            .Replace("\n", " ");
-
-        var words = new List<string>();
-        var current = new StringBuilder();
-        foreach (var ch in normalized)
+        var text = (question ?? "").ToLowerInvariant();
+        var matches = TokenRegex.Matches(text);
+        var tokens = new List<string>(matches.Count);
+        foreach (Match match in matches)
         {
-            if (char.IsLetterOrDigit(ch) || ch is '\'' or '-')
-            {
-                current.Append(ch);
-            }
-            else
-            {
-                FlushWord();
-            }
+            var token = NormalizeToken(match.Value);
+            if (token.Length > 0)
+                tokens.Add(token);
         }
-        FlushWord();
-
-        void FlushWord()
-        {
-            if (current.Length == 0)
-                return;
-            var w = current.ToString().Trim();
-            current.Clear();
-            if (w.Length == 0)
-                return;
-            if (w.Length > 3 && w.EndsWith("s", StringComparison.Ordinal))
-                w = w[..^1];
-            words.Add(w);
-        }
-
-        return words;
+        return tokens;
     }
 
     private static string CorrectToVocab(string word, IReadOnlyList<string> vocab)
@@ -222,4 +270,3 @@ public static class HelpManual
         return dist[rows - 1, cols - 1];
     }
 }
-

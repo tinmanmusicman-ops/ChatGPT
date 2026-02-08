@@ -6,6 +6,7 @@ using Microsoft.Web.WebView2.Wpf;
 using SARes.engine;
 using SARes.ui;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace SARes.ui;
 
@@ -31,7 +32,7 @@ public partial class ImportPdfWindow : Window
         };
         ReorderSectionsButton.Click += (_, _) => ReorderSections();
         SaveButton.Click += (_, _) => SaveTemplate();
-        CloseButton.Click += (_, _) => Close();
+        CloseButton.Click += CloseWindow_Click;
 
         Loaded += async (_, _) =>
         {
@@ -598,4 +599,50 @@ public partial class ImportPdfWindow : Window
         {
         }
     }
+
+    private void TitleBar_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
+    {
+        var screenPoint = PointToScreen(e.GetPosition(this));
+        SystemCommands.ShowSystemMenu(this, screenPoint);
+    }
+
+    private void MinimizeTitleButton_Click(object sender, RoutedEventArgs e)
+        => SystemCommands.MinimizeWindow(this);
+
+    private void MaximizeTitleButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (WindowState == WindowState.Maximized)
+        {
+            SystemCommands.RestoreWindow(this);
+            return;
+        }
+
+        SystemCommands.MaximizeWindow(this);
+    }
+
+    private void CloseWindow_Click(object sender, RoutedEventArgs e)
+    {
+        AppLog.Info("Import PDF window close button invoked.");
+        Close();
+        AppLog.Info("Import PDF window close requested.");
+    }
+
+    private void TitleCloseButton_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        AppLog.Info("Import PDF window close button preview mouse down.");
+    }
+
+    private static bool IsClickHandledByChildControl(DependencyObject? source)
+    {
+        while (source is not null)
+        {
+            if (source is System.Windows.Controls.Primitives.ButtonBase)
+                return true;
+
+            source = VisualTreeHelper.GetParent(source);
+        }
+
+        return false;
+    }
+
 }

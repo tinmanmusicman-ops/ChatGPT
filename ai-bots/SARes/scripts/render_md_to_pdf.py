@@ -40,23 +40,24 @@ def _find_wkhtmltopdf_executable() -> Path | None:
     return None
 
 
-_BLOCK_START = re.compile(r"^(#{1,6}\s+\S|-\s+\S)")
+_BLOCK_START = re.compile(r"^#{1,6}\s+\S")
 
 
 def _normalize_markdown_for_pandoc(md_text: str) -> str:
     """
     Pandoc's markdown reader treats many block elements as requiring a blank line
-    boundary. The resumes we generate are intentionally compact (no blank lines),
-    which can cause headings/lists to be interpreted as plain text.
+    boundary. When a heading lacks a separating blank line we insert one while
+    keeping the rest of the text untouched.
     """
-    lines = md_text.replace("\r\n", "\n").replace("\r", "\n").split("\n")
+    normalized = md_text.replace("\r\n", "\n").replace("\r", "\n")
+    lines = normalized.split("\n")
     out: list[str] = []
     for line in lines:
         stripped = line.rstrip()
         is_hr = stripped.strip() == "---"
-        is_block_start = bool(_BLOCK_START.match(stripped)) or is_hr
+        is_heading = bool(_BLOCK_START.match(stripped))
 
-        if is_block_start and out and out[-1].strip():
+        if is_heading and out and out[-1].strip():
             out.append("")
         out.append(stripped)
         if is_hr:

@@ -5,7 +5,7 @@
         xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         xmlns:system="clr-namespace:System.Windows;assembly=PresentationFramework"
         Title="Import Base Resume (PDF)"
-        Width="1780" Height="980"
+        Width="980" Height="980"
         WindowStartupLocation="CenterOwner"
         WindowStyle="None"
         AllowsTransparency="True"
@@ -36,7 +36,7 @@
     </Window.Resources>
 
     <WindowChrome.WindowChrome>
-        <shell:WindowChrome CaptionHeight="44" CornerRadius="16" GlassFrameThickness="0" ResizeBorderThickness="6" UseAeroCaptionButtons="False"/>
+        <shell:WindowChrome CaptionHeight="0" CornerRadius="16" GlassFrameThickness="0" ResizeBorderThickness="6" UseAeroCaptionButtons="False"/>
     </WindowChrome.WindowChrome>
     <Border Background="#0B111A" BorderBrush="#324A19" BorderThickness="1" CornerRadius="16" SnapsToDevicePixels="True">
         <Grid>
@@ -45,7 +45,7 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <Border Background="#194217" Grid.Row="0" CornerRadius="16,16,0,0" MouseDown="TitleBar_MouseDown">
+            <Border Background="#3d421b" Grid.Row="0" CornerRadius="16,16,0,0" MouseDown="TitleBar_MouseDown" MouseRightButtonUp="TitleBar_MouseRightButtonUp">
                 <DockPanel Margin="16,0">
                     <TextBlock Text="Import Base Resume (PDF)"
                                Foreground="#F7F7F7"
@@ -54,24 +54,28 @@
                                VerticalAlignment="Center"
                                DockPanel.Dock="Left"/>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" DockPanel.Dock="Right">
-                        <Button Width="40" Height="28" Margin="0,6,6,6"
-                                Command="{x:Static system:SystemCommands.MinimizeWindowCommand}"
-                                CommandTarget="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
+                        <Button x:Name="MinimizeTitleButton"
+                                Width="40" Height="28"
+                                Margin="0,6,6,6"
+                                Click="MinimizeTitleButton_Click"
                                 Background="Transparent"
                                 BorderBrush="Transparent">
                             <Path Data="M0,0 L10,0" Stroke="#F7F7F7" StrokeThickness="2"/>
                         </Button>
-                        <Button Width="40" Height="28" Margin="0,6,6,6"
-                                Command="{x:Static system:SystemCommands.MaximizeWindowCommand}"
-                                CommandTarget="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
+                        <Button x:Name="MaximizeTitleButton"
+                                Width="40" Height="28"
+                                Margin="0,6,6,6"
+                                Click="MaximizeTitleButton_Click"
                                 Background="Transparent"
                                 BorderBrush="Transparent">
                             <Rectangle Stroke="#F7F7F7" StrokeThickness="2" Width="12" Height="12"/>
                         </Button>
-                        <Button Width="40" Height="28" Margin="0,6,0,6"
-                                Command="{x:Static system:SystemCommands.CloseWindowCommand}"
-                                CommandTarget="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
-                                Background="Transparent"
+                        <Button x:Name="TitleCloseButton"
+                                Width="40" Height="28"
+                                Margin="0,6,0,6"
+                                Click="CloseWindow_Click"
+                                PreviewMouseLeftButtonDown="TitleCloseButton_PreviewMouseLeftButtonDown"
+                                Background="#000000"
                                 BorderBrush="Transparent">
                             <Path Data="M0,0 L10,10 M0,10 L10,0" Stroke="#F7F7F7" StrokeThickness="2"/>
                         </Button>
@@ -88,20 +92,20 @@
 
         <Grid Grid.Row="0" Margin="0,0,0,10">
             <DockPanel LastChildFill="True">
-                <Button x:Name="SelectPdfButton"
-                        DockPanel.Dock="Left"
-                        Content="Select PDF..."
-                        Width="160"
-                        Margin="0,0,12,0"/>
-                <Button x:Name="AddSelectionButton"
-                        DockPanel.Dock="Left"
-                        Content="Add selection to header map"
-                        Width="280"
-                        Margin="0,0,12,0"
-                        IsEnabled="False"
-                        Focusable="False"
-                        IsTabStop="False"
-                        ToolTip="Highlight a header line in the PDF, then click to copy it into the header map."/>
+                        <Button x:Name="SelectPdfButton"
+                                DockPanel.Dock="Left"
+                                Content="Select PDF..."
+                                Width="160"
+                                Margin="0,0,12,0"/>
+                        <Button x:Name="AddSelectionButton"
+                                DockPanel.Dock="Left"
+                                Content="Add selection to header map"
+                                Width="280"
+                                Margin="0,0,12,0"
+                                IsEnabled="False"
+                                Focusable="False"
+                                IsTabStop="False"
+                                ToolTip="Highlight a header line in the PDF, then click to copy it into the header map."/>
                 <TextBlock Text="Import a PDF, review extracted text, then Save as the base resume template used by all outputs."
                            Foreground="{StaticResource MutedText}"
                            VerticalAlignment="Center"

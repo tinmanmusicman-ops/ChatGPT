@@ -412,4 +412,36 @@ public partial class PdfHeaderMappingWindow : Window
         {
         }
     }
+
+    private void TitleBar_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
+    {
+        var screenPoint = PointToScreen(e.GetPosition(this));
+        SystemCommands.ShowSystemMenu(this, screenPoint);
+    }
+
+    private void MinimizeTitleButton_Click(object sender, RoutedEventArgs e)
+        => SystemCommands.MinimizeWindow(this);
+
+    private void MaximizeTitleButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (WindowState == WindowState.Maximized)
+        {
+            SystemCommands.RestoreWindow(this);
+            return;
+        }
+
+        SystemCommands.MaximizeWindow(this);
+    }
+
+    private void CloseWindow_Click(object sender, RoutedEventArgs e)
+    {
+        AppLog.Info("PDF header mapping close button invoked.");
+        Close();
+        AppLog.Info("PDF header mapping close requested.");
+    }
+
+    private void TitleCloseButton_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        AppLog.Info("PDF header mapping close button preview mouse down.");
+    }
 }

@@ -36,7 +36,7 @@ public partial class TemplatesAndSummariesWindow : Window
         LoadFromMainButton.Click += (_, _) => SummaryPresetTextBox.Text = (_getCurrentMainSummary() ?? "").Trim();
 
         SaveButton.Click += (_, _) => SaveAndKeepOpen();
-        CloseButton.Click += (_, _) => Close();
+        CloseButton.Click += CloseWindow_Click;
 
         ReloadBaseTemplatesUi();
         ReloadPresetsUi(selectName: _settings.SelectedPresetName);
@@ -74,17 +74,17 @@ public partial class TemplatesAndSummariesWindow : Window
 
     private void ImportMarkdown()
     {
-        var dlg = new Microsoft.Win32.OpenFileDialog
-        {
-            Title = "Select resume Markdown (.md) to store as a base template",
-            Filter = "Markdown (*.md)|*.md|All files (*.*)|*.*"
-        };
-        if (dlg.ShowDialog() != true)
+        var selectWin = new SelectResumeMarkdownWindow { Owner = this };
+        if (selectWin.ShowDialog() != true)
+            return;
+
+        var selectedPath = selectWin.SelectedFilePath;
+        if (string.IsNullOrWhiteSpace(selectedPath) || !File.Exists(selectedPath))
             return;
 
         try
         {
-            var content = MarkdownResumeImporter.ImportMarkdownToTemplate(dlg.FileName);
+            var content = MarkdownResumeImporter.ImportMarkdownToTemplate(selectedPath);
 
             var defaultName = _settings.GetSelectedBaseTemplateNameOrDefault();
             if (string.IsNullOrWhiteSpace(defaultName))
@@ -418,5 +418,37 @@ public partial class TemplatesAndSummariesWindow : Window
         catch
         {
         }
+    }
+
+    private void TitleBar_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
+    {
+        var screenPoint = PointToScreen(e.GetPosition(this));
+        SystemCommands.ShowSystemMenu(this, screenPoint);
+    }
+
+    private void MinimizeTitleButton_Click(object sender, RoutedEventArgs e)
+        => SystemCommands.MinimizeWindow(this);
+
+    private void MaximizeTitleButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (WindowState == WindowState.Maximized)
+        {
+            SystemCommands.RestoreWindow(this);
+            return;
+        }
+
+        SystemCommands.MaximizeWindow(this);
+    }
+
+    private void CloseWindow_Click(object sender, RoutedEventArgs e)
+    {
+        AppLog.Info("Templates window close button invoked.");
+        Close();
+        AppLog.Info("Templates window close requested.");
+    }
+
+    private void TitleCloseButton_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        AppLog.Info("Templates window close button preview mouse down.");
     }
 }

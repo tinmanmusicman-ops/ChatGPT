@@ -73,7 +73,7 @@ public partial class StartHereFloatingWindow : Window
 
     private static string BuildHtml(string markdown, string css)
     {
-            var body = Markdown.ToHtml(markdown ?? string.Empty);
+            var body = Markdig.Markdown.ToHtml(markdown ?? string.Empty);
         return $"""
             <!doctype html>
             <html lang="en">

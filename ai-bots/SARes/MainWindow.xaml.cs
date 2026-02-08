@@ -882,7 +882,7 @@ public partial class MainWindow : Window
         try
         {
             var assets = new AssetLocator(AppContext.BaseDirectory);
-            var win = new HelpChatWindow(assets.HelpManualPath)
+            var win = new HelpChatWindow(assets.HelpManualPath, assets.HelpCssPath)
             {
                 Owner = this
             };

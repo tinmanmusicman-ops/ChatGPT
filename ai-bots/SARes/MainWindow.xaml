@@ -22,9 +22,9 @@
                             UseAeroCaptionButtons="False"/>
     </WindowChrome.WindowChrome>
 
-    <Border Background="#0B111A"
+    <Border Background="#3d421b"
             BorderBrush="#324A19"
-            BorderThickness="1"
+            BorderThickness="6"
             CornerRadius="16"
             SnapsToDevicePixels="True">
         <Grid>
@@ -33,7 +33,7 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-                <Border Background="#194217"
+                <Border Background="#3d421b"
                         Grid.Row="0"
                         CornerRadius="16,16,0,0"
                         MouseDown="TitleBar_MouseDown"

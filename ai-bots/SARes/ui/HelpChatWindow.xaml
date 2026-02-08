@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         xmlns:system="clr-namespace:System.Windows;assembly=PresentationFramework"
+        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
         Title="Help Chat"
         Width="920" Height="620"
         WindowStartupLocation="CenterOwner"
@@ -55,7 +56,7 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <Border Background="#194217"
+            <Border Background="#3d421b"
                     Grid.Row="0"
                     CornerRadius="16,16,0,0"
                     MouseDown="TitleBar_MouseDown">
@@ -117,9 +118,7 @@
                 </DockPanel>
 
                 <Border Grid.Row="1" Background="{StaticResource PanelBg}" BorderBrush="{StaticResource Border}" BorderThickness="1" CornerRadius="10" Padding="10">
-                    <ScrollViewer x:Name="MessagesScroll" VerticalScrollBarVisibility="Auto">
-                        <StackPanel x:Name="MessagesPanel"/>
-                    </ScrollViewer>
+                    <wv2:WebView2 x:Name="ChatWeb"/>
                 </Border>
 
                 <Grid Grid.Row="2" Margin="0,10,0,0">

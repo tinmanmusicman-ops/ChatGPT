@@ -34,7 +34,7 @@ public partial class EditBaseTemplateWindow : Window
         _internalTemplatePath = Path.Combine(templatesDir, $"resume_{fileSegment}.md");
 
         SaveButton.Click += (_, _) => Save();
-        CloseButton.Click += (_, _) => Close();
+        CloseButton.Click += CloseWindow_Click;
 
         LoadIntoInternalAndOpen();
     }
@@ -109,5 +109,37 @@ public partial class EditBaseTemplateWindow : Window
         catch
         {
         }
+    }
+
+    private void TitleBar_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
+    {
+        var screenPoint = PointToScreen(e.GetPosition(this));
+        SystemCommands.ShowSystemMenu(this, screenPoint);
+    }
+
+    private void MinimizeTitleButton_Click(object sender, RoutedEventArgs e)
+        => SystemCommands.MinimizeWindow(this);
+
+    private void MaximizeTitleButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (WindowState == WindowState.Maximized)
+        {
+            SystemCommands.RestoreWindow(this);
+            return;
+        }
+
+        SystemCommands.MaximizeWindow(this);
+    }
+
+    private void CloseWindow_Click(object sender, RoutedEventArgs e)
+    {
+        AppLog.Info("Edit template window close button invoked.");
+        Close();
+        AppLog.Info("Edit template window close requested.");
+    }
+
+    private void TitleCloseButton_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        AppLog.Info("Edit template window close button preview mouse down.");
     }
 }
