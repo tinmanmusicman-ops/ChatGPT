@@ -74,9 +74,9 @@
 
   <div class="link-box">
     <!-- Link kept prominent for quick access to the live dashboard -->
-    <a href="https://genre-angle-participate-independent.trycloudflare.com/ai-bots/Thermostats/Web/dashboard_public.html">Thermostat Dashboard</a><br>
+    <a href="ai-bots/Thermostats/Web/dashboard_public.html">Thermostat Dashboard</a><br>
     <br><a href="AI-Fit-Site/Job.html">Job Fit</a><br>
-    <br><a href="https://genre-angle-participate-independent.trycloudflare.com/tower">HSST Control Tower</a>
+    <br><a id="towerLink" href="">HSST Control Tower</a>
 
 
   </div>
@@ -85,6 +85,58 @@
     Quiet progress • Purposeful design • Built to grow
   </footer>
 </div>
+
+<script>
+  (function () {
+    const attempts = [
+      "/tower.config.json",
+      new URL("tower.config.json", window.location.href).toString(),
+    ];
+
+    const loadConfig = async () => {
+      for (const url of attempts) {
+        try {
+          const response = await fetch(url, { cache: "no-cache" });
+          if (!response.ok) continue;
+          const json = await response.json();
+          const base = String(json?.towerBaseUrl || "").trim();
+          if (!base) continue;
+          window.towerBaseUrl = base.replace(/\/+$/, "");
+          return window.towerBaseUrl;
+        } catch (error) {
+          // Try the next source.
+        }
+      }
+      throw new Error("Unable to load tower.config.json");
+    };
+
+    window.loadTowerConfig = () => {
+      if (window.towerBaseUrlPromise) {
+        return window.towerBaseUrlPromise;
+      }
+      window.towerBaseUrlPromise = loadConfig();
+      return window.towerBaseUrlPromise;
+    };
+  })();
+</script>
+
+<script>
+  (async () => {
+    const link = document.getElementById("towerLink");
+    if (!link) return;
+    try {
+      await window.loadTowerConfig();
+      if (window.towerBaseUrl) {
+        link.href = window.towerBaseUrl;
+        link.target = "_blank";
+      }
+    } catch (error) {
+      console.warn("Tower link unavailable:", error);
+      link.removeAttribute("href");
+      link.classList.add("disabled");
+    }
+  })();
+</script>
 
 </body>
 </html>
