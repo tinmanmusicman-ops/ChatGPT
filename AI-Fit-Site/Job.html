@@ -1636,18 +1636,30 @@
 
         if (!towerBasePromise) {
           towerBasePromise = (async () => {
-            const configUrl = new URL("tower.config.json", window.location.href);
-            const response = await fetch(configUrl.toString(), { cache: "no-cache" });
-            if (!response.ok) {
-              throw new Error("Failed to load tower.config.json");
+            const candidates = [
+              new URL("/tower.config.json", window.location.origin).toString(),
+              new URL("tower.config.json", window.location.href).toString(),
+            ];
+
+            for (const configUrl of candidates) {
+              try {
+                const response = await fetch(configUrl, { cache: "no-cache" });
+                if (!response.ok) {
+                  continue;
+                }
+                const json = await response.json();
+                const base = String(json?.towerBaseUrl || "").trim();
+                if (!base) {
+                  continue;
+                }
+                towerBaseUrl = base.replace(/\/+$/, "");
+                return towerBaseUrl;
+              } catch (error) {
+                // Try the next candidate.
+              }
             }
-            const json = await response.json();
-            const base = String(json?.towerBaseUrl || "").trim();
-            if (!base) {
-              throw new Error("tower.config.json is missing towerBaseUrl");
-            }
-            towerBaseUrl = base.replace(/\/+$/, "");
-            return towerBaseUrl;
+
+            throw new Error("Failed to load tower.config.json from any known location");
           })();
         }
 
@@ -1676,7 +1688,19 @@
       };
 
       const renderInlineMarkdownCore = (text) => {
-        let s = escapeHtml(text);
+        const raw = String(text ?? "");
+        const detailMatch = raw.match(
+          /^(Issue\/problem \+ why it mattered|Constraints|Root cause(?: \(or say unknown\))?|What Tim changed \/ how he fixed it|Tools\/implementation details|Impact\/results|Evidence tag)([:\-\s]+)(.*)$/i
+        );
+        if (detailMatch) {
+          const label = detailMatch[1];
+          const sep = detailMatch[2] || "";
+          const rest = detailMatch[3] || "";
+          const restHtml = rest ? renderInlineMarkdownCore(rest) : "";
+          return `<strong>${escapeHtml(label)}</strong>${escapeHtml(sep)}${restHtml}`;
+        }
+
+        let s = escapeHtml(raw);
         s = s.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noreferrer noopener">$1</a>');
         s = s.replace(/`([^`]+)`/g, "<code>$1</code>");
         s = s.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
