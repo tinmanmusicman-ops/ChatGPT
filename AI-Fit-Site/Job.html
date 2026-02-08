@@ -1690,7 +1690,7 @@
       const renderInlineMarkdownCore = (text) => {
         const raw = String(text ?? "");
         const detailMatch = raw.match(
-          /^(Issue\s*\/\s*problem \+ why it mattered|Constraints|Root cause(?: \(or say unknown\))?|What Tim changed \/ how he fixed it|Tools\/implementation details|Impact\/results|Evidence tag)([:\-\s]+)(.*)$/i
+          /^(Issue\/problem:|Constraints:|Root cause:|What Tim changed \/ how he fixed it:|Tools\/implementation details:|Impact\/results:|Evidence tag)([:\-\s]+)(.*)$/i
         );
         if (detailMatch) {
           const label = detailMatch[1];
