@@ -24,36 +24,36 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 24px;
+      padding: 32px;
       flex-direction: column;
-      gap: 16px;
+      gap: 24px;
     }
 
     .controls {
-      width: min(520px, 100%);
+      width: min(620px, 100%);
       display: flex;
       justify-content: center;
     }
 
     .control-input {
       flex: 1;
-      padding: 12px 16px;
-      border-radius: 24px 0 0 24px;
+      padding: 14px 18px;
+      border-radius: 28px 0 0 28px;
       border: 1px solid rgba(143, 255, 214, 0.6);
-      background: rgba(15, 27, 22, 0.9);
+      background: rgba(15, 27, 22, 0.95);
       color: #f4fff8;
-      font-size: 1rem;
+      font-size: 1.15rem;
       outline: none;
     }
 
     .control-button {
-      padding: 12px 18px;
-      border-radius: 0 24px 24px 0;
+      padding: 14px 22px;
+      border-radius: 0 28px 28px 0;
       border: 1px solid rgba(143, 255, 214, 0.6);
       border-left: none;
       background: rgba(143, 255, 214, 0.1);
       color: #9fffdc;
-      font-size: 1rem;
+      font-size: 1.15rem;
       cursor: pointer;
       transition: background 0.2s ease;
     }
@@ -70,10 +70,10 @@
     }
 
     .crt-shell {
-      width: min(920px, 90vw);
-      height: min(620px, 75vh);
+      width: min(1160px, 95vw);
+      height: min(860px, 90vh);
       border-radius: 36px;
-      border: 6px solid rgba(141, 255, 248, 0.7);
+      border: 6px solid rgba(240, 217, 171, 0.7);
       background: linear-gradient(180deg, rgba(8, 32, 24, 0.9), rgba(1, 10, 8, 0.9));
       box-shadow:
         0 30px 60px rgba(0, 0, 0, 0.6),
@@ -96,8 +96,9 @@
     }
 
     .crt-screen {
-      width: calc(100% - 80px);
-      height: calc(100% - 60px);
+      margin-top: 150px;
+      width: calc(100% - 120px);
+      height: calc(100% - 90px);
       position: relative;
       background: linear-gradient(180deg, #030a04 0%, #050100 50%, #010400 100%);
       border-radius: 24px;
@@ -105,7 +106,7 @@
       display: flex;
       flex-direction: column;
       align-items: flex-start;
-      justify-content: center;
+      justify-content: flex-start;
       text-align: left;
       padding: 24px;
       box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.8);
@@ -130,20 +131,20 @@
 
     .crt-glow {
       position: absolute;
-      inset: 10%;
-      background: radial-gradient(circle, rgba(143, 255, 214, 0.5), transparent 60%);
-      filter: blur(20px);
+      inset: 6%;
+      background: radial-gradient(circle, rgba(56, 113, 92, 0.5), transparent 60%);
+      filter: blur(100px);
     }
 
     .crt-text {
       position: relative;
       z-index: 1;
-      font-size: 1rem;
-      letter-spacing: 0.25em;
+      font-size: 1.35rem;
+      letter-spacing: 0.35em;
       text-transform: uppercase;
-      color: #bdfdb8;
+      color: #a5dca1;
       text-shadow:
-        0 0 18px rgba(189, 253, 184, 0.9),
+        0 0 18px rgba(182, 213, 180, 0.9),
         0 0 32px rgba(78, 255, 130, 0.45);
       text-align: left;
       transition: color 0.35s ease, text-shadow 0.35s ease;
@@ -151,27 +152,32 @@
 
     .crt-line {
       display: flex;
-      gap: 0.4rem;
+      gap: 0.65rem;
       align-items: baseline;
     }
 
+    .crt-line:first-of-type {
+      margin-top: 44px;
+    }
+
     .crt-label {
-      color: #65f08f;
-      letter-spacing: 0.3em;
+      color: #54af6f;
+      letter-spacing: 0.45em;
     }
 
     .crt-value {
-      color: #adff37;
+      color: #83e243;
       letter-spacing: 0.35em;
     }
     .crt-version {
       position: absolute;
-      top: 14px;
+      margin-top: 10px;
+      top: 1px;
       left: 50%;
       transform: translateX(-50%);
       z-index: 2;
-      font-size: 1.1rem;
-      letter-spacing: 0.45rem;
+      font-size: 1.3rem;
+      letter-spacing: 0.55rem;
       text-transform: uppercase;
       color: rgba(122, 246, 208, 0.9);
     }
@@ -206,19 +212,79 @@
       transition: color 0.35s ease;
     }
 
+    .crt-input-prompt {
+      position: relative;
+      width: 100%;
+      margin-top: 8px;
+      font-size: 0.8rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: rgba(113, 252, 226, 0.85);
+      opacity: 0;
+      height: 20px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: opacity 0.3s ease;
+    }
+
+    .crt-input-prompt.visible {
+      opacity: 1;
+    }
+
+    .crt-input-prompt span {
+      display: inline-block;
+      width: 10px;
+      height: 16px;
+      animation: cursor-blink 1s steps(1) infinite;
+    }
+
+    @keyframes cursor-blink {
+      0%,
+      50% {
+        opacity: 1;
+      }
+      51%,
+      100% {
+        opacity: 0;
+      }
+    }
+
+    .crt-placeholder {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      font-size: 0.95rem;
+      letter-spacing: 0.45em;
+      text-transform: uppercase;
+      color: rgba(189, 253, 184, 0.92);
+      z-index: 1;
+      line-height: 1.2;
+    }
+
+    .crt-placeholder.hidden {
+      display: none;
+    }
+
+    .crt-placeholder-line {
+      color: #65f08f;
+    }
+
     .speed-selector {
       position: absolute;
-      top: 12px;
-      left: 12px;
+      top: 1px;
+      left: 650px;
       display: flex;
-      gap: 6px;
+      gap: 3px;
       z-index: 3;
     }
 
     .speed-selector label {
       display: block;
-      width: 80px;
-      height: 32px;
+      width: 110px;
+      height: 42px;
       position: relative;
       overflow: hidden;
       border-radius: 8px;
@@ -237,12 +303,12 @@
       height: 100%;
       align-items: center;
       justify-content: center;
-      border-radius: 8px;
+      border-radius: 10px;
       border: 1px solid rgba(122, 246, 208, 0.35);
-      background: rgba(2, 6, 3, 0.9);
+      background: rgba(2, 6, 3, 0.95);
       color: #7af6d0;
-      letter-spacing: 0.25em;
-      font-size: 0.6rem;
+      letter-spacing: 0.3em;
+      font-size: 0.7rem;
       text-transform: uppercase;
       transition: background 0.2s ease, color 0.2s ease;
       position: relative;
@@ -269,6 +335,181 @@
       opacity: 1;
     }
 
+    .crt-options {
+      position: absolute;
+      bottom: 30px;
+      left: 32px;
+      right: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      align-items: flex-start;
+      z-index: 4;
+      pointer-events: none;
+    }
+
+    .cores-prompt {
+      font-size: 0.85rem;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: #6effc7;
+      margin: 0;
+      pointer-events: none;
+    }
+
+    .cores-option-buttons {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      pointer-events: auto;
+    }
+
+    .cores-option-button {
+      flex: 1;
+      min-width: 180px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(122, 246, 208, 0.5);
+      background: rgba(2, 6, 3, 0.9);
+      color: #7af6d0;
+      font-size: 0.75rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s ease, border 0.2s ease;
+    }
+
+    .cores-option-button:hover {
+      background: rgba(122, 246, 208, 0.1);
+      border-color: rgba(122, 246, 208, 0.85);
+    }
+
+    .cores-popup-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      padding: 24px;
+    }
+
+    .cores-popup-overlay.visible {
+      display: flex;
+    }
+
+    .cores-popup {
+      width: min(1080px, 90vw);
+      max-height: 82vh;
+      background: rgba(4, 10, 5, 0.95);
+      border-radius: 20px;
+      border: 1px solid rgba(173, 255, 55, 0.6);
+      box-shadow:
+        0 0 60px rgba(10, 255, 154, 0.2),
+        0 0 8px rgba(0, 0, 0, 0.9);
+      padding: 24px;
+      overflow-y: auto;
+      position: relative;
+    }
+
+    .cores-popup h2 {
+      margin: 0 0 14px;
+      color: #47be3a;
+      font-size: 1.6rem;
+      letter-spacing: 0.4em;
+    }
+
+    .cores-popup-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(173, 255, 55, 0.5);
+      color: #adff37;
+      width: 32px;
+      height: 32px;
+      line-height: 32px;
+      border-radius: 50%;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .cores-popup-close:hover {
+      transform: scale(1.08);
+    }
+
+    .cores-popup-content {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .cores-popup-section h3 {
+      margin: 0 0 4px;
+      font-size: 1.1rem;
+      letter-spacing: 0.25em;
+      color: #74ffb2;
+      text-transform: uppercase;
+    }
+
+    .cores-popup-section {
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(173, 255, 55, 0.2);
+    }
+
+    .cores-popup-signals strong {
+      font-size: 0.75rem;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: #7af6d0;
+    }
+
+    .cores-popup-signals ul {
+      padding-left: 18px;
+      margin: 8px 0 0;
+      list-style: disc;
+      color: #b9ffce;
+      font-size: 0.85rem;
+      line-height: 1.4;
+    }
+
+    .cores-popup-projects {
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .cores-popup-project h4 {
+      margin: 0 0 4px;
+      color: #65f08f;
+      letter-spacing: 0.3em;
+      font-size: 0.95rem;
+      text-transform: uppercase;
+    }
+
+    .cores-popup-project p {
+      margin: 0;
+      color: #9fffdc;
+      line-height: 1.5;
+      font-size: 0.85rem;
+    }
+
+    .cores-popup-project-summary {
+      font-style: italic;
+      opacity: 0.9;
+    }
+
+    .cores-popup-project ul {
+      margin: 6px 0;
+      padding-left: 20px;
+      color: #caffd9;
+      line-height: 1.5;
+      letter-spacing: 0.2em;
+    }
+
   </style>
 </head>
 <body>
@@ -280,11 +521,19 @@
     <small>Retro CORE Console</small>
   </div>
 
-  <div class="crt-shell">
-    <div class="crt-screen">
-      <div class="crt-glow"></div>
-      <div class="speed-selector" aria-label="Select transmission speed">
-        <label>
+      <div class="crt-shell">
+            <div class="crt-version">CORES-VERSION: 1.0</div>
+        <div class="crt-screen">
+
+          <div class="crt-glow"></div>
+          <div class="crt-placeholder" id="coresPlaceholder">
+            <div class="crt-placeholder-line">Loading CORE data?</div>
+            <div class="crt-placeholder-line">Location: unknown</div>
+            <div class="crt-placeholder-line">Email: unknown</div>
+            <div class="crt-placeholder-line">Phone: unknown</div>
+          </div>
+          <div class="speed-selector" aria-label="Select transmission speed">
+            <label>
           <input type="radio" name="speed" value="rs232" checked />
           <span>RS-232</span>
         </label>
@@ -297,7 +546,6 @@
           <span>USB 2</span>
         </label>
       </div>
-      <div class="crt-version">CORES-VERSION: 1.0</div>
       <div class="crt-line field-hidden" id="coresNameLine">
         <span class="crt-label">Name:</span>
         <span class="crt-value" id="coresName"></span>
@@ -323,6 +571,22 @@
         <span class="crt-value" id="coresLu"></span>
       </div>
       <div class="crt-status" id="coresStatus">ID: waiting</div>
+      <div class="crt-input-prompt" id="coresInputPrompt">
+        <span>█</span>Ready. Press 1 (summary), 2 (deep), or 3 (skills)
+      </div>
+      <div class="crt-options" role="group" aria-label="CORE review prompt">
+        <p class="cores-prompt"> </p>
+        <div class="cores-option-buttons">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cores-popup-overlay" id="coresPopupOverlay" aria-hidden="true">
+    <div class="cores-popup" role="dialog" aria-modal="true" aria-labelledby="coresPopupTitle">
+      <button type="button" class="cores-popup-close" aria-label="Close review window">×</button>
+      <h2 id="coresPopupTitle">Work History Review</h2>
+      <div class="cores-popup-content" id="coresPopupContent"></div>
     </div>
   </div>
 
@@ -355,6 +619,16 @@
         usb2: 0,
       };
       let currentSpeedDelay = SPEED_CONFIG.rs232;
+      const popupOverlayEl = document.getElementById("coresPopupOverlay");
+      const popupContentEl = document.getElementById("coresPopupContent");
+      const popupTitleEl = document.getElementById("coresPopupTitle");
+      const popupCloseButton = document.querySelector(".cores-popup-close");
+      const optionButtons = document.querySelectorAll(".cores-option-button");
+      const coresPlaceholderEl = document.getElementById("coresPlaceholder");
+      const coresInputPromptEl = document.getElementById("coresInputPrompt");
+      let experienceData = [];
+      let skillList = [];
+      let promptActive = false;
 
       const setStatus = (text, isError = false) => {
         if (!coresStatusEl) return;
@@ -400,7 +674,213 @@
         return markdown;
       };
 
+      const parseExperiences = (markdown) => {
+        const companyRegex = /## COMPANY:\s*([^\n]+)\n([\s\S]*?)(?=(?:## COMPANY:)|$)/g;
+        const experiences = [];
+        let companyMatch;
+        while ((companyMatch = companyRegex.exec(markdown)) !== null) {
+          const company = companyMatch[1].trim();
+          const body = companyMatch[2];
+          const signalsMatch = body.match(/### SIGNALS:\s*([\s\S]*?)(?=(?:###|##|$))/);
+          const signals = (signalsMatch?.[1] || "")
+            .split(/\r?\n/)
+            .map((line) => line.replace(/^[\-\*]\s*/, "").trim())
+            .filter(Boolean);
+          const projects = [];
+          const projectRegex = /### PROJECT:\s*([^\n]+)\n([\s\S]*?)(?=### PROJECT:|## COMPANY:|$)/g;
+          let projectMatch;
+          while ((projectMatch = projectRegex.exec(body)) !== null) {
+            projects.push({
+              title: projectMatch[1].trim(),
+              body: projectMatch[2].trim(),
+            });
+          }
+          experiences.push({ company, signals, projects });
+        }
+        return experiences;
+      };
+
+      const parseSkills = (markdown) => {
+        const skillsMatch = markdown.match(/# SKILLS\s*([\s\S]*?)(?=(?:\n# |\n## |$))/);
+        if (!skillsMatch) {
+          return [];
+        }
+        return skillsMatch[1]
+          .split(/\r?\n/)
+          .map((line) => line.replace(/^[\-\*\•]\s*/, "").trim())
+          .filter(Boolean);
+      };
+
+      const summarizeProjectBody = (body) => {
+        if (!body) return "";
+        const lines = body
+          .split(/\r?\n/)
+          .map((line) => line.trim())
+          .filter(Boolean);
+        return lines.slice(0, 2).join(" ");
+      };
+
+      const renderExperiencePopup = (mode) => {
+        if (!popupOverlayEl || !popupContentEl) return;
+        popupContentEl.innerHTML = "";
+        if (mode === "skills") {
+          if (popupTitleEl) {
+            popupTitleEl.textContent = "Skills Deep Search";
+          }
+          const section = document.createElement("section");
+          section.className = "cores-popup-section";
+          const heading = document.createElement("h3");
+          heading.textContent = "Skills";
+          section.appendChild(heading);
+          if (!skillList.length) {
+            const emptyEl = document.createElement("p");
+            emptyEl.textContent = "No skills listed in this CORE.";
+            section.appendChild(emptyEl);
+          } else {
+            const skillsList = document.createElement("ul");
+            skillsList.style.listStyleType = "disc";
+            skillsList.style.paddingLeft = "18px";
+            skillList.forEach((skill) => {
+              const li = document.createElement("li");
+              li.textContent = skill;
+              skillsList.appendChild(li);
+            });
+            section.appendChild(skillsList);
+          }
+          popupContentEl.appendChild(section);
+          popupOverlayEl.classList.add("visible");
+          popupOverlayEl.setAttribute("aria-hidden", "false");
+          return;
+        }
+        const label = mode === "deep" ? "Deep" : "Summary";
+        if (popupTitleEl) {
+          popupTitleEl.textContent = `Work History Review (${label})`;
+        }
+        if (!experienceData.length) {
+          popupContentEl.innerHTML = `<p>No experience data available.</p>`;
+        }
+        experienceData.forEach((entry) => {
+          const section = document.createElement("section");
+          section.className = "cores-popup-section";
+          const heading = document.createElement("h3");
+          heading.textContent = entry.company;
+          section.appendChild(heading);
+          if (entry.signals.length) {
+            const signalsWrapper = document.createElement("div");
+            signalsWrapper.className = "cores-popup-signals";
+            const signalsHeader = document.createElement("strong");
+            signalsHeader.textContent = "Signals";
+            const signalsList = document.createElement("ul");
+            entry.signals.forEach((signal) => {
+              const li = document.createElement("li");
+              li.textContent = signal;
+              signalsList.appendChild(li);
+            });
+            signalsWrapper.appendChild(signalsHeader);
+            signalsWrapper.appendChild(signalsList);
+            section.appendChild(signalsWrapper);
+          }
+          if (entry.projects.length) {
+            const projectContainer = document.createElement("div");
+            projectContainer.className = "cores-popup-projects";
+            entry.projects.forEach((project) => {
+              const projectEl = document.createElement("article");
+              projectEl.className = "cores-popup-project";
+              const projectTitle = document.createElement("h4");
+              projectTitle.textContent = project.title;
+              projectEl.appendChild(projectTitle);
+              if (mode === "summary") {
+                const summaryText = summarizeProjectBody(project.body);
+                const summaryEl = document.createElement("p");
+                summaryEl.className = "cores-popup-project-summary";
+                summaryEl.textContent = summaryText || "(No summary available)";
+                projectEl.appendChild(summaryEl);
+              } else {
+                const paragraphs = project.body
+                  .split(/\n{2,}/)
+                  .map((chunk) => chunk.trim())
+                  .filter(Boolean);
+                paragraphs.forEach((chunk) => {
+                  const lines = chunk
+                    .split(/\r?\n/)
+                    .map((line) => line.trim())
+                    .filter(Boolean);
+                  let listEl = null;
+                  const flushList = () => {
+                    if (listEl) {
+                      projectEl.appendChild(listEl);
+                      listEl = null;
+                    }
+                  };
+                  lines.forEach((line) => {
+                    const bulletMatch = line.match(/^-+\s*(.+)$/);
+                    if (bulletMatch) {
+                      if (!listEl) {
+                        listEl = document.createElement("ul");
+                      }
+                      const li = document.createElement("li");
+                      li.textContent = bulletMatch[1];
+                      listEl.appendChild(li);
+                      return;
+                    }
+                    flushList();
+                    const paragraphEl = document.createElement("p");
+                    paragraphEl.textContent = line;
+                    projectEl.appendChild(paragraphEl);
+                  });
+                  flushList();
+                });
+              }
+              projectContainer.appendChild(projectEl);
+            });
+            section.appendChild(projectContainer);
+          }
+          popupContentEl.appendChild(section);
+        });
+        popupOverlayEl.classList.add("visible");
+        popupOverlayEl.setAttribute("aria-hidden", "false");
+      };
+
+      const closePopup = () => {
+        if (!popupOverlayEl) return;
+        popupOverlayEl.classList.remove("visible");
+        popupOverlayEl.setAttribute("aria-hidden", "true");
+        if (popupContentEl) {
+          popupContentEl.innerHTML = "";
+        }
+      };
+
+      const showPlaceholder = () => {
+        if (coresPlaceholderEl) {
+          coresPlaceholderEl.classList.remove("hidden");
+        }
+      };
+
+      const hidePlaceholder = () => {
+        if (coresPlaceholderEl) {
+          coresPlaceholderEl.classList.add("hidden");
+        }
+      };
+
+      const showInputPrompt = () => {
+        if (coresInputPromptEl) {
+          coresInputPromptEl.classList.add("visible");
+        }
+        promptActive = true;
+      };
+
+      const hideInputPrompt = () => {
+        if (coresInputPromptEl) {
+          coresInputPromptEl.classList.remove("visible");
+        }
+        promptActive = false;
+      };
+
       const resetFields = () => {
+        hideInputPrompt();
+        showPlaceholder();
+        experienceData = [];
+        skillList = [];
         [
           coresNameLine,
           coresLocationLine,
@@ -455,6 +935,7 @@
         });
 
       const renderCoreFields = async (markdown) => {
+        hidePlaceholder();
         const queue = [
           { wrapper: coresNameLine, valueEl: coresNameEl, label: "Name" },
           { wrapper: coresLocationLine, valueEl: coresLocationEl, label: "Location" },
@@ -480,7 +961,58 @@
           }
           await typeWriter(field.wrapper, field.valueEl, match[1].trim());
         }
+        showInputPrompt();
       };
+
+      const speedInputs = document.querySelectorAll(".speed-selector input[name=\"speed\"]");
+      speedInputs.forEach((input) => {
+        input.addEventListener("change", () => {
+          if (input.checked) {
+            currentSpeedDelay = SPEED_CONFIG[input.value] ?? SPEED_CONFIG.rs232;
+          }
+        });
+      });
+
+      optionButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          const mode =
+            button.dataset.mode === "skills"
+              ? "skills"
+              : button.dataset.mode === "deep"
+              ? "deep"
+              : "summary";
+          if (mode !== "skills" && !experienceData.length) {
+            setStatus("Load a CORE before reviewing work history.", true);
+            return;
+          }
+          renderExperiencePopup(mode);
+        });
+      });
+
+      popupCloseButton?.addEventListener("click", closePopup);
+      popupOverlayEl?.addEventListener("click", (event) => {
+        if (event.target === popupOverlayEl) {
+          closePopup();
+        }
+      });
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          closePopup();
+          return;
+        }
+        if (!promptActive) {
+          return;
+        }
+        if (["1", "2", "3"].includes(event.key)) {
+          event.preventDefault();
+          const mode = event.key === "3" ? "skills" : event.key === "2" ? "deep" : "summary";
+          if (mode !== "skills" && !experienceData.length) {
+            setStatus("Load a CORE before reviewing work history.", true);
+            return;
+          }
+          renderExperiencePopup(mode);
+        }
+      });
 
       const handleLoad = async (event) => {
         event?.preventDefault();
@@ -489,6 +1021,8 @@
         resetFields();
         try {
           const markdown = await fetchCoreMarkdown(id);
+          skillList = parseSkills(markdown);
+          experienceData = parseExperiences(markdown);
           await renderCoreFields(markdown);
           setStatus(`Loaded ${id}`);
         } catch (error) {
