@@ -88,6 +88,9 @@ __pycache__/
 
 !tower.config.json
 
+# CORES runtime log
+CORES/cores.log
+
 # Common IDE/build outputs that should stay local
 **/bin/
 **/obj/

@@ -41,6 +41,51 @@ GLOBAL_CONFIG_PATH = Path(
     os.environ.get("HSST_GLOBAL_CONFIG", str(AI_BOTS_ROOT / "shared" / "Global.json"))
 )
 
+DEFAULT_CORS_ORIGINS = {
+    "http://localhost",
+    "http://127.0.0.1",
+    "http://localhost:80",
+    "http://127.0.0.1:80",
+}
+
+
+def _allowed_origins():
+    allowed = set(DEFAULT_CORS_ORIGINS)
+    extra = os.environ.get("HSST_TOWER_ALLOWED_ORIGINS", "")
+    for item in extra.split(","):
+        item = item.strip()
+        if item:
+            allowed.add(item)
+    return allowed
+
+
+def _with_cors(resp):
+    origin = request.headers.get("Origin", "").strip()
+    if not origin:
+        return resp
+
+    allowed = _allowed_origins()
+    if origin in allowed:
+        resp.headers["Access-Control-Allow-Origin"] = origin
+        resp.headers["Vary"] = "Origin"
+        resp.headers["Access-Control-Allow-Methods"] = "POST, OPTIONS"
+        resp.headers["Access-Control-Allow-Headers"] = "Content-Type"
+    return resp
+
+
+def _append_cores_log(message: str):
+    CORES_DIR.mkdir(parents=True, exist_ok=True)
+    timestamp = datetime.now().isoformat(timespec="seconds")
+    entry = f"{timestamp} {message}\n"
+    try:
+        with open(CORES_LOG_PATH, "a", encoding="utf-8") as fh:
+            fh.write(entry)
+    except Exception:
+        pass
+
+CORES_DIR = BASE_DIR.parent / "CORES"
+CORES_LOG_PATH = CORES_DIR / "cores.log"
+
 
 # -------------------------
 # Serve the Control Tower UI
@@ -594,34 +639,9 @@ def tower_contact():
 
 @app.route("/tower/ask-ai", methods=["OPTIONS", "POST"])
 def ask_ai():
-    def with_cors(resp):
-        origin = request.headers.get("Origin", "").strip()
-        if not origin:
-            return resp
-
-        allowed = {
-            "http://localhost",
-            "http://127.0.0.1",
-            "http://localhost:80",
-            "http://127.0.0.1:80",
-        }
-
-        extra = os.environ.get("HSST_TOWER_ALLOWED_ORIGINS", "")
-        for item in extra.split(","):
-            item = item.strip()
-            if item:
-                allowed.add(item)
-
-        if origin in allowed:
-            resp.headers["Access-Control-Allow-Origin"] = origin
-            resp.headers["Vary"] = "Origin"
-            resp.headers["Access-Control-Allow-Methods"] = "POST, OPTIONS"
-            resp.headers["Access-Control-Allow-Headers"] = "Content-Type"
-        return resp
-
     if request.method == "OPTIONS":
         resp = app.make_response(("", 204))
-        return with_cors(resp)
+        return _with_cors(resp)
 
     payload = request.get_json(force=True, silent=True) or {}
     question = (payload.get("question") or "").strip()
@@ -649,12 +669,12 @@ def ask_ai():
     )
     if not question:
         job_pipeline.append_log("=== Ask AI ERROR ===\nerror: missing question\n")
-        return with_cors(app.make_response((jsonify({"error": "Question is required"}), 400)))
+        return _with_cors(app.make_response((jsonify({"error": "Question is required"}), 400)))
 
     openai_key = os.environ.get("OPENAI_API_KEY")
     if not openai_key:
         job_pipeline.append_log("=== Ask AI ERROR ===\nerror: OPENAI_API_KEY missing\n")
-        return with_cors(
+        return _with_cors(
             app.make_response(
                 (
                     jsonify(
@@ -703,7 +723,7 @@ def ask_ai():
                 f"error: OpenAI request failed ({response.status_code})\n"
                 f"details_preview: {response.text[:600]!r}\n"
             )
-            return with_cors(
+            return _with_cors(
                 app.make_response(
                     (
                         jsonify(
@@ -723,17 +743,38 @@ def ask_ai():
             "=== Ask AI RESPONSE ===\n"
             f"answer_chars: {len(answer)}\n"
         )
-        return with_cors(app.make_response(jsonify({"answer": answer or "OpenAI returned an empty response."})))
+        return _with_cors(app.make_response(jsonify({"answer": answer or "OpenAI returned an empty response."})))
     except requests.RequestException as exc:
         job_pipeline.append_log(
             "=== Ask AI ERROR ===\n"
             f"error: Proxy request failed\n"
             f"details: {str(exc)!r}\n"
         )
-        return with_cors(
+        return _with_cors(
             app.make_response((jsonify({"error": "Proxy request failed", "details": str(exc)}), 503))
         )
 
+
+@app.route("/cores/log", methods=["OPTIONS", "POST"])
+def cores_log():
+    if request.method == "OPTIONS":
+        resp = app.make_response(("", 204))
+        return _with_cors(resp)
+
+    payload = request.get_json(force=True, silent=True) or {}
+    message = (payload.get("message") or "").strip()
+    if not message:
+        return _with_cors(
+            app.make_response(
+                (
+                    jsonify({"error": "Message is required"}),
+                    400,
+                )
+            )
+        )
+
+    _append_cores_log(message)
+    return _with_cors(jsonify({"status": "ok"}))
 
 # -------------------------
 # RUN SERVER
