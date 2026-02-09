@@ -6,13 +6,21 @@ import os
 import json
 import re
 import smtplib
+from html import escape
 from datetime import datetime, timedelta
-from flask import Flask, send_from_directory, jsonify, request, redirect
+from flask import Flask, send_from_directory, send_file, jsonify, request, redirect, abort
+from werkzeug.exceptions import HTTPException
 import requests
 from pathlib import Path
 from email.message import EmailMessage
 from email.utils import formatdate
 from typing import Optional
+from io import BytesIO
+from reportlab.lib.pagesizes import letter
+from reportlab.lib import colors
+from reportlab.lib.units import inch
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Preformatted, HRFlowable
 
 # Import stub modules
 from modules import (
@@ -85,6 +93,197 @@ def _append_cores_log(message: str):
 
 CORES_DIR = BASE_DIR.parent / "CORES"
 CORES_LOG_PATH = CORES_DIR / "cores.log"
+
+
+def _markdown_to_pdf_bytes(markdown: str) -> bytes:
+    def inline_markup(text: str) -> str:
+        safe = escape(text or "", quote=False)
+        safe = re.sub(
+            r"\[([^\]]+)\]\(([^)]+)\)",
+            r'<u><font color="#2f6fd6">\1</font></u> <font color="#666666">(\2)</font>',
+            safe,
+        )
+        safe = re.sub(r"`([^`]+)`", r'<font name="Courier">\1</font>', safe)
+        safe = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", safe)
+        safe = re.sub(r"__(.+?)__", r"<b>\1</b>", safe)
+        safe = re.sub(r"(?<!\*)\*(?!\s)(.+?)(?<!\s)\*(?!\*)", r"<i>\1</i>", safe)
+        safe = re.sub(r"(?<!_)_(?!\s)(.+?)(?<!\s)_(?!_)", r"<i>\1</i>", safe)
+        return safe
+
+    styles = getSampleStyleSheet()
+    body_style = ParagraphStyle(
+        "MD_Body",
+        parent=styles["BodyText"],
+        fontName="Helvetica",
+        fontSize=10,
+        leading=14,
+        spaceBefore=2,
+        spaceAfter=6,
+    )
+    heading_styles = {
+        1: ParagraphStyle("MD_H1", parent=styles["Heading1"], fontSize=18, leading=22, spaceBefore=10, spaceAfter=8),
+        2: ParagraphStyle("MD_H2", parent=styles["Heading2"], fontSize=16, leading=20, spaceBefore=9, spaceAfter=7),
+        3: ParagraphStyle("MD_H3", parent=styles["Heading3"], fontSize=14, leading=18, spaceBefore=8, spaceAfter=6),
+        4: ParagraphStyle("MD_H4", parent=styles["Heading4"], fontSize=12, leading=16, spaceBefore=7, spaceAfter=5),
+        5: ParagraphStyle("MD_H5", parent=styles["Heading5"], fontSize=11, leading=15, spaceBefore=6, spaceAfter=4),
+        6: ParagraphStyle("MD_H6", parent=styles["Heading6"], fontSize=10, leading=14, spaceBefore=5, spaceAfter=3),
+    }
+    quote_style = ParagraphStyle(
+        "MD_Quote",
+        parent=body_style,
+        leftIndent=18,
+        textColor=colors.HexColor("#444444"),
+        italic=True,
+    )
+    list_style = ParagraphStyle(
+        "MD_List",
+        parent=body_style,
+        leftIndent=18,
+        firstLineIndent=0,
+        spaceBefore=1,
+        spaceAfter=2,
+    )
+    code_style = ParagraphStyle(
+        "MD_Code",
+        parent=styles["Code"],
+        fontName="Courier",
+        fontSize=8.5,
+        leading=10.5,
+        leftIndent=8,
+        rightIndent=8,
+        backColor=colors.whitesmoke,
+        borderPadding=6,
+        spaceBefore=4,
+        spaceAfter=8,
+    )
+
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=letter,
+        leftMargin=0.75 * inch,
+        rightMargin=0.75 * inch,
+        topMargin=0.75 * inch,
+        bottomMargin=0.75 * inch,
+        title="CORE PDF",
+    )
+
+    story = []
+    paragraph_lines = []
+    list_items = []
+    in_code_block = False
+    code_lines = []
+
+    def flush_paragraph() -> None:
+        if not paragraph_lines:
+            return
+        text = " ".join(line.strip() for line in paragraph_lines).strip()
+        paragraph_lines.clear()
+        if text:
+            story.append(Paragraph(inline_markup(text), body_style))
+
+    def flush_list() -> None:
+        if not list_items:
+            return
+        ordered_counter = 0
+        for list_type, indent_level, list_text in list_items:
+            if list_type == "ol":
+                ordered_counter += 1
+                bullet = f"{ordered_counter}."
+            else:
+                bullet = "•"
+            level_indent = max(indent_level, 0) * 12
+            item_style = ParagraphStyle(
+                "MD_List_Item",
+                parent=list_style,
+                leftIndent=list_style.leftIndent + level_indent,
+            )
+            story.append(Paragraph(inline_markup(list_text), item_style, bulletText=bullet))
+        story.append(Spacer(1, 2))
+        list_items.clear()
+
+    def flush_code_block() -> None:
+        if not code_lines:
+            return
+        code_text = "\n".join(code_lines)
+        code_lines.clear()
+        story.append(Preformatted(code_text, code_style))
+
+    for raw_line in markdown.splitlines():
+        stripped = raw_line.strip()
+        fence_match = re.match(r"^```", stripped)
+        if fence_match:
+            if in_code_block:
+                flush_code_block()
+                in_code_block = False
+            else:
+                flush_paragraph()
+                flush_list()
+                in_code_block = True
+            continue
+
+        if in_code_block:
+            code_lines.append(raw_line.rstrip("\n"))
+            continue
+
+        if not stripped:
+            flush_paragraph()
+            flush_list()
+            continue
+
+        heading_match = re.match(r"^(#{1,6})\s+(.+)$", stripped)
+        if heading_match:
+            flush_paragraph()
+            flush_list()
+            level = min(len(heading_match.group(1)), 6)
+            heading_text = heading_match.group(2).strip()
+            story.append(Paragraph(inline_markup(heading_text), heading_styles[level]))
+            continue
+
+        if re.match(r"^([-*_])\1{2,}$", stripped):
+            flush_paragraph()
+            flush_list()
+            story.append(HRFlowable(width="100%", color=colors.HexColor("#888888"), thickness=0.6))
+            story.append(Spacer(1, 6))
+            continue
+
+        if stripped.startswith(">"):
+            flush_paragraph()
+            flush_list()
+            quote_text = stripped.lstrip(">").strip()
+            if quote_text:
+                story.append(Paragraph(inline_markup(quote_text), quote_style))
+            continue
+
+        unordered_match = re.match(r"^(\s*)[-+*]\s+(.+)$", raw_line)
+        ordered_match = re.match(r"^(\s*)\d+\.\s+(.+)$", raw_line)
+        if unordered_match or ordered_match:
+            flush_paragraph()
+            if unordered_match:
+                list_type = "ul"
+                leading_spaces, list_text = unordered_match.group(1), unordered_match.group(2)
+            else:
+                list_type = "ol"
+                leading_spaces, list_text = ordered_match.group(1), ordered_match.group(2)
+            indent_level = int(len(leading_spaces) / 2)
+            if list_items and list_items[-1][0] != list_type:
+                flush_list()
+            list_items.append((list_type, indent_level, list_text.strip()))
+            continue
+
+        flush_list()
+        paragraph_lines.append(stripped)
+
+    if in_code_block:
+        flush_code_block()
+    flush_paragraph()
+    flush_list()
+
+    if not story:
+        story.append(Paragraph("(empty document)", body_style))
+
+    doc.build(story)
+    return buffer.getvalue()
 
 
 # -------------------------
@@ -321,6 +520,42 @@ def view_file(filename):
 @app.route("/CORES", strict_slashes=False)
 def cores_index():
     return send_from_directory(CORES_DIR, "CORES.html")
+
+
+@app.route("/CORES/<core_id>.pdf")
+def cores_pdf(core_id):
+    md_filename = f"{core_id}.md"
+    try:
+        base = CORES_DIR.resolve()
+        requested_path = (base / md_filename).resolve()
+        if not str(requested_path).startswith(str(base)):
+            _append_cores_log(
+                f"[CORES] pdf path traversal blocked for {core_id} -> {requested_path}"
+            )
+            abort(403)
+        if not requested_path.exists():
+            alt_path = (base / f"{core_id}.MD").resolve()
+            if alt_path.exists() and str(alt_path).startswith(str(base)):
+                requested_path = alt_path
+            else:
+                _append_cores_log(f"[CORES] pdf missing {requested_path}")
+                abort(404)
+        _append_cores_log(f"[CORES] pdf generating {requested_path}")
+        markdown = requested_path.read_text(encoding="utf-8")
+        pdf_bytes = _markdown_to_pdf_bytes(markdown)
+        return send_file(
+            BytesIO(pdf_bytes),
+            mimetype="application/pdf",
+            download_name=f"{core_id}.pdf",
+        )
+    except HTTPException:
+        raise
+    except Exception as exc:
+        _append_cores_log(f"[CORES] pdf generation failed for {core_id}: {exc}")
+        return (
+            jsonify({"status": "error", "error": "PDF conversion failed"}),
+            500,
+        )
 
 
 @app.route("/CORES/<path:filename>")

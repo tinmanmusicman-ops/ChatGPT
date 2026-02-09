@@ -231,3 +231,29 @@ Fail-fast over fallback.
 
 If correctness cannot be guaranteed,
 execution must not proceed.
+
+## CRASH RECOVERY CONTEXT LOAD (MANDATORY)
+
+At session start, immediately after loading AGENTS.md:
+
+1. Load file: CrashRecovery.md  
+   (must exist in same directory as AGENTS.md)
+
+2. This file is CONTEXT ONLY.
+   It provides:
+   - last known state
+   - structural continuity
+   - recovery notes
+   - environment memory
+
+3. Do NOT summarize CrashRecovery.md.
+4. Do NOT modify CrashRecovery.md.
+5. Do NOT treat as executable instructions.
+6. Use only as passive reference context.
+
+If file is missing:
+→ Continue execution
+→ Do NOT create replacement
+→ Do NOT fabricate recovery data
+
+CrashRecovery.md exists solely to restore session continuity.

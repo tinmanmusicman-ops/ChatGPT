@@ -275,9 +275,11 @@
     .speed-selector {
       position: absolute;
       top: 1px;
-      left: 650px;
+      right: 24px;
       display: flex;
       gap: 3px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
       z-index: 3;
     }
 
@@ -510,6 +512,27 @@
       letter-spacing: 0.2em;
     }
 
+    @media (max-width: 900px) {
+      .speed-selector {
+        position: static;
+        width: 100%;
+        justify-content: flex-start;
+        margin-top: 6px;
+      }
+
+      .speed-selector label {
+        width: auto;
+        min-width: 94px;
+        height: 36px;
+      }
+
+      .speed-selector span {
+        font-size: 0.62rem;
+        letter-spacing: 0.2em;
+        padding: 0 8px;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -572,11 +595,15 @@
       </div>
       <div class="crt-status" id="coresStatus">ID: waiting</div>
       <div class="crt-input-prompt" id="coresInputPrompt">
-        <span>█</span>Ready. Press 1 (summary), 2 (deep), or 3 (skills)
+        <span>|</span>Ready. Press 1 (summary), 2 (deep), 3 (skills), or 4 (pdf)
       </div>
       <div class="crt-options" role="group" aria-label="CORE review prompt">
         <p class="cores-prompt"> </p>
         <div class="cores-option-buttons">
+          <button type="button" class="cores-option-button" data-mode="summary">Summary (1)</button>
+          <button type="button" class="cores-option-button" data-mode="deep">Deep (2)</button>
+          <button type="button" class="cores-option-button" data-mode="skills">Skills (3)</button>
+          <button type="button" class="cores-option-button" data-mode="pdf">PDF (4)</button>
         </div>
       </div>
     </div>
@@ -584,7 +611,7 @@
 
   <div class="cores-popup-overlay" id="coresPopupOverlay" aria-hidden="true">
     <div class="cores-popup" role="dialog" aria-modal="true" aria-labelledby="coresPopupTitle">
-      <button type="button" class="cores-popup-close" aria-label="Close review window">×</button>
+      <button type="button" class="cores-popup-close" aria-label="Close review window">&times;</button>
       <h2 id="coresPopupTitle">Work History Review</h2>
       <div class="cores-popup-content" id="coresPopupContent"></div>
     </div>
@@ -629,6 +656,7 @@
       let experienceData = [];
       let skillList = [];
       let promptActive = false;
+      let loadedCoreId = "";
 
       const setStatus = (text, isError = false) => {
         if (!coresStatusEl) return;
@@ -655,23 +683,82 @@
               // Try the next location.
             }
           }
-          throw new Error("Unable to resolve towerBaseUrl");
+          return null;
         })();
         return towerConfigPromise;
       };
 
-      const fetchCoreMarkdown = async (id) => {
+      const resolveCoreResourceUrls = async (id, extension) => {
+        const encodedId = encodeURIComponent(id);
         const base = await loadTowerBaseUrl();
-        const endpoint = `${base}/CORES/${encodeURIComponent(id)}.md`;
-        const response = await fetch(endpoint, { cache: "no-store" });
-        if (!response.ok) {
-          throw new Error(`Fetch failed (${response.status})`);
+        const endpoints = [];
+        if (base) {
+          endpoints.push(`${base}/CORES/${encodedId}.${extension}`);
         }
-        const markdown = await response.text();
-        if (!markdown.trim()) {
-          throw new Error("Document empty");
+        endpoints.push(`/CORES/${encodedId}.${extension}`);
+        endpoints.push(new URL(`${encodedId}.${extension}`, window.location.href).toString());
+        endpoints.push(new URL(`CORES/${encodedId}.${extension}`, window.location.origin).toString());
+        return [...new Set(endpoints)];
+      };
+
+      const fetchCoreMarkdown = async (id) => {
+        const attempts = await resolveCoreResourceUrls(id, "md");
+        let lastError = "";
+        for (const endpoint of attempts) {
+          try {
+            const response = await fetch(endpoint, { cache: "no-store" });
+            if (!response.ok) {
+              lastError = `Fetch failed (${response.status})`;
+              continue;
+            }
+            const markdown = await response.text();
+            if (!markdown.trim()) {
+              lastError = "Document empty";
+              continue;
+            }
+            return markdown;
+          } catch (error) {
+            lastError = error?.message || "Network error";
+          }
         }
-        return markdown;
+        throw new Error(lastError || "Unable to load CORE markdown");
+      };
+
+      const triggerBlobDownload = (blob, filename) => {
+        const objectUrl = URL.createObjectURL(blob);
+        const anchor = document.createElement("a");
+        anchor.href = objectUrl;
+        anchor.download = filename;
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+        setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+      };
+
+      const getActiveCoreId = () => loadedCoreId || (inputEl?.value || "").trim() || DEFAULT_CORE_ID;
+
+      const downloadCorePdf = async (id) => {
+        const attempts = await resolveCoreResourceUrls(id, "pdf");
+        let lastError = "";
+        for (const endpoint of attempts) {
+          try {
+            const response = await fetch(endpoint, { cache: "no-store" });
+            if (!response.ok) {
+              lastError = `PDF fetch failed (${response.status})`;
+              continue;
+            }
+            const pdfBlob = await response.blob();
+            if (!pdfBlob.size) {
+              lastError = "PDF empty";
+              continue;
+            }
+            triggerBlobDownload(pdfBlob, `${id}.pdf`);
+            return;
+          } catch (error) {
+            lastError = error?.message || "PDF network error";
+          }
+        }
+        throw new Error(lastError || "Unable to load CORE PDF");
       };
 
       const parseExperiences = (markdown) => {
@@ -687,7 +774,7 @@
             .map((line) => line.replace(/^[\-\*]\s*/, "").trim())
             .filter(Boolean);
           const projects = [];
-          const projectRegex = /### PROJECT:\s*([^\n]+)\n([\s\S]*?)(?=### PROJECT:|## COMPANY:|$)/g;
+          const projectRegex = /###\s*PROJECT:\s*([^\n]+)\n([\s\S]*?)(?=###\s*PROJECT:|## COMPANY:|$)/gi;
           let projectMatch;
           while ((projectMatch = projectRegex.exec(body)) !== null) {
             projects.push({
@@ -707,7 +794,7 @@
         }
         return skillsMatch[1]
           .split(/\r?\n/)
-          .map((line) => line.replace(/^[\-\*\•]\s*/, "").trim())
+          .map((line) => line.replace(/^[\-\*\u2022]\s*/, "").trim())
           .filter(Boolean);
       };
 
@@ -974,13 +1061,20 @@
       });
 
       optionButtons.forEach((button) => {
-        button.addEventListener("click", () => {
-          const mode =
-            button.dataset.mode === "skills"
-              ? "skills"
-              : button.dataset.mode === "deep"
-              ? "deep"
-              : "summary";
+        button.addEventListener("click", async () => {
+          const mode = String(button.dataset.mode || "summary").toLowerCase();
+          if (mode === "pdf") {
+            const id = getActiveCoreId();
+            setStatus(`Generating PDF ${id}...`);
+            try {
+              await downloadCorePdf(id);
+              setStatus(`Downloaded PDF ${id}`);
+            } catch (error) {
+              console.error("[CORES] pdf failed", error);
+              setStatus(error.message || "PDF conversion failed", true);
+            }
+            return;
+          }
           if (mode !== "skills" && !experienceData.length) {
             setStatus("Load a CORE before reviewing work history.", true);
             return;
@@ -995,7 +1089,7 @@
           closePopup();
         }
       });
-      document.addEventListener("keydown", (event) => {
+      document.addEventListener("keydown", async (event) => {
         if (event.key === "Escape") {
           closePopup();
           return;
@@ -1003,9 +1097,22 @@
         if (!promptActive) {
           return;
         }
-        if (["1", "2", "3"].includes(event.key)) {
+        if (["1", "2", "3", "4"].includes(event.key)) {
           event.preventDefault();
-          const mode = event.key === "3" ? "skills" : event.key === "2" ? "deep" : "summary";
+          const mode =
+            event.key === "4" ? "pdf" : event.key === "3" ? "skills" : event.key === "2" ? "deep" : "summary";
+          if (mode === "pdf") {
+            const id = getActiveCoreId();
+            setStatus(`Generating PDF ${id}...`);
+            try {
+              await downloadCorePdf(id);
+              setStatus(`Downloaded PDF ${id}`);
+            } catch (error) {
+              console.error("[CORES] pdf failed", error);
+              setStatus(error.message || "PDF conversion failed", true);
+            }
+            return;
+          }
           if (mode !== "skills" && !experienceData.length) {
             setStatus("Load a CORE before reviewing work history.", true);
             return;
@@ -1017,13 +1124,15 @@
       const handleLoad = async (event) => {
         event?.preventDefault();
         const id = (inputEl?.value || "").trim() || DEFAULT_CORE_ID;
-        setStatus(`Loading ${id}…`);
+        setStatus(`Loading ${id}...`);
+        loadedCoreId = "";
         resetFields();
         try {
           const markdown = await fetchCoreMarkdown(id);
           skillList = parseSkills(markdown);
           experienceData = parseExperiences(markdown);
           await renderCoreFields(markdown);
+          loadedCoreId = id;
           setStatus(`Loaded ${id}`);
         } catch (error) {
           console.error("[CORES] load failed", error);
@@ -1044,3 +1153,4 @@
   </script>
 </body>
 </html>
+
