@@ -318,6 +318,15 @@ def shared_image(filename):
 def view_file(filename):
     return send_from_directory(BASE_OUTPUT_DIR, filename, mimetype="application/pdf")
 
+@app.route("/CORES", strict_slashes=False)
+def cores_index():
+    return send_from_directory(CORES_DIR, "CORES.html")
+
+
+@app.route("/CORES/<path:filename>")
+def cores_static(filename):
+    return send_from_directory(CORES_DIR, filename)
+
 
 # -------------------------
 # BUTTON ENDPOINTS (STUB ONLY)
