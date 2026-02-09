@@ -147,6 +147,21 @@
       transition: color 0.35s ease, text-shadow 0.35s ease;
     }
 
+    .crt-location,
+    .crt-contact {
+      position: relative;
+      z-index: 1;
+      font-size: 1rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      text-shadow: 0 0 12px rgba(122, 246, 208, 0.7);
+      color: #7af6d0;
+    }
+
+    .crt-contact {
+      margin-top: 0.4rem;
+    }
+
     .crt-status {
       position: relative;
       z-index: 1;
@@ -171,6 +186,9 @@
     <div class="crt-screen">
       <div class="crt-glow"></div>
       <div class="crt-text" id="coresName">Loading CORE data?</div>
+      <div class="crt-location" id="coresLocation">Location: unknown</div>
+      <div class="crt-contact" id="coresEmail">Email: unknown</div>
+      <div class="crt-contact" id="coresPhone">Phone: unknown</div>
       <div class="crt-status" id="coresStatus">ID: waiting</div>
     </div>
   </div>
@@ -182,6 +200,9 @@
       const formEl = document.getElementById("coresForm");
       const inputEl = document.getElementById("coresIdInput");
       const coresNameEl = document.getElementById("coresName");
+      const coresLocationEl = document.getElementById("coresLocation");
+      const coresEmailEl = document.getElementById("coresEmail");
+      const coresPhoneEl = document.getElementById("coresPhone");
       const coresStatusEl = document.getElementById("coresStatus");
       const DEFAULT_CORE_ID = "CORE-US-2026-000001";
       let towerConfigPromise = null;
@@ -230,10 +251,23 @@
         return markdown;
       };
 
-      const renderCoreName = (markdown, id) => {
-        if (!coresNameEl) return;
-        const match = markdown.match(/^Name:\s*(.+)$/m);
-        coresNameEl.textContent = match ? match[1].trim() : "Name missing";
+      const renderCoreFields = (markdown, id) => {
+        if (coresNameEl) {
+          const match = markdown.match(/^Name:\s*(.+)$/m);
+          coresNameEl.textContent = match ? match[1].trim() : "Name missing";
+        }
+        if (coresLocationEl) {
+          const match = markdown.match(/^Location:\s*(.+)$/m);
+          coresLocationEl.textContent = match ? `Location: ${match[1].trim()}` : "Location: missing";
+        }
+        if (coresEmailEl) {
+          const match = markdown.match(/^Email:\s*(.+)$/m);
+          coresEmailEl.textContent = match ? `Email: ${match[1].trim()}` : "Email: missing";
+        }
+        if (coresPhoneEl) {
+          const match = markdown.match(/^Phone:\s*(.+)$/m);
+          coresPhoneEl.textContent = match ? `Phone: ${match[1].trim()}` : "Phone: missing";
+        }
         setStatus(`ID: ${id}`);
       };
 
@@ -242,8 +276,8 @@
         const id = (inputEl?.value || "").trim() || DEFAULT_CORE_ID;
         setStatus(`Loading ${id}…`);
         try {
-          const markdown = await fetchCoreMarkdown(id);
-          renderCoreName(markdown, id);
+        const markdown = await fetchCoreMarkdown(id);
+        renderCoreFields(markdown, id);
         } catch (error) {
           console.error("[CORES] load failed", error);
           setStatus(error.message || "Load failed", true);

@@ -6,11 +6,12 @@ PARSER: STANDARD
 
 # HUMAN
 Name: Timothy Inman
-Location: California, USA
+Location: Oceanside, California
 WA: US
 Availability: Contract / Project
 LU: 2026-02-08
 Email: timinman2024@gmail.com
+Phone: 760-672-7323
 PURL: XXX.XXX.com
 PPIC:  
 
