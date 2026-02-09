@@ -1253,6 +1253,7 @@
         ></textarea>
         <div class="ai-prompt-actions">
           <button id="askAboutMe" style="background-color: rgb(200, 149, 47)"type="button" class="primary">Ask AI About Me</button>
+          <button id="structuredTruthBtn" type="button">Click here for structured truth</button>
           <label style="margin-left:12px; font-size:18px;">
             <input type="checkbox" id="deepMode">
             Deep evaluation mode
@@ -1511,6 +1512,7 @@
 
       const personalQuestionEl = document.getElementById("personalQuestion");
       const askAboutMeBtn = document.getElementById("askAboutMe");
+      const structuredTruthBtn = document.getElementById("structuredTruthBtn");
       const personalResponseEl = document.getElementById("personalResponse");
 
       const jobDescriptionEl = document.getElementById("jobDescription");
@@ -1677,6 +1679,55 @@
 
       const getTowerAskEndpoint = () => getTowerEndpoint("/tower/ask-ai");
       const getTowerContactEndpoint = () => getTowerEndpoint("/tower/contact");
+
+      const triggerDownload = (blob, filename) => {
+        const objectUrl = URL.createObjectURL(blob);
+        const anchor = document.createElement("a");
+        anchor.href = objectUrl;
+        anchor.download = filename;
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+        setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+      };
+
+      const resolveStructuredTruthPdfEndpoints = async () => {
+        const endpoints = [];
+        try {
+          await loadTowerConfig();
+          endpoints.push(getTowerEndpoint("/AI-Fit-Site/ai_context.pdf"));
+        } catch (error) {
+          // Fall back to same-origin paths if tower config is unavailable.
+        }
+
+        endpoints.push(new URL("ai_context.pdf", window.location.href).toString());
+        endpoints.push(new URL("/AI-Fit-Site/ai_context.pdf", window.location.origin).toString());
+        return [...new Set(endpoints)];
+      };
+
+      const downloadStructuredTruthPdf = async () => {
+        const endpoints = await resolveStructuredTruthPdfEndpoints();
+        let lastError = "";
+        for (const endpoint of endpoints) {
+          try {
+            const response = await fetch(endpoint, { cache: "no-store" });
+            if (!response.ok) {
+              lastError = `PDF fetch failed (${response.status})`;
+              continue;
+            }
+            const pdfBlob = await response.blob();
+            if (!pdfBlob.size) {
+              lastError = "PDF is empty";
+              continue;
+            }
+            triggerDownload(pdfBlob, "ai_context.pdf");
+            return;
+          } catch (error) {
+            lastError = error?.message || "Network error";
+          }
+        }
+        throw new Error(lastError || "Unable to download structured truth PDF");
+      };
 
       const escapeHtml = (text) => {
         return String(text ?? "")
@@ -1988,6 +2039,27 @@
       };
 
       askAboutMeBtn?.addEventListener("click", askAboutMe);
+      structuredTruthBtn?.addEventListener("click", async () => {
+        if (!structuredTruthBtn) return;
+        structuredTruthBtn.disabled = true;
+        if (personalResponseEl) {
+          personalResponseEl.textContent = "Generating structured truth PDF...";
+        }
+
+        try {
+          await downloadStructuredTruthPdf();
+          if (personalResponseEl) {
+            personalResponseEl.textContent = "Structured truth PDF downloaded.";
+          }
+        } catch (error) {
+          console.error(error);
+          if (personalResponseEl) {
+            personalResponseEl.textContent = `PDF request failed: ${error?.message || "Unknown error"}`;
+          }
+        } finally {
+          structuredTruthBtn.disabled = false;
+        }
+      });
       personalQuestionEl?.addEventListener("keydown", (event) => {
         if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
           event.preventDefault();
