@@ -99,15 +99,17 @@
       width: calc(100% - 80px);
       height: calc(100% - 60px);
       position: relative;
-      background: radial-gradient(circle at 50% 20%, rgba(255, 255, 255, 0.25), rgba(20, 60, 50, 0.95) 65%);
+      background: linear-gradient(180deg, #030a04 0%, #050100 50%, #010400 100%);
       border-radius: 24px;
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
+      text-align: left;
       padding: 24px;
-      box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.7);
+      box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.8);
+      gap: 6px;
     }
 
     .crt-screen::before {
@@ -136,15 +138,42 @@
     .crt-text {
       position: relative;
       z-index: 1;
-      font-size: clamp(2.5rem, 4vw, 4rem);
-      letter-spacing: 0.35em;
+      font-size: 1rem;
+      letter-spacing: 0.25em;
       text-transform: uppercase;
-      color: #b0ffe6;
+      color: #bdfdb8;
       text-shadow:
-        0 0 16px rgba(176, 255, 230, 0.8),
-        0 0 24px rgba(72, 255, 181, 0.6);
-      text-align: center;
+        0 0 18px rgba(189, 253, 184, 0.9),
+        0 0 32px rgba(78, 255, 130, 0.45);
+      text-align: left;
       transition: color 0.35s ease, text-shadow 0.35s ease;
+    }
+
+    .crt-line {
+      display: flex;
+      gap: 0.4rem;
+      align-items: baseline;
+    }
+
+    .crt-label {
+      color: #65f08f;
+      letter-spacing: 0.3em;
+    }
+
+    .crt-value {
+      color: #adff37;
+      letter-spacing: 0.35em;
+    }
+    .crt-version {
+      position: absolute;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 2;
+      font-size: 1.1rem;
+      letter-spacing: 0.45rem;
+      text-transform: uppercase;
+      color: rgba(122, 246, 208, 0.9);
     }
 
     .crt-location,
@@ -161,6 +190,11 @@
     .crt-contact {
       margin-top: 0.4rem;
     }
+    .field-hidden {
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.4s ease, visibility 0.4s ease;
+    }
 
     .crt-status {
       position: relative;
@@ -168,9 +202,73 @@
       margin-top: 1rem;
       font-size: 1rem;
       letter-spacing: 0.5em;
-      color: #6effc7;
+      color: #74ffb2;
       transition: color 0.35s ease;
     }
+
+    .speed-selector {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      display: flex;
+      gap: 6px;
+      z-index: 3;
+    }
+
+    .speed-selector label {
+      display: block;
+      width: 80px;
+      height: 32px;
+      position: relative;
+      overflow: hidden;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .speed-selector input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .speed-selector span {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      border: 1px solid rgba(122, 246, 208, 0.35);
+      background: rgba(2, 6, 3, 0.9);
+      color: #7af6d0;
+      letter-spacing: 0.25em;
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      transition: background 0.2s ease, color 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .speed-selector span::after {
+      content: "";
+      position: absolute;
+      inset: 6px;
+      border-radius: 6px;
+      border: 1px solid rgba(122, 246, 208, 0.2);
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .speed-selector input:checked + span {
+      background: linear-gradient(180deg, rgba(122, 246, 208, 0.2), rgba(78, 255, 130, 0.25));
+      color: #adff37;
+      box-shadow: inset 0 0 10px rgba(122, 246, 208, 0.35);
+    }
+
+    .speed-selector input:checked + span::after {
+      opacity: 1;
+    }
+
   </style>
 </head>
 <body>
@@ -185,16 +283,51 @@
   <div class="crt-shell">
     <div class="crt-screen">
       <div class="crt-glow"></div>
-      <div class="crt-text" id="coresName">Loading CORE data?</div>
-      <div class="crt-location" id="coresLocation">Location: unknown</div>
-      <div class="crt-contact" id="coresEmail">Email: unknown</div>
-      <div class="crt-contact" id="coresPhone">Phone: unknown</div>
+      <div class="speed-selector" aria-label="Select transmission speed">
+        <label>
+          <input type="radio" name="speed" value="rs232" checked />
+          <span>RS-232</span>
+        </label>
+        <label>
+          <input type="radio" name="speed" value="rs422" />
+          <span>RS-422</span>
+        </label>
+        <label>
+          <input type="radio" name="speed" value="usb2" />
+          <span>USB 2</span>
+        </label>
+      </div>
+      <div class="crt-version">CORES-VERSION: 1.0</div>
+      <div class="crt-line field-hidden" id="coresNameLine">
+        <span class="crt-label">Name:</span>
+        <span class="crt-value" id="coresName"></span>
+      </div>
+      <div class="crt-line field-hidden" id="coresLocationLine">
+        <span class="crt-label">Location:</span>
+        <span class="crt-value" id="coresLocation"></span>
+      </div>
+      <div class="crt-line field-hidden" id="coresEmailLine">
+        <span class="crt-label">Email:</span>
+        <span class="crt-value" id="coresEmail"></span>
+      </div>
+      <div class="crt-line field-hidden" id="coresPhoneLine">
+        <span class="crt-label">Phone:</span>
+        <span class="crt-value" id="coresPhone"></span>
+      </div>
+      <div class="crt-line field-hidden" id="coresAvailabilityLine">
+        <span class="crt-label">Availability:</span>
+        <span class="crt-value" id="coresAvailability"></span>
+      </div>
+      <div class="crt-line field-hidden" id="coresLuLine">
+        <span class="crt-label" id="coresLuLabel">LU:</span>
+        <span class="crt-value" id="coresLu"></span>
+      </div>
       <div class="crt-status" id="coresStatus">ID: waiting</div>
     </div>
   </div>
 
   
-
+ 
   <script>
     (function () {
       const formEl = document.getElementById("coresForm");
@@ -203,9 +336,25 @@
       const coresLocationEl = document.getElementById("coresLocation");
       const coresEmailEl = document.getElementById("coresEmail");
       const coresPhoneEl = document.getElementById("coresPhone");
+      const coresAvailabilityEl = document.getElementById("coresAvailability");
+      const coresLuEl = document.getElementById("coresLu");
+      const coresNameLine = document.getElementById("coresNameLine");
+      const coresLocationLine = document.getElementById("coresLocationLine");
+      const coresEmailLine = document.getElementById("coresEmailLine");
+      const coresPhoneLine = document.getElementById("coresPhoneLine");
+      const coresAvailabilityLine = document.getElementById("coresAvailabilityLine");
+      const coresLuLine = document.getElementById("coresLuLine");
+      const coresLuLabel = document.getElementById("coresLuLabel");
       const coresStatusEl = document.getElementById("coresStatus");
       const DEFAULT_CORE_ID = "CORE-US-2026-000001";
       let towerConfigPromise = null;
+
+      const SPEED_CONFIG = {
+        rs232: 28,
+        rs422: 14,
+        usb2: 0,
+      };
+      let currentSpeedDelay = SPEED_CONFIG.rs232;
 
       const setStatus = (text, isError = false) => {
         if (!coresStatusEl) return;
@@ -251,33 +400,97 @@
         return markdown;
       };
 
-      const renderCoreFields = (markdown, id) => {
-        if (coresNameEl) {
-          const match = markdown.match(/^Name:\s*(.+)$/m);
-          coresNameEl.textContent = match ? match[1].trim() : "Name missing";
+      const resetFields = () => {
+        [
+          coresNameLine,
+          coresLocationLine,
+          coresEmailLine,
+          coresPhoneLine,
+          coresAvailabilityLine,
+          coresLuLine,
+        ].forEach((line) => {
+          if (!line) return;
+          line.classList.add("field-hidden");
+        });
+        [
+          coresNameEl,
+          coresLocationEl,
+          coresEmailEl,
+          coresPhoneEl,
+          coresAvailabilityEl,
+          coresLuEl,
+        ].forEach((el) => {
+          if (!el) return;
+          el.textContent = "";
+        });
+        if (coresLuLabel) {
+          coresLuLabel.textContent = "LU:";
         }
-        if (coresLocationEl) {
-          const match = markdown.match(/^Location:\s*(.+)$/m);
-          coresLocationEl.textContent = match ? `Location: ${match[1].trim()}` : "Location: missing";
+      };
+
+
+      const typeWriter = (wrapper, el, text) =>
+        new Promise((resolve) => {
+          if (!wrapper || !el) {
+            resolve();
+            return;
+          }
+          wrapper.classList.remove("field-hidden");
+          el.textContent = "";
+          if (currentSpeedDelay <= 0) {
+            el.textContent = text;
+            resolve();
+            return;
+          }
+          let idx = 0;
+          const step = () => {
+            if (idx >= text.length) {
+              resolve();
+              return;
+            }
+            el.textContent += text[idx++];
+            setTimeout(step, currentSpeedDelay);
+          };
+          step();
+        });
+
+      const renderCoreFields = async (markdown) => {
+        const queue = [
+          { wrapper: coresNameLine, valueEl: coresNameEl, label: "Name" },
+          { wrapper: coresLocationLine, valueEl: coresLocationEl, label: "Location" },
+          { wrapper: coresEmailLine, valueEl: coresEmailEl, label: "Email" },
+          { wrapper: coresPhoneLine, valueEl: coresPhoneEl, label: "Phone" },
+          { wrapper: coresAvailabilityLine, valueEl: coresAvailabilityEl, label: "Availability" },
+          { wrapper: coresLuLine, valueEl: coresLuEl, label: "LU", labelEl: coresLuLabel },
+        ];
+        for (const field of queue) {
+          if (!field.wrapper || !field.valueEl) {
+            continue;
+          }
+          const pattern = new RegExp(`^${field.label}:\\s*(.+)$`, "m");
+          const match = markdown.match(pattern);
+          if (!match) {
+            field.wrapper.classList.add("field-hidden");
+            field.valueEl.textContent = "";
+            continue;
+          }
+          const labelText = field.label === "LU" ? "Last Updated" : field.label;
+          if (field.labelEl) {
+            field.labelEl.textContent = `${labelText}:`;
+          }
+          await typeWriter(field.wrapper, field.valueEl, match[1].trim());
         }
-        if (coresEmailEl) {
-          const match = markdown.match(/^Email:\s*(.+)$/m);
-          coresEmailEl.textContent = match ? `Email: ${match[1].trim()}` : "Email: missing";
-        }
-        if (coresPhoneEl) {
-          const match = markdown.match(/^Phone:\s*(.+)$/m);
-          coresPhoneEl.textContent = match ? `Phone: ${match[1].trim()}` : "Phone: missing";
-        }
-        setStatus(`ID: ${id}`);
       };
 
       const handleLoad = async (event) => {
         event?.preventDefault();
         const id = (inputEl?.value || "").trim() || DEFAULT_CORE_ID;
         setStatus(`Loading ${id}…`);
+        resetFields();
         try {
-        const markdown = await fetchCoreMarkdown(id);
-        renderCoreFields(markdown, id);
+          const markdown = await fetchCoreMarkdown(id);
+          await renderCoreFields(markdown);
+          setStatus(`Loaded ${id}`);
         } catch (error) {
           console.error("[CORES] load failed", error);
           setStatus(error.message || "Load failed", true);
@@ -287,9 +500,7 @@
       formEl?.addEventListener("submit", handleLoad);
 
       document.addEventListener("DOMContentLoaded", () => {
-        if (coresNameEl) {
-          coresNameEl.textContent = "Awaiting load command";
-        }
+        resetFields();
         setStatus("Press Load to fetch CORE");
         if (inputEl) {
           inputEl.value = DEFAULT_CORE_ID;

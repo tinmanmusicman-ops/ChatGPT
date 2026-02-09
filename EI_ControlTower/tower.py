@@ -325,6 +325,19 @@ def cores_index():
 
 @app.route("/CORES/<path:filename>")
 def cores_static(filename):
+    try:
+        base = CORES_DIR.resolve()
+        requested_path = (base / filename).resolve()
+        if not str(requested_path).startswith(str(base)):
+            _append_cores_log(
+                f"[CORES] path traversal blocked for {filename} -> {requested_path}"
+            )
+        elif requested_path.exists():
+            _append_cores_log(f"[CORES] resolved path {requested_path}")
+        else:
+            _append_cores_log(f"[CORES] missing file {requested_path}")
+    except Exception as exc:
+        _append_cores_log(f"[CORES] failed to resolve path for {filename}: {exc}")
     return send_from_directory(CORES_DIR, filename)
 
 
