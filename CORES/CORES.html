@@ -2414,29 +2414,28 @@
         };
 
         const loadById = async (id) => {
-          const base =
-            window.location.href.replace(/\/[^/]*$/, "/") || window.location.origin + "/";
-          const extensions = [".md", ".txt"];
-          for (const ext of extensions) {
-            const url = new URL(`${id}${ext}`, base).toString();
-            console.debug("[CORES] trying", url);
-            logToFile(`[CORES] trying ${url}`);
-            try {
-              const response = await fetch(url);
-              if (!response.ok) continue;
-              const text = await response.text();
-              console.debug("[CORES] fetched", url, "status", response.status);
-              logToFile(`[CORES] fetched ${url} status ${response.status}`);
-              if (!text.trim()) continue;
-              return { id, text };
-            } catch (error) {
-              console.warn("[CORES] fetch failed", url, error);
-              logToFile(`[CORES] fetch failed ${url}: ${error?.message || error}`);
-              continue;
+          const url = `/CORES/${encodeURIComponent(id)}.md`;
+          console.debug("[CORES] trying", url);
+          logToFile(`[CORES] trying ${url}`);
+          try {
+            const response = await fetch(url);
+            if (!response.ok) {
+              logToFile(`[CORES] fetch status ${url} ${response.status}`);
+              throw new Error("Standard not found");
             }
+            const text = await response.text();
+            console.debug("[CORES] fetched", url, "status", response.status);
+            logToFile(`[CORES] fetched ${url} status ${response.status}`);
+            if (!text.trim()) {
+              logToFile(`[CORES] fetched but empty ${url}`);
+              throw new Error("Standard not found");
+            }
+            return { id, text };
+          } catch (error) {
+            console.warn("[CORES] fetch failed", url, error);
+            logToFile(`[CORES] fetch failed ${url}: ${error?.message || error}`);
+            throw new Error("Standard not found");
           }
-          logToFile(`[CORES] standard ${id} not found`);
-          throw new Error("Standard not found");
         };
 
         const showError = (message) => {
