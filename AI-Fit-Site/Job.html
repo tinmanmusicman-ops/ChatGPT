@@ -1533,7 +1533,53 @@
       const topAskAboutMeShortcutBtn = document.getElementById("topAskAboutMeShortcut");
       const topFitShortcutBtn = document.getElementById("topFitShortcut");
       const manageContentBtn = document.getElementById("manageContentBtn");
+      const MANAGE_PASSWORD = "Tinman123";
       const personalResponseEl = document.getElementById("personalResponse");
+      const serializeManageDebugExtra = (extra) => {
+        if (extra === null || extra === undefined) return "";
+        if (typeof extra === "string") return extra;
+        try {
+          return JSON.stringify(extra);
+        } catch (_) {
+          return String(extra);
+        }
+      };
+
+      const getManageDebugLogEndpoint = () => {
+        if (towerBaseUrl) {
+          try {
+            return getTowerEndpoint("/cores/log");
+          } catch (_) {
+            // Fall back to same-origin endpoint.
+          }
+        }
+        return new URL("/cores/log", window.location.origin).toString();
+      };
+
+      const writeManageDebugToFile = (line) => {
+        fetch(getManageDebugLogEndpoint(), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: line }),
+          keepalive: true,
+        }).catch(() => {});
+      };
+
+      const manageDebug = (message, extra = null) => {
+        const stamp = new Date().toISOString();
+        const serializedExtra = serializeManageDebugExtra(extra);
+        const line = `[MANAGE_DEBUG ${stamp}] ${message}${serializedExtra ? ` ${serializedExtra}` : ""}`;
+        if (extra === null) {
+          console.log(line);
+        } else {
+          console.log(line, extra);
+        }
+        writeManageDebugToFile(line);
+      };
+      const toCharCodes = (value) =>
+        Array.from(String(value || ""))
+          .map((ch) => ch.charCodeAt(0))
+          .join(",");
 
       const jobDescriptionEl = document.getElementById("jobDescription");
       const pasteJobDescBtn = document.getElementById("pasteJobDesc");
@@ -1701,10 +1747,36 @@
 
       const getTowerAskEndpoint = () => getTowerEndpoint("/tower/ask-ai");
       const getTowerContactEndpoint = () => getTowerEndpoint("/tower/contact");
-      const getTowerManageEndpoint = (coreId) =>
-        getTowerEndpoint(`/AI-Fit-Site/manage?id=${encodeURIComponent(coreId)}`);
+      const getTowerManageEndpoint = (coreId, auth = "") => {
+        const params = new URLSearchParams({ id: coreId });
+        if (auth) params.set("auth", auth);
+        return getTowerEndpoint(`/AI-Fit-Site/manage?${params.toString()}`);
+      };
 
       const MANAGE_CORE_ID = "CORE-US-2026-000001";
+
+      manageDebug("Init", {
+        manageButtonFound: !!manageContentBtn,
+        expectedPassword: MANAGE_PASSWORD,
+        expectedPasswordCodes: toCharCodes(MANAGE_PASSWORD),
+      });
+
+      const promptForManagePassword = () => {
+        const entered = window.prompt("Enter password to manage content:");
+        const normalizedEntered = String(entered ?? "").trim();
+        const matched = normalizedEntered === MANAGE_PASSWORD;
+        manageDebug("Password prompt result", {
+          enteredRaw: entered,
+          enteredTrimmed: normalizedEntered,
+          enteredRawCodes: toCharCodes(entered),
+          enteredTrimmedCodes: toCharCodes(normalizedEntered),
+          expected: MANAGE_PASSWORD,
+          expectedCodes: toCharCodes(MANAGE_PASSWORD),
+          matched,
+          cancelled: entered === null,
+        });
+        return { entered, normalizedEntered, matched };
+      };
 
       const syncManageContentLink = async () => {
         if (!manageContentBtn) return;
@@ -2096,14 +2168,43 @@
       manageContentBtn?.addEventListener("click", async (event) => {
         event.preventDefault();
         if (!manageContentBtn) return;
+        manageDebug("Manage button clicked", {
+          href: manageContentBtn.href,
+        });
+
+        const { entered, normalizedEntered, matched } = promptForManagePassword();
+        if (!matched) {
+          manageDebug("Password rejected; manage launch blocked", {
+            cancelled: entered === null,
+          });
+          if (personalResponseEl) {
+            personalResponseEl.textContent =
+              entered === null ? "Manage launch cancelled." : "Incorrect password.";
+          }
+          return;
+        }
+
+        manageDebug("Password accepted; launching manage", {
+          enteredTrimmed: normalizedEntered,
+        });
+        if (personalResponseEl) {
+          personalResponseEl.textContent = "Editing enabled.";
+        }
+
+        const fallbackManageHref = `/AI-Fit-Site/manage?id=${encodeURIComponent(MANAGE_CORE_ID)}`;
         try {
           await syncManageContentLink();
-          window.location.assign(manageContentBtn.href);
+          manageDebug("Launching manage (synced href)", {
+            href: manageContentBtn.href || fallbackManageHref,
+          });
+          window.location.assign(manageContentBtn.href || fallbackManageHref);
         } catch (error) {
           console.error(error);
-          if (personalResponseEl) {
-            personalResponseEl.textContent = `Manage Content route failed: ${error?.message || "Unknown error"}`;
-          }
+          manageDebug("Launching manage (fallback href)", {
+            href: fallbackManageHref,
+            error: error?.message || String(error),
+          });
+          window.location.assign(fallbackManageHref);
         }
       });
       structuredTruthBtn?.addEventListener("click", async () => {

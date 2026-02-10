@@ -1,4 +1,4 @@
-import subprocess
+﻿import subprocess
 import sys
 import threading
 import time
@@ -6,6 +6,7 @@ import os
 import json
 import re
 import smtplib
+import textwrap
 from html import escape
 from datetime import datetime, timedelta
 from flask import Flask, send_from_directory, send_file, jsonify, request, redirect, abort
@@ -93,6 +94,8 @@ def _append_cores_log(message: str):
 
 CORES_DIR = BASE_DIR.parent / "CORES"
 CORES_LOG_PATH = CORES_DIR / "cores.log"
+CORES_EMPTY_TEMPLATE_PATH = CORES_DIR / "CORES_EMPTY_TEMPLATE.md"
+CORE_ID_FILE_PATTERN = re.compile(r"^CORE-US-(\d{4})-(\d{6})\.md$", flags=re.IGNORECASE)
 CORES_REQUIRED_PROJECT_LABELS = [
     "Situation",
     "What I did",
@@ -101,30 +104,137 @@ CORES_REQUIRED_PROJECT_LABELS = [
     "Evidence / artifacts",
     "Notes / caveats",
 ]
-PROJECT_PARSE_PROMPT = """Convert this real-world work story into CORES project format.
+PROJECT_PARSE_PROMPT = """Convert this real-world work story into a CORES project JSON object.
 
-Return ONLY:
+Return ONLY valid JSON with this exact shape:
+{
+  "projectTitle": "string (can be empty)",
+  "sections": {
+    "Situation": "string",
+    "What I did": "string",
+    "Tools / systems": "string",
+    "Result": "string",
+    "Evidence / artifacts": "string",
+    "Notes / caveats": "string"
+  }
+}
 
-### PROJECT:
-- Situation:
-- What I did:
-- Tools / systems:
-- Result:
-- Evidence / artifacts:
-- Notes / caveats:
+Rules:
+- No markdown.
+- No commentary.
+- Do not omit sections.
+- Keep section names exactly as shown.
+"""
 
-No commentary.
-No extra text.
-Do not omit sections.
+COMPANY_PARSE_PROMPT = """Convert this real-world work story into a CORES company JSON object.
 
-Return formatted markdown block only."""
+Return ONLY valid JSON with this exact shape:
+{
+  "companyName": "string",
+  "role": "string",
+  "signals": "string",
+  "firstProject": {
+    "projectTitle": "string (can be empty)",
+    "sections": {
+      "Situation": "string",
+      "What I did": "string",
+      "Tools / systems": "string",
+      "Result": "string",
+      "Evidence / artifacts": "string",
+      "Notes / caveats": "string"
+    }
+  }
+}
+
+Rules:
+- No markdown.
+- No commentary.
+- Do not omit fields.
+- Keep section names exactly as shown.
+- "companyName", "role", and "signals" must not be empty.
+- "firstProject.sections" must include all required fields and each field must be non-empty.
+"""
+
+ASCII_CHAR_REPLACEMENTS = {
+    "\u2018": "'",
+    "\u2019": "'",
+    "\u201c": '"',
+    "\u201d": '"',
+    "\u2013": "-",
+    "\u2014": "-",
+    "\u2022": "-",
+    "\u2026": "...",
+    "\u00a0": " ",
+}
+
+RESUME_IMPORT_PROMPT = """TASK:
+Parse the provided PDF or DOCX resume and populate the provided EMPTY CORES-MD TEMPLATE verbatim as a starting point. Every heading, label, and section order in the template is locked; do not invent or reorder anything.
+
+ROLE:
+You are a deterministic parser and normalizer, not a resume writer.
+Do NOT embellish, optimize, or invent content.
+Do NOT introduce new sections.
+Do NOT remove required sections.
+Preserve meaning; normalize structure.
+
+INPUTS:
+1) A resume source text extracted from PDF/DOCX.
+2) An EMPTY CORES-MD template (authoritative schema).
+
+OUTPUT:
+A single, fully populated CORES-MD file that mirrors the template structure exactly. Use the template as the sole reference for headings, labels, and ordering—do not guess or rely on any other schema.
+
+HARD INVARIANTS (FAIL FAST):
+-- Use ONLY sections present in the empty template exactly as written.
+-- DO NOT add non-standard sections.
+-- ALL items under '# SKILLS' MUST begin with '- '.
+-- If content does not clearly map, leave the field blank rather than guessing.
+-- No placeholders like 'XXX', 'TBD', or commentary.
+-- No em dashes.
+-- Use ASCII characters only.
+-- No lines longer than 120 characters.
+-- Headings must remain exactly as provided in the template and in the same order.
+-- On any heading mismatch, stop immediately and respond with:
+   SCHEMA_VIOLATION: HEADINGS_MISMATCH
+-- Bullets must be one item per line.
+
+PARSING RULES:
+- HUMAN:
+  - Name, Location, Availability: extract verbatim if present.
+  - If Email/Phone/PURL not present in source, leave blank.
+- SUMMARY:
+  - Merge professional summary, working style, and strengths into a concise factual summary.
+  - No marketing language.
+- SKILLS:
+  - Extract explicit skills, tools, or strengths.
+  - Normalize into short noun phrases.
+  - One skill per bullet.
+- EXPERIENCE:
+  - Each COMPANY block represents one employer.
+  - ROLE, SIGNALS, PROJECT blocks must originate directly from the source content.
+  - PROJECT descriptions should reflect actual work described, not inferred impact.
+- ACHIEVEMENTS:
+  - Include only concrete outcomes or transitions described in the source.
+
+ERROR HANDLING:
+- If a schema violation would occur, STOP and output exactly:
+SCHEMA_VIOLATION: <short reason>
+
+FINAL OUTPUT:
+- Output ONLY the completed CORES-MD content.
+- No explanations.
+- No commentary.
+- No markdown fences.
+"""
 
 
 def _resolve_core_markdown_path(core_id: str) -> Path:
     clean_core_id = str(core_id or "").strip()
     if not clean_core_id:
         raise ValueError("coreId is required")
-    if not re.fullmatch(r"[A-Za-z0-9._-]+", clean_core_id):
+    if clean_core_id in {".", ".."}:
+        raise ValueError("Invalid coreId format")
+    if re.search(r"[\\/:*?\"<>|]", clean_core_id):
         raise ValueError("Invalid coreId format")
 
     base = CORES_DIR.resolve()
@@ -132,6 +242,31 @@ def _resolve_core_markdown_path(core_id: str) -> Path:
     if not str(path).startswith(str(base)):
         raise PermissionError("Path traversal blocked")
     return path
+
+
+def _next_core_id_for_year(target_year: int) -> str:
+    max_sequence = 0
+    if CORES_DIR.exists():
+        for path in CORES_DIR.iterdir():
+            if not path.is_file():
+                continue
+            match = CORE_ID_FILE_PATTERN.match(path.name)
+            if not match:
+                continue
+            year_value = int(match.group(1))
+            seq_value = int(match.group(2))
+            if year_value == target_year and seq_value > max_sequence:
+                max_sequence = seq_value
+    next_sequence = max_sequence + 1
+    return f"CORE-US-{target_year}-{next_sequence:06d}"
+
+
+def _with_core_id_in_template(template_markdown: str, core_id: str) -> str:
+    template = str(template_markdown or "").replace("\r\n", "\n").replace("\r", "\n")
+    updated = re.sub(r"(?im)^ID:\s*.*$", f"ID: {core_id}", template, count=1)
+    if updated == template:
+        raise ValueError("Template is missing required 'ID:' line.")
+    return updated.strip() + "\n"
 
 
 def _parse_project_block_sections(project_block: str) -> dict:
@@ -186,6 +321,362 @@ def _parse_project_block_sections(project_block: str) -> dict:
         "projectTitle": project_title,
         "sections": cleaned_sections,
     }
+
+
+def _build_project_block(project_title: str, sections: dict) -> str:
+    title = str(project_title or "").strip()
+    lines = [f"### PROJECT: {title}" if title else "### PROJECT:", ""]
+    for label in CORES_REQUIRED_PROJECT_LABELS:
+        value = str(sections.get(label, "") or "").replace("\r\n", "\n").replace("\r", "\n").strip()
+        lines.append(f"- {label}:")
+        if value:
+            lines.extend(value.split("\n"))
+        lines.append("")
+    return "\n".join(lines).strip() + "\n"
+
+
+def _extract_first_json_object(text: str) -> str:
+    raw = str(text or "").strip()
+    if not raw:
+        raise ValueError("AI returned empty content")
+
+    fenced = re.search(r"```(?:json)?\s*(\{[\s\S]*?\})\s*```", raw, flags=re.IGNORECASE)
+    if fenced:
+        return fenced.group(1).strip()
+
+    start = raw.find("{")
+    if start < 0:
+        raise ValueError("No JSON object found in AI response")
+
+    depth = 0
+    in_string = False
+    escape_next = False
+    for idx in range(start, len(raw)):
+        ch = raw[idx]
+        if escape_next:
+            escape_next = False
+            continue
+        if ch == "\\":
+            escape_next = True
+            continue
+        if ch == '"':
+            in_string = not in_string
+            continue
+        if in_string:
+            continue
+        if ch == "{":
+            depth += 1
+        elif ch == "}":
+            depth -= 1
+            if depth == 0:
+                return raw[start : idx + 1]
+
+    raise ValueError("Unclosed JSON object in AI response")
+
+
+def _normalize_project_json(project_json: dict) -> dict:
+    if not isinstance(project_json, dict):
+        raise ValueError("AI JSON must be an object")
+
+    project_title = str(project_json.get("projectTitle") or project_json.get("title") or "").strip()
+    sections_raw = project_json.get("sections")
+    if not isinstance(sections_raw, dict):
+        raise ValueError("AI JSON missing 'sections' object")
+
+    alias_map = {
+        "situation": "Situation",
+        "what i did": "What I did",
+        "tools / systems": "Tools / systems",
+        "tools/systems": "Tools / systems",
+        "result": "Result",
+        "evidence / artifacts": "Evidence / artifacts",
+        "evidence/artifacts": "Evidence / artifacts",
+        "notes / caveats": "Notes / caveats",
+        "notes/caveats": "Notes / caveats",
+    }
+
+    normalized_sections = {}
+    for raw_key, raw_value in sections_raw.items():
+        key = str(raw_key or "").strip().lower()
+        key = re.sub(r"\s*\/\s*", "/", key)
+        key = re.sub(r"\s+", " ", key)
+        canonical = alias_map.get(key)
+        if not canonical:
+            continue
+        value = str(raw_value or "").replace("\r\n", "\n").replace("\r", "\n").strip()
+        if not value:
+            raise ValueError(f"AI section '{canonical}' is empty")
+        normalized_sections[canonical] = value
+
+    missing = [label for label in CORES_REQUIRED_PROJECT_LABELS if label not in normalized_sections]
+    if missing:
+        raise ValueError(f"AI JSON missing required sections: {', '.join(missing)}")
+
+    return {
+        "projectTitle": project_title,
+        "sections": normalized_sections,
+    }
+
+
+def _normalize_company_json(company_json: dict) -> dict:
+    if not isinstance(company_json, dict):
+        raise ValueError("AI JSON must be an object")
+
+    company_name = str(company_json.get("companyName") or company_json.get("name") or "").strip()
+    role = str(company_json.get("role") or "").replace("\r\n", "\n").replace("\r", "\n").strip()
+    signals = str(company_json.get("signals") or "").replace("\r\n", "\n").replace("\r", "\n").strip()
+
+    if not company_name:
+        raise ValueError("AI JSON missing companyName")
+    if not role:
+        raise ValueError("AI JSON missing role")
+    if not signals:
+        raise ValueError("AI JSON missing signals")
+
+    first_project_raw = company_json.get("firstProject")
+    if not isinstance(first_project_raw, dict):
+        first_project_raw = company_json.get("project")
+    if not isinstance(first_project_raw, dict):
+        raise ValueError("AI JSON missing firstProject object")
+
+    first_project = _normalize_project_json(first_project_raw)
+    return {
+        "companyName": company_name,
+        "role": role,
+        "signals": signals,
+        "firstProject": first_project,
+    }
+
+
+def _extract_pdf_text(file_bytes: bytes) -> str:
+    PdfReader = None
+    try:
+        from pypdf import PdfReader as _PdfReader  # type: ignore
+        PdfReader = _PdfReader
+    except Exception:
+        try:
+            from PyPDF2 import PdfReader as _PdfReader  # type: ignore
+            PdfReader = _PdfReader
+        except Exception as exc:
+            raise ValueError("PDF parsing dependency is missing (install pypdf or PyPDF2).") from exc
+
+    try:
+        reader = PdfReader(BytesIO(file_bytes))
+    except Exception as exc:
+        raise ValueError(f"Failed to parse PDF: {exc}") from exc
+
+    chunks = []
+    for page in reader.pages:
+        text = str(page.extract_text() or "").strip()
+        if text:
+            chunks.append(text)
+
+    merged = "\n\n".join(chunks).strip()
+    if not merged:
+        raise ValueError("No extractable text found in PDF.")
+    return merged
+
+
+def _extract_docx_text(file_bytes: bytes) -> str:
+    try:
+        from docx import Document as DocxDocument
+    except Exception as exc:
+        raise ValueError("DOCX parsing dependency is missing (install python-docx).") from exc
+
+    try:
+        doc = DocxDocument(BytesIO(file_bytes))
+    except Exception as exc:
+        raise ValueError(f"Failed to parse DOCX: {exc}") from exc
+
+    chunks = []
+    for paragraph in doc.paragraphs:
+        text = str(paragraph.text or "").strip()
+        if text:
+            chunks.append(text)
+
+    merged = "\n\n".join(chunks).strip()
+    if not merged:
+        raise ValueError("No extractable text found in DOCX.")
+    return merged
+
+
+def _extract_heading_lines(markdown_text: str) -> list[str]:
+    normalized = str(markdown_text or "").replace("\r\n", "\n").replace("\r", "\n")
+    lines = [line.strip() for line in normalized.split("\n")]
+    return [line for line in lines if re.match(r"^#{1,6}\s+\S", line)]
+
+
+def _normalize_heading_line(heading_line: str) -> str:
+    match = re.match(r"^(#{1,6})\s+(.*)$", str(heading_line or "").strip())
+    if not match:
+        return str(heading_line or "").strip()
+    hashes = match.group(1)
+    text = re.sub(r"\s+", " ", match.group(2).strip())
+    return f"{hashes} {text}"
+
+
+def _is_dynamic_template_heading(heading_line: str) -> bool:
+    heading = _normalize_heading_line(heading_line)
+    upper = heading.upper()
+    if "XXX" in upper:
+        return True
+    if re.match(r"^#{2,6}\s+COMPANY:\s*", upper):
+        return True
+    if re.match(r"^#{2,6}\s+PROJECT:\s*", upper):
+        return True
+    return False
+
+
+def _normalize_common_ascii(text: str) -> str:
+    normalized = str(text or "")
+    for src, dst in ASCII_CHAR_REPLACEMENTS.items():
+        normalized = normalized.replace(src, dst)
+    return normalized
+
+
+def _describe_non_ascii(text: str, limit: int = 8) -> str:
+    found = []
+    seen = set()
+    for ch in str(text or ""):
+        code = ord(ch)
+        if code <= 127:
+            continue
+        key = (code, ch)
+        if key in seen:
+            continue
+        seen.add(key)
+        found.append(f"U+{code:04X} '{ch}'")
+        if len(found) >= limit:
+            break
+    return ", ".join(found)
+
+
+def _wrap_line(text: str, width: int) -> list[str]:
+    if len(text) <= width:
+        return [text]
+    wrapped = textwrap.wrap(
+        text,
+        width=width,
+        break_long_words=False,
+        break_on_hyphens=False,
+        replace_whitespace=False,
+        drop_whitespace=True,
+    )
+    return wrapped or [text]
+
+
+def _enforce_resume_import_line_length(markdown_text: str, max_len: int = 120) -> str:
+    normalized = str(markdown_text or "").replace("\r\n", "\n").replace("\r", "\n")
+    out_lines = []
+    in_skills = False
+
+    for line in normalized.split("\n"):
+        stripped_line = line.strip()
+        if re.match(r"^#\s+SKILLS\s*$", stripped_line, flags=re.IGNORECASE):
+            in_skills = True
+        elif re.match(r"^#\s+\S+", stripped_line) and not re.match(
+            r"^#\s+SKILLS\s*$", stripped_line, flags=re.IGNORECASE
+        ):
+            in_skills = False
+
+        if len(line) <= max_len:
+            out_lines.append(line)
+            continue
+
+        # Keep heading lines unchanged so heading text remains exactly as output.
+        if stripped_line.startswith("#"):
+            out_lines.append(line)
+            continue
+
+        leading_ws = re.match(r"^[ \t]*", line).group(0)
+        content = line[len(leading_ws) :]
+        if not content.strip():
+            out_lines.append(line)
+            continue
+
+        if in_skills and content.startswith("- "):
+            prefix = f"{leading_ws}- "
+            skill_text = content[2:].strip()
+            width = max_len - len(prefix)
+            if width < 8:
+                out_lines.append(line)
+                continue
+            for chunk in _wrap_line(skill_text, width):
+                out_lines.append(f"{prefix}{chunk}")
+            continue
+
+        width = max_len - len(leading_ws)
+        if width < 8:
+            out_lines.append(line)
+            continue
+        for chunk in _wrap_line(content.strip(), width):
+            out_lines.append(f"{leading_ws}{chunk}")
+
+    return "\n".join(out_lines).strip() + "\n"
+
+
+def _validate_resume_import_output(template_markdown: str, output_markdown: str) -> None:
+    template = str(template_markdown or "").replace("\r\n", "\n").replace("\r", "\n").strip()
+    output = str(output_markdown or "").replace("\r\n", "\n").replace("\r", "\n").strip()
+    if not template:
+        raise ValueError("Template markdown is empty.")
+    if not output:
+        raise ValueError("AI returned empty markdown.")
+    if output.startswith("SCHEMA_VIOLATION:"):
+        raise ValueError(output)
+    if "```" in output:
+        raise ValueError("Output must not include markdown code fences.")
+    if "—" in output:
+        raise ValueError("Output contains a forbidden em dash.")
+    if re.search(r"\b(?:XXX|TBD)\b", output, flags=re.IGNORECASE):
+        raise ValueError("Output contains forbidden placeholders.")
+    if any(ord(ch) > 127 for ch in output):
+        detail = _describe_non_ascii(output) or "unknown characters"
+        raise ValueError(f"Output contains non-ASCII characters: {detail}.")
+
+    lines = output.split("\n")
+    for idx, line in enumerate(lines, start=1):
+        if len(line) > 120:
+            raise ValueError(f"Line {idx} exceeds 120 characters.")
+
+    template_headings = _extract_heading_lines(template)
+    output_headings = _extract_heading_lines(output)
+    normalized_output = [_normalize_heading_line(line) for line in output_headings]
+    required_template_headings = [
+        _normalize_heading_line(line)
+        for line in template_headings
+        if not _is_dynamic_template_heading(line)
+    ]
+
+    output_index = 0
+    for required_heading in required_template_headings:
+        found_index = -1
+        for idx in range(output_index, len(normalized_output)):
+            if normalized_output[idx] == required_heading:
+                found_index = idx
+                break
+        if found_index < 0:
+            output_preview = ", ".join(normalized_output[:14])
+            raise ValueError(
+                "Heading mismatch with template. "
+                f"Missing required heading: {required_heading}. "
+                f"Output headings seen: {output_preview}"
+            )
+        output_index = found_index + 1
+
+    skills_match = re.search(
+        r"^#\s+SKILLS\s*$([\s\S]*?)(?=^#\s+\S|\Z)",
+        output,
+        flags=re.MULTILINE | re.IGNORECASE,
+    )
+    if skills_match:
+        skills_block = skills_match.group(1)
+        for line in skills_block.split("\n"):
+            stripped = line.strip()
+            if not stripped:
+                continue
+            if not stripped.startswith("- "):
+                raise ValueError("All # SKILLS items must start with '- '.")
 
 
 def _validate_cores_markdown(markdown_text: str) -> None:
@@ -702,6 +1193,100 @@ def shared_image(filename):
 def view_file(filename):
     return send_from_directory(BASE_OUTPUT_DIR, filename, mimetype="application/pdf")
 
+
+@app.route("/cores/files")
+def cores_files():
+    try:
+        names = sorted(
+            [
+                path.name
+                for path in CORES_DIR.iterdir()
+                if path.is_file() and path.suffix.lower() == ".md"
+            ],
+            key=lambda item: item.lower(),
+        )
+        return jsonify({"files": names})
+    except Exception as exc:
+        return jsonify({"error": "Failed to list markdown files", "details": str(exc)}), 500
+
+
+@app.route("/cores/new-template", methods=["OPTIONS", "POST"])
+def cores_new_template():
+    if request.method == "OPTIONS":
+        resp = app.make_response(("", 204))
+        return _with_cors(resp)
+
+    try:
+        if not CORES_EMPTY_TEMPLATE_PATH.exists():
+            return _with_cors(
+                app.make_response(
+                    (
+                        jsonify(
+                            {
+                                "error": (
+                                    f"Template not found: {CORES_EMPTY_TEMPLATE_PATH.name}"
+                                )
+                            }
+                        ),
+                        404,
+                    )
+                )
+            )
+
+        template_markdown = CORES_EMPTY_TEMPLATE_PATH.read_text(encoding="utf-8")
+        year_value = datetime.now().year
+
+        # Reserve the next available numeric slot for this year.
+        attempts = 0
+        core_id = ""
+        target_path = None
+        markdown = ""
+        created = False
+        while attempts < 1000:
+            attempts += 1
+            core_id = _next_core_id_for_year(year_value)
+            target_path = _resolve_core_markdown_path(core_id)
+            markdown = _with_core_id_in_template(template_markdown, core_id)
+            try:
+                with open(target_path, "x", encoding="utf-8") as fh:
+                    fh.write(markdown)
+                created = True
+                break
+            except FileExistsError:
+                year_value = datetime.now().year
+                continue
+        if not created or target_path is None or not core_id:
+            raise ValueError("Unable to allocate a new CORE id.")
+
+        _append_cores_log(f"[IMPORT] created empty template {target_path}")
+        return _with_cors(
+            jsonify(
+                {
+                    "coreId": core_id,
+                    "fileName": target_path.name,
+                    "markdown": markdown,
+                }
+            )
+        )
+    except PermissionError:
+        return _with_cors(
+            app.make_response((jsonify({"error": "Path traversal blocked"}), 403))
+        )
+    except ValueError as exc:
+        return _with_cors(
+            app.make_response((jsonify({"error": str(exc)}), 422))
+        )
+    except Exception as exc:
+        return _with_cors(
+            app.make_response(
+                (
+                    jsonify({"error": "Failed to create template copy", "details": str(exc)}),
+                    500,
+                )
+            )
+        )
+
+
 @app.route("/CORES", strict_slashes=False)
 def cores_index():
     return send_from_directory(CORES_DIR, "CORES.html")
@@ -761,6 +1346,146 @@ def cores_static(filename):
     return send_from_directory(CORES_DIR, filename)
 
 
+@app.route("/import_resume_template", methods=["OPTIONS", "POST"])
+def import_resume_template():
+    if request.method == "OPTIONS":
+        resp = app.make_response(("", 204))
+        return _with_cors(resp)
+
+    template_markdown = str(request.form.get("templateMarkdown") or "").strip()
+    resume_file = request.files.get("resumeFile")
+    if not template_markdown:
+        _append_cores_log("[IMPORT] rejected: templateMarkdown is required")
+        return _with_cors(
+            app.make_response((jsonify({"error": "templateMarkdown is required"}), 400))
+        )
+    if resume_file is None or not str(resume_file.filename or "").strip():
+        _append_cores_log("[IMPORT] rejected: resumeFile is required")
+        return _with_cors(
+            app.make_response((jsonify({"error": "resumeFile is required"}), 400))
+        )
+
+    filename = str(resume_file.filename or "").strip()
+    suffix = Path(filename).suffix.lower()
+    _append_cores_log(f"[IMPORT] started file={filename} type={suffix or 'unknown'}")
+    if suffix not in {".pdf", ".docx"}:
+        _append_cores_log(f"[IMPORT] rejected: unsupported extension for {filename}")
+        return _with_cors(
+            app.make_response((jsonify({"error": "Only .pdf and .docx files are supported"}), 400))
+        )
+
+    file_bytes = resume_file.read() or b""
+    if not file_bytes:
+        _append_cores_log(f"[IMPORT] rejected: uploaded file is empty for {filename}")
+        return _with_cors(
+            app.make_response((jsonify({"error": "Uploaded file is empty"}), 400))
+        )
+
+    try:
+        if suffix == ".pdf":
+            resume_text = _extract_pdf_text(file_bytes)
+        else:
+            resume_text = _extract_docx_text(file_bytes)
+    except ValueError as exc:
+        _append_cores_log(f"[IMPORT] resume parsing failed for {filename}: {exc}")
+        return _with_cors(
+            app.make_response((jsonify({"error": "Resume parsing failed", "details": str(exc)}), 422))
+        )
+
+    openai_key = os.environ.get("OPENAI_API_KEY", "").strip()
+    if not openai_key:
+        _append_cores_log("[IMPORT] rejected: OPENAI_API_KEY is missing")
+        return _with_cors(
+            app.make_response((jsonify({"error": "OPENAI_API_KEY is missing"}), 500))
+        )
+
+    model = os.environ.get("OPENAI_MODEL", "gpt-4o-mini").strip() or "gpt-4o-mini"
+    prompt = (
+        f"{RESUME_IMPORT_PROMPT}\n\n"
+        f"EMPTY CORES-MD TEMPLATE:\n{template_markdown}\n\n"
+        f"RESUME SOURCE TEXT:\n{resume_text}\n"
+    )
+
+    try:
+        response = requests.post(
+            "https://api.openai.com/v1/chat/completions",
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {openai_key}",
+            },
+            json={
+                "model": model,
+                "temperature": 0.0,
+                "messages": [
+                    {"role": "user", "content": prompt},
+                ],
+                "max_tokens": 3800,
+            },
+            timeout=90,
+        )
+    except requests.RequestException as exc:
+        _append_cores_log(f"[IMPORT] AI request failed for {filename}: {exc}")
+        return _with_cors(
+            app.make_response((jsonify({"error": "AI request failed", "details": str(exc)}), 503))
+        )
+
+    if response.status_code >= 400:
+        _append_cores_log(
+            f"[IMPORT] OpenAI request failed for {filename}: status={response.status_code}"
+        )
+        return _with_cors(
+            app.make_response(
+                (
+                    jsonify(
+                        {
+                            "error": "OpenAI request failed",
+                            "details": response.text,
+                        }
+                    ),
+                    response.status_code,
+                )
+            )
+        )
+
+    data = response.json()
+    raw_content = (
+        data.get("choices", [{}])[0]
+        .get("message", {})
+        .get("content", "")
+    ).strip()
+    if not raw_content:
+        _append_cores_log(f"[IMPORT] AI returned empty markdown for {filename}")
+        return _with_cors(
+            app.make_response((jsonify({"error": "AI returned empty markdown"}), 422))
+        )
+
+    output_markdown = raw_content.replace("\r\n", "\n").replace("\r", "\n").strip() + "\n"
+    normalized_markdown = _normalize_common_ascii(output_markdown)
+    if normalized_markdown != output_markdown:
+        _append_cores_log(f"[IMPORT] normalized common non-ASCII typography for {filename}")
+    output_markdown = normalized_markdown
+    wrapped_markdown = _enforce_resume_import_line_length(output_markdown, max_len=120)
+    if wrapped_markdown != output_markdown:
+        _append_cores_log(f"[IMPORT] wrapped long lines to <=120 chars for {filename}")
+        output_markdown = wrapped_markdown
+    try:
+        _validate_resume_import_output(template_markdown, output_markdown)
+        _validate_cores_markdown(output_markdown)
+    except ValueError as exc:
+        _append_cores_log(f"[IMPORT] output validation failed for {filename}: {exc}")
+        return _with_cors(
+            app.make_response(
+                (
+                    jsonify({"error": "AI output failed resume-template validation", "details": str(exc)}),
+                    422,
+                )
+            )
+        )
+
+    _append_cores_log(f"[IMPORT] completed for {filename}")
+    return _with_cors(jsonify({"markdown": output_markdown}))
+
+
 @app.route("/parse_project", methods=["OPTIONS", "POST"])
 def parse_project():
     if request.method == "OPTIONS":
@@ -769,6 +1494,13 @@ def parse_project():
 
     payload = request.get_json(force=True, silent=True) or {}
     transcript = str(payload.get("transcript") or "").strip()
+    company_name = str(payload.get("companyName") or "").strip()
+    existing_project_titles = payload.get("existingProjectTitles")
+    if not isinstance(existing_project_titles, list):
+        existing_project_titles = []
+    existing_project_titles = [
+        str(item or "").strip() for item in existing_project_titles if str(item or "").strip()
+    ]
     if not transcript:
         return _with_cors(app.make_response((jsonify({"error": "Transcript is required"}), 400)))
 
@@ -779,8 +1511,18 @@ def parse_project():
         )
 
     model = os.environ.get("OPENAI_MODEL", "gpt-4o-mini").strip() or "gpt-4o-mini"
+    company_context = f"Target company: {company_name}\n" if company_name else ""
+    existing_context = (
+        "Existing project titles under this company:\n"
+        + "\n".join(f"- {title}" for title in existing_project_titles)
+        + "\n"
+        if existing_project_titles
+        else ""
+    )
     prompt = (
         f"{PROJECT_PARSE_PROMPT}\n\n"
+        f"{company_context}"
+        f"{existing_context}"
         f"Input transcript:\n{transcript}\n"
     )
 
@@ -797,6 +1539,7 @@ def parse_project():
                 "messages": [
                     {"role": "user", "content": prompt},
                 ],
+                "response_format": {"type": "json_object"},
                 "max_tokens": 900,
             },
             timeout=60,
@@ -822,18 +1565,40 @@ def parse_project():
         )
 
     data = response.json()
-    project_block = (
+    raw_content = (
         data.get("choices", [{}])[0]
         .get("message", {})
         .get("content", "")
     ).strip()
-    if not project_block:
+    if not raw_content:
         return _with_cors(
-            app.make_response((jsonify({"error": "AI returned empty project block"}), 422))
+            app.make_response((jsonify({"error": "AI returned empty project content"}), 422))
         )
 
     try:
+        json_text = _extract_first_json_object(raw_content)
+        project_json = json.loads(json_text)
+        normalized_project = _normalize_project_json(project_json)
+        project_block = _build_project_block(
+            normalized_project["projectTitle"],
+            normalized_project["sections"],
+        )
         _parse_project_block_sections(project_block)
+    except json.JSONDecodeError as exc:
+        return _with_cors(
+            app.make_response(
+                (
+                    jsonify(
+                        {
+                            "error": "AI output failed CORES project validation",
+                            "details": f"AI JSON decode failed: {exc}",
+                        }
+                    ),
+                    422,
+                )
+            )
+        )
+
     except ValueError as exc:
         return _with_cors(
             app.make_response(
@@ -844,7 +1609,130 @@ def parse_project():
             )
         )
 
-    return _with_cors(jsonify({"projectBlock": project_block}))
+    return _with_cors(jsonify({"project": normalized_project, "projectBlock": project_block}))
+
+
+@app.route("/parse_company", methods=["OPTIONS", "POST"])
+def parse_company():
+    if request.method == "OPTIONS":
+        resp = app.make_response(("", 204))
+        return _with_cors(resp)
+
+    payload = request.get_json(force=True, silent=True) or {}
+    transcript = str(payload.get("transcript") or "").strip()
+    existing_company_names = payload.get("existingCompanyNames")
+    if not isinstance(existing_company_names, list):
+        existing_company_names = []
+    existing_company_names = [
+        str(item or "").strip() for item in existing_company_names if str(item or "").strip()
+    ]
+    if not transcript:
+        return _with_cors(app.make_response((jsonify({"error": "Transcript is required"}), 400)))
+
+    openai_key = os.environ.get("OPENAI_API_KEY", "").strip()
+    if not openai_key:
+        return _with_cors(
+            app.make_response((jsonify({"error": "OPENAI_API_KEY is missing"}), 500))
+        )
+
+    model = os.environ.get("OPENAI_MODEL", "gpt-4o-mini").strip() or "gpt-4o-mini"
+    existing_context = (
+        "Existing company names:\n"
+        + "\n".join(f"- {name}" for name in existing_company_names)
+        + "\n"
+        if existing_company_names
+        else ""
+    )
+    prompt = (
+        f"{COMPANY_PARSE_PROMPT}\n\n"
+        f"{existing_context}"
+        f"Input transcript:\n{transcript}\n"
+    )
+
+    try:
+        response = requests.post(
+            "https://api.openai.com/v1/chat/completions",
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {openai_key}",
+            },
+            json={
+                "model": model,
+                "temperature": 0.0,
+                "messages": [
+                    {"role": "user", "content": prompt},
+                ],
+                "response_format": {"type": "json_object"},
+                "max_tokens": 1300,
+            },
+            timeout=60,
+        )
+    except requests.RequestException as exc:
+        return _with_cors(
+            app.make_response((jsonify({"error": "AI request failed", "details": str(exc)}), 503))
+        )
+
+    if response.status_code >= 400:
+        return _with_cors(
+            app.make_response(
+                (
+                    jsonify(
+                        {
+                            "error": "OpenAI request failed",
+                            "details": response.text,
+                        }
+                    ),
+                    response.status_code,
+                )
+            )
+        )
+
+    data = response.json()
+    raw_content = (
+        data.get("choices", [{}])[0]
+        .get("message", {})
+        .get("content", "")
+    ).strip()
+    if not raw_content:
+        return _with_cors(
+            app.make_response((jsonify({"error": "AI returned empty company content"}), 422))
+        )
+
+    try:
+        json_text = _extract_first_json_object(raw_content)
+        company_json = json.loads(json_text)
+        normalized_company = _normalize_company_json(company_json)
+        project_block = _build_project_block(
+            normalized_company["firstProject"]["projectTitle"],
+            normalized_company["firstProject"]["sections"],
+        )
+        _parse_project_block_sections(project_block)
+    except json.JSONDecodeError as exc:
+        return _with_cors(
+            app.make_response(
+                (
+                    jsonify(
+                        {
+                            "error": "AI output failed CORES company validation",
+                            "details": f"AI JSON decode failed: {exc}",
+                        }
+                    ),
+                    422,
+                )
+            )
+        )
+
+    except ValueError as exc:
+        return _with_cors(
+            app.make_response(
+                (
+                    jsonify({"error": "AI output failed CORES company validation", "details": str(exc)}),
+                    422,
+                )
+            )
+        )
+
+    return _with_cors(jsonify({"company": normalized_company, "projectBlock": project_block}))
 
 
 @app.route("/save_cores", methods=["OPTIONS", "POST"])
@@ -1392,3 +2280,4 @@ if __name__ == "__main__":
     schedule_dashboard_snapshot()
     print("HSST Control Tower Flask Server Running (Skeleton Mode)")
     app.run(host="0.0.0.0", port=5000, debug=True)
+

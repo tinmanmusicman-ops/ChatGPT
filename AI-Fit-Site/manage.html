@@ -5,32 +5,46 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CORES Structured Editor</title>
   <style>
-    body { margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color: #e5e7eb; }
-    .page { width: min(1000px, 96vw); margin: 24px auto; padding: 16px; }
+    body { forced-color-adjust: none;
+margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color: #e5e7eb; }
+    .page { width: min(800px, 96vw); margin: 24px auto; padding: 16px; }
     .top { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    .top-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
     .core-id { color: #94a3b8; font-size: 0.9rem; }
-    .toolbar { display: flex; gap: 8px; margin: 12px 0 16px; flex-wrap: wrap; }
+    .toolbar { display: flex; gap: 8px; margin: 12px 0 16px; flex-wrap: wrap; align-items: center; }
+    .toolbar-label { color: #93c5fd; font-size: 0.82rem; text-transform: uppercase; }
+    .toolbar-select { width: auto; min-width: 280px; max-width: min(92vw, 540px); flex: 1 1 320px; }
     button, .button { border: 1px solid #334155; border-radius: 10px; background: #1e293b; color: #e5e7eb; padding: 8px 12px; text-decoration: none; cursor: pointer; }
-    button.primary { background: #60a5fa; color: #081327; border-color: #93c5fd; font-weight: 600; }
+    button.primary { background: #55914a; color: #081327; border-color: #93c5fd; font-weight: 600; }
+    button.primary.saved-ok { background: #4b5563; border-color: #6b7280; color: #e5e7eb; }
     button.danger { background: #3f1f28; border-color: #9f4561; color: #ffd6e0; }
     .status { min-height: 22px; color: #9ae6b4; margin-bottom: 10px; }
     .status.error { color: #fda4af; font-weight: 600; }
     .stack { display: flex; flex-direction: column; gap: 12px; }
     .card { border: 1px solid #334155; border-radius: 12px; background: #111827; padding: 12px; }
+    .card.human-frame { width: 50%; max-width: 520px; min-width: 320px; margin: 0 auto; }
     .card h2, .card h3, .card h4 { margin: 0 0 8px; }
     .locked { color: #facc15; font-size: 0.88rem; margin-bottom: 8px; }
     .label { color: #93c5fd; font-size: 0.82rem; margin: 8px 0 4px; text-transform: uppercase; }
-    textarea, input[type="text"] { width: 100%; border: 1px solid #334155; border-radius: 8px; background: #0b1220; color: #e5e7eb; padding: 8px; font-family: Consolas, monospace; }
+    textarea, input[type="text"], select { width: 100%; border: 1px solid #334155; border-radius: 8px; background: #0b1220; color: #e5e7eb; padding: 8px; font-family: Consolas, monospace; }
     textarea { min-height: 100px; resize: vertical; line-height: 1.35; }
     .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
     .company { border: 1px solid #1d4ed8; border-radius: 10px; padding: 10px; margin-top: 10px; background: #0b1325; }
     .project { border: 1px solid #2563eb; border-radius: 10px; padding: 10px; margin-top: 8px; background: #0a1020; }
-    .skill-item { border: 1px solid #2563eb; border-radius: 10px; padding: 10px; margin-top: 8px; background: #0a1020; display: inline-block; width: fit-content; max-width: 100%; }
-    .skill-row { display: inline-flex; align-items: center; gap: 8px; margin-top: 6px; max-width: 100%; }
+    .skills-items { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 12px; margin-top: 8px; }
+    .skill-item { margin-right: 4px;border: 1px solid #2563eb; border-radius: 10px; padding: 10px; margin: 0; background: #0a1020; display: inline-block; width: fit-content; max-width: calc(100% - 2px); box-sizing: border-box; overflow: hidden; }
+    .skill-row { display: inline-flex; align-items: center; gap: 8px; margin-top: 6px; max-width: 100%; min-width: 0; }
     .skill-marker { color: #facc15; font-weight: 700; font-size: 1.05rem; width: 18px; text-align: center; }
-    .skill-input { flex: none; width: auto; min-width: 18ch; max-width: min(92vw, 96ch); }
+    .skill-input { margin-right: 4px;flex: none; width: auto; min-width: 18ch; max-width: min(100%, 72ch); box-sizing: border-box; }
     .bullet-item { border: 1px solid #2563eb; border-radius: 10px; padding: 10px; margin-top: 8px; background: #0a1020; display: inline-block; width: fit-content; max-width: 100%; }
     .bullet-input { width: auto; min-width: 22ch; max-width: min(92vw, 106ch); min-height: 72px; }
+    .project-modal { position: fixed; inset: 0; z-index: 3000; display: none; align-items: center; justify-content: center; padding: 16px; background: rgba(0, 0, 0, 0.72); }
+    .project-modal.open { display: flex; }
+    .project-modal-card { width: min(920px, calc(100% - 32px)); max-height: 92vh; overflow: auto; border-radius: 14px; border: 1px solid #334155; background: #111827; padding: 14px; }
+    .project-modal-card textarea { width: 100%; min-height: 220px; }
+    .project-modal-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .project-modal-status { min-height: 20px; margin-top: 10px; color: #9ae6b4; }
+    .project-modal-status.error { color: #fda4af; font-weight: 600; }
   </style>
 </head>
 <body>
@@ -38,19 +52,59 @@
     <div class="top">
       <div>
         <h1>Manage Content</h1>
-        <div id="coreIdLabel" class="core-id">CORE: unknown</div>
+        <div id="coreIdLabel" class="core-id">FILE: unknown</div>
       </div>
-      <a href="/AI-Fit-Site" class="button">Back To Job Page</a>
+      <div class="top-actions">
+        <button id="importResumeBtn" type="button" class="button">Import PDF/DOCX</button>
+        <input id="importResumeInput" type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden />
+        <a href="/AI-Fit-Site" class="button">Back To Job Page</a>
+      </div>
     </div>
 
     <div id="statusLine" class="status"></div>
 
     <div class="toolbar">
+      <span class="toolbar-label">Markdown File</span>
+      <select id="filePicker" class="toolbar-select" aria-label="Markdown file picker"></select>
+      <button id="openFileBtn" type="button">Open File</button>
+      <button id="refreshFilesBtn" type="button">Refresh Files</button>
       <button id="saveAllBtn" class="primary">Save All</button>
       <button id="reloadBtn">Reload</button>
     </div>
 
     <div id="editorRoot" class="stack"></div>
+  </div>
+
+  <div id="projectPromptModal" class="project-modal" hidden>
+    <div class="project-modal-card" role="dialog" aria-modal="true" aria-labelledby="projectPromptTitle">
+      <h2 id="projectPromptTitle">Add Project (Dictate / Type -> AI)</h2>
+      <div id="projectPromptCompany" class="locked">Company: </div>
+      <div class="label">Project Details</div>
+      <textarea id="projectPromptTranscript" placeholder="Dictate or type the project details, then click Send To AI."></textarea>
+      <div class="project-modal-actions">
+        <button id="projectPromptStartDictationBtn" type="button">Start Dictation</button>
+        <button id="projectPromptStopDictationBtn" type="button" disabled>Stop</button>
+        <button id="projectPromptSendBtn" type="button" class="primary">Send To AI</button>
+        <button id="projectPromptCancelBtn" type="button">Cancel</button>
+      </div>
+      <div id="projectPromptStatus" class="project-modal-status"></div>
+    </div>
+  </div>
+
+  <div id="companyPromptModal" class="project-modal" hidden>
+    <div class="project-modal-card" role="dialog" aria-modal="true" aria-labelledby="companyPromptTitle">
+      <h2 id="companyPromptTitle">Add Company (Dictate / Type -> AI)</h2>
+      <div class="locked">AI will create COMPANY, ROLE, SIGNALS, and the first PROJECT.</div>
+      <div class="label">Company Story</div>
+      <textarea id="companyPromptTranscript" placeholder="Dictate or type the company story, then click Send To AI."></textarea>
+      <div class="project-modal-actions">
+        <button id="companyPromptStartDictationBtn" type="button">Start Dictation</button>
+        <button id="companyPromptStopDictationBtn" type="button" disabled>Stop</button>
+        <button id="companyPromptSendBtn" type="button" class="primary">Send To AI</button>
+        <button id="companyPromptCancelBtn" type="button">Cancel</button>
+      </div>
+      <div id="companyPromptStatus" class="project-modal-status"></div>
+    </div>
   </div>
 
   <script>
@@ -74,8 +128,33 @@
       const statusEl = document.getElementById("statusLine");
       const coreIdEl = document.getElementById("coreIdLabel");
       const rootEl = document.getElementById("editorRoot");
+      const importResumeBtn = document.getElementById("importResumeBtn");
+      const importResumeInput = document.getElementById("importResumeInput");
+      const filePickerEl = document.getElementById("filePicker");
+      const openFileBtn = document.getElementById("openFileBtn");
+      const refreshFilesBtn = document.getElementById("refreshFilesBtn");
       const saveAllBtn = document.getElementById("saveAllBtn");
       const reloadBtn = document.getElementById("reloadBtn");
+      const projectPromptModalEl = document.getElementById("projectPromptModal");
+      const projectPromptCompanyEl = document.getElementById("projectPromptCompany");
+      const projectPromptTranscriptEl = document.getElementById("projectPromptTranscript");
+      const projectPromptStatusEl = document.getElementById("projectPromptStatus");
+      const projectPromptStartDictationBtn = document.getElementById("projectPromptStartDictationBtn");
+      const projectPromptStopDictationBtn = document.getElementById("projectPromptStopDictationBtn");
+      const projectPromptSendBtn = document.getElementById("projectPromptSendBtn");
+      const projectPromptCancelBtn = document.getElementById("projectPromptCancelBtn");
+      const companyPromptModalEl = document.getElementById("companyPromptModal");
+      const companyPromptTranscriptEl = document.getElementById("companyPromptTranscript");
+      const companyPromptStatusEl = document.getElementById("companyPromptStatus");
+      const companyPromptStartDictationBtn = document.getElementById("companyPromptStartDictationBtn");
+      const companyPromptStopDictationBtn = document.getElementById("companyPromptStopDictationBtn");
+      const companyPromptSendBtn = document.getElementById("companyPromptSendBtn");
+      const companyPromptCancelBtn = document.getElementById("companyPromptCancelBtn");
+      let projectPromptCompanyIndex = null;
+      let projectRecognition = null;
+      let projectIsRecording = false;
+      let companyRecognition = null;
+      let companyIsRecording = false;
 
       const setStatus = (m, e = false) => { statusEl.textContent = m || ""; statusEl.classList.toggle("error", !!e); };
       const fail = (m) => { setStatus(m, true); throw new Error(m); };
@@ -84,10 +163,169 @@
       const sliceText = (lines, s, e) => trimLines(lines.slice(s, e).join("\n")).trim();
       const esc = (s) => String(s || "").toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
 
-      const parseCoreId = () => {
-        const id = new URLSearchParams(window.location.search).get("id");
-        if (!id || !/^[A-Za-z0-9._-]+$/.test(id)) fail("Missing or invalid core id query parameter. Use /AI-Fit-Site/manage?id=CORE-US-2026-000001");
+      const normalizeCoreId = (raw) => {
+        let id = String(raw || "").trim();
+        if (!id) fail("Markdown file id is required.");
+        if (/\.md$/i.test(id)) id = id.slice(0, -3).trim();
+        if (!id || id === "." || id === "..") fail("Invalid markdown file name.");
+        if (/[\\/:*?"<>|]/.test(id)) fail("Invalid markdown file name.");
         return id;
+      };
+      const coreIdToFileName = (coreId) => `${coreId}.md`;
+      const parseCoreIdFromQuery = () => {
+        const id = new URLSearchParams(window.location.search).get("id");
+        if (!id) return "";
+        return normalizeCoreId(id);
+      };
+      const createGeneratedCoreId = () => {
+        const stamp = new Date().toISOString().replace(/[^0-9]/g, "");
+        const suffix = Math.random().toString(36).slice(2, 6).toUpperCase();
+        return `IMPORT-${stamp}-${suffix}`;
+      };
+
+      const addFilePickerOption = (fileName) => {
+        if (!filePickerEl) return;
+        if (Array.from(filePickerEl.options).some((opt) => opt.value === fileName)) {
+          filePickerEl.value = fileName;
+          return;
+        }
+        const option = document.createElement("option");
+        option.value = fileName;
+        option.textContent = fileName;
+        filePickerEl.appendChild(option);
+        filePickerEl.value = fileName;
+      };
+
+      const setFileLabel = () => {
+        coreIdEl.textContent = state.coreId ? `FILE: ${coreIdToFileName(state.coreId)}` : "FILE: unknown";
+      };
+
+      const ensureCoreId = () => {
+        if (state.coreId) return state.coreId;
+        state.coreId = createGeneratedCoreId();
+        addFilePickerOption(coreIdToFileName(state.coreId));
+        setFileLabel();
+        const params = new URLSearchParams(window.location.search);
+        params.set("id", state.coreId);
+        window.history.replaceState(null, "", `${window.location.pathname}?${params.toString()}`);
+        return state.coreId;
+      };
+      const syncFilePickerSelection = () => {
+        if (!filePickerEl || !state.coreId) return;
+        const target = coreIdToFileName(state.coreId);
+        if (Array.from(filePickerEl.options).some((opt) => opt.value === target)) {
+          filePickerEl.value = target;
+          return;
+        }
+        const extra = document.createElement("option");
+        extra.value = target;
+        extra.textContent = target;
+        filePickerEl.appendChild(extra);
+        filePickerEl.value = target;
+      };
+      const loadFileChoices = async (preferredCoreId = "") => {
+        if (!filePickerEl) return;
+        const response = await fetch("/cores/files", { cache: "no-store" });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) fail(payload?.error || `File list failed (${response.status})`);
+        const files = Array.isArray(payload?.files)
+          ? payload.files
+              .map((name) => String(name || "").trim())
+              .filter((name) => /\.md$/i.test(name))
+          : [];
+        if (!files.length) fail("No .md files were found in CORES.");
+
+        filePickerEl.innerHTML = "";
+        files.forEach((name) => {
+          const option = document.createElement("option");
+          option.value = name;
+          option.textContent = name;
+          filePickerEl.appendChild(option);
+        });
+
+        const preferredFile = preferredCoreId ? coreIdToFileName(preferredCoreId) : "";
+        if (preferredFile && files.includes(preferredFile)) {
+          filePickerEl.value = preferredFile;
+        } else {
+          filePickerEl.selectedIndex = 0;
+        }
+      };
+      const confirmDiscardUnsavedChanges = () => {
+        if (!state.doc) return true;
+        try {
+          syncFromInputs();
+          const current = buildMarkdown(state.doc);
+          if (current !== state.savedMarkdown) {
+            return window.confirm("Discard unsaved changes and continue?");
+          }
+          return true;
+        } catch (_) {
+          return window.confirm("Discard unsaved changes and continue?");
+        }
+      };
+      const importResumeIntoTemplate = async (resumeFile) => {
+        if (!state.doc) fail("Document state unavailable.");
+        if (!resumeFile) fail("Resume file is required.");
+
+        const ext = String(resumeFile.name || "").toLowerCase();
+        if (!(ext.endsWith(".pdf") || ext.endsWith(".docx"))) {
+          fail("Only .pdf and .docx files are supported.");
+        }
+
+        const overwrite = window.confirm(
+          "Import will replace current editor content with parsed output. Continue?"
+        );
+        if (!overwrite) {
+          setStatus("Import cancelled.");
+          return;
+        }
+
+        importResumeBtn && (importResumeBtn.disabled = true);
+        try {
+          setStatus("Creating new empty template file ...");
+          const createResponse = await fetch("/cores/new-template", {
+            method: "POST",
+          });
+          const createData = await createResponse.json().catch(() => ({}));
+          if (!createResponse.ok) {
+            const combined = [createData?.error, createData?.details].filter(Boolean).join(": ");
+            throw new Error(combined || `Template creation failed (${createResponse.status})`);
+          }
+
+          const newCoreId = normalizeCoreId(createData?.coreId || "");
+          await loadFileChoices(newCoreId);
+          await loadDoc(newCoreId);
+
+          const templateMarkdown = buildMarkdown(state.doc);
+          const formData = new FormData();
+          formData.append("resumeFile", resumeFile);
+          formData.append("templateMarkdown", templateMarkdown);
+
+          setStatus(`Importing ${resumeFile.name} into ${coreIdToFileName(newCoreId)} ...`);
+          const response = await fetch("/import_resume_template", {
+            method: "POST",
+            body: formData,
+          });
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            const combined = [data?.error, data?.details].filter(Boolean).join(": ");
+            throw new Error(combined || `Import failed (${response.status})`);
+          }
+          const importedMarkdown = String(data?.markdown || "").trim();
+          if (!importedMarkdown) fail("Import returned empty markdown.");
+
+          const parsed = parseDoc(importedMarkdown);
+          validate(parsed);
+          state.doc = parsed;
+          render();
+          setStatus(
+            `Resume imported into ${coreIdToFileName(state.coreId)}. Review, edit, then click Save All.`
+          );
+        } catch (error) {
+          setStatus(error?.message || "Resume import failed.", true);
+        } finally {
+          importResumeBtn && (importResumeBtn.disabled = false);
+        }
       };
 
       const labelKey = (raw) => String(raw || "").toLowerCase().replace(/[^a-z0-9/ ]+/g, " ").replace(/\s*\/\s*/g, "/").replace(/\s+/g, " ").trim();
@@ -458,7 +696,7 @@
       const clamp = (n, min, max) => Math.min(max, Math.max(min, n));
       const autoSizeSingleLine = (el) => {
         const len = (el?.value || "").length;
-        el.size = clamp(len + 2, 18, 96);
+        el.size = clamp(len + 2, 18, 72);
       };
       const autoSizeMultiline = (el) => {
         const lines = nn(el?.value || "").split("\n");
@@ -467,12 +705,244 @@
         el.style.height = "auto";
         el.style.height = `${Math.max(72, el.scrollHeight)}px`;
       };
+      const getSpeechRecognitionCtor = () =>
+        window.SpeechRecognition || window.webkitSpeechRecognition || null;
+      const parseProjectBlock = (projectBlock) => {
+        const normalized = nn(projectBlock).trim();
+        if (!normalized) throw new Error("AI returned an empty project block.");
+        const lines = normalized.split("\n");
+        const header = lines[0].trim().match(/^###\s+PROJECT:\s*(.*)$/i);
+        if (!header) throw new Error("AI output is missing the '### PROJECT:' header.");
+        return parseProject(header[1] || "", lines.slice(1));
+      };
+      const normalizeAiProject = (rawProject) => {
+        if (!rawProject || typeof rawProject !== "object") return null;
+        const title = trimLines(rawProject.projectTitle || rawProject.title || "").trim();
+        const sourceSections = rawProject.sections || {};
+        if (typeof sourceSections !== "object" || sourceSections === null) return null;
 
-      const smartMultilineField = (label, idPrefix, value) => {
+        const sections = {};
+        for (const key of PROJECT_FIELDS) {
+          const value = trimLines(sourceSections[key] || "").trim();
+          if (!value) return null;
+          sections[key] = value;
+        }
+
+        return { title, sections };
+      };
+      const normalizeAiCompany = (rawCompany) => {
+        if (!rawCompany || typeof rawCompany !== "object") return null;
+        const name = trimLines(rawCompany.companyName || rawCompany.name || "").trim();
+        const role = trimLines(rawCompany.role || rawCompany.companyRole || "").trim();
+        const signals = trimLines(rawCompany.signals || rawCompany.companySignals || "").trim();
+        const firstProject = normalizeAiProject(rawCompany.firstProject || rawCompany.project || null);
+        if (!name || !role || !signals || !firstProject) return null;
+        return {
+          name,
+          role,
+          signals,
+          projects: [firstProject],
+        };
+      };
+      const setProjectPromptStatus = (message, isError = false) => {
+        if (!projectPromptStatusEl) return;
+        projectPromptStatusEl.textContent = message || "";
+        projectPromptStatusEl.classList.toggle("error", !!isError);
+      };
+      const setProjectPromptOpen = (open) => {
+        if (!projectPromptModalEl) return;
+        if (open) {
+          projectPromptModalEl.hidden = false;
+          projectPromptModalEl.classList.add("open");
+          document.body.style.overflow = "hidden";
+          projectPromptTranscriptEl?.focus();
+        } else {
+          projectPromptModalEl.classList.remove("open");
+          projectPromptModalEl.hidden = true;
+          document.body.style.overflow = "";
+        }
+      };
+      const stopProjectDictation = () => {
+        if (projectRecognition && projectIsRecording) {
+          try { projectRecognition.stop(); } catch (_) {}
+        }
+      };
+      const closeProjectPrompt = () => {
+        stopProjectDictation();
+        projectRecognition = null;
+        projectIsRecording = false;
+        projectPromptCompanyIndex = null;
+        if (projectPromptStartDictationBtn) projectPromptStartDictationBtn.disabled = false;
+        if (projectPromptStopDictationBtn) projectPromptStopDictationBtn.disabled = true;
+        if (projectPromptSendBtn) projectPromptSendBtn.disabled = false;
+        setProjectPromptStatus("");
+        setProjectPromptOpen(false);
+      };
+      const openProjectPrompt = (companyIndex, companyName) => {
+        if (!state.doc) return;
+        projectPromptCompanyIndex = companyIndex;
+        if (projectPromptCompanyEl) {
+          projectPromptCompanyEl.textContent = `Company: ${companyName}`;
+        }
+        if (projectPromptTranscriptEl) {
+          projectPromptTranscriptEl.value = "";
+        }
+        setProjectPromptStatus("Dictate or type details, then click Send To AI.");
+        setProjectPromptOpen(true);
+      };
+      const sendTranscriptToAi = async () => {
+        if (projectPromptCompanyIndex === null || projectPromptCompanyIndex < 0) {
+          setProjectPromptStatus("Project target company is missing.", true);
+          return;
+        }
+        const transcript = projectPromptTranscriptEl?.value?.trim() || "";
+        if (!transcript) {
+          setProjectPromptStatus("Please dictate or type project details first.", true);
+          projectPromptTranscriptEl?.focus();
+          return;
+        }
+
+        if (projectPromptStartDictationBtn) projectPromptStartDictationBtn.disabled = true;
+        if (projectPromptStopDictationBtn) projectPromptStopDictationBtn.disabled = true;
+        if (projectPromptSendBtn) projectPromptSendBtn.disabled = true;
+        setProjectPromptStatus("Sending to AI...");
+
+        try {
+          const targetCompany = state.doc.experience[projectPromptCompanyIndex];
+          const response = await fetch("/parse_project", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              transcript,
+              companyName: targetCompany?.name || "",
+              existingProjectTitles: Array.isArray(targetCompany?.projects)
+                ? targetCompany.projects.map((p) => trimLines(p?.title || "").trim()).filter(Boolean)
+                : [],
+            }),
+          });
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            throw new Error(data?.error || data?.details || `AI parse failed (${response.status})`);
+          }
+
+          const parsedProject =
+            normalizeAiProject(data?.project) ||
+            parseProjectBlock(data?.projectBlock || "");
+          syncFromInputs();
+          state.doc.experience[projectPromptCompanyIndex].projects.push(parsedProject);
+          render();
+          setStatus(`AI added a project under '${state.doc.experience[projectPromptCompanyIndex].name}'. Review and save.`);
+          closeProjectPrompt();
+        } catch (error) {
+          setProjectPromptStatus(error?.message || "AI parse failed.", true);
+          if (projectPromptSendBtn) projectPromptSendBtn.disabled = false;
+          if (projectPromptStartDictationBtn) projectPromptStartDictationBtn.disabled = false;
+          if (projectPromptStopDictationBtn) projectPromptStopDictationBtn.disabled = !projectIsRecording;
+        }
+      };
+      const setCompanyPromptStatus = (message, isError = false) => {
+        if (!companyPromptStatusEl) return;
+        companyPromptStatusEl.textContent = message || "";
+        companyPromptStatusEl.classList.toggle("error", !!isError);
+      };
+      const setCompanyPromptOpen = (open) => {
+        if (!companyPromptModalEl) return;
+        if (open) {
+          companyPromptModalEl.hidden = false;
+          companyPromptModalEl.classList.add("open");
+          document.body.style.overflow = "hidden";
+          companyPromptTranscriptEl?.focus();
+        } else {
+          companyPromptModalEl.classList.remove("open");
+          companyPromptModalEl.hidden = true;
+          document.body.style.overflow = "";
+        }
+      };
+      const stopCompanyDictation = () => {
+        if (companyRecognition && companyIsRecording) {
+          try { companyRecognition.stop(); } catch (_) {}
+        }
+      };
+      const closeCompanyPrompt = () => {
+        stopCompanyDictation();
+        companyRecognition = null;
+        companyIsRecording = false;
+        if (companyPromptStartDictationBtn) companyPromptStartDictationBtn.disabled = false;
+        if (companyPromptStopDictationBtn) companyPromptStopDictationBtn.disabled = true;
+        if (companyPromptSendBtn) companyPromptSendBtn.disabled = false;
+        setCompanyPromptStatus("");
+        setCompanyPromptOpen(false);
+      };
+      const openCompanyPrompt = () => {
+        if (companyPromptTranscriptEl) {
+          companyPromptTranscriptEl.value = "";
+        }
+        setCompanyPromptStatus("Dictate or type details, then click Send To AI.");
+        setCompanyPromptOpen(true);
+      };
+      const sendCompanyTranscriptToAi = async () => {
+        const transcript = companyPromptTranscriptEl?.value?.trim() || "";
+        if (!transcript) {
+          setCompanyPromptStatus("Please dictate or type company details first.", true);
+          companyPromptTranscriptEl?.focus();
+          return;
+        }
+
+        if (!state.doc) {
+          setCompanyPromptStatus("Document state unavailable.", true);
+          return;
+        }
+
+        if (companyPromptStartDictationBtn) companyPromptStartDictationBtn.disabled = true;
+        if (companyPromptStopDictationBtn) companyPromptStopDictationBtn.disabled = true;
+        if (companyPromptSendBtn) companyPromptSendBtn.disabled = true;
+        setCompanyPromptStatus("Sending to AI...");
+
+        try {
+          const response = await fetch("/parse_company", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              transcript,
+              existingCompanyNames: state.doc.experience.map((c) => trimLines(c?.name || "").trim()).filter(Boolean),
+            }),
+          });
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            throw new Error(data?.error || data?.details || `AI parse failed (${response.status})`);
+          }
+
+          const parsedCompany = normalizeAiCompany(data?.company);
+          if (!parsedCompany) {
+            throw new Error("AI output failed company validation.");
+          }
+
+          syncFromInputs();
+          state.doc.experience.push(parsedCompany);
+          render();
+          setStatus(`AI added company '${parsedCompany.name}'. Review and save.`);
+          closeCompanyPrompt();
+        } catch (error) {
+          setCompanyPromptStatus(error?.message || "AI parse failed.", true);
+          if (companyPromptSendBtn) companyPromptSendBtn.disabled = false;
+          if (companyPromptStartDictationBtn) companyPromptStartDictationBtn.disabled = false;
+          if (companyPromptStopDictationBtn) companyPromptStopDictationBtn.disabled = !companyIsRecording;
+        }
+      };
+
+      const smartMultilineField = (label, idPrefix, value, options = {}) => {
+        const allowListActions = !!options.allowListActions;
+        const addItemLabel = String(options.addItemLabel || "Add Item");
+        const deleteItemLabel = String(options.deleteItemLabel || "Delete Item");
+        const itemHeadingPrefix = String(options.itemHeadingPrefix || "").trim();
+        const deleteConfirmPrefix = String(options.deleteConfirmPrefix || "Delete item").trim();
+
         const parsed = parseBulletGroup(value, label);
-        if (!parsed) {
+        const useListEditor = !!parsed || allowListActions;
+        if (!useListEditor) {
           return field(label, `${idPrefix}_content`, value, true);
         }
+        const parsedValue = parsed || { intro: trimLines(value || "").trim(), items: [] };
 
         const wrap = document.createElement("div");
         const l = document.createElement("div");
@@ -480,16 +950,46 @@
         l.textContent = label;
         wrap.appendChild(l);
 
-        if (parsed.intro) {
-          wrap.appendChild(field("Text Before Bullets", `${idPrefix}_intro`, parsed.intro, true));
+        if (parsedValue.intro || allowListActions) {
+          wrap.appendChild(field("Text Before Bullets", `${idPrefix}_intro`, parsedValue.intro, true));
         }
 
-        parsed.items.forEach((item, idx) => {
+        const topActions = document.createElement("div");
+        topActions.className = "actions";
+        if (allowListActions) {
+          const addItemBtn = document.createElement("button");
+          addItemBtn.type = "button";
+          addItemBtn.textContent = addItemLabel;
+          topActions.appendChild(addItemBtn);
+        }
+        if (topActions.childElementCount > 0) {
+          wrap.appendChild(topActions);
+        }
+
+        const itemsWrap = document.createElement("div");
+        wrap.appendChild(itemsWrap);
+
+        const headingFor = (idx) => {
+          if (itemHeadingPrefix) return `${itemHeadingPrefix} ${idx + 1}`;
+          return `${label} ITEM ${idx + 1}`;
+        };
+
+        const renumberItems = () => {
+          const nodes = Array.from(itemsWrap.querySelectorAll(".bullet-item"));
+          nodes.forEach((node, idx) => {
+            const hNode = node.querySelector("h4");
+            if (hNode) hNode.textContent = headingFor(idx);
+            const inputNode = node.querySelector("textarea");
+            if (inputNode) inputNode.id = `${idPrefix}_bullet_${idx}`;
+          });
+        };
+
+        const makeBulletItem = (itemValue, idx) => {
           const bulletItem = document.createElement("section");
           bulletItem.className = "bullet-item";
 
           const h = document.createElement("h4");
-          h.textContent = `${label} ITEM ${idx + 1}`;
+          h.textContent = headingFor(idx);
           bulletItem.appendChild(h);
 
           const locked = document.createElement("div");
@@ -508,14 +1008,55 @@
           const input = document.createElement("textarea");
           input.id = `${idPrefix}_bullet_${idx}`;
           input.className = "bullet-input";
-          input.value = item || "";
+          input.value = itemValue || "";
           autoSizeMultiline(input);
           input.addEventListener("input", () => autoSizeMultiline(input));
           row.appendChild(input);
           bulletItem.appendChild(row);
 
-          wrap.appendChild(bulletItem);
+          if (allowListActions) {
+            const rowActions = document.createElement("div");
+            rowActions.className = "actions";
+            const deleteItemBtn = document.createElement("button");
+            deleteItemBtn.type = "button";
+            deleteItemBtn.className = "danger";
+            deleteItemBtn.textContent = deleteItemLabel;
+            deleteItemBtn.addEventListener("click", () => {
+              const currentIndex =
+                Array.from(itemsWrap.querySelectorAll(".bullet-item")).indexOf(bulletItem) + 1;
+              const ok = window.confirm(`${deleteConfirmPrefix} ${currentIndex > 0 ? currentIndex : ""}?`.trim());
+              if (!ok) {
+                setStatus("Delete cancelled.");
+                return;
+              }
+              bulletItem.remove();
+              renumberItems();
+              setStatus("Item removed. Save section to persist.");
+            });
+            rowActions.appendChild(deleteItemBtn);
+            bulletItem.appendChild(rowActions);
+          }
+
+          return bulletItem;
+        };
+
+        parsedValue.items.forEach((item, idx) => {
+          itemsWrap.appendChild(makeBulletItem(item, idx));
         });
+        renumberItems();
+
+        if (allowListActions) {
+          const addItemBtn = topActions.querySelector("button");
+          addItemBtn?.addEventListener("click", () => {
+            const nextIndex = itemsWrap.querySelectorAll(".bullet-item").length;
+            const newItem = makeBulletItem("", nextIndex);
+            itemsWrap.appendChild(newItem);
+            renumberItems();
+            const input = newItem.querySelector("textarea");
+            input?.focus();
+            setStatus("Item added. Enter text, then save.");
+          });
+        }
 
         return wrap;
       };
@@ -528,6 +1069,10 @@
 
         const bulletNodes = Array.from(document.querySelectorAll(`[id^="${idPrefix}_bullet_"]`));
         if (!bulletNodes.length) {
+          const introEl = document.getElementById(`${idPrefix}_intro`);
+          if (introEl) {
+            return trimLines(introEl.value || "").trim();
+          }
           fail(`Missing input field: ${idPrefix}_content`);
         }
 
@@ -567,7 +1112,12 @@
         b.type = "button";
         b.className = "primary";
         b.textContent = saveText;
-        b.addEventListener("click", onSave);
+        b.addEventListener("click", async () => {
+          try {
+            await onSave();
+            b.classList.add("saved-ok");
+          } catch (_) {}
+        });
         actions.appendChild(b);
         card.appendChild(actions);
         return card;
@@ -645,7 +1195,7 @@
         rootEl.innerHTML = "";
 
         const humanCard = document.createElement("section");
-        humanCard.className = "card";
+        humanCard.className = "card human-frame";
         const humanTitle = document.createElement("h2");
         humanTitle.textContent = "HUMAN";
         humanCard.appendChild(humanTitle);
@@ -662,7 +1212,12 @@
         saveHumanBtn.type = "button";
         saveHumanBtn.className = "primary";
         saveHumanBtn.textContent = "Save Section";
-        saveHumanBtn.addEventListener("click", async () => { try { await saveFromUi("Human section updated."); render(); } catch (_) {} });
+        saveHumanBtn.addEventListener("click", async () => {
+          try {
+            await saveFromUi("Human section updated.");
+            saveHumanBtn.classList.add("saved-ok");
+          } catch (_) {}
+        });
         humanActions.appendChild(saveHumanBtn);
         humanCard.appendChild(humanActions);
         rootEl.appendChild(humanCard);
@@ -674,7 +1229,7 @@
           fieldId: "summary_content",
           value: state.doc.summary,
           saveText: "Save Section",
-          onSave: async () => { try { await saveFromUi("Summary updated."); render(); } catch (_) {} },
+          onSave: async () => { await saveFromUi("Summary updated."); },
         }));
 
         if (state.doc.skills !== null) {
@@ -704,6 +1259,8 @@
           skillsActionsTop.appendChild(addSkillBtn);
           skillsCard.appendChild(skillsActionsTop);
 
+          const skillsItems = document.createElement("div");
+          skillsItems.className = "skills-items";
           state.doc.skills.forEach((skill, si) => {
             const skillItem = document.createElement("section");
             skillItem.className = "skill-item";
@@ -746,7 +1303,7 @@
             saveSkillBtn.addEventListener("click", async () => {
               try {
                 await saveFromUi(`Skill ${si + 1} updated.`);
-                render();
+                saveSkillBtn.classList.add("saved-ok");
               } catch (_) {}
             });
             skillActions.appendChild(saveSkillBtn);
@@ -768,8 +1325,9 @@
             skillActions.appendChild(deleteSkillBtn);
 
             skillItem.appendChild(skillActions);
-            skillsCard.appendChild(skillItem);
+            skillsItems.appendChild(skillItem);
           });
+          skillsCard.appendChild(skillsItems);
 
           const skillsActionsBottom = document.createElement("div");
           skillsActionsBottom.className = "actions";
@@ -780,7 +1338,7 @@
           saveSkillsBtn.addEventListener("click", async () => {
             try {
               await saveFromUi("Skills updated.");
-              render();
+              saveSkillsBtn.classList.add("saved-ok");
             } catch (_) {}
           });
           skillsActionsBottom.appendChild(saveSkillsBtn);
@@ -799,14 +1357,35 @@
           lk.className = "locked";
           lk.textContent = "Header locked under # GLOBAL";
           card.appendChild(lk);
-          card.appendChild(smartMultilineField(`${g.name} Content`, `global_${gi}`, g.content));
+          const isAchievements = String(g.name || "").trim().toUpperCase() === "ACHIEVEMENTS";
+          card.appendChild(
+            smartMultilineField(
+              `${g.name} Content`,
+              `global_${gi}`,
+              g.content,
+              isAchievements
+                ? {
+                    allowListActions: true,
+                    addItemLabel: "Add Achievement",
+                    deleteItemLabel: "Delete Achievement",
+                    itemHeadingPrefix: "ACHIEVEMENT",
+                    deleteConfirmPrefix: "Delete achievement",
+                  }
+                : {}
+            )
+          );
           const actions = document.createElement("div");
           actions.className = "actions";
           const btn = document.createElement("button");
           btn.type = "button";
           btn.className = "primary";
           btn.textContent = "Save Section";
-          btn.addEventListener("click", async () => { try { await saveFromUi(`${g.name} updated.`); render(); } catch (_) {} });
+          btn.addEventListener("click", async () => {
+            try {
+              await saveFromUi(`${g.name} updated.`);
+              btn.classList.add("saved-ok");
+            } catch (_) {}
+          });
           actions.appendChild(btn);
           card.appendChild(actions);
           rootEl.appendChild(card);
@@ -822,6 +1401,20 @@
         expLocked.textContent = "Headers locked: # EXPERIENCE, ## COMPANY, ### ROLE, ### SIGNALS, ### PROJECT.";
         expCard.appendChild(expLocked);
 
+        const expActions = document.createElement("div");
+        expActions.className = "actions";
+        const addCompanyBtn = document.createElement("button");
+        addCompanyBtn.type = "button";
+        addCompanyBtn.textContent = "Add Company";
+        addCompanyBtn.addEventListener("click", () => {
+          try {
+            syncFromInputs();
+            openCompanyPrompt();
+          } catch (_) {}
+        });
+        expActions.appendChild(addCompanyBtn);
+        expCard.appendChild(expActions);
+
         state.doc.experience.forEach((c, ci) => {
           const company = document.createElement("section");
           company.className = "company";
@@ -833,7 +1426,20 @@
           lk.textContent = `Locked header: ## COMPANY: ${c.name}`;
           company.appendChild(lk);
           company.appendChild(smartMultilineField("ROLE", `company_${ci}_role`, c.role));
-          company.appendChild(smartMultilineField("SIGNALS", `company_${ci}_signals`, c.signals));
+          company.appendChild(
+            smartMultilineField(
+              "SIGNALS",
+              `company_${ci}_signals`,
+              c.signals,
+              {
+                allowListActions: true,
+                addItemLabel: "Add Signal",
+                deleteItemLabel: "Delete Signal",
+                itemHeadingPrefix: "SIGNAL",
+                deleteConfirmPrefix: "Delete signal",
+              }
+            )
+          );
 
           const companyActions = document.createElement("div");
           companyActions.className = "actions";
@@ -841,7 +1447,12 @@
           saveCompanyBtn.type = "button";
           saveCompanyBtn.className = "primary";
           saveCompanyBtn.textContent = "Save Company";
-          saveCompanyBtn.addEventListener("click", async () => { try { await saveFromUi(`Company '${c.name}' updated.`); render(); } catch (_) {} });
+          saveCompanyBtn.addEventListener("click", async () => {
+            try {
+              await saveFromUi(`Company '${c.name}' updated.`);
+              saveCompanyBtn.classList.add("saved-ok");
+            } catch (_) {}
+          });
           companyActions.appendChild(saveCompanyBtn);
 
           const addProjectBtn = document.createElement("button");
@@ -850,9 +1461,7 @@
           addProjectBtn.addEventListener("click", () => {
             try {
               syncFromInputs();
-              state.doc.experience[ci].projects.push(blankProject());
-              render();
-              setStatus(`Project block added under '${c.name}'. Click Save Project to commit.`);
+              openProjectPrompt(ci, c.name);
             } catch (_) {}
           });
           companyActions.appendChild(addProjectBtn);
@@ -886,7 +1495,12 @@
             saveProjectBtn.type = "button";
             saveProjectBtn.className = "primary";
             saveProjectBtn.textContent = "Save Project";
-            saveProjectBtn.addEventListener("click", async () => { try { await saveFromUi(`Project ${pi + 1} in '${c.name}' updated.`); render(); } catch (_) {} });
+            saveProjectBtn.addEventListener("click", async () => {
+              try {
+                await saveFromUi(`Project ${pi + 1} in '${c.name}' updated.`);
+                saveProjectBtn.classList.add("saved-ok");
+              } catch (_) {}
+            });
             projectActions.appendChild(saveProjectBtn);
 
             const deleteProjectBtn = document.createElement("button");
@@ -917,47 +1531,235 @@
         rootEl.appendChild(expCard);
       };
 
-      const loadDoc = async () => {
-        setStatus(`Loading ${state.coreId}.md ...`);
-        const res = await fetch(`/CORES/${encodeURIComponent(state.coreId)}.md`, { cache: "no-store" });
-        if (!res.ok) fail(`Load failed (${res.status}) for ${state.coreId}.md`);
+      const loadDoc = async (targetCoreId = state.coreId) => {
+        const nextCoreId = normalizeCoreId(targetCoreId);
+        const fileName = coreIdToFileName(nextCoreId);
+        setStatus(`Loading ${fileName} ...`);
+        const res = await fetch(`/CORES/${encodeURIComponent(fileName)}`, { cache: "no-store" });
+        if (!res.ok) fail(`Load failed (${res.status}) for ${fileName}`);
         const markdown = await res.text();
         if (!markdown.trim()) fail("Loaded markdown is empty.");
 
         const parsed = parseDoc(markdown);
         validate(parsed);
+        state.coreId = nextCoreId;
         state.doc = parsed;
         state.savedMarkdown = buildMarkdown(parsed);
+        const params = new URLSearchParams(window.location.search);
+        params.set("id", state.coreId);
+        const nextUrl = `${window.location.pathname}?${params.toString()}`;
+        window.history.replaceState(null, "", nextUrl);
+        setFileLabel();
+        syncFilePickerSelection();
         render();
-        setStatus(`Loaded ${state.coreId}.md`);
+        setStatus(`Loaded ${fileName}`);
       };
+
+      importResumeBtn?.addEventListener("click", () => {
+        importResumeInput?.click();
+      });
+
+      importResumeInput?.addEventListener("change", async () => {
+        try {
+          const file = importResumeInput.files?.[0];
+          if (!file) return;
+          await importResumeIntoTemplate(file);
+        } finally {
+          if (importResumeInput) importResumeInput.value = "";
+        }
+      });
 
       reloadBtn.addEventListener("click", async () => {
         try {
-          if (state.doc) {
-            syncFromInputs();
-            const current = buildMarkdown(state.doc);
-            if (current !== state.savedMarkdown) {
-              const discard = window.confirm("Discard unsaved changes and reload from file?");
-              if (!discard) { setStatus("Reload cancelled."); return; }
-            }
-          }
+          if (!confirmDiscardUnsavedChanges()) { setStatus("Reload cancelled."); return; }
           await loadDoc();
+        } catch (_) {}
+      });
+
+      openFileBtn?.addEventListener("click", async () => {
+        try {
+          const selectedFile = filePickerEl?.value?.trim() || "";
+          if (!selectedFile) {
+            setStatus("Choose a .md file first.", true);
+            filePickerEl?.focus();
+            return;
+          }
+          if (!confirmDiscardUnsavedChanges()) { setStatus("Open file cancelled."); return; }
+          await loadDoc(selectedFile);
+        } catch (_) {}
+      });
+
+      refreshFilesBtn?.addEventListener("click", async () => {
+        try {
+          const preferred = state.coreId || parseCoreIdFromQuery();
+          await loadFileChoices(preferred);
+          setStatus("File list refreshed.");
         } catch (_) {}
       });
 
       saveAllBtn.addEventListener("click", async () => {
         try {
           await saveFromUi("All sections updated.");
-          render();
+          saveAllBtn.classList.add("saved-ok");
         } catch (_) {}
+      });
+
+      projectPromptStartDictationBtn?.addEventListener("click", () => {
+        const SpeechRecognitionCtor = getSpeechRecognitionCtor();
+        if (!SpeechRecognitionCtor) {
+          setProjectPromptStatus("Speech recognition is not supported in this browser.", true);
+          return;
+        }
+        if (projectIsRecording) return;
+
+        let finalText = projectPromptTranscriptEl?.value?.trim() || "";
+        projectRecognition = new SpeechRecognitionCtor();
+        projectRecognition.continuous = true;
+        projectRecognition.interimResults = true;
+        projectRecognition.lang = "en-US";
+
+        projectRecognition.onresult = (event) => {
+          let interim = "";
+          for (let i = event.resultIndex; i < event.results.length; i += 1) {
+            const text = event.results[i][0]?.transcript || "";
+            if (event.results[i].isFinal) {
+              finalText = `${finalText} ${text}`.trim();
+            } else {
+              interim += text;
+            }
+          }
+          if (projectPromptTranscriptEl) {
+            projectPromptTranscriptEl.value = `${finalText}${interim ? ` ${interim}` : ""}`.trim();
+          }
+        };
+
+        projectRecognition.onerror = (event) => {
+          setProjectPromptStatus(`Dictation error: ${event?.error || "unknown"}`, true);
+        };
+
+        projectRecognition.onend = () => {
+          projectIsRecording = false;
+          if (projectPromptStartDictationBtn) projectPromptStartDictationBtn.disabled = false;
+          if (projectPromptStopDictationBtn) projectPromptStopDictationBtn.disabled = true;
+        };
+
+        try {
+          projectRecognition.start();
+          projectIsRecording = true;
+          if (projectPromptStartDictationBtn) projectPromptStartDictationBtn.disabled = true;
+          if (projectPromptStopDictationBtn) projectPromptStopDictationBtn.disabled = false;
+          setProjectPromptStatus("Dictation started.");
+        } catch (error) {
+          setProjectPromptStatus(error?.message || "Failed to start dictation.", true);
+        }
+      });
+
+      projectPromptStopDictationBtn?.addEventListener("click", () => {
+        stopProjectDictation();
+      });
+
+      projectPromptSendBtn?.addEventListener("click", async () => {
+        await sendTranscriptToAi();
+      });
+
+      projectPromptCancelBtn?.addEventListener("click", () => {
+        closeProjectPrompt();
+      });
+
+      projectPromptModalEl?.addEventListener("click", (event) => {
+        if (event.target === projectPromptModalEl) {
+          closeProjectPrompt();
+        }
+      });
+
+      companyPromptStartDictationBtn?.addEventListener("click", () => {
+        const SpeechRecognitionCtor = getSpeechRecognitionCtor();
+        if (!SpeechRecognitionCtor) {
+          setCompanyPromptStatus("Speech recognition is not supported in this browser.", true);
+          return;
+        }
+        if (companyIsRecording) return;
+
+        let finalText = companyPromptTranscriptEl?.value?.trim() || "";
+        companyRecognition = new SpeechRecognitionCtor();
+        companyRecognition.continuous = true;
+        companyRecognition.interimResults = true;
+        companyRecognition.lang = "en-US";
+
+        companyRecognition.onresult = (event) => {
+          let interim = "";
+          for (let i = event.resultIndex; i < event.results.length; i += 1) {
+            const text = event.results[i][0]?.transcript || "";
+            if (event.results[i].isFinal) {
+              finalText = `${finalText} ${text}`.trim();
+            } else {
+              interim += text;
+            }
+          }
+          if (companyPromptTranscriptEl) {
+            companyPromptTranscriptEl.value = `${finalText}${interim ? ` ${interim}` : ""}`.trim();
+          }
+        };
+
+        companyRecognition.onerror = (event) => {
+          setCompanyPromptStatus(`Dictation error: ${event?.error || "unknown"}`, true);
+        };
+
+        companyRecognition.onend = () => {
+          companyIsRecording = false;
+          if (companyPromptStartDictationBtn) companyPromptStartDictationBtn.disabled = false;
+          if (companyPromptStopDictationBtn) companyPromptStopDictationBtn.disabled = true;
+        };
+
+        try {
+          companyRecognition.start();
+          companyIsRecording = true;
+          if (companyPromptStartDictationBtn) companyPromptStartDictationBtn.disabled = true;
+          if (companyPromptStopDictationBtn) companyPromptStopDictationBtn.disabled = false;
+          setCompanyPromptStatus("Dictation started.");
+        } catch (error) {
+          setCompanyPromptStatus(error?.message || "Failed to start dictation.", true);
+        }
+      });
+
+      companyPromptStopDictationBtn?.addEventListener("click", () => {
+        stopCompanyDictation();
+      });
+
+      companyPromptSendBtn?.addEventListener("click", async () => {
+        await sendCompanyTranscriptToAi();
+      });
+
+      companyPromptCancelBtn?.addEventListener("click", () => {
+        closeCompanyPrompt();
+      });
+
+      companyPromptModalEl?.addEventListener("click", (event) => {
+        if (event.target === companyPromptModalEl) {
+          closeCompanyPrompt();
+        }
+      });
+
+      window.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && projectPromptModalEl && !projectPromptModalEl.hidden) {
+          event.preventDefault();
+          closeProjectPrompt();
+          return;
+        }
+        if (event.key === "Escape" && companyPromptModalEl && !companyPromptModalEl.hidden) {
+          event.preventDefault();
+          closeCompanyPrompt();
+        }
       });
 
       (async () => {
         try {
-          state.coreId = parseCoreId();
-          coreIdEl.textContent = `CORE: ${state.coreId}`;
-          await loadDoc();
+          const queryCoreId = parseCoreIdFromQuery();
+          await loadFileChoices(queryCoreId);
+          const selectedFile = filePickerEl?.value?.trim() || "";
+          const initialCoreId = queryCoreId || selectedFile;
+          if (!initialCoreId) fail("No .md file selected.");
+          await loadDoc(initialCoreId);
         } catch (_) {}
       })();
     });
