@@ -10,6 +10,8 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
     .page { width: min(800px, 96vw); margin: 24px auto; padding: 16px; }
     .top { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
     .top-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+    .top-account-toggle { display: inline-flex; align-items: center; gap: 8px; border: 1px solid #334155; border-radius: 10px; background: #111827; color: #cbd5e1; padding: 8px 10px; font-size: 0.86rem; white-space: nowrap; }
+    .top-account-toggle input[type="checkbox"] { width: 16px; height: 16px; accent-color: #55914a; cursor: pointer; }
     .core-id { color: #94a3b8; font-size: 0.9rem; }
     .toolbar { display: flex; gap: 8px; margin: 12px 0 16px; flex-wrap: wrap; align-items: center; }
     .toolbar-label { color: #93c5fd; font-size: 0.82rem; text-transform: uppercase; }
@@ -57,6 +59,10 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
       <div class="top-actions">
         <button id="importResumeBtn" type="button" class="button">Import PDF/DOCX</button>
         <input id="importResumeInput" type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden />
+        <label class="top-account-toggle" for="useChatgptAccountToggle">
+          <input id="useChatgptAccountToggle" type="checkbox" />
+          <span>Use ChatGPT Account</span>
+        </label>
         <a href="/AI-Fit-Site" class="button">Back To Job Page</a>
       </div>
     </div>
@@ -135,6 +141,7 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
       const refreshFilesBtn = document.getElementById("refreshFilesBtn");
       const saveAllBtn = document.getElementById("saveAllBtn");
       const reloadBtn = document.getElementById("reloadBtn");
+      const useChatgptAccountToggleEl = document.getElementById("useChatgptAccountToggle");
       const projectPromptModalEl = document.getElementById("projectPromptModal");
       const projectPromptCompanyEl = document.getElementById("projectPromptCompany");
       const projectPromptTranscriptEl = document.getElementById("projectPromptTranscript");
@@ -162,6 +169,28 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
       const trimLines = (t) => nn(t).split("\n").map((l) => l.replace(/[ \t]+$/g, "")).join("\n");
       const sliceText = (lines, s, e) => trimLines(lines.slice(s, e).join("\n")).trim();
       const esc = (s) => String(s || "").toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+      const CHATGPT_ACCOUNT_STORAGE_KEY = "manage.useChatgptAccount";
+      const setUseChatgptAccount = (enabled) => {
+        const next = !!enabled;
+        if (useChatgptAccountToggleEl) {
+          useChatgptAccountToggleEl.checked = next;
+        }
+        document.documentElement.dataset.useChatgptAccount = next ? "1" : "0";
+        try {
+          window.localStorage.setItem(CHATGPT_ACCOUNT_STORAGE_KEY, next ? "1" : "0");
+        } catch (_) {}
+      };
+      const initUseChatgptAccountToggle = () => {
+        if (!useChatgptAccountToggleEl) return;
+        let enabled = false;
+        try {
+          enabled = window.localStorage.getItem(CHATGPT_ACCOUNT_STORAGE_KEY) === "1";
+        } catch (_) {}
+        setUseChatgptAccount(enabled);
+        useChatgptAccountToggleEl.addEventListener("change", () => {
+          setUseChatgptAccount(useChatgptAccountToggleEl.checked);
+        });
+      };
 
       const normalizeCoreId = (raw) => {
         let id = String(raw || "").trim();
@@ -1751,6 +1780,8 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
           closeCompanyPrompt();
         }
       });
+
+      initUseChatgptAccountToggle();
 
       (async () => {
         try {
