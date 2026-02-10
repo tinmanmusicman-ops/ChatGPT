@@ -93,6 +93,113 @@ def _append_cores_log(message: str):
 
 CORES_DIR = BASE_DIR.parent / "CORES"
 CORES_LOG_PATH = CORES_DIR / "cores.log"
+CORES_REQUIRED_PROJECT_LABELS = [
+    "Situation",
+    "What I did",
+    "Tools / systems",
+    "Result",
+    "Evidence / artifacts",
+    "Notes / caveats",
+]
+PROJECT_PARSE_PROMPT = """Convert this real-world work story into CORES project format.
+
+Return ONLY:
+
+### PROJECT:
+- Situation:
+- What I did:
+- Tools / systems:
+- Result:
+- Evidence / artifacts:
+- Notes / caveats:
+
+No commentary.
+No extra text.
+Do not omit sections.
+
+Return formatted markdown block only."""
+
+
+def _resolve_core_markdown_path(core_id: str) -> Path:
+    clean_core_id = str(core_id or "").strip()
+    if not clean_core_id:
+        raise ValueError("coreId is required")
+    if not re.fullmatch(r"[A-Za-z0-9._-]+", clean_core_id):
+        raise ValueError("Invalid coreId format")
+
+    base = CORES_DIR.resolve()
+    path = (base / f"{clean_core_id}.md").resolve()
+    if not str(path).startswith(str(base)):
+        raise PermissionError("Path traversal blocked")
+    return path
+
+
+def _parse_project_block_sections(project_block: str) -> dict:
+    normalized = str(project_block or "").replace("\r\n", "\n").replace("\r", "\n").strip()
+    if not normalized:
+        raise ValueError("Project block is empty")
+
+    lines = normalized.split("\n")
+    header_match = re.match(r"^### PROJECT:\s*(.*)$", lines[0].strip())
+    if not header_match:
+        raise ValueError("Project block must start with '### PROJECT:'")
+
+    project_title = header_match.group(1).strip()
+    sections = {label: [] for label in CORES_REQUIRED_PROJECT_LABELS}
+    current_label = None
+    next_required_index = 0
+
+    for line in lines[1:]:
+        marker_match = re.match(r"^- ([^:]+):\s*(.*)$", line.strip())
+        if marker_match:
+            label = marker_match.group(1).strip()
+            initial_value = marker_match.group(2)
+
+            if label not in CORES_REQUIRED_PROJECT_LABELS:
+                raise ValueError(f"Unsupported section label: {label}")
+            if next_required_index >= len(CORES_REQUIRED_PROJECT_LABELS):
+                raise ValueError("Unexpected additional section marker")
+            expected_label = CORES_REQUIRED_PROJECT_LABELS[next_required_index]
+            if label != expected_label:
+                raise ValueError(f"Section out of order: expected '{expected_label}', got '{label}'")
+
+            current_label = label
+            sections[current_label].append(initial_value)
+            next_required_index += 1
+            continue
+
+        if current_label is None:
+            if not line.strip():
+                continue
+            raise ValueError("Unexpected content before first section marker")
+        sections[current_label].append(line)
+
+    if next_required_index != len(CORES_REQUIRED_PROJECT_LABELS):
+        missing = CORES_REQUIRED_PROJECT_LABELS[next_required_index:]
+        raise ValueError(f"Missing required sections: {', '.join(missing)}")
+
+    cleaned_sections = {
+        label: "\n".join(value_lines).strip()
+        for label, value_lines in sections.items()
+    }
+    return {
+        "projectTitle": project_title,
+        "sections": cleaned_sections,
+    }
+
+
+def _validate_cores_markdown(markdown_text: str) -> None:
+    normalized = str(markdown_text or "")
+    if not normalized.strip():
+        raise ValueError("Markdown cannot be empty")
+    if "# CORES" not in normalized:
+        raise ValueError("Missing # CORES header")
+    if "# EXPERIENCE" not in normalized:
+        raise ValueError("Missing # EXPERIENCE header")
+
+    companies = list(re.finditer(r"^## COMPANY:\s*(.+)$", normalized, flags=re.MULTILINE))
+    if not companies:
+        raise ValueError("No company blocks found")
 
 
 def _markdown_to_pdf_bytes(markdown: str) -> bytes:
@@ -378,6 +485,13 @@ def fit_site_index():
     return send_from_directory(FIT_SITE_DIR, "Job.html")
 
 
+@app.route("/manage", strict_slashes=False)
+@app.route("/AI-Fit-Site/manage", strict_slashes=False)
+@app.route("/AI-Fit-Site/manage.html", strict_slashes=False)
+def fit_site_manage():
+    return send_from_directory(FIT_SITE_DIR, "manage.html")
+
+
 @app.route("/AI-Fit-Site/ai_context.pdf")
 def fit_site_context_pdf():
     source_name = "CORE-US-2026-000001.md"
@@ -599,6 +713,132 @@ def cores_static(filename):
     except Exception as exc:
         _append_cores_log(f"[CORES] failed to resolve path for {filename}: {exc}")
     return send_from_directory(CORES_DIR, filename)
+
+
+@app.route("/parse_project", methods=["OPTIONS", "POST"])
+def parse_project():
+    if request.method == "OPTIONS":
+        resp = app.make_response(("", 204))
+        return _with_cors(resp)
+
+    payload = request.get_json(force=True, silent=True) or {}
+    transcript = str(payload.get("transcript") or "").strip()
+    if not transcript:
+        return _with_cors(app.make_response((jsonify({"error": "Transcript is required"}), 400)))
+
+    openai_key = os.environ.get("OPENAI_API_KEY", "").strip()
+    if not openai_key:
+        return _with_cors(
+            app.make_response((jsonify({"error": "OPENAI_API_KEY is missing"}), 500))
+        )
+
+    model = os.environ.get("OPENAI_MODEL", "gpt-4o-mini").strip() or "gpt-4o-mini"
+    prompt = (
+        f"{PROJECT_PARSE_PROMPT}\n\n"
+        f"Input transcript:\n{transcript}\n"
+    )
+
+    try:
+        response = requests.post(
+            "https://api.openai.com/v1/chat/completions",
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {openai_key}",
+            },
+            json={
+                "model": model,
+                "temperature": 0.0,
+                "messages": [
+                    {"role": "user", "content": prompt},
+                ],
+                "max_tokens": 900,
+            },
+            timeout=60,
+        )
+    except requests.RequestException as exc:
+        return _with_cors(
+            app.make_response((jsonify({"error": "AI request failed", "details": str(exc)}), 503))
+        )
+
+    if response.status_code >= 400:
+        return _with_cors(
+            app.make_response(
+                (
+                    jsonify(
+                        {
+                            "error": "OpenAI request failed",
+                            "details": response.text,
+                        }
+                    ),
+                    response.status_code,
+                )
+            )
+        )
+
+    data = response.json()
+    project_block = (
+        data.get("choices", [{}])[0]
+        .get("message", {})
+        .get("content", "")
+    ).strip()
+    if not project_block:
+        return _with_cors(
+            app.make_response((jsonify({"error": "AI returned empty project block"}), 422))
+        )
+
+    try:
+        _parse_project_block_sections(project_block)
+    except ValueError as exc:
+        return _with_cors(
+            app.make_response(
+                (
+                    jsonify({"error": "AI output failed CORES project validation", "details": str(exc)}),
+                    422,
+                )
+            )
+        )
+
+    return _with_cors(jsonify({"projectBlock": project_block}))
+
+
+@app.route("/save_cores", methods=["OPTIONS", "POST"])
+def save_cores():
+    if request.method == "OPTIONS":
+        resp = app.make_response(("", 204))
+        return _with_cors(resp)
+
+    payload = request.get_json(force=True, silent=True) or {}
+    core_id = str(payload.get("coreId") or "").strip()
+    markdown = payload.get("markdown")
+    if not core_id:
+        return _with_cors(app.make_response((jsonify({"error": "coreId is required"}), 400)))
+    if not isinstance(markdown, str):
+        return _with_cors(app.make_response((jsonify({"error": "markdown text is required"}), 400)))
+
+    try:
+        _validate_cores_markdown(markdown)
+        target_path = _resolve_core_markdown_path(core_id)
+    except PermissionError:
+        return _with_cors(app.make_response((jsonify({"error": "Path traversal blocked"}), 403)))
+    except ValueError as exc:
+        return _with_cors(app.make_response((jsonify({"error": str(exc)}), 422)))
+
+    if not target_path.exists():
+        return _with_cors(
+            app.make_response((jsonify({"error": f"Source file not found: {target_path.name}"}), 404))
+        )
+
+    try:
+        target_path.write_text(markdown, encoding="utf-8")
+        _append_cores_log(f"[CORES] saved {target_path}")
+    except Exception as exc:
+        return _with_cors(
+            app.make_response((jsonify({"error": "Save failed", "details": str(exc)}), 500))
+        )
+
+    return _with_cors(
+        jsonify({"status": "ok", "saved": target_path.name})
+    )
 
 
 # -------------------------

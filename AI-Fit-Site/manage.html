@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>CORES Manage Content</title>
+  <style>
+    :root {
+      --bg-top: #202024;
+      --bg-bottom: #151518;
+      --panel: #1f1f23;
+      --border: #4d4d57;
+      --text-main: #efe6d8;
+      --text-secondary: #d6d6dc;
+      --muted: #9c9cab;
+      --accent: #2dd4bf;
+      --danger: #ff8a75;
+      --ok: #8dffbc;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(circle at 20% 10%, var(--bg-top), var(--bg-bottom) 60%);
+      color: var(--text-secondary);
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .page {
+      max-width: 1260px;
+      margin: 0 auto;
+      padding: 36px 28px 52px;
+    }
+
+    .top {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .title {
+      margin: 0;
+      font-size: 1.75rem;
+      color: var(--text-main);
+      letter-spacing: 0.03em;
+    }
+
+    .core-id {
+      margin-top: 5px;
+      font-size: 0.92rem;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .button,
+    button {
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text-main);
+      padding: 10px 14px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .button.primary,
+    button.primary {
+      background: rgba(45, 212, 191, 0.15);
+      border-color: rgba(45, 212, 191, 0.52);
+      color: #d8fff8;
+    }
+
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .status {
+      min-height: 24px;
+      font-size: 0.94rem;
+      color: var(--ok);
+      margin-bottom: 14px;
+    }
+
+    .status.error {
+      color: var(--danger);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 360px minmax(0, 1fr);
+      gap: 16px;
+      min-height: 560px;
+    }
+
+    .panel {
+      background: rgba(20, 20, 24, 0.85);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+    }
+
+    .panel h2 {
+      margin: 0 0 10px;
+      color: var(--text-main);
+      font-size: 1.1rem;
+    }
+
+    .tree-wrap {
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.18);
+      max-height: 520px;
+      overflow: auto;
+    }
+
+    .tree-root-label {
+      font-size: 0.82rem;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .company-node {
+      width: 100%;
+      text-align: left;
+      margin: 0;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 8px;
+      padding: 8px 10px;
+      color: var(--text-main);
+    }
+
+    .company-node.active {
+      border-color: rgba(45, 212, 191, 0.65);
+      box-shadow: 0 0 0 1px rgba(45, 212, 191, 0.24);
+    }
+
+    .project-list {
+      margin: 8px 0 14px 18px;
+      padding: 0;
+      list-style: none;
+      font-size: 0.84rem;
+      color: #c7ccd4;
+      display: grid;
+      gap: 4px;
+    }
+
+    .meta-line {
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .markdown-preview {
+      width: 100%;
+      min-height: 470px;
+      resize: vertical;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(0, 0, 0, 0.3);
+      color: #ebedf4;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.86rem;
+      line-height: 1.45;
+      padding: 10px;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.72);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 1200;
+    }
+
+    .modal.open {
+      display: flex;
+    }
+
+    .modal-card {
+      width: min(920px, 100%);
+      max-height: 92vh;
+      overflow: auto;
+      border-radius: 14px;
+      border: 1px solid rgba(45, 212, 191, 0.38);
+      background: #131318;
+      padding: 16px;
+    }
+
+    .modal-title {
+      margin: 0 0 10px;
+      font-size: 1.2rem;
+      color: var(--text-main);
+    }
+
+    .modal-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .modal-error {
+      min-height: 22px;
+      color: var(--danger);
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+    }
+
+    .label {
+      font-size: 0.82rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin: 8px 0 4px;
+    }
+
+    .input,
+    .textarea {
+      width: 100%;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.02);
+      color: var(--text-main);
+      padding: 10px;
+      font-size: 0.9rem;
+      font-family: inherit;
+    }
+
+    .textarea {
+      min-height: 84px;
+      resize: vertical;
+      line-height: 1.4;
+    }
+
+    .stage[hidden] {
+      display: none;
+    }
+
+    @media (max-width: 960px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="top">
+      <div>
+        <h1 class="title">Manage Content</h1>
+        <div class="core-id" id="coreIdLabel">CORE: unknown</div>
+      </div>
+      <div class="actions">
+        <a class="button" href="/AI-Fit-Site">Back To Job Page</a>
+      </div>
+    </div>
+
+    <div class="status" id="statusLine"></div>
+
+    <div class="layout">
+      <aside class="panel">
+        <h2>Experience Tree</h2>
+        <div class="tree-wrap">
+          <div class="tree-root-label">EXPERIENCE</div>
+          <div id="companyTree"></div>
+        </div>
+      </aside>
+
+      <main class="panel">
+        <h2 id="activeCompanyLabel">No company selected</h2>
+        <div class="meta-line">Select a company, then add a project through voice -> AI parse -> preview -> approve.</div>
+        <div class="actions">
+          <button id="addProjectBtn" class="primary" disabled>+ Add Project</button>
+          <button id="editMarkdownBtn">Edit Markdown</button>
+          <button id="applyEditsBtn" class="primary" hidden>Apply Edits</button>
+          <button id="cancelEditsBtn" hidden>Cancel Edit</button>
+          <button id="saveBtn">Save CORES</button>
+          <button id="reloadBtn">Reload</button>
+        </div>
+        <div class="label">Current Markdown (single source of truth)</div>
+        <textarea id="markdownPreview" class="markdown-preview" spellcheck="false" readonly></textarea>
+      </main>
+    </div>
+  </div>
+
+  <div class="modal" id="projectModal" aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="projectModalTitle">
+      <h2 class="modal-title" id="projectModalTitle">Add Project (CORES)</h2>
+      <div id="modalError" class="modal-error"></div>
+
+      <div id="transcriptStage" class="stage">
+        <div class="modal-actions">
+          <button id="startRecordingBtn">Start Recording</button>
+          <button id="stopRecordingBtn" disabled>Stop</button>
+          <button id="sendToAiBtn" class="primary">Send To AI</button>
+          <button id="cancelFromTranscriptBtn">Cancel</button>
+        </div>
+        <div class="label">Transcript</div>
+        <textarea id="transcriptBox" class="textarea" style="min-height:180px;" spellcheck="false"></textarea>
+      </div>
+
+      <div id="previewStage" class="stage" hidden>
+        <div class="label">Project Title</div>
+        <input id="fieldProjectTitle" class="input" type="text" />
+
+        <div class="label">Situation</div>
+        <textarea id="fieldSituation" class="textarea"></textarea>
+
+        <div class="label">What I did</div>
+        <textarea id="fieldWhatIDid" class="textarea"></textarea>
+
+        <div class="label">Tools / systems</div>
+        <textarea id="fieldTools" class="textarea"></textarea>
+
+        <div class="label">Result</div>
+        <textarea id="fieldResult" class="textarea"></textarea>
+
+        <div class="label">Evidence / artifacts</div>
+        <textarea id="fieldEvidence" class="textarea"></textarea>
+
+        <div class="label">Notes / caveats</div>
+        <textarea id="fieldNotes" class="textarea"></textarea>
+
+        <div class="modal-actions" style="margin-top: 10px;">
+          <button id="approveInsertBtn" class="primary">Approve &amp; Insert</button>
+          <button id="editParsedBtn">Edit</button>
+          <button id="cancelFromPreviewBtn">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const state = {
+        coreId: "",
+        markdown: "",
+        companies: [],
+        activeCompanyName: "",
+        recognition: null,
+        recording: false,
+        editMode: false,
+      };
+
+      const statusLineEl = document.getElementById("statusLine");
+      const companyTreeEl = document.getElementById("companyTree");
+      const activeCompanyLabelEl = document.getElementById("activeCompanyLabel");
+      const addProjectBtn = document.getElementById("addProjectBtn");
+      const editMarkdownBtn = document.getElementById("editMarkdownBtn");
+      const applyEditsBtn = document.getElementById("applyEditsBtn");
+      const cancelEditsBtn = document.getElementById("cancelEditsBtn");
+      const saveBtn = document.getElementById("saveBtn");
+      const reloadBtn = document.getElementById("reloadBtn");
+      const markdownPreviewEl = document.getElementById("markdownPreview");
+      const coreIdLabelEl = document.getElementById("coreIdLabel");
+
+      const projectModalEl = document.getElementById("projectModal");
+      const modalErrorEl = document.getElementById("modalError");
+      const transcriptStageEl = document.getElementById("transcriptStage");
+      const previewStageEl = document.getElementById("previewStage");
+      const transcriptBoxEl = document.getElementById("transcriptBox");
+      const startRecordingBtn = document.getElementById("startRecordingBtn");
+      const stopRecordingBtn = document.getElementById("stopRecordingBtn");
+      const sendToAiBtn = document.getElementById("sendToAiBtn");
+      const cancelFromTranscriptBtn = document.getElementById("cancelFromTranscriptBtn");
+      const approveInsertBtn = document.getElementById("approveInsertBtn");
+      const editParsedBtn = document.getElementById("editParsedBtn");
+      const cancelFromPreviewBtn = document.getElementById("cancelFromPreviewBtn");
+
+      const fieldProjectTitleEl = document.getElementById("fieldProjectTitle");
+      const fieldSituationEl = document.getElementById("fieldSituation");
+      const fieldWhatIDidEl = document.getElementById("fieldWhatIDid");
+      const fieldToolsEl = document.getElementById("fieldTools");
+      const fieldResultEl = document.getElementById("fieldResult");
+      const fieldEvidenceEl = document.getElementById("fieldEvidence");
+      const fieldNotesEl = document.getElementById("fieldNotes");
+
+      const REQUIRED_LABELS = [
+        "Situation",
+        "What I did",
+        "Tools / systems",
+        "Result",
+        "Evidence / artifacts",
+        "Notes / caveats",
+      ];
+
+      const setStatus = (text, isError = false) => {
+        statusLineEl.textContent = text || "";
+        statusLineEl.classList.toggle("error", !!isError);
+      };
+
+      const fail = (text) => {
+        setStatus(text, true);
+        throw new Error(text);
+      };
+
+      const setModalError = (text) => {
+        modalErrorEl.textContent = text || "";
+      };
+
+      const parseCoreId = () => {
+        const id = new URLSearchParams(window.location.search).get("id");
+        if (!id || !/^[A-Za-z0-9._-]+$/.test(id)) {
+          fail("Missing or invalid core id query parameter. Use /manage?id=CORE-US-2026-000001");
+        }
+        return id;
+      };
+
+      const parseCompanyTree = (markdown) => {
+        const normalized = String(markdown || "").replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+        const companyRegex = /^## COMPANY:\s*(.+)$/gm;
+        const companyMatches = [];
+        let match;
+        while ((match = companyRegex.exec(normalized)) !== null) {
+          companyMatches.push({
+            name: match[1].trim(),
+            start: match.index,
+            headerEnd: match.index + match[0].length,
+          });
+        }
+        if (!companyMatches.length) {
+          throw new Error("Markdown parse failed: no company sections found.");
+        }
+
+        for (let idx = 0; idx < companyMatches.length; idx += 1) {
+          const next = companyMatches[idx + 1];
+          const end = next ? next.start : normalized.length;
+          companyMatches[idx].end = end;
+          const body = normalized.slice(companyMatches[idx].headerEnd, end);
+          const projects = [];
+          const projectRegex = /^### PROJECT:\s*(.*)$/gm;
+          let pm;
+          while ((pm = projectRegex.exec(body)) !== null) {
+            projects.push(pm[1].trim() || "(Untitled Project)");
+          }
+          companyMatches[idx].projects = projects;
+        }
+        return companyMatches;
+      };
+
+      const renderTree = () => {
+        companyTreeEl.innerHTML = "";
+        state.companies.forEach((company) => {
+          const wrapper = document.createElement("div");
+
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = `company-node${company.name === state.activeCompanyName ? " active" : ""}`;
+          button.textContent = company.name;
+          button.addEventListener("click", () => {
+            state.activeCompanyName = company.name;
+            activeCompanyLabelEl.textContent = `Active Company: ${company.name}`;
+            addProjectBtn.disabled = false;
+            renderTree();
+          });
+          wrapper.appendChild(button);
+
+          const projectList = document.createElement("ul");
+          projectList.className = "project-list";
+          company.projects.forEach((projectTitle) => {
+            const li = document.createElement("li");
+            li.textContent = `- ${projectTitle}`;
+            projectList.appendChild(li);
+          });
+          wrapper.appendChild(projectList);
+
+          companyTreeEl.appendChild(wrapper);
+        });
+      };
+
+      const refreshMarkdownPreview = () => {
+        markdownPreviewEl.value = state.markdown;
+      };
+
+      const setEditMode = (enabled) => {
+        state.editMode = !!enabled;
+        markdownPreviewEl.readOnly = !state.editMode;
+        editMarkdownBtn.hidden = state.editMode;
+        applyEditsBtn.hidden = !state.editMode;
+        cancelEditsBtn.hidden = !state.editMode;
+        if (state.editMode) {
+          markdownPreviewEl.focus();
+          markdownPreviewEl.setSelectionRange(markdownPreviewEl.value.length, markdownPreviewEl.value.length);
+        }
+      };
+
+      const applyMarkdownEdits = () => {
+        if (!state.editMode) {
+          throw new Error("Edit mode is not active.");
+        }
+
+        const candidate = String(markdownPreviewEl.value || "");
+        if (!candidate.trim()) {
+          throw new Error("Markdown cannot be empty.");
+        }
+
+        const parsedTree = parseCompanyTree(candidate);
+        state.markdown = candidate;
+        state.companies = parsedTree;
+        if (!state.activeCompanyName || !parsedTree.some((c) => c.name === state.activeCompanyName)) {
+          state.activeCompanyName = "";
+        }
+        if (state.activeCompanyName) {
+          activeCompanyLabelEl.textContent = `Active Company: ${state.activeCompanyName}`;
+          addProjectBtn.disabled = false;
+        } else {
+          activeCompanyLabelEl.textContent = "No company selected";
+          addProjectBtn.disabled = true;
+        }
+        renderTree();
+        refreshMarkdownPreview();
+        setEditMode(false);
+        setStatus("Markdown edits applied locally.");
+      };
+
+      const loadCoreMarkdown = async () => {
+        setStatus(`Loading ${state.coreId}...`);
+        const response = await fetch(`/CORES/${encodeURIComponent(state.coreId)}.md`, { cache: "no-store" });
+        if (!response.ok) {
+          fail(`Load failed (${response.status}) for ${state.coreId}.md`);
+        }
+        const markdown = await response.text();
+        if (!markdown.trim()) {
+          fail("Loaded markdown is empty.");
+        }
+
+        const parsedTree = parseCompanyTree(markdown);
+        state.markdown = markdown;
+        state.companies = parsedTree;
+        if (!state.activeCompanyName || !parsedTree.some((c) => c.name === state.activeCompanyName)) {
+          state.activeCompanyName = "";
+        }
+        if (state.activeCompanyName) {
+          activeCompanyLabelEl.textContent = `Active Company: ${state.activeCompanyName}`;
+          addProjectBtn.disabled = false;
+        } else {
+          activeCompanyLabelEl.textContent = "No company selected";
+          addProjectBtn.disabled = true;
+        }
+        renderTree();
+        refreshMarkdownPreview();
+        setEditMode(false);
+        setStatus(`Loaded ${state.coreId}.md`);
+      };
+
+      const openModal = () => {
+        setModalError("");
+        transcriptBoxEl.value = "";
+        transcriptStageEl.hidden = false;
+        previewStageEl.hidden = true;
+        projectModalEl.classList.add("open");
+        projectModalEl.setAttribute("aria-hidden", "false");
+      };
+
+      const closeModal = () => {
+        if (state.recording && state.recognition) {
+          state.recognition.stop();
+        }
+        state.recording = false;
+        state.recognition = null;
+        stopRecordingBtn.disabled = true;
+        startRecordingBtn.disabled = false;
+        projectModalEl.classList.remove("open");
+        projectModalEl.setAttribute("aria-hidden", "true");
+        setModalError("");
+      };
+
+      const getSpeechRecognitionCtor = () => {
+        const ctor = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!ctor) {
+          throw new Error("Web Speech API is not available in this browser.");
+        }
+        return ctor;
+      };
+
+      const parseProjectBlock = (projectBlock) => {
+        const normalized = String(projectBlock || "").replace(/\r\n/g, "\n").replace(/\r/g, "\n").trim();
+        if (!normalized) {
+          throw new Error("AI returned empty project block.");
+        }
+
+        const lines = normalized.split("\n");
+        const headerMatch = lines[0].match(/^### PROJECT:\s*(.*)$/);
+        if (!headerMatch) {
+          throw new Error("AI output must start with '### PROJECT:'.");
+        }
+
+        const result = {
+          projectTitle: headerMatch[1].trim(),
+          sections: {
+            Situation: "",
+            "What I did": "",
+            "Tools / systems": "",
+            Result: "",
+            "Evidence / artifacts": "",
+            "Notes / caveats": "",
+          },
+        };
+
+        let currentLabel = "";
+        let expectedIndex = 0;
+
+        for (let i = 1; i < lines.length; i += 1) {
+          const line = lines[i];
+          const markerMatch = line.trim().match(/^- ([^:]+):\s*(.*)$/);
+          if (markerMatch) {
+            const label = markerMatch[1].trim();
+            if (!REQUIRED_LABELS.includes(label)) {
+              throw new Error(`Unsupported section label '${label}'.`);
+            }
+            const expectedLabel = REQUIRED_LABELS[expectedIndex];
+            if (label !== expectedLabel) {
+              throw new Error(`Section order invalid. Expected '${expectedLabel}', received '${label}'.`);
+            }
+            currentLabel = label;
+            result.sections[currentLabel] = markerMatch[2] || "";
+            expectedIndex += 1;
+            continue;
+          }
+
+          if (!currentLabel) {
+            if (!line.trim()) {
+              continue;
+            }
+            throw new Error("Unexpected content before first section marker.");
+          }
+
+          const previous = result.sections[currentLabel];
+          result.sections[currentLabel] = previous ? `${previous}\n${line}` : line;
+        }
+
+        if (expectedIndex !== REQUIRED_LABELS.length) {
+          throw new Error("Missing required sections in AI output.");
+        }
+
+        REQUIRED_LABELS.forEach((label) => {
+          result.sections[label] = result.sections[label].trim();
+        });
+        return result;
+      };
+
+      const fillPreviewFields = (parsed) => {
+        fieldProjectTitleEl.value = parsed.projectTitle || "";
+        fieldSituationEl.value = parsed.sections["Situation"] || "";
+        fieldWhatIDidEl.value = parsed.sections["What I did"] || "";
+        fieldToolsEl.value = parsed.sections["Tools / systems"] || "";
+        fieldResultEl.value = parsed.sections["Result"] || "";
+        fieldEvidenceEl.value = parsed.sections["Evidence / artifacts"] || "";
+        fieldNotesEl.value = parsed.sections["Notes / caveats"] || "";
+      };
+
+      const collectPreviewFields = () => {
+        const projectTitle = fieldProjectTitleEl.value.trim();
+        if (!projectTitle) {
+          throw new Error("Project title is required.");
+        }
+
+        return {
+          projectTitle,
+          sections: {
+            "Situation": fieldSituationEl.value.trim(),
+            "What I did": fieldWhatIDidEl.value.trim(),
+            "Tools / systems": fieldToolsEl.value.trim(),
+            "Result": fieldResultEl.value.trim(),
+            "Evidence / artifacts": fieldEvidenceEl.value.trim(),
+            "Notes / caveats": fieldNotesEl.value.trim(),
+          },
+        };
+      };
+
+      const buildProjectBlock = (projectData) => {
+        const lines = [`### PROJECT: ${projectData.projectTitle}`, ""];
+        REQUIRED_LABELS.forEach((label) => {
+          lines.push(`- ${label}:`);
+          const content = projectData.sections[label] || "";
+          if (content) {
+            content.split("\n").forEach((row) => lines.push(row));
+          }
+          lines.push("");
+        });
+        return `${lines.join("\n").trimEnd()}\n`;
+      };
+
+      const insertProjectUnderActiveCompany = (projectBlock) => {
+        if (!state.activeCompanyName) {
+          throw new Error("No active company selected.");
+        }
+
+        const latestTree = parseCompanyTree(state.markdown);
+        const company = latestTree.find((entry) => entry.name === state.activeCompanyName);
+        if (!company) {
+          throw new Error("Active company no longer exists in markdown.");
+        }
+
+        const before = state.markdown.slice(0, company.end);
+        const after = state.markdown.slice(company.end);
+        const prefix = before.endsWith("\n\n") ? "" : before.endsWith("\n") ? "\n" : "\n\n";
+        const suffix = after.startsWith("\n") ? "" : "\n";
+
+        state.markdown = `${before}${prefix}${projectBlock.trimEnd()}\n${suffix}${after}`;
+        state.companies = parseCompanyTree(state.markdown);
+        renderTree();
+        refreshMarkdownPreview();
+      };
+
+      const saveCoreMarkdown = async () => {
+        setStatus(`Saving ${state.coreId}.md...`);
+        const response = await fetch("/save_cores", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            coreId: state.coreId,
+            markdown: state.markdown,
+          }),
+        });
+
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          fail(data.error || `Save failed (${response.status})`);
+        }
+        setStatus(`Saved ${state.coreId}.md`);
+      };
+
+      addProjectBtn.addEventListener("click", () => {
+        if (state.editMode) {
+          setStatus("Apply or cancel markdown edits before adding a project.", true);
+          return;
+        }
+        if (!state.activeCompanyName) {
+          setStatus("Select a company first.", true);
+          return;
+        }
+        openModal();
+      });
+
+      editMarkdownBtn.addEventListener("click", () => {
+        refreshMarkdownPreview();
+        setEditMode(true);
+        setStatus("Edit mode enabled. Apply edits to validate and refresh the tree.");
+      });
+
+      applyEditsBtn.addEventListener("click", () => {
+        try {
+          applyMarkdownEdits();
+        } catch (error) {
+          setStatus(error.message || "Apply edits failed.", true);
+        }
+      });
+
+      cancelEditsBtn.addEventListener("click", () => {
+        refreshMarkdownPreview();
+        setEditMode(false);
+        setStatus("Edit cancelled. Local markdown restored.");
+      });
+
+      reloadBtn.addEventListener("click", async () => {
+        if (state.editMode) {
+          const hasDraftChanges = String(markdownPreviewEl.value || "") !== String(state.markdown || "");
+          if (hasDraftChanges) {
+            const discard = window.confirm("Discard unsaved markdown edits and reload?");
+            if (!discard) {
+              setStatus("Reload cancelled.");
+              return;
+            }
+          }
+        }
+        try {
+          await loadCoreMarkdown();
+        } catch (error) {
+          // fail() already surfaced status
+        }
+      });
+
+      saveBtn.addEventListener("click", async () => {
+        try {
+          if (state.editMode) {
+            applyMarkdownEdits();
+          }
+          await saveCoreMarkdown();
+        } catch (error) {
+          setStatus(error.message || "Save failed.", true);
+        }
+      });
+
+      startRecordingBtn.addEventListener("click", () => {
+        try {
+          if (state.recording) {
+            return;
+          }
+          const Recognition = getSpeechRecognitionCtor();
+          const recognition = new Recognition();
+          state.recognition = recognition;
+          state.recording = true;
+          setModalError("");
+          stopRecordingBtn.disabled = false;
+          startRecordingBtn.disabled = true;
+
+          let finalTranscript = transcriptBoxEl.value.trim();
+          recognition.continuous = true;
+          recognition.interimResults = true;
+          recognition.lang = "en-US";
+
+          recognition.onresult = (event) => {
+            let interim = "";
+            for (let i = event.resultIndex; i < event.results.length; i += 1) {
+              const chunk = event.results[i][0].transcript || "";
+              if (event.results[i].isFinal) {
+                finalTranscript = `${finalTranscript} ${chunk}`.trim();
+              } else {
+                interim += chunk;
+              }
+            }
+            transcriptBoxEl.value = `${finalTranscript}${interim ? ` ${interim}` : ""}`.trim();
+          };
+
+          recognition.onerror = (event) => {
+            setModalError(`Speech recognition error: ${event.error || "unknown"}`);
+          };
+
+          recognition.onend = () => {
+            state.recording = false;
+            stopRecordingBtn.disabled = true;
+            startRecordingBtn.disabled = false;
+            transcriptBoxEl.value = finalTranscript || transcriptBoxEl.value;
+          };
+
+          recognition.start();
+        } catch (error) {
+          setModalError(error.message || "Failed to start recording.");
+        }
+      });
+
+      stopRecordingBtn.addEventListener("click", () => {
+        if (!state.recording || !state.recognition) {
+          setModalError("Recording is not active.");
+          return;
+        }
+        state.recognition.stop();
+      });
+
+      cancelFromTranscriptBtn.addEventListener("click", closeModal);
+      cancelFromPreviewBtn.addEventListener("click", closeModal);
+
+      editParsedBtn.addEventListener("click", () => {
+        previewStageEl.hidden = true;
+        transcriptStageEl.hidden = false;
+      });
+
+      sendToAiBtn.addEventListener("click", async () => {
+        setModalError("");
+        const transcript = transcriptBoxEl.value.trim();
+        if (!transcript) {
+          setModalError("Transcript is required before sending to AI.");
+          return;
+        }
+
+        sendToAiBtn.disabled = true;
+        try {
+          const response = await fetch("/parse_project", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ transcript }),
+          });
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            throw new Error(data.error || `AI parse failed (${response.status})`);
+          }
+          const parsed = parseProjectBlock(data.projectBlock);
+          fillPreviewFields(parsed);
+          transcriptStageEl.hidden = true;
+          previewStageEl.hidden = false;
+        } catch (error) {
+          setModalError(error.message || "AI parse failed.");
+        } finally {
+          sendToAiBtn.disabled = false;
+        }
+      });
+
+      approveInsertBtn.addEventListener("click", async () => {
+        setModalError("");
+        try {
+          const projectData = collectPreviewFields();
+          const block = buildProjectBlock(projectData);
+          insertProjectUnderActiveCompany(block);
+          closeModal();
+
+          const shouldSave = window.confirm("Save CORES file? [YES]");
+          if (!shouldSave) {
+            setStatus("Project inserted locally but not saved.", true);
+            return;
+          }
+          await saveCoreMarkdown();
+        } catch (error) {
+          setModalError(error.message || "Insert failed.");
+        }
+      });
+
+      (async () => {
+        try {
+          state.coreId = parseCoreId();
+          coreIdLabelEl.textContent = `CORE: ${state.coreId}`;
+          await loadCoreMarkdown();
+        } catch (error) {
+          // fail() already surfaced status
+        }
+      })();
+    });
+  </script>
+</body>
+</html>

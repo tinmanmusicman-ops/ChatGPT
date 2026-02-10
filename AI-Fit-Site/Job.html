@@ -1146,6 +1146,7 @@
       <button id="structuredTruthBtn" type="button" class="top-contact-button top-resume-button">Download Current Resume</button>
       <button id="topAskAboutMeShortcut" type="button" class="top-contact-button top-shortcut-button">Ask AI About Me</button>
       <button id="topFitShortcut" type="button" class="top-contact-button top-shortcut-button">Am I a fit for this job?</button>
+      <a id="manageContentBtn" href="/AI-Fit-Site/manage?id=CORE-US-2026-000001" class="top-contact-button top-shortcut-button">Manage Content</a>
     </section>
 
     <div class="role">Creative Technologist & Workflow Engineer</div>
@@ -1531,6 +1532,7 @@
       const structuredTruthBtn = document.getElementById("structuredTruthBtn");
       const topAskAboutMeShortcutBtn = document.getElementById("topAskAboutMeShortcut");
       const topFitShortcutBtn = document.getElementById("topFitShortcut");
+      const manageContentBtn = document.getElementById("manageContentBtn");
       const personalResponseEl = document.getElementById("personalResponse");
 
       const jobDescriptionEl = document.getElementById("jobDescription");
@@ -1699,6 +1701,16 @@
 
       const getTowerAskEndpoint = () => getTowerEndpoint("/tower/ask-ai");
       const getTowerContactEndpoint = () => getTowerEndpoint("/tower/contact");
+      const getTowerManageEndpoint = (coreId) =>
+        getTowerEndpoint(`/AI-Fit-Site/manage?id=${encodeURIComponent(coreId)}`);
+
+      const MANAGE_CORE_ID = "CORE-US-2026-000001";
+
+      const syncManageContentLink = async () => {
+        if (!manageContentBtn) return;
+        await loadTowerConfig();
+        manageContentBtn.href = getTowerManageEndpoint(MANAGE_CORE_ID);
+      };
 
       const triggerDownload = (blob, filename) => {
         const objectUrl = URL.createObjectURL(blob);
@@ -2081,6 +2093,19 @@
         scrollToCard(fitAssessmentCardEl);
         setTimeout(() => evaluateJobBtn?.click(), 150);
       });
+      manageContentBtn?.addEventListener("click", async (event) => {
+        event.preventDefault();
+        if (!manageContentBtn) return;
+        try {
+          await syncManageContentLink();
+          window.location.assign(manageContentBtn.href);
+        } catch (error) {
+          console.error(error);
+          if (personalResponseEl) {
+            personalResponseEl.textContent = `Manage Content route failed: ${error?.message || "Unknown error"}`;
+          }
+        }
+      });
       structuredTruthBtn?.addEventListener("click", async () => {
         if (!structuredTruthBtn) return;
         structuredTruthBtn.disabled = true;
@@ -2125,6 +2150,10 @@
       };
 
       contactTimBtn?.addEventListener("click", () => setContactModalOpen(true));
+
+      syncManageContentLink().catch((error) => {
+        console.error("Manage content link sync failed", error);
+      });
 
       contactModal?.querySelectorAll?.("[data-contact-close]")?.forEach?.((el) => {
         el.addEventListener("click", () => setContactModalOpen(false));
