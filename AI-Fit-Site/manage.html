@@ -2,933 +2,963 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>CORES Manage Content</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CORES Structured Editor</title>
   <style>
-    :root {
-      --bg-top: #202024;
-      --bg-bottom: #151518;
-      --panel: #1f1f23;
-      --border: #4d4d57;
-      --text-main: #efe6d8;
-      --text-secondary: #d6d6dc;
-      --muted: #9c9cab;
-      --accent: #2dd4bf;
-      --danger: #ff8a75;
-      --ok: #8dffbc;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      min-height: 100vh;
-      background: radial-gradient(circle at 20% 10%, var(--bg-top), var(--bg-bottom) 60%);
-      color: var(--text-secondary);
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-    }
-
-    .page {
-      max-width: 1260px;
-      margin: 0 auto;
-      padding: 36px 28px 52px;
-    }
-
-    .top {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      margin-bottom: 18px;
-    }
-
-    .title {
-      margin: 0;
-      font-size: 1.75rem;
-      color: var(--text-main);
-      letter-spacing: 0.03em;
-    }
-
-    .core-id {
-      margin-top: 5px;
-      font-size: 0.92rem;
-      color: var(--muted);
-      letter-spacing: 0.08em;
-    }
-
-    .actions {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .button,
-    button {
-      border-radius: 10px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      background: rgba(255, 255, 255, 0.03);
-      color: var(--text-main);
-      padding: 10px 14px;
-      font-size: 0.9rem;
-      cursor: pointer;
-      text-decoration: none;
-    }
-
-    .button.primary,
-    button.primary {
-      background: rgba(45, 212, 191, 0.15);
-      border-color: rgba(45, 212, 191, 0.52);
-      color: #d8fff8;
-    }
-
-    button:disabled {
-      opacity: 0.45;
-      cursor: not-allowed;
-    }
-
-    .status {
-      min-height: 24px;
-      font-size: 0.94rem;
-      color: var(--ok);
-      margin-bottom: 14px;
-    }
-
-    .status.error {
-      color: var(--danger);
-    }
-
-    .layout {
-      display: grid;
-      grid-template-columns: 360px minmax(0, 1fr);
-      gap: 16px;
-      min-height: 560px;
-    }
-
-    .panel {
-      background: rgba(20, 20, 24, 0.85);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 14px;
-    }
-
-    .panel h2 {
-      margin: 0 0 10px;
-      color: var(--text-main);
-      font-size: 1.1rem;
-    }
-
-    .tree-wrap {
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 12px;
-      padding: 10px;
-      background: rgba(0, 0, 0, 0.18);
-      max-height: 520px;
-      overflow: auto;
-    }
-
-    .tree-root-label {
-      font-size: 0.82rem;
-      color: var(--muted);
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      margin-bottom: 8px;
-    }
-
-    .company-node {
-      width: 100%;
-      text-align: left;
-      margin: 0;
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      background: rgba(255, 255, 255, 0.03);
-      border-radius: 8px;
-      padding: 8px 10px;
-      color: var(--text-main);
-    }
-
-    .company-node.active {
-      border-color: rgba(45, 212, 191, 0.65);
-      box-shadow: 0 0 0 1px rgba(45, 212, 191, 0.24);
-    }
-
-    .project-list {
-      margin: 8px 0 14px 18px;
-      padding: 0;
-      list-style: none;
-      font-size: 0.84rem;
-      color: #c7ccd4;
-      display: grid;
-      gap: 4px;
-    }
-
-    .meta-line {
-      font-size: 0.9rem;
-      color: var(--muted);
-      margin-bottom: 10px;
-    }
-
-    .markdown-preview {
-      width: 100%;
-      min-height: 470px;
-      resize: vertical;
-      border-radius: 10px;
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      background: rgba(0, 0, 0, 0.3);
-      color: #ebedf4;
-      font-family: Consolas, "Courier New", monospace;
-      font-size: 0.86rem;
-      line-height: 1.45;
-      padding: 10px;
-    }
-
-    .modal {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.72);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
-      z-index: 1200;
-    }
-
-    .modal.open {
-      display: flex;
-    }
-
-    .modal-card {
-      width: min(920px, 100%);
-      max-height: 92vh;
-      overflow: auto;
-      border-radius: 14px;
-      border: 1px solid rgba(45, 212, 191, 0.38);
-      background: #131318;
-      padding: 16px;
-    }
-
-    .modal-title {
-      margin: 0 0 10px;
-      font-size: 1.2rem;
-      color: var(--text-main);
-    }
-
-    .modal-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 10px;
-    }
-
-    .modal-error {
-      min-height: 22px;
-      color: var(--danger);
-      font-size: 0.9rem;
-      margin-bottom: 8px;
-    }
-
-    .label {
-      font-size: 0.82rem;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin: 8px 0 4px;
-    }
-
-    .input,
-    .textarea {
-      width: 100%;
-      border-radius: 8px;
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      background: rgba(255, 255, 255, 0.02);
-      color: var(--text-main);
-      padding: 10px;
-      font-size: 0.9rem;
-      font-family: inherit;
-    }
-
-    .textarea {
-      min-height: 84px;
-      resize: vertical;
-      line-height: 1.4;
-    }
-
-    .stage[hidden] {
-      display: none;
-    }
-
-    @media (max-width: 960px) {
-      .layout {
-        grid-template-columns: 1fr;
-      }
-    }
+    body { margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color: #e5e7eb; }
+    .page { width: min(1000px, 96vw); margin: 24px auto; padding: 16px; }
+    .top { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    .core-id { color: #94a3b8; font-size: 0.9rem; }
+    .toolbar { display: flex; gap: 8px; margin: 12px 0 16px; flex-wrap: wrap; }
+    button, .button { border: 1px solid #334155; border-radius: 10px; background: #1e293b; color: #e5e7eb; padding: 8px 12px; text-decoration: none; cursor: pointer; }
+    button.primary { background: #60a5fa; color: #081327; border-color: #93c5fd; font-weight: 600; }
+    button.danger { background: #3f1f28; border-color: #9f4561; color: #ffd6e0; }
+    .status { min-height: 22px; color: #9ae6b4; margin-bottom: 10px; }
+    .status.error { color: #fda4af; font-weight: 600; }
+    .stack { display: flex; flex-direction: column; gap: 12px; }
+    .card { border: 1px solid #334155; border-radius: 12px; background: #111827; padding: 12px; }
+    .card h2, .card h3, .card h4 { margin: 0 0 8px; }
+    .locked { color: #facc15; font-size: 0.88rem; margin-bottom: 8px; }
+    .label { color: #93c5fd; font-size: 0.82rem; margin: 8px 0 4px; text-transform: uppercase; }
+    textarea, input[type="text"] { width: 100%; border: 1px solid #334155; border-radius: 8px; background: #0b1220; color: #e5e7eb; padding: 8px; font-family: Consolas, monospace; }
+    textarea { min-height: 100px; resize: vertical; line-height: 1.35; }
+    .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    .company { border: 1px solid #1d4ed8; border-radius: 10px; padding: 10px; margin-top: 10px; background: #0b1325; }
+    .project { border: 1px solid #2563eb; border-radius: 10px; padding: 10px; margin-top: 8px; background: #0a1020; }
+    .skill-item { border: 1px solid #2563eb; border-radius: 10px; padding: 10px; margin-top: 8px; background: #0a1020; display: inline-block; width: fit-content; max-width: 100%; }
+    .skill-row { display: inline-flex; align-items: center; gap: 8px; margin-top: 6px; max-width: 100%; }
+    .skill-marker { color: #facc15; font-weight: 700; font-size: 1.05rem; width: 18px; text-align: center; }
+    .skill-input { flex: none; width: auto; min-width: 18ch; max-width: min(92vw, 96ch); }
+    .bullet-item { border: 1px solid #2563eb; border-radius: 10px; padding: 10px; margin-top: 8px; background: #0a1020; display: inline-block; width: fit-content; max-width: 100%; }
+    .bullet-input { width: auto; min-width: 22ch; max-width: min(92vw, 106ch); min-height: 72px; }
   </style>
 </head>
 <body>
   <div class="page">
     <div class="top">
       <div>
-        <h1 class="title">Manage Content</h1>
-        <div class="core-id" id="coreIdLabel">CORE: unknown</div>
+        <h1>Manage Content</h1>
+        <div id="coreIdLabel" class="core-id">CORE: unknown</div>
       </div>
-      <div class="actions">
-        <a class="button" href="/AI-Fit-Site">Back To Job Page</a>
-      </div>
+      <a href="/AI-Fit-Site" class="button">Back To Job Page</a>
     </div>
 
-    <div class="status" id="statusLine"></div>
+    <div id="statusLine" class="status"></div>
 
-    <div class="layout">
-      <aside class="panel">
-        <h2>Experience Tree</h2>
-        <div class="tree-wrap">
-          <div class="tree-root-label">EXPERIENCE</div>
-          <div id="companyTree"></div>
-        </div>
-      </aside>
-
-      <main class="panel">
-        <h2 id="activeCompanyLabel">No company selected</h2>
-        <div class="meta-line">Select a company, then add a project through voice -> AI parse -> preview -> approve.</div>
-        <div class="actions">
-          <button id="addProjectBtn" class="primary" disabled>+ Add Project</button>
-          <button id="editMarkdownBtn">Edit Markdown</button>
-          <button id="applyEditsBtn" class="primary" hidden>Apply Edits</button>
-          <button id="cancelEditsBtn" hidden>Cancel Edit</button>
-          <button id="saveBtn">Save CORES</button>
-          <button id="reloadBtn">Reload</button>
-        </div>
-        <div class="label">Current Markdown (single source of truth)</div>
-        <textarea id="markdownPreview" class="markdown-preview" spellcheck="false" readonly></textarea>
-      </main>
+    <div class="toolbar">
+      <button id="saveAllBtn" class="primary">Save All</button>
+      <button id="reloadBtn">Reload</button>
     </div>
-  </div>
 
-  <div class="modal" id="projectModal" aria-hidden="true">
-    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="projectModalTitle">
-      <h2 class="modal-title" id="projectModalTitle">Add Project (CORES)</h2>
-      <div id="modalError" class="modal-error"></div>
-
-      <div id="transcriptStage" class="stage">
-        <div class="modal-actions">
-          <button id="startRecordingBtn">Start Recording</button>
-          <button id="stopRecordingBtn" disabled>Stop</button>
-          <button id="sendToAiBtn" class="primary">Send To AI</button>
-          <button id="cancelFromTranscriptBtn">Cancel</button>
-        </div>
-        <div class="label">Transcript</div>
-        <textarea id="transcriptBox" class="textarea" style="min-height:180px;" spellcheck="false"></textarea>
-      </div>
-
-      <div id="previewStage" class="stage" hidden>
-        <div class="label">Project Title</div>
-        <input id="fieldProjectTitle" class="input" type="text" />
-
-        <div class="label">Situation</div>
-        <textarea id="fieldSituation" class="textarea"></textarea>
-
-        <div class="label">What I did</div>
-        <textarea id="fieldWhatIDid" class="textarea"></textarea>
-
-        <div class="label">Tools / systems</div>
-        <textarea id="fieldTools" class="textarea"></textarea>
-
-        <div class="label">Result</div>
-        <textarea id="fieldResult" class="textarea"></textarea>
-
-        <div class="label">Evidence / artifacts</div>
-        <textarea id="fieldEvidence" class="textarea"></textarea>
-
-        <div class="label">Notes / caveats</div>
-        <textarea id="fieldNotes" class="textarea"></textarea>
-
-        <div class="modal-actions" style="margin-top: 10px;">
-          <button id="approveInsertBtn" class="primary">Approve &amp; Insert</button>
-          <button id="editParsedBtn">Edit</button>
-          <button id="cancelFromPreviewBtn">Cancel</button>
-        </div>
-      </div>
-    </div>
+    <div id="editorRoot" class="stack"></div>
   </div>
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      const state = {
-        coreId: "",
-        markdown: "",
-        companies: [],
-        activeCompanyName: "",
-        recognition: null,
-        recording: false,
-        editMode: false,
+      const PROJECT_FIELDS = ["Situation", "What I did", "Tools / systems", "Result", "Evidence / artifacts", "Notes / caveats"];
+      const LABEL_MAP = {
+        "situation": "Situation",
+        "what i did": "What I did",
+        "tools / systems": "Tools / systems",
+        "tools/systems": "Tools / systems",
+        "result": "Result",
+        "evidence / artifacts": "Evidence / artifacts",
+        "evidence/artifacts": "Evidence / artifacts",
+        "evidense / artifacts": "Evidence / artifacts",
+        "evidense/artifacts": "Evidence / artifacts",
+        "notes / caveats": "Notes / caveats",
+        "notes/caveats": "Notes / caveats",
       };
 
-      const statusLineEl = document.getElementById("statusLine");
-      const companyTreeEl = document.getElementById("companyTree");
-      const activeCompanyLabelEl = document.getElementById("activeCompanyLabel");
-      const addProjectBtn = document.getElementById("addProjectBtn");
-      const editMarkdownBtn = document.getElementById("editMarkdownBtn");
-      const applyEditsBtn = document.getElementById("applyEditsBtn");
-      const cancelEditsBtn = document.getElementById("cancelEditsBtn");
-      const saveBtn = document.getElementById("saveBtn");
+      const state = { coreId: "", doc: null, savedMarkdown: "" };
+      const statusEl = document.getElementById("statusLine");
+      const coreIdEl = document.getElementById("coreIdLabel");
+      const rootEl = document.getElementById("editorRoot");
+      const saveAllBtn = document.getElementById("saveAllBtn");
       const reloadBtn = document.getElementById("reloadBtn");
-      const markdownPreviewEl = document.getElementById("markdownPreview");
-      const coreIdLabelEl = document.getElementById("coreIdLabel");
 
-      const projectModalEl = document.getElementById("projectModal");
-      const modalErrorEl = document.getElementById("modalError");
-      const transcriptStageEl = document.getElementById("transcriptStage");
-      const previewStageEl = document.getElementById("previewStage");
-      const transcriptBoxEl = document.getElementById("transcriptBox");
-      const startRecordingBtn = document.getElementById("startRecordingBtn");
-      const stopRecordingBtn = document.getElementById("stopRecordingBtn");
-      const sendToAiBtn = document.getElementById("sendToAiBtn");
-      const cancelFromTranscriptBtn = document.getElementById("cancelFromTranscriptBtn");
-      const approveInsertBtn = document.getElementById("approveInsertBtn");
-      const editParsedBtn = document.getElementById("editParsedBtn");
-      const cancelFromPreviewBtn = document.getElementById("cancelFromPreviewBtn");
-
-      const fieldProjectTitleEl = document.getElementById("fieldProjectTitle");
-      const fieldSituationEl = document.getElementById("fieldSituation");
-      const fieldWhatIDidEl = document.getElementById("fieldWhatIDid");
-      const fieldToolsEl = document.getElementById("fieldTools");
-      const fieldResultEl = document.getElementById("fieldResult");
-      const fieldEvidenceEl = document.getElementById("fieldEvidence");
-      const fieldNotesEl = document.getElementById("fieldNotes");
-
-      const REQUIRED_LABELS = [
-        "Situation",
-        "What I did",
-        "Tools / systems",
-        "Result",
-        "Evidence / artifacts",
-        "Notes / caveats",
-      ];
-
-      const setStatus = (text, isError = false) => {
-        statusLineEl.textContent = text || "";
-        statusLineEl.classList.toggle("error", !!isError);
-      };
-
-      const fail = (text) => {
-        setStatus(text, true);
-        throw new Error(text);
-      };
-
-      const setModalError = (text) => {
-        modalErrorEl.textContent = text || "";
-      };
+      const setStatus = (m, e = false) => { statusEl.textContent = m || ""; statusEl.classList.toggle("error", !!e); };
+      const fail = (m) => { setStatus(m, true); throw new Error(m); };
+      const nn = (t) => String(t || "").replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+      const trimLines = (t) => nn(t).split("\n").map((l) => l.replace(/[ \t]+$/g, "")).join("\n");
+      const sliceText = (lines, s, e) => trimLines(lines.slice(s, e).join("\n")).trim();
+      const esc = (s) => String(s || "").toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
 
       const parseCoreId = () => {
         const id = new URLSearchParams(window.location.search).get("id");
-        if (!id || !/^[A-Za-z0-9._-]+$/.test(id)) {
-          fail("Missing or invalid core id query parameter. Use /manage?id=CORE-US-2026-000001");
-        }
+        if (!id || !/^[A-Za-z0-9._-]+$/.test(id)) fail("Missing or invalid core id query parameter. Use /AI-Fit-Site/manage?id=CORE-US-2026-000001");
         return id;
       };
 
-      const parseCompanyTree = (markdown) => {
-        const normalized = String(markdown || "").replace(/\r\n/g, "\n").replace(/\r/g, "\n");
-        const companyRegex = /^## COMPANY:\s*(.+)$/gm;
-        const companyMatches = [];
-        let match;
-        while ((match = companyRegex.exec(normalized)) !== null) {
-          companyMatches.push({
-            name: match[1].trim(),
-            start: match.index,
-            headerEnd: match.index + match[0].length,
-          });
-        }
-        if (!companyMatches.length) {
-          throw new Error("Markdown parse failed: no company sections found.");
-        }
+      const labelKey = (raw) => String(raw || "").toLowerCase().replace(/[^a-z0-9/ ]+/g, " ").replace(/\s*\/\s*/g, "/").replace(/\s+/g, " ").trim();
+      const toCanonicalLabel = (raw) => LABEL_MAP[labelKey(raw)] || null;
+      const bulletPrefix = /^\s*-\s+(.*)$/;
 
-        for (let idx = 0; idx < companyMatches.length; idx += 1) {
-          const next = companyMatches[idx + 1];
-          const end = next ? next.start : normalized.length;
-          companyMatches[idx].end = end;
-          const body = normalized.slice(companyMatches[idx].headerEnd, end);
-          const projects = [];
-          const projectRegex = /^### PROJECT:\s*(.*)$/gm;
-          let pm;
-          while ((pm = projectRegex.exec(body)) !== null) {
-            projects.push(pm[1].trim() || "(Untitled Project)");
-          }
-          companyMatches[idx].projects = projects;
-        }
-        return companyMatches;
-      };
+      const parseBulletGroup = (raw, fieldName = "field") => {
+        const value = trimLines(raw || "").trim();
+        if (!value) return null;
 
-      const renderTree = () => {
-        companyTreeEl.innerHTML = "";
-        state.companies.forEach((company) => {
-          const wrapper = document.createElement("div");
+        const lines = nn(value).split("\n");
+        const firstBullet = lines.findIndex((line) => bulletPrefix.test(line));
+        if (firstBullet < 0) return null;
 
-          const button = document.createElement("button");
-          button.type = "button";
-          button.className = `company-node${company.name === state.activeCompanyName ? " active" : ""}`;
-          button.textContent = company.name;
-          button.addEventListener("click", () => {
-            state.activeCompanyName = company.name;
-            activeCompanyLabelEl.textContent = `Active Company: ${company.name}`;
-            addProjectBtn.disabled = false;
-            renderTree();
-          });
-          wrapper.appendChild(button);
+        const intro = trimLines(lines.slice(0, firstBullet).join("\n")).trim();
+        const items = [];
+        let current = null;
 
-          const projectList = document.createElement("ul");
-          projectList.className = "project-list";
-          company.projects.forEach((projectTitle) => {
-            const li = document.createElement("li");
-            li.textContent = `- ${projectTitle}`;
-            projectList.appendChild(li);
-          });
-          wrapper.appendChild(projectList);
-
-          companyTreeEl.appendChild(wrapper);
-        });
-      };
-
-      const refreshMarkdownPreview = () => {
-        markdownPreviewEl.value = state.markdown;
-      };
-
-      const setEditMode = (enabled) => {
-        state.editMode = !!enabled;
-        markdownPreviewEl.readOnly = !state.editMode;
-        editMarkdownBtn.hidden = state.editMode;
-        applyEditsBtn.hidden = !state.editMode;
-        cancelEditsBtn.hidden = !state.editMode;
-        if (state.editMode) {
-          markdownPreviewEl.focus();
-          markdownPreviewEl.setSelectionRange(markdownPreviewEl.value.length, markdownPreviewEl.value.length);
-        }
-      };
-
-      const applyMarkdownEdits = () => {
-        if (!state.editMode) {
-          throw new Error("Edit mode is not active.");
-        }
-
-        const candidate = String(markdownPreviewEl.value || "");
-        if (!candidate.trim()) {
-          throw new Error("Markdown cannot be empty.");
-        }
-
-        const parsedTree = parseCompanyTree(candidate);
-        state.markdown = candidate;
-        state.companies = parsedTree;
-        if (!state.activeCompanyName || !parsedTree.some((c) => c.name === state.activeCompanyName)) {
-          state.activeCompanyName = "";
-        }
-        if (state.activeCompanyName) {
-          activeCompanyLabelEl.textContent = `Active Company: ${state.activeCompanyName}`;
-          addProjectBtn.disabled = false;
-        } else {
-          activeCompanyLabelEl.textContent = "No company selected";
-          addProjectBtn.disabled = true;
-        }
-        renderTree();
-        refreshMarkdownPreview();
-        setEditMode(false);
-        setStatus("Markdown edits applied locally.");
-      };
-
-      const loadCoreMarkdown = async () => {
-        setStatus(`Loading ${state.coreId}...`);
-        const response = await fetch(`/CORES/${encodeURIComponent(state.coreId)}.md`, { cache: "no-store" });
-        if (!response.ok) {
-          fail(`Load failed (${response.status}) for ${state.coreId}.md`);
-        }
-        const markdown = await response.text();
-        if (!markdown.trim()) {
-          fail("Loaded markdown is empty.");
-        }
-
-        const parsedTree = parseCompanyTree(markdown);
-        state.markdown = markdown;
-        state.companies = parsedTree;
-        if (!state.activeCompanyName || !parsedTree.some((c) => c.name === state.activeCompanyName)) {
-          state.activeCompanyName = "";
-        }
-        if (state.activeCompanyName) {
-          activeCompanyLabelEl.textContent = `Active Company: ${state.activeCompanyName}`;
-          addProjectBtn.disabled = false;
-        } else {
-          activeCompanyLabelEl.textContent = "No company selected";
-          addProjectBtn.disabled = true;
-        }
-        renderTree();
-        refreshMarkdownPreview();
-        setEditMode(false);
-        setStatus(`Loaded ${state.coreId}.md`);
-      };
-
-      const openModal = () => {
-        setModalError("");
-        transcriptBoxEl.value = "";
-        transcriptStageEl.hidden = false;
-        previewStageEl.hidden = true;
-        projectModalEl.classList.add("open");
-        projectModalEl.setAttribute("aria-hidden", "false");
-      };
-
-      const closeModal = () => {
-        if (state.recording && state.recognition) {
-          state.recognition.stop();
-        }
-        state.recording = false;
-        state.recognition = null;
-        stopRecordingBtn.disabled = true;
-        startRecordingBtn.disabled = false;
-        projectModalEl.classList.remove("open");
-        projectModalEl.setAttribute("aria-hidden", "true");
-        setModalError("");
-      };
-
-      const getSpeechRecognitionCtor = () => {
-        const ctor = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!ctor) {
-          throw new Error("Web Speech API is not available in this browser.");
-        }
-        return ctor;
-      };
-
-      const parseProjectBlock = (projectBlock) => {
-        const normalized = String(projectBlock || "").replace(/\r\n/g, "\n").replace(/\r/g, "\n").trim();
-        if (!normalized) {
-          throw new Error("AI returned empty project block.");
-        }
-
-        const lines = normalized.split("\n");
-        const headerMatch = lines[0].match(/^### PROJECT:\s*(.*)$/);
-        if (!headerMatch) {
-          throw new Error("AI output must start with '### PROJECT:'.");
-        }
-
-        const result = {
-          projectTitle: headerMatch[1].trim(),
-          sections: {
-            Situation: "",
-            "What I did": "",
-            "Tools / systems": "",
-            Result: "",
-            "Evidence / artifacts": "",
-            "Notes / caveats": "",
-          },
-        };
-
-        let currentLabel = "";
-        let expectedIndex = 0;
-
-        for (let i = 1; i < lines.length; i += 1) {
+        for (let i = firstBullet; i < lines.length; i += 1) {
           const line = lines[i];
-          const markerMatch = line.trim().match(/^- ([^:]+):\s*(.*)$/);
-          if (markerMatch) {
-            const label = markerMatch[1].trim();
-            if (!REQUIRED_LABELS.includes(label)) {
-              throw new Error(`Unsupported section label '${label}'.`);
+          const bullet = line.match(bulletPrefix);
+          if (bullet) {
+            if (current !== null) {
+              const prev = trimLines(current.join("\n")).trim();
+              if (!prev) fail(`${fieldName} contains an empty bullet item.`);
+              items.push(prev);
             }
-            const expectedLabel = REQUIRED_LABELS[expectedIndex];
-            if (label !== expectedLabel) {
-              throw new Error(`Section order invalid. Expected '${expectedLabel}', received '${label}'.`);
-            }
-            currentLabel = label;
-            result.sections[currentLabel] = markerMatch[2] || "";
-            expectedIndex += 1;
+            current = [bullet[1]];
             continue;
           }
 
-          if (!currentLabel) {
-            if (!line.trim()) {
-              continue;
+          if (current === null) fail(`${fieldName} contains invalid bullet structure.`);
+          current.push(line);
+        }
+
+        if (current !== null) {
+          const last = trimLines(current.join("\n")).trim();
+          if (!last) fail(`${fieldName} contains an empty bullet item.`);
+          items.push(last);
+        }
+
+        if (!items.length) return null;
+        return { intro, items };
+      };
+
+      const buildBulletGroup = ({ intro = "", items = [] }, fieldName = "field") => {
+        const out = [];
+        const introText = trimLines(intro).trim();
+        if (introText) out.push(introText);
+
+        items.forEach((item, idx) => {
+          const cleaned = trimLines(item).trim();
+          if (!cleaned) fail(`${fieldName} bullet item ${idx + 1} cannot be empty.`);
+          const lines = cleaned.split("\n");
+          out.push(`- ${lines[0]}`);
+          lines.slice(1).forEach((line) => out.push(line));
+        });
+
+        return trimLines(out.join("\n")).trim();
+      };
+
+      const parseProject = (title, lines) => {
+        const sections = {};
+        let current = "";
+        for (const line of lines) {
+          let marker = null;
+          const colonMarker = line.match(/^\s*-?\s*([^:]+?)\s*:\s*(.*)$/);
+          if (colonMarker) {
+            marker = { label: colonMarker[1], value: colonMarker[2] || "" };
+          } else {
+            const bulletNoColonMarker = line.match(/^\s*-\s*([^:]+?)\s*$/);
+            if (bulletNoColonMarker) {
+              marker = { label: bulletNoColonMarker[1], value: "" };
             }
-            throw new Error("Unexpected content before first section marker.");
           }
 
-          const previous = result.sections[currentLabel];
-          result.sections[currentLabel] = previous ? `${previous}\n${line}` : line;
+          if (marker) {
+            const canonical = toCanonicalLabel(marker.label);
+            if (canonical) {
+              if (Object.prototype.hasOwnProperty.call(sections, canonical)) fail(`Duplicate section '${canonical}' in project '${title || "(untitled)"}'.`);
+              current = canonical;
+              sections[current] = marker.value;
+              continue;
+            }
+          }
+          if (!current) {
+            if (!line.trim()) continue;
+            fail(`Unexpected project content before section labels in '${title || "(untitled)"}'.`);
+          }
+          sections[current] = sections[current] ? `${sections[current]}\n${line}` : line;
+        }
+        for (const k of PROJECT_FIELDS) {
+          if (!Object.prototype.hasOwnProperty.call(sections, k)) fail(`Project '${title || "(untitled)"}' missing '${k}'.`);
+          sections[k] = trimLines(sections[k]).trim();
+        }
+        return { title: trimLines(title || "").trim(), sections };
+      };
+
+      const parseCompany = (name, lines) => {
+        const company = { name: trimLines(name || "").trim(), role: "", signals: "", projects: [] };
+        if (!company.name) fail("Company header missing company name.");
+
+        const isRole = (l) => /^###\s+ROLE:\s*$/i.test(l.trim());
+        const isSignals = (l) => /^###\s+SIGNALS:\s*$/i.test(l.trim());
+        const isProject = (l) => /^###\s+PROJECT:\s*(.*)$/i.test(l.trim());
+        const isStruct = (l) => isRole(l) || isSignals(l) || isProject(l) || /^##\s+COMPANY:\s*/i.test(l.trim());
+
+        let i = 0;
+        while (i < lines.length) {
+          const line = lines[i];
+          const trimmed = line.trim();
+          if (!trimmed) { i += 1; continue; }
+
+          if (isRole(line)) {
+            let j = i + 1;
+            while (j < lines.length && !isStruct(lines[j])) j += 1;
+            company.role = sliceText(lines, i + 1, j);
+            i = j;
+            continue;
+          }
+
+          if (isSignals(line)) {
+            let j = i + 1;
+            while (j < lines.length && !isStruct(lines[j])) j += 1;
+            company.signals = sliceText(lines, i + 1, j);
+            i = j;
+            continue;
+          }
+
+          const pm = line.match(/^###\s+PROJECT:\s*(.*)$/i);
+          if (pm) {
+            let j = i + 1;
+            while (j < lines.length && !/^###\s+PROJECT:\s*/i.test(lines[j].trim()) && !/^##\s+COMPANY:\s*/i.test(lines[j].trim())) j += 1;
+            company.projects.push(parseProject(pm[1] || "", lines.slice(i + 1, j)));
+            i = j;
+            continue;
+          }
+
+          fail(`Unexpected line in company '${company.name}': ${line}`);
         }
 
-        if (expectedIndex !== REQUIRED_LABELS.length) {
-          throw new Error("Missing required sections in AI output.");
+        if (!company.role) fail(`Company '${company.name}' missing ROLE content.`);
+        if (!company.projects.length) fail(`Company '${company.name}' has no PROJECT blocks.`);
+        return company;
+      };
+      const parseGlobal = (lines) => {
+        const starts = [];
+        for (let i = 0; i < lines.length; i += 1) {
+          if (/^##\s+(.+?)\s*$/i.test(lines[i].trim())) starts.push(i);
+        }
+        if (!starts.length) fail("# GLOBAL must contain at least one ## subsection.");
+
+        const sections = [];
+        for (let i = 0; i < starts.length; i += 1) {
+          const s = starts[i];
+          const e = i + 1 < starts.length ? starts[i + 1] : lines.length;
+          const hm = lines[s].trim().match(/^##\s+(.+?)\s*$/i);
+          if (!hm) fail(`Invalid GLOBAL subsection header: ${lines[s]}`);
+          const name = trimLines(hm[1]).trim();
+          if (!name) fail("GLOBAL subsection name cannot be empty.");
+          sections.push({ name, content: sliceText(lines, s + 1, e) });
         }
 
-        REQUIRED_LABELS.forEach((label) => {
-          result.sections[label] = result.sections[label].trim();
+        if (!sections.some((x) => x.name.toUpperCase() === "ACHIEVEMENTS")) fail("# GLOBAL must include ## ACHIEVEMENTS.");
+        if (sliceText(lines, 0, starts[0])) fail("Unexpected content in # GLOBAL before first ## subsection.");
+        return sections;
+      };
+
+      const splitPreamble = (preamble) => {
+        const lines = nn(preamble).split("\n");
+        const humanIdx = lines.findIndex((l) => /^#\s+HUMAN\s*$/i.test(l.trim()));
+        if (humanIdx < 0) fail("Missing required # HUMAN header.");
+
+        const coresBlock = sliceText(lines, 0, humanIdx);
+        if (!/^#\s+CORES\s*$/im.test(coresBlock)) fail("Missing required # CORES header.");
+
+        const humanContent = sliceText(lines, humanIdx + 1, lines.length);
+        const humanFields = parseHumanFields(humanContent);
+        return { coresBlock, humanFields };
+      };
+
+      const parseHumanFields = (humanContent) => {
+        const lines = nn(humanContent).split("\n");
+        const fields = [];
+
+        lines.forEach((line, idx) => {
+          const trimmed = trimLines(line).trim();
+          if (!trimmed) return;
+
+          const marker = trimmed.match(/^([^:]+):\s*(.*)$/);
+          if (!marker) fail(`Invalid # HUMAN line ${idx + 1}. Expected 'Key: Value'.`);
+
+          const key = trimLines(marker[1] || "").trim();
+          const value = trimLines(marker[2] || "").trim();
+          if (!key) fail(`# HUMAN line ${idx + 1} is missing a key label.`);
+          if (fields.some((f) => f.key.toLowerCase() === key.toLowerCase())) {
+            fail(`Duplicate # HUMAN field '${key}'.`);
+          }
+          fields.push({ key, value });
         });
-        return result;
+
+        if (!fields.length) fail("# HUMAN content is empty.");
+        return fields;
       };
 
-      const fillPreviewFields = (parsed) => {
-        fieldProjectTitleEl.value = parsed.projectTitle || "";
-        fieldSituationEl.value = parsed.sections["Situation"] || "";
-        fieldWhatIDidEl.value = parsed.sections["What I did"] || "";
-        fieldToolsEl.value = parsed.sections["Tools / systems"] || "";
-        fieldResultEl.value = parsed.sections["Result"] || "";
-        fieldEvidenceEl.value = parsed.sections["Evidence / artifacts"] || "";
-        fieldNotesEl.value = parsed.sections["Notes / caveats"] || "";
+      const parseSkills = (skillsContent) => {
+        if (skillsContent === null) return null;
+        const lines = nn(skillsContent).split("\n");
+        const skills = [];
+        lines.forEach((line, idx) => {
+          const trimmed = trimLines(line).trim();
+          if (!trimmed) return;
+          const bullet = trimmed.match(/^-\s+(.+)$/);
+          if (!bullet) fail(`# SKILLS line ${idx + 1} must start with '- '.`);
+          const value = trimLines(bullet[1]).trim();
+          if (!value) fail(`# SKILLS line ${idx + 1} is missing a value after '- '.`);
+          skills.push(value);
+        });
+        return skills;
       };
 
-      const collectPreviewFields = () => {
-        const projectTitle = fieldProjectTitleEl.value.trim();
-        if (!projectTitle) {
-          throw new Error("Project title is required.");
+      const parseDoc = (markdown) => {
+        const lines = nn(markdown).split("\n");
+        const summary = lines.findIndex((l) => /^#\s+SUMMARY\s*$/i.test(l.trim()));
+        const skills = lines.findIndex((l) => /^#\s+SKILLS\s*$/i.test(l.trim()));
+        const global = lines.findIndex((l) => /^#\s+GLOBAL\s*$/i.test(l.trim()));
+        const exp = lines.findIndex((l) => /^#\s+EXPERIENCE\s*$/i.test(l.trim()));
+
+        if (summary < 0) fail("Missing required # SUMMARY header.");
+        if (global < 0) fail("Missing required # GLOBAL header.");
+        if (exp < 0) fail("Missing required # EXPERIENCE header.");
+        if (!(summary < global && global < exp)) fail("Header order invalid. Required: # SUMMARY -> # GLOBAL -> # EXPERIENCE.");
+        if (skills >= 0 && !(summary < skills && skills < global)) fail("# SKILLS must be between # SUMMARY and # GLOBAL.");
+
+        const preamble = sliceText(lines, 0, summary);
+        if (!/^#\s+CORES\s*$/im.test(preamble)) fail("Missing required # CORES header.");
+        if (!/^#\s+HUMAN\s*$/im.test(preamble)) fail("Missing required # HUMAN header.");
+        const preambleParts = splitPreamble(preamble);
+
+        const summaryEnd = skills >= 0 ? skills : global;
+        const summaryText = sliceText(lines, summary + 1, summaryEnd);
+        if (!summaryText) fail("# SUMMARY content is empty.");
+
+        const skillsText = skills >= 0 ? sliceText(lines, skills + 1, global) : null;
+        const skillsList = parseSkills(skillsText);
+        const globalSections = parseGlobal(lines.slice(global + 1, exp));
+
+        const expLines = lines.slice(exp + 1);
+        const companyStarts = [];
+        for (let i = 0; i < expLines.length; i += 1) {
+          if (/^##\s+COMPANY:\s*(.+?)\s*$/i.test(expLines[i].trim())) companyStarts.push(i);
+        }
+        if (!companyStarts.length) fail("# EXPERIENCE must include at least one ## COMPANY block.");
+        if (sliceText(expLines, 0, companyStarts[0])) fail("Unexpected content in # EXPERIENCE before first company.");
+
+        const experience = [];
+        for (let i = 0; i < companyStarts.length; i += 1) {
+          const s = companyStarts[i];
+          const e = i + 1 < companyStarts.length ? companyStarts[i + 1] : expLines.length;
+          const cm = expLines[s].trim().match(/^##\s+COMPANY:\s*(.+?)\s*$/i);
+          if (!cm) fail(`Invalid company header: ${expLines[s]}`);
+          experience.push(parseCompany(cm[1], expLines.slice(s + 1, e)));
         }
 
         return {
-          projectTitle,
-          sections: {
-            "Situation": fieldSituationEl.value.trim(),
-            "What I did": fieldWhatIDidEl.value.trim(),
-            "Tools / systems": fieldToolsEl.value.trim(),
-            "Result": fieldResultEl.value.trim(),
-            "Evidence / artifacts": fieldEvidenceEl.value.trim(),
-            "Notes / caveats": fieldNotesEl.value.trim(),
-          },
+          coresBlock: preambleParts.coresBlock,
+          humanFields: preambleParts.humanFields,
+          summary: summaryText,
+          skills: skillsList,
+          globalSections,
+          experience,
         };
       };
 
-      const buildProjectBlock = (projectData) => {
-        const lines = [`### PROJECT: ${projectData.projectTitle}`, ""];
-        REQUIRED_LABELS.forEach((label) => {
-          lines.push(`- ${label}:`);
-          const content = projectData.sections[label] || "";
-          if (content) {
-            content.split("\n").forEach((row) => lines.push(row));
-          }
-          lines.push("");
+      const validate = (doc) => {
+        if (!doc) fail("Structured document state missing.");
+        if (!doc.coresBlock || !/^#\s+CORES\s*$/im.test(doc.coresBlock)) fail("CORES metadata block must contain # CORES.");
+        if (!Array.isArray(doc.humanFields) || !doc.humanFields.length) fail("HUMAN fields are missing.");
+        doc.humanFields.forEach((entry, idx) => {
+          if (!entry || !entry.key || !entry.key.trim()) fail(`HUMAN field at index ${idx} is missing a key.`);
+          if (typeof entry.value !== "string") fail(`HUMAN field '${entry.key}' has invalid value type.`);
         });
-        return `${lines.join("\n").trimEnd()}\n`;
+        if (!doc.summary || !doc.summary.trim()) fail("Summary cannot be empty.");
+        if (doc.skills !== null) {
+          if (!Array.isArray(doc.skills)) fail("Skills must be an array when # SKILLS exists.");
+          doc.skills.forEach((skill, idx) => {
+            if (typeof skill !== "string" || !skill.trim()) fail(`Skill at index ${idx} is empty or invalid.`);
+          });
+        }
+        if (!Array.isArray(doc.globalSections) || !doc.globalSections.length) fail("Global sections missing.");
+        if (!doc.globalSections.some((x) => String(x.name || "").trim().toUpperCase() === "ACHIEVEMENTS")) fail("Global sections must include ACHIEVEMENTS.");
+        if (!Array.isArray(doc.experience) || !doc.experience.length) fail("Experience must include at least one company.");
+
+        doc.experience.forEach((c, ci) => {
+          if (!c.name || !c.name.trim()) fail(`Company at index ${ci} is missing a name.`);
+          if (!c.role || !c.role.trim()) fail(`Company '${c.name}' missing ROLE content.`);
+          if (typeof c.signals !== "string") fail(`Company '${c.name}' SIGNALS field is invalid.`);
+          if (!Array.isArray(c.projects) || !c.projects.length) fail(`Company '${c.name}' must include at least one project.`);
+          c.projects.forEach((p, pi) => {
+            if (!p || typeof p !== "object") fail(`Project ${pi + 1} in '${c.name}' is invalid.`);
+            if (!p.sections || typeof p.sections !== "object") fail(`Project ${pi + 1} in '${c.name}' has no section map.`);
+            PROJECT_FIELDS.forEach((field) => {
+              if (!Object.prototype.hasOwnProperty.call(p.sections, field)) fail(`Project ${pi + 1} in '${c.name}' missing '${field}'.`);
+            });
+          });
+        });
       };
 
-      const insertProjectUnderActiveCompany = (projectBlock) => {
-        if (!state.activeCompanyName) {
-          throw new Error("No active company selected.");
+      const fmt = (v) => trimLines(v || "").trim();
+      const buildMarkdown = (doc) => {
+        validate(doc);
+        const out = [];
+        out.push(fmt(doc.coresBlock), "", "# HUMAN");
+        doc.humanFields.forEach((entry) => {
+          const key = fmt(entry.key);
+          const value = fmt(entry.value);
+          out.push(value ? `${key}: ${value}` : `${key}:`);
+        });
+        out.push("", "# SUMMARY", fmt(doc.summary), "");
+        if (doc.skills !== null) {
+          out.push("# SKILLS", "");
+          doc.skills.forEach((skill) => {
+            out.push(`- ${fmt(skill)}`);
+          });
+          out.push("");
         }
 
-        const latestTree = parseCompanyTree(state.markdown);
-        const company = latestTree.find((entry) => entry.name === state.activeCompanyName);
-        if (!company) {
-          throw new Error("Active company no longer exists in markdown.");
-        }
+        out.push("# GLOBAL", "");
+        doc.globalSections.forEach((g) => {
+          out.push(`## ${fmt(g.name)}`);
+          out.push(fmt(g.content));
+          out.push("");
+        });
 
-        const before = state.markdown.slice(0, company.end);
-        const after = state.markdown.slice(company.end);
-        const prefix = before.endsWith("\n\n") ? "" : before.endsWith("\n") ? "\n" : "\n\n";
-        const suffix = after.startsWith("\n") ? "" : "\n";
+        out.push("# EXPERIENCE", "");
+        doc.experience.forEach((c) => {
+          out.push(`## COMPANY: ${fmt(c.name)}`, "", "### ROLE:", fmt(c.role), "", "### SIGNALS:", fmt(c.signals), "");
+          c.projects.forEach((p) => {
+            const t = fmt(p.title);
+            out.push(t ? `### PROJECT: ${t}` : "### PROJECT:");
+            out.push("");
+            PROJECT_FIELDS.forEach((field) => {
+              out.push(`- ${field}:`);
+              const content = fmt(p.sections[field]);
+              if (content) content.split("\n").forEach((line) => out.push(line));
+              out.push("");
+            });
+          });
+        });
 
-        state.markdown = `${before}${prefix}${projectBlock.trimEnd()}\n${suffix}${after}`;
-        state.companies = parseCompanyTree(state.markdown);
-        renderTree();
-        refreshMarkdownPreview();
+        return `${out.join("\n").trimEnd()}\n`;
       };
 
-      const saveCoreMarkdown = async () => {
-        setStatus(`Saving ${state.coreId}.md...`);
-        const response = await fetch("/save_cores", {
+      const field = (label, id, value, multiline = true) => {
+        const wrap = document.createElement("div");
+        const l = document.createElement("div");
+        l.className = "label";
+        l.textContent = label;
+        wrap.appendChild(l);
+        const el = document.createElement(multiline ? "textarea" : "input");
+        if (!multiline) el.type = "text";
+        el.id = id;
+        el.value = value || "";
+        wrap.appendChild(el);
+        return wrap;
+      };
+
+      const clamp = (n, min, max) => Math.min(max, Math.max(min, n));
+      const autoSizeSingleLine = (el) => {
+        const len = (el?.value || "").length;
+        el.size = clamp(len + 2, 18, 96);
+      };
+      const autoSizeMultiline = (el) => {
+        const lines = nn(el?.value || "").split("\n");
+        const longest = lines.reduce((m, line) => Math.max(m, line.length), 0);
+        el.cols = clamp(longest + 2, 22, 106);
+        el.style.height = "auto";
+        el.style.height = `${Math.max(72, el.scrollHeight)}px`;
+      };
+
+      const smartMultilineField = (label, idPrefix, value) => {
+        const parsed = parseBulletGroup(value, label);
+        if (!parsed) {
+          return field(label, `${idPrefix}_content`, value, true);
+        }
+
+        const wrap = document.createElement("div");
+        const l = document.createElement("div");
+        l.className = "label";
+        l.textContent = label;
+        wrap.appendChild(l);
+
+        if (parsed.intro) {
+          wrap.appendChild(field("Text Before Bullets", `${idPrefix}_intro`, parsed.intro, true));
+        }
+
+        parsed.items.forEach((item, idx) => {
+          const bulletItem = document.createElement("section");
+          bulletItem.className = "bullet-item";
+
+          const h = document.createElement("h4");
+          h.textContent = `${label} ITEM ${idx + 1}`;
+          bulletItem.appendChild(h);
+
+          const locked = document.createElement("div");
+          locked.className = "locked";
+          locked.textContent = "Locked marker: -";
+          bulletItem.appendChild(locked);
+
+          const row = document.createElement("div");
+          row.className = "skill-row";
+
+          const marker = document.createElement("span");
+          marker.className = "skill-marker";
+          marker.textContent = "\u2022";
+          row.appendChild(marker);
+
+          const input = document.createElement("textarea");
+          input.id = `${idPrefix}_bullet_${idx}`;
+          input.className = "bullet-input";
+          input.value = item || "";
+          autoSizeMultiline(input);
+          input.addEventListener("input", () => autoSizeMultiline(input));
+          row.appendChild(input);
+          bulletItem.appendChild(row);
+
+          wrap.appendChild(bulletItem);
+        });
+
+        return wrap;
+      };
+
+      const readSmartMultiline = (idPrefix, fallbackFieldName) => {
+        const contentEl = document.getElementById(`${idPrefix}_content`);
+        if (contentEl) {
+          return trimLines(contentEl.value || "").trim();
+        }
+
+        const bulletNodes = Array.from(document.querySelectorAll(`[id^="${idPrefix}_bullet_"]`));
+        if (!bulletNodes.length) {
+          fail(`Missing input field: ${idPrefix}_content`);
+        }
+
+        const sorted = bulletNodes.sort((a, b) => {
+          const ai = Number((a.id.match(/_bullet_(\d+)$/) || [])[1] || "0");
+          const bi = Number((b.id.match(/_bullet_(\d+)$/) || [])[1] || "0");
+          return ai - bi;
+        });
+
+        const introEl = document.getElementById(`${idPrefix}_intro`);
+        const intro = introEl ? trimLines(introEl.value || "").trim() : "";
+        const items = sorted.map((el, idx) => {
+          const value = trimLines(el.value || "").trim();
+          if (!value) fail(`${fallbackFieldName} bullet item ${idx + 1} cannot be empty.`);
+          return value;
+        });
+
+        return buildBulletGroup({ intro, items }, fallbackFieldName);
+      };
+
+      const sectionCard = ({ title, locked, fieldLabel, fieldId, value, saveText, onSave }) => {
+        const card = document.createElement("section");
+        card.className = "card";
+        const h = document.createElement("h2");
+        h.textContent = title;
+        card.appendChild(h);
+        if (locked) {
+          const lk = document.createElement("div");
+          lk.className = "locked";
+          lk.textContent = locked;
+          card.appendChild(lk);
+        }
+        card.appendChild(field(fieldLabel, fieldId, value, true));
+        const actions = document.createElement("div");
+        actions.className = "actions";
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "primary";
+        b.textContent = saveText;
+        b.addEventListener("click", onSave);
+        actions.appendChild(b);
+        card.appendChild(actions);
+        return card;
+      };
+      const blankProject = () => ({
+        title: "",
+        sections: {
+          "Situation": "",
+          "What I did": "",
+          "Tools / systems": "",
+          "Result": "",
+          "Evidence / artifacts": "",
+          "Notes / caveats": "",
+        },
+      });
+
+      const syncFromInputs = () => {
+        if (!state.doc) fail("Document state unavailable.");
+        const read = (id) => {
+          const el = document.getElementById(id);
+          if (!el) fail(`Missing input field: ${id}`);
+          return trimLines(el.value || "");
+        };
+
+        state.doc.summary = read("summary_content").trim();
+        state.doc.humanFields.forEach((entry, idx) => {
+          entry.value = read(`human_field_${idx}`).trim();
+        });
+        if (state.doc.skills !== null) {
+          state.doc.skills = state.doc.skills.map((_, idx) => read(`skill_${idx}_value`).trim());
+        }
+
+        state.doc.globalSections.forEach((g, gi) => {
+          g.content = readSmartMultiline(`global_${gi}`, g.name).trim();
+        });
+
+        state.doc.experience.forEach((c, ci) => {
+          c.role = readSmartMultiline(`company_${ci}_role`, `ROLE in '${c.name}'`).trim();
+          c.signals = readSmartMultiline(`company_${ci}_signals`, `SIGNALS in '${c.name}'`).trim();
+          c.projects.forEach((p, pi) => {
+            p.title = read(`project_${ci}_${pi}_title`).trim();
+            PROJECT_FIELDS.forEach((fieldName) => {
+              p.sections[fieldName] = readSmartMultiline(
+                `project_${ci}_${pi}_${esc(fieldName)}`,
+                `${fieldName} in project ${pi + 1} (${c.name})`
+              ).trim();
+            });
+          });
+        });
+
+        validate(state.doc);
+      };
+
+      const postSave = async (reason) => {
+        if (!state.doc) fail("No document loaded.");
+        const markdown = buildMarkdown(state.doc);
+        const res = await fetch("/save_cores", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            coreId: state.coreId,
-            markdown: state.markdown,
-          }),
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ coreId: state.coreId, markdown }),
         });
-
-        const data = await response.json().catch(() => ({}));
-        if (!response.ok) {
-          fail(data.error || `Save failed (${response.status})`);
-        }
-        setStatus(`Saved ${state.coreId}.md`);
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) fail(data.error || `Save failed (${res.status})`);
+        state.savedMarkdown = markdown;
+        setStatus(`${reason} Saved ${state.coreId}.md`);
       };
 
-      addProjectBtn.addEventListener("click", () => {
-        if (state.editMode) {
-          setStatus("Apply or cancel markdown edits before adding a project.", true);
-          return;
-        }
-        if (!state.activeCompanyName) {
-          setStatus("Select a company first.", true);
-          return;
-        }
-        openModal();
-      });
+      const saveFromUi = async (reason) => {
+        syncFromInputs();
+        await postSave(reason);
+      };
 
-      editMarkdownBtn.addEventListener("click", () => {
-        refreshMarkdownPreview();
-        setEditMode(true);
-        setStatus("Edit mode enabled. Apply edits to validate and refresh the tree.");
-      });
+      const render = () => {
+        if (!state.doc) { rootEl.innerHTML = ""; return; }
+        rootEl.innerHTML = "";
 
-      applyEditsBtn.addEventListener("click", () => {
-        try {
-          applyMarkdownEdits();
-        } catch (error) {
-          setStatus(error.message || "Apply edits failed.", true);
+        const humanCard = document.createElement("section");
+        humanCard.className = "card";
+        const humanTitle = document.createElement("h2");
+        humanTitle.textContent = "HUMAN";
+        humanCard.appendChild(humanTitle);
+        const humanLocked = document.createElement("div");
+        humanLocked.className = "locked";
+        humanLocked.textContent = "Header and field labels are locked. Only values are editable.";
+        humanCard.appendChild(humanLocked);
+        state.doc.humanFields.forEach((entry, idx) => {
+          humanCard.appendChild(field(entry.key, `human_field_${idx}`, entry.value, false));
+        });
+        const humanActions = document.createElement("div");
+        humanActions.className = "actions";
+        const saveHumanBtn = document.createElement("button");
+        saveHumanBtn.type = "button";
+        saveHumanBtn.className = "primary";
+        saveHumanBtn.textContent = "Save Section";
+        saveHumanBtn.addEventListener("click", async () => { try { await saveFromUi("Human section updated."); render(); } catch (_) {} });
+        humanActions.appendChild(saveHumanBtn);
+        humanCard.appendChild(humanActions);
+        rootEl.appendChild(humanCard);
+
+        rootEl.appendChild(sectionCard({
+          title: "SUMMARY",
+          locked: "Header locked: # SUMMARY",
+          fieldLabel: "Summary Content",
+          fieldId: "summary_content",
+          value: state.doc.summary,
+          saveText: "Save Section",
+          onSave: async () => { try { await saveFromUi("Summary updated."); render(); } catch (_) {} },
+        }));
+
+        if (state.doc.skills !== null) {
+          const skillsCard = document.createElement("section");
+          skillsCard.className = "card";
+          const skillsTitle = document.createElement("h2");
+          skillsTitle.textContent = "SKILLS";
+          skillsCard.appendChild(skillsTitle);
+          const skillsLocked = document.createElement("div");
+          skillsLocked.className = "locked";
+          skillsLocked.textContent = "Header locked: # SKILLS. Each skill keeps a locked '-' markdown marker, shown here as a bullet.";
+          skillsCard.appendChild(skillsLocked);
+
+          const skillsActionsTop = document.createElement("div");
+          skillsActionsTop.className = "actions";
+          const addSkillBtn = document.createElement("button");
+          addSkillBtn.type = "button";
+          addSkillBtn.textContent = "Add Skill";
+          addSkillBtn.addEventListener("click", () => {
+            try {
+              syncFromInputs();
+              state.doc.skills.push("");
+              render();
+              setStatus("Skill container added. Enter a value, then save.");
+            } catch (_) {}
+          });
+          skillsActionsTop.appendChild(addSkillBtn);
+          skillsCard.appendChild(skillsActionsTop);
+
+          state.doc.skills.forEach((skill, si) => {
+            const skillItem = document.createElement("section");
+            skillItem.className = "skill-item";
+            const skillHead = document.createElement("h4");
+            skillHead.textContent = `SKILL ${si + 1}`;
+            skillItem.appendChild(skillHead);
+            const skillLocked = document.createElement("div");
+            skillLocked.className = "locked";
+            skillLocked.textContent = "Locked marker: -";
+            skillItem.appendChild(skillLocked);
+
+            const skillLabel = document.createElement("div");
+            skillLabel.className = "label";
+            skillLabel.textContent = "Skill Value";
+            skillItem.appendChild(skillLabel);
+
+            const skillRow = document.createElement("div");
+            skillRow.className = "skill-row";
+            const marker = document.createElement("span");
+            marker.className = "skill-marker";
+            marker.textContent = "\u2022";
+            skillRow.appendChild(marker);
+
+            const input = document.createElement("input");
+            input.type = "text";
+            input.id = `skill_${si}_value`;
+            input.className = "skill-input";
+            input.value = skill || "";
+            autoSizeSingleLine(input);
+            input.addEventListener("input", () => autoSizeSingleLine(input));
+            skillRow.appendChild(input);
+            skillItem.appendChild(skillRow);
+
+            const skillActions = document.createElement("div");
+            skillActions.className = "actions";
+            const saveSkillBtn = document.createElement("button");
+            saveSkillBtn.type = "button";
+            saveSkillBtn.className = "primary";
+            saveSkillBtn.textContent = "Save Skill";
+            saveSkillBtn.addEventListener("click", async () => {
+              try {
+                await saveFromUi(`Skill ${si + 1} updated.`);
+                render();
+              } catch (_) {}
+            });
+            skillActions.appendChild(saveSkillBtn);
+
+            const deleteSkillBtn = document.createElement("button");
+            deleteSkillBtn.type = "button";
+            deleteSkillBtn.className = "danger";
+            deleteSkillBtn.textContent = "Delete Skill";
+            deleteSkillBtn.addEventListener("click", async () => {
+              try {
+                syncFromInputs();
+                const ok = window.confirm(`Delete skill ${si + 1}?`);
+                if (!ok) { setStatus("Delete cancelled."); return; }
+                state.doc.skills.splice(si, 1);
+                await postSave("Skill deleted.");
+                render();
+              } catch (_) {}
+            });
+            skillActions.appendChild(deleteSkillBtn);
+
+            skillItem.appendChild(skillActions);
+            skillsCard.appendChild(skillItem);
+          });
+
+          const skillsActionsBottom = document.createElement("div");
+          skillsActionsBottom.className = "actions";
+          const saveSkillsBtn = document.createElement("button");
+          saveSkillsBtn.type = "button";
+          saveSkillsBtn.className = "primary";
+          saveSkillsBtn.textContent = "Save Section";
+          saveSkillsBtn.addEventListener("click", async () => {
+            try {
+              await saveFromUi("Skills updated.");
+              render();
+            } catch (_) {}
+          });
+          skillsActionsBottom.appendChild(saveSkillsBtn);
+          skillsCard.appendChild(skillsActionsBottom);
+
+          rootEl.appendChild(skillsCard);
         }
-      });
 
-      cancelEditsBtn.addEventListener("click", () => {
-        refreshMarkdownPreview();
-        setEditMode(false);
-        setStatus("Edit cancelled. Local markdown restored.");
-      });
+        state.doc.globalSections.forEach((g, gi) => {
+          const card = document.createElement("section");
+          card.className = "card";
+          const h = document.createElement("h2");
+          h.textContent = g.name;
+          card.appendChild(h);
+          const lk = document.createElement("div");
+          lk.className = "locked";
+          lk.textContent = "Header locked under # GLOBAL";
+          card.appendChild(lk);
+          card.appendChild(smartMultilineField(`${g.name} Content`, `global_${gi}`, g.content));
+          const actions = document.createElement("div");
+          actions.className = "actions";
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "primary";
+          btn.textContent = "Save Section";
+          btn.addEventListener("click", async () => { try { await saveFromUi(`${g.name} updated.`); render(); } catch (_) {} });
+          actions.appendChild(btn);
+          card.appendChild(actions);
+          rootEl.appendChild(card);
+        });
+
+        const expCard = document.createElement("section");
+        expCard.className = "card";
+        const expTitle = document.createElement("h2");
+        expTitle.textContent = "EXPERIENCE";
+        expCard.appendChild(expTitle);
+        const expLocked = document.createElement("div");
+        expLocked.className = "locked";
+        expLocked.textContent = "Headers locked: # EXPERIENCE, ## COMPANY, ### ROLE, ### SIGNALS, ### PROJECT.";
+        expCard.appendChild(expLocked);
+
+        state.doc.experience.forEach((c, ci) => {
+          const company = document.createElement("section");
+          company.className = "company";
+          const h = document.createElement("h3");
+          h.textContent = `COMPANY: ${c.name}`;
+          company.appendChild(h);
+          const lk = document.createElement("div");
+          lk.className = "locked";
+          lk.textContent = `Locked header: ## COMPANY: ${c.name}`;
+          company.appendChild(lk);
+          company.appendChild(smartMultilineField("ROLE", `company_${ci}_role`, c.role));
+          company.appendChild(smartMultilineField("SIGNALS", `company_${ci}_signals`, c.signals));
+
+          const companyActions = document.createElement("div");
+          companyActions.className = "actions";
+          const saveCompanyBtn = document.createElement("button");
+          saveCompanyBtn.type = "button";
+          saveCompanyBtn.className = "primary";
+          saveCompanyBtn.textContent = "Save Company";
+          saveCompanyBtn.addEventListener("click", async () => { try { await saveFromUi(`Company '${c.name}' updated.`); render(); } catch (_) {} });
+          companyActions.appendChild(saveCompanyBtn);
+
+          const addProjectBtn = document.createElement("button");
+          addProjectBtn.type = "button";
+          addProjectBtn.textContent = "Add Project";
+          addProjectBtn.addEventListener("click", () => {
+            try {
+              syncFromInputs();
+              state.doc.experience[ci].projects.push(blankProject());
+              render();
+              setStatus(`Project block added under '${c.name}'. Click Save Project to commit.`);
+            } catch (_) {}
+          });
+          companyActions.appendChild(addProjectBtn);
+          company.appendChild(companyActions);
+
+          c.projects.forEach((p, pi) => {
+            const project = document.createElement("section");
+            project.className = "project";
+            const ph = document.createElement("h4");
+            ph.textContent = `PROJECT ${pi + 1}`;
+            project.appendChild(ph);
+            const pl = document.createElement("div");
+            pl.className = "locked";
+            pl.textContent = "Locked header: ### PROJECT:";
+            project.appendChild(pl);
+            project.appendChild(field("Project Title (optional after ### PROJECT:)", `project_${ci}_${pi}_title`, p.title, false));
+
+            PROJECT_FIELDS.forEach((fieldName) => {
+              project.appendChild(
+                smartMultilineField(
+                  fieldName,
+                  `project_${ci}_${pi}_${esc(fieldName)}`,
+                  p.sections[fieldName] || ""
+                )
+              );
+            });
+
+            const projectActions = document.createElement("div");
+            projectActions.className = "actions";
+            const saveProjectBtn = document.createElement("button");
+            saveProjectBtn.type = "button";
+            saveProjectBtn.className = "primary";
+            saveProjectBtn.textContent = "Save Project";
+            saveProjectBtn.addEventListener("click", async () => { try { await saveFromUi(`Project ${pi + 1} in '${c.name}' updated.`); render(); } catch (_) {} });
+            projectActions.appendChild(saveProjectBtn);
+
+            const deleteProjectBtn = document.createElement("button");
+            deleteProjectBtn.type = "button";
+            deleteProjectBtn.className = "danger";
+            deleteProjectBtn.textContent = "Delete Project";
+            deleteProjectBtn.addEventListener("click", async () => {
+              try {
+                syncFromInputs();
+                const target = state.doc.experience[ci];
+                if (target.projects.length <= 1) fail(`Cannot delete the last project from '${c.name}'. At least one project is required.`);
+                const ok = window.confirm(`Delete project ${pi + 1} from '${c.name}'?`);
+                if (!ok) { setStatus("Delete cancelled."); return; }
+                target.projects.splice(pi, 1);
+                await postSave(`Project deleted from '${c.name}'.`);
+                render();
+              } catch (_) {}
+            });
+            projectActions.appendChild(deleteProjectBtn);
+
+            project.appendChild(projectActions);
+            company.appendChild(project);
+          });
+
+          expCard.appendChild(company);
+        });
+
+        rootEl.appendChild(expCard);
+      };
+
+      const loadDoc = async () => {
+        setStatus(`Loading ${state.coreId}.md ...`);
+        const res = await fetch(`/CORES/${encodeURIComponent(state.coreId)}.md`, { cache: "no-store" });
+        if (!res.ok) fail(`Load failed (${res.status}) for ${state.coreId}.md`);
+        const markdown = await res.text();
+        if (!markdown.trim()) fail("Loaded markdown is empty.");
+
+        const parsed = parseDoc(markdown);
+        validate(parsed);
+        state.doc = parsed;
+        state.savedMarkdown = buildMarkdown(parsed);
+        render();
+        setStatus(`Loaded ${state.coreId}.md`);
+      };
 
       reloadBtn.addEventListener("click", async () => {
-        if (state.editMode) {
-          const hasDraftChanges = String(markdownPreviewEl.value || "") !== String(state.markdown || "");
-          if (hasDraftChanges) {
-            const discard = window.confirm("Discard unsaved markdown edits and reload?");
-            if (!discard) {
-              setStatus("Reload cancelled.");
-              return;
+        try {
+          if (state.doc) {
+            syncFromInputs();
+            const current = buildMarkdown(state.doc);
+            if (current !== state.savedMarkdown) {
+              const discard = window.confirm("Discard unsaved changes and reload from file?");
+              if (!discard) { setStatus("Reload cancelled."); return; }
             }
           }
-        }
+          await loadDoc();
+        } catch (_) {}
+      });
+
+      saveAllBtn.addEventListener("click", async () => {
         try {
-          await loadCoreMarkdown();
-        } catch (error) {
-          // fail() already surfaced status
-        }
-      });
-
-      saveBtn.addEventListener("click", async () => {
-        try {
-          if (state.editMode) {
-            applyMarkdownEdits();
-          }
-          await saveCoreMarkdown();
-        } catch (error) {
-          setStatus(error.message || "Save failed.", true);
-        }
-      });
-
-      startRecordingBtn.addEventListener("click", () => {
-        try {
-          if (state.recording) {
-            return;
-          }
-          const Recognition = getSpeechRecognitionCtor();
-          const recognition = new Recognition();
-          state.recognition = recognition;
-          state.recording = true;
-          setModalError("");
-          stopRecordingBtn.disabled = false;
-          startRecordingBtn.disabled = true;
-
-          let finalTranscript = transcriptBoxEl.value.trim();
-          recognition.continuous = true;
-          recognition.interimResults = true;
-          recognition.lang = "en-US";
-
-          recognition.onresult = (event) => {
-            let interim = "";
-            for (let i = event.resultIndex; i < event.results.length; i += 1) {
-              const chunk = event.results[i][0].transcript || "";
-              if (event.results[i].isFinal) {
-                finalTranscript = `${finalTranscript} ${chunk}`.trim();
-              } else {
-                interim += chunk;
-              }
-            }
-            transcriptBoxEl.value = `${finalTranscript}${interim ? ` ${interim}` : ""}`.trim();
-          };
-
-          recognition.onerror = (event) => {
-            setModalError(`Speech recognition error: ${event.error || "unknown"}`);
-          };
-
-          recognition.onend = () => {
-            state.recording = false;
-            stopRecordingBtn.disabled = true;
-            startRecordingBtn.disabled = false;
-            transcriptBoxEl.value = finalTranscript || transcriptBoxEl.value;
-          };
-
-          recognition.start();
-        } catch (error) {
-          setModalError(error.message || "Failed to start recording.");
-        }
-      });
-
-      stopRecordingBtn.addEventListener("click", () => {
-        if (!state.recording || !state.recognition) {
-          setModalError("Recording is not active.");
-          return;
-        }
-        state.recognition.stop();
-      });
-
-      cancelFromTranscriptBtn.addEventListener("click", closeModal);
-      cancelFromPreviewBtn.addEventListener("click", closeModal);
-
-      editParsedBtn.addEventListener("click", () => {
-        previewStageEl.hidden = true;
-        transcriptStageEl.hidden = false;
-      });
-
-      sendToAiBtn.addEventListener("click", async () => {
-        setModalError("");
-        const transcript = transcriptBoxEl.value.trim();
-        if (!transcript) {
-          setModalError("Transcript is required before sending to AI.");
-          return;
-        }
-
-        sendToAiBtn.disabled = true;
-        try {
-          const response = await fetch("/parse_project", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ transcript }),
-          });
-          const data = await response.json().catch(() => ({}));
-          if (!response.ok) {
-            throw new Error(data.error || `AI parse failed (${response.status})`);
-          }
-          const parsed = parseProjectBlock(data.projectBlock);
-          fillPreviewFields(parsed);
-          transcriptStageEl.hidden = true;
-          previewStageEl.hidden = false;
-        } catch (error) {
-          setModalError(error.message || "AI parse failed.");
-        } finally {
-          sendToAiBtn.disabled = false;
-        }
-      });
-
-      approveInsertBtn.addEventListener("click", async () => {
-        setModalError("");
-        try {
-          const projectData = collectPreviewFields();
-          const block = buildProjectBlock(projectData);
-          insertProjectUnderActiveCompany(block);
-          closeModal();
-
-          const shouldSave = window.confirm("Save CORES file? [YES]");
-          if (!shouldSave) {
-            setStatus("Project inserted locally but not saved.", true);
-            return;
-          }
-          await saveCoreMarkdown();
-        } catch (error) {
-          setModalError(error.message || "Insert failed.");
-        }
+          await saveFromUi("All sections updated.");
+          render();
+        } catch (_) {}
       });
 
       (async () => {
         try {
           state.coreId = parseCoreId();
-          coreIdLabelEl.textContent = `CORE: ${state.coreId}`;
-          await loadCoreMarkdown();
-        } catch (error) {
-          // fail() already surfaced status
-        }
+          coreIdEl.textContent = `CORE: ${state.coreId}`;
+          await loadDoc();
+        } catch (_) {}
       })();
     });
   </script>

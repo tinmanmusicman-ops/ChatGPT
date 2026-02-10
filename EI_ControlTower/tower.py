@@ -189,17 +189,63 @@ def _parse_project_block_sections(project_block: str) -> dict:
 
 
 def _validate_cores_markdown(markdown_text: str) -> None:
-    normalized = str(markdown_text or "")
+    normalized = str(markdown_text or "").replace("\r\n", "\n").replace("\r", "\n")
     if not normalized.strip():
         raise ValueError("Markdown cannot be empty")
-    if "# CORES" not in normalized:
+    if not re.search(r"^#\s+CORES\s*$", normalized, flags=re.MULTILINE | re.IGNORECASE):
         raise ValueError("Missing # CORES header")
-    if "# EXPERIENCE" not in normalized:
+    if not re.search(r"^#\s+HUMAN\s*$", normalized, flags=re.MULTILINE | re.IGNORECASE):
+        raise ValueError("Missing # HUMAN header")
+    if not re.search(r"^#\s+SUMMARY\s*$", normalized, flags=re.MULTILINE | re.IGNORECASE):
+        raise ValueError("Missing # SUMMARY header")
+    if not re.search(r"^#\s+GLOBAL\s*$", normalized, flags=re.MULTILINE | re.IGNORECASE):
+        raise ValueError("Missing # GLOBAL header")
+    if not re.search(r"^#\s+EXPERIENCE\s*$", normalized, flags=re.MULTILINE | re.IGNORECASE):
         raise ValueError("Missing # EXPERIENCE header")
+    if not re.search(r"^##\s+ACHIEVEMENTS\s*$", normalized, flags=re.MULTILINE | re.IGNORECASE):
+        raise ValueError("Missing ## ACHIEVEMENTS section")
 
-    companies = list(re.finditer(r"^## COMPANY:\s*(.+)$", normalized, flags=re.MULTILINE))
+    summary_match = re.search(r"^#\s+SUMMARY\s*$", normalized, flags=re.MULTILINE | re.IGNORECASE)
+    global_match = re.search(r"^#\s+GLOBAL\s*$", normalized, flags=re.MULTILINE | re.IGNORECASE)
+    experience_match = re.search(r"^#\s+EXPERIENCE\s*$", normalized, flags=re.MULTILINE | re.IGNORECASE)
+    if not (summary_match and global_match and experience_match):
+        raise ValueError("Required section headers not found")
+    if not (summary_match.start() < global_match.start() < experience_match.start()):
+        raise ValueError("Header order invalid: expected # SUMMARY -> # GLOBAL -> # EXPERIENCE")
+
+    companies = list(re.finditer(r"^##\s+COMPANY:\s*(.+)$", normalized, flags=re.MULTILINE | re.IGNORECASE))
     if not companies:
         raise ValueError("No company blocks found")
+
+    for index, company_match in enumerate(companies):
+        block_start = company_match.start()
+        block_end = companies[index + 1].start() if index + 1 < len(companies) else len(normalized)
+        company_block = normalized[block_start:block_end]
+        company_name = company_match.group(1).strip() or f"index {index}"
+
+        if not re.search(r"^###\s+ROLE:\s*$", company_block, flags=re.MULTILINE | re.IGNORECASE):
+            raise ValueError(f"Company '{company_name}' missing ### ROLE: header")
+        if not re.search(r"^###\s+SIGNALS:\s*$", company_block, flags=re.MULTILINE | re.IGNORECASE):
+            raise ValueError(f"Company '{company_name}' missing ### SIGNALS: header")
+
+        projects = list(re.finditer(r"^###\s+PROJECT:\s*.*$", company_block, flags=re.MULTILINE | re.IGNORECASE))
+        if not projects:
+            raise ValueError(f"Company '{company_name}' has no ### PROJECT: blocks")
+
+        for proj_idx, proj_match in enumerate(projects):
+            proj_start = proj_match.start()
+            proj_end = projects[proj_idx + 1].start() if proj_idx + 1 < len(projects) else len(company_block)
+            project_block = company_block[proj_start:proj_end]
+
+            for label in CORES_REQUIRED_PROJECT_LABELS:
+                if not re.search(
+                    rf"^-\s*{re.escape(label)}:\s*",
+                    project_block,
+                    flags=re.MULTILINE | re.IGNORECASE,
+                ):
+                    raise ValueError(
+                        f"Company '{company_name}' project {proj_idx + 1} missing section '{label}'"
+                    )
 
 
 def _markdown_to_pdf_bytes(markdown: str) -> bytes:
