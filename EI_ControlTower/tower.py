@@ -378,6 +378,31 @@ def fit_site_index():
     return send_from_directory(FIT_SITE_DIR, "Job.html")
 
 
+@app.route("/AI-Fit-Site/ai_context.pdf")
+def fit_site_context_pdf():
+    source_name = "CORE-US-2026-000001.md"
+    requested_path = (CORES_DIR / source_name).resolve()
+    base = CORES_DIR.resolve()
+
+    try:
+        if not str(requested_path).startswith(str(base)):
+            abort(403)
+        if not requested_path.exists():
+            abort(404)
+
+        markdown = requested_path.read_text(encoding="utf-8")
+        pdf_bytes = _markdown_to_pdf_bytes(markdown)
+        return send_file(
+            BytesIO(pdf_bytes),
+            mimetype="application/pdf",
+            download_name="CORE-US-2026-000001.pdf",
+        )
+    except HTTPException:
+        raise
+    except Exception:
+        return jsonify({"status": "error", "error": "PDF conversion failed"}), 500
+
+
 @app.route("/AI-Fit-Site/<path:filename>")
 def fit_site_static(filename):
     if str(filename or "").strip().lower() == "job.html":

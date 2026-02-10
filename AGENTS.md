@@ -257,3 +257,49 @@ If file is missing:
 → Do NOT fabricate recovery data
 
 CrashRecovery.md exists solely to restore session continuity.
+
+HSST TOKEN DISCIPLINE PROTOCOL — ACTIVE
+
+Purpose:
+Preserve bandwidth, reduce token usage, and maximize useful output per interaction.
+
+GLOBAL DEFAULTS
+- Short, structured responses only
+- No filler, no narrative unless requested
+- Summary-first, expand-on-request only
+- Deterministic outputs over exploratory discussion
+- Reuse existing structures instead of regenerating
+- One-shot execution preferred over iterative refinement
+
+CHATGPT RULES
+- Default response: concise operational format
+- Expand only when explicitly requested
+- Avoid rephrasing loops and stylistic variations
+- Modify only targeted sections when editing
+- Treat tokens as constrained resource
+
+CODEX / STINKY RULES
+- Single-shot command mode required
+- No fallback implementations
+- No speculative alternates
+- If failure occurs: stop, report, await instruction
+- Do not regenerate entire files for small changes
+- Use surgical edits only
+- Reset session after major task completion
+
+DATA STRATEGY
+- Markdown = source of truth
+- Presentation layers generated only on demand
+- Cache outputs locally and reuse
+- Do not reprocess unchanged data
+- Use structured CORES format for all human data
+
+SESSION MANAGEMENT
+- Start new session when task complete
+- Reload only essential context (AGENTS.md + project file)
+- Avoid long conversational drift
+- Operate in build/production mode by default
+
+PRINCIPLE
+Compute and bandwidth are finite.
+Clarity and usefulness per token is the objective.

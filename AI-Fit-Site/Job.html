@@ -127,6 +127,20 @@
       letter-spacing: 0.12em;
     }
 
+    .top-resume-button {
+      display: flex;
+      margin: 10px auto 0;
+    }
+
+    .top-shortcut-button {
+      display: flex;
+      margin: 10px auto 0;
+      background: #1a3c20;
+      border-color: #2f5c37;
+      font-size: 0.96rem;
+      letter-spacing: 0.08em;
+    }
+
     .top-contact-button:hover {
       filter: brightness(1.03);
     }
@@ -1123,12 +1137,15 @@
   
     <!-- HERO -->
 
-    <h1>Timothy B Inman</h1>
+    <h1>Verification Code: human<br>Timothy B Inman</h1>
 
     <section class="top-contact" aria-label="Contact Tim">
       <div class="top-contact-headline">Interested? Reach out directly.</div>
       <div class="top-contact-subtext">If something you see here aligns with what you're building, hiring for, or exploring, click below and contact me directly.</div>
       <button id="contactTim" type="button" class="top-contact-button">CONTACT TIM</button>
+      <button id="structuredTruthBtn" type="button" class="top-contact-button top-resume-button">Download Current Resume</button>
+      <button id="topAskAboutMeShortcut" type="button" class="top-contact-button top-shortcut-button">Ask AI About Me</button>
+      <button id="topFitShortcut" type="button" class="top-contact-button top-shortcut-button">Am I a fit for this job?</button>
     </section>
 
     <div class="role">Creative Technologist & Workflow Engineer</div>
@@ -1253,7 +1270,6 @@
         ></textarea>
         <div class="ai-prompt-actions">
           <button id="askAboutMe" style="background-color: rgb(200, 149, 47)"type="button" class="primary">Ask AI About Me</button>
-          <button id="structuredTruthBtn" type="button">Click here for structured truth</button>
           <label style="margin-left:12px; font-size:18px;">
             <input type="checkbox" id="deepMode">
             Deep evaluation mode
@@ -1513,12 +1529,16 @@
       const personalQuestionEl = document.getElementById("personalQuestion");
       const askAboutMeBtn = document.getElementById("askAboutMe");
       const structuredTruthBtn = document.getElementById("structuredTruthBtn");
+      const topAskAboutMeShortcutBtn = document.getElementById("topAskAboutMeShortcut");
+      const topFitShortcutBtn = document.getElementById("topFitShortcut");
       const personalResponseEl = document.getElementById("personalResponse");
 
       const jobDescriptionEl = document.getElementById("jobDescription");
       const pasteJobDescBtn = document.getElementById("pasteJobDesc");
       const evaluateJobBtn = document.getElementById("evaluateJob");
       const fitResponseEl = document.getElementById("fitResponse");
+      const askAiAboutMeCardEl = document.getElementById("askAiAboutMeCard");
+      const fitAssessmentCardEl = document.getElementById("fitAssessmentCard");
       let isSendingAboutMe = false;
       let isSendingFit = false;
 
@@ -2038,7 +2058,29 @@
         }
       };
 
+      const expandCard = (card) => {
+        if (!card) return;
+        if (!card.classList.contains("collapsed")) return;
+        card.classList.remove("collapsed");
+        const toggle = card.querySelector(".ai-prompt-toggle");
+        toggle?.setAttribute("aria-expanded", "true");
+      };
+
+      const scrollToCard = (card) => {
+        card?.scrollIntoView?.({ behavior: "smooth", block: "start" });
+      };
+
       askAboutMeBtn?.addEventListener("click", askAboutMe);
+      topAskAboutMeShortcutBtn?.addEventListener("click", () => {
+        expandCard(askAiAboutMeCardEl);
+        scrollToCard(askAiAboutMeCardEl);
+        setTimeout(() => askAboutMeBtn?.click(), 150);
+      });
+      topFitShortcutBtn?.addEventListener("click", () => {
+        expandCard(fitAssessmentCardEl);
+        scrollToCard(fitAssessmentCardEl);
+        setTimeout(() => evaluateJobBtn?.click(), 150);
+      });
       structuredTruthBtn?.addEventListener("click", async () => {
         if (!structuredTruthBtn) return;
         structuredTruthBtn.disabled = true;
