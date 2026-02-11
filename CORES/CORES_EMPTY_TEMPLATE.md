@@ -27,6 +27,8 @@ XXX
 ## ACHIEVEMENTS
 - XXX
 
+# CERTIFICATIONS
+
 # EXPERIENCE
 
 ## COMPANY: XXX
@@ -37,7 +39,7 @@ XXX
 ### SIGNALS:
 XXX
 
-### PROJECT: XXX
+### PROJECT:
 
 - Situation:
 
@@ -50,3 +52,6 @@ XXX
 - Evidence / artifacts:
 
 - Notes / caveats:
+
+# Education
+- XXX

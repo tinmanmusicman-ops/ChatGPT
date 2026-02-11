@@ -117,9 +117,9 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
   <div id="companyPromptModal" class="project-modal" hidden>
     <div class="project-modal-card" role="dialog" aria-modal="true" aria-labelledby="companyPromptTitle">
       <h2 id="companyPromptTitle">Add Company (Dictate / Type -> AI)</h2>
-      <div class="locked">AI will create COMPANY, ROLE, SIGNALS, and the first PROJECT.</div>
-      <div class="label">Company Story</div>
-      <textarea id="companyPromptTranscript" placeholder="Dictate or type the company story, then click Send To AI."></textarea>
+      <div class="locked">Tell the company story. AI will populate COMPANY, ROLE, SIGNALS, and the first PROJECT.</div>
+      <div class="label">Company Story (Tell the story)</div>
+      <textarea id="companyPromptTranscript" placeholder="Tell the company story, then click Send To AI to populate the Company template."></textarea>
       <div class="project-modal-actions">
         <button id="companyPromptStartDictationBtn" type="button">Start Dictation</button>
         <button id="companyPromptStopDictationBtn" type="button" disabled>Stop</button>
@@ -153,6 +153,7 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
         doc: null,
         savedMarkdown: "",
         chatGptFormatterBlock: "",
+        chatGptCompanyFormatterBlock: "",
         chatGptPasteModalOpen: false,
         chatGptPasteFocus: null,
       };
@@ -621,12 +622,44 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
         });
         return skills;
       };
+      const parseCertifications = (certificationsContent) => {
+        if (certificationsContent === null) return null;
+        const lines = nn(certificationsContent).split("\n");
+        const certifications = [];
+        lines.forEach((line, idx) => {
+          const trimmed = trimLines(line).trim();
+          if (!trimmed) return;
+          const bullet = trimmed.match(/^-\s+(.+)$/);
+          if (!bullet) fail(`# Certifications line ${idx + 1} must start with '- '.`);
+          const value = trimLines(bullet[1]).trim();
+          if (!value) fail(`# Certifications line ${idx + 1} is missing a value after '- '.`);
+          certifications.push(value);
+        });
+        return certifications;
+      };
+      const parseEducation = (educationContent) => {
+        if (educationContent === null) return null;
+        const lines = nn(educationContent).split("\n");
+        const educationItems = [];
+        lines.forEach((line, idx) => {
+          const trimmed = trimLines(line).trim();
+          if (!trimmed) return;
+          const bullet = trimmed.match(/^-\s+(.+)$/);
+          if (!bullet) fail(`# Education line ${idx + 1} must start with '- '.`);
+          const value = trimLines(bullet[1]).trim();
+          if (!value) fail(`# Education line ${idx + 1} is missing a value after '- '.`);
+          educationItems.push(value);
+        });
+        return educationItems;
+      };
 
       const parseDoc = (markdown) => {
         const lines = nn(markdown).split("\n");
         const summary = lines.findIndex((l) => /^#\s+SUMMARY\s*$/i.test(l.trim()));
         const skills = lines.findIndex((l) => /^#\s+SKILLS\s*$/i.test(l.trim()));
         const global = lines.findIndex((l) => /^#\s+GLOBAL\s*$/i.test(l.trim()));
+        const certifications = lines.findIndex((l) => /^#\s+CERTIFICATIONS\s*$/i.test(l.trim()));
+        const education = lines.findIndex((l) => /^#\s*EDUCATION\s*:?\s*$/i.test(l.trim()));
         const exp = lines.findIndex((l) => /^#\s+EXPERIENCE\s*$/i.test(l.trim()));
 
         if (summary < 0) fail("Missing required # SUMMARY header.");
@@ -634,6 +667,12 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
         if (exp < 0) fail("Missing required # EXPERIENCE header.");
         if (!(summary < global && global < exp)) fail("Header order invalid. Required: # SUMMARY -> # GLOBAL -> # EXPERIENCE.");
         if (skills >= 0 && !(summary < skills && skills < global)) fail("# SKILLS must be between # SUMMARY and # GLOBAL.");
+        if (certifications >= 0 && !(global < certifications && certifications < exp)) {
+          fail("# Certifications must be between # GLOBAL and # EXPERIENCE.");
+        }
+        if (education >= 0 && !(exp < education)) {
+          fail("# Education must be after # EXPERIENCE.");
+        }
 
         const preamble = sliceText(lines, 0, summary);
         if (!/^#\s+CORES\s*$/im.test(preamble)) fail("Missing required # CORES header.");
@@ -646,9 +685,13 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
 
         const skillsText = skills >= 0 ? sliceText(lines, skills + 1, global) : null;
         const skillsList = parseSkills(skillsText);
-        const globalSections = parseGlobal(lines.slice(global + 1, exp));
+        const globalEnd = certifications >= 0 ? certifications : exp;
+        const globalSections = parseGlobal(lines.slice(global + 1, globalEnd));
+        const certificationsText = certifications >= 0 ? sliceText(lines, certifications + 1, exp) : null;
+        const certificationsList = parseCertifications(certificationsText);
 
-        const expLines = lines.slice(exp + 1);
+        const expEnd = education >= 0 ? education : lines.length;
+        const expLines = lines.slice(exp + 1, expEnd);
         const companyStarts = [];
         for (let i = 0; i < expLines.length; i += 1) {
           if (/^##\s+COMPANY:\s*(.+?)\s*$/i.test(expLines[i].trim())) companyStarts.push(i);
@@ -664,14 +707,18 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
           if (!cm) fail(`Invalid company header: ${expLines[s]}`);
           experience.push(parseCompany(cm[1], expLines.slice(s + 1, e)));
         }
+        const educationText = education >= 0 ? sliceText(lines, education + 1, lines.length) : null;
+        const educationList = parseEducation(educationText);
 
         return {
           coresBlock: preambleParts.coresBlock,
           humanFields: preambleParts.humanFields,
           summary: summaryText,
           skills: skillsList,
+          certifications: certificationsList,
           globalSections,
           experience,
+          education: educationList,
         };
       };
 
@@ -688,6 +735,18 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
           if (!Array.isArray(doc.skills)) fail("Skills must be an array when # SKILLS exists.");
           doc.skills.forEach((skill, idx) => {
             if (typeof skill !== "string" || !skill.trim()) fail(`Skill at index ${idx} is empty or invalid.`);
+          });
+        }
+        if (doc.certifications !== null) {
+          if (!Array.isArray(doc.certifications)) fail("Certifications must be an array when # Certifications exists.");
+          doc.certifications.forEach((cert, idx) => {
+            if (typeof cert !== "string" || !cert.trim()) fail(`Certification at index ${idx} is empty or invalid.`);
+          });
+        }
+        if (doc.education !== null) {
+          if (!Array.isArray(doc.education)) fail("Education must be an array when # Education exists.");
+          doc.education.forEach((item, idx) => {
+            if (typeof item !== "string" || !item.trim()) fail(`Education item at index ${idx} is empty or invalid.`);
           });
         }
         if (!Array.isArray(doc.globalSections) || !doc.globalSections.length) fail("Global sections missing.");
@@ -734,6 +793,13 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
           out.push(fmt(g.content));
           out.push("");
         });
+        if (doc.certifications !== null) {
+          out.push("# Certifications", "");
+          doc.certifications.forEach((cert) => {
+            out.push(`- ${fmt(cert)}`);
+          });
+          out.push("");
+        }
 
         out.push("# EXPERIENCE", "");
         doc.experience.forEach((c) => {
@@ -750,6 +816,12 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
             });
           });
         });
+        if (doc.education !== null) {
+          out.push("", "# Education", "");
+          doc.education.forEach((item) => {
+            out.push(`- ${fmt(item)}`);
+          });
+        }
 
         return `${out.join("\n").trimEnd()}\n`;
       };
@@ -894,6 +966,18 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
         const header = lines[0].trim().match(/^###\s+PROJECT:\s*(.*)$/i);
         if (!header) throw new Error("AI output is missing the '### PROJECT:' header.");
         return parseProject(header[1] || "", lines.slice(1));
+      };
+      const parseCompanyBlock = (companyBlock) => {
+        let normalized = nn(companyBlock).trim();
+        if (!normalized) throw new Error("AI returned an empty company block.");
+        const fenced = normalized.match(/^```[^\n]*\n([\s\S]*?)\n```$/);
+        if (fenced) {
+          normalized = String(fenced[1] || "").trim();
+        }
+        const lines = normalized.split("\n");
+        const header = lines[0].trim().match(/^##\s+COMPANY:\s*(.+?)\s*$/i);
+        if (!header) throw new Error("AI output is missing the '## COMPANY:' header.");
+        return parseCompany(header[1] || "", lines.slice(1));
       };
       const normalizeAiProject = (rawProject) => {
         if (!rawProject || typeof rawProject !== "object") return null;
@@ -1367,20 +1451,71 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
         if (companyPromptStartDictationBtn) companyPromptStartDictationBtn.disabled = false;
         if (companyPromptStopDictationBtn) companyPromptStopDictationBtn.disabled = true;
         if (companyPromptSendBtn) companyPromptSendBtn.disabled = false;
+        if (companyPromptSendBtn) companyPromptSendBtn.textContent = "Send To AI";
+        if (companyPromptStartDictationBtn) companyPromptStartDictationBtn.style.display = "";
+        if (companyPromptStopDictationBtn) companyPromptStopDictationBtn.style.display = "";
         setCompanyPromptStatus("");
         setCompanyPromptOpen(false);
       };
       const openCompanyPrompt = () => {
+        const useChatGPT = !!(useChatGPTAccountEl?.checked);
         if (companyPromptTranscriptEl) {
           companyPromptTranscriptEl.value = "";
+          companyPromptTranscriptEl.placeholder = useChatGPT
+            ? "Paste ChatGPT company markdown here, then click Insert Company."
+            : "Dictate or type the company story, then click Send To AI.";
         }
-        setCompanyPromptStatus("Dictate or type details, then click Send To AI.");
+        if (companyPromptSendBtn) {
+          companyPromptSendBtn.textContent = useChatGPT ? "Insert Company" : "Send To AI";
+        }
+        if (companyPromptStartDictationBtn) companyPromptStartDictationBtn.style.display = useChatGPT ? "none" : "";
+        if (companyPromptStopDictationBtn) companyPromptStopDictationBtn.style.display = useChatGPT ? "none" : "";
+        setCompanyPromptStatus(
+          useChatGPT
+            ? "ChatGPT mode enabled. Tell your story in ChatGPT, then paste the formatted company block here and click Insert Company."
+            : "Dictate or type details, then click Send To AI."
+        );
         setCompanyPromptOpen(true);
       };
+      const startChatGptCompanyVoiceMode = async () => {
+        const response = await fetch("/parse_company", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ useChatGPT: true, promptOnly: true }),
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(data?.error || data?.details || `Prompt-only request failed (${response.status})`);
+        }
+        const formatterBlock = String(data?.prompt || "").trim();
+        if (!formatterBlock) {
+          throw new Error("Company formatter block is empty.");
+        }
+        state.chatGptCompanyFormatterBlock = formatterBlock;
+
+        let copied = false;
+        try {
+          await navigator.clipboard.writeText(formatterBlock);
+          copied = true;
+        } catch (_) {}
+
+        const popup = window.open("https://chat.openai.com/", "_blank", "noopener,noreferrer");
+        const popupBlocked = !popup;
+        const instruction = "ChatGPT opened. Use microphone and tell the company story, then paste response here.";
+        setCompanyPromptStatus(instruction, popupBlocked);
+        setStatus(instruction, popupBlocked);
+        writeCoresLog(`[MANAGE] chatgpt_company_voice_mode_started copied=${copied} popupBlocked=${popupBlocked}`);
+      };
       const sendCompanyTranscriptToAi = async () => {
+        const useChatGPT = !!(useChatGPTAccountEl?.checked);
         const transcript = companyPromptTranscriptEl?.value?.trim() || "";
         if (!transcript) {
-          setCompanyPromptStatus("Please dictate or type company details first.", true);
+          setCompanyPromptStatus(
+            useChatGPT
+              ? "Paste ChatGPT company markdown first."
+              : "Please dictate or type company details first.",
+            true
+          );
           companyPromptTranscriptEl?.focus();
           return;
         }
@@ -1393,9 +1528,18 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
         if (companyPromptStartDictationBtn) companyPromptStartDictationBtn.disabled = true;
         if (companyPromptStopDictationBtn) companyPromptStopDictationBtn.disabled = true;
         if (companyPromptSendBtn) companyPromptSendBtn.disabled = true;
-        setCompanyPromptStatus("Sending to AI...");
+        setCompanyPromptStatus(useChatGPT ? "Inserting company..." : "Sending to AI...");
 
         try {
+          if (useChatGPT) {
+            const parsedCompany = parseCompanyBlock(transcript);
+            syncFromInputs();
+            state.doc.experience.push(parsedCompany);
+            render();
+            setStatus(`Company '${parsedCompany.name}' added from ChatGPT. Review and save.`);
+            closeCompanyPrompt();
+            return;
+          }
           const response = await fetch("/parse_company", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -1431,6 +1575,9 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
         const allowListActions = !!options.allowListActions;
         const addItemLabel = String(options.addItemLabel || "Add Item");
         const deleteItemLabel = String(options.deleteItemLabel || "Delete Item");
+        const showSaveItemButton = !!options.showSaveItemButton;
+        const saveItemLabel = String(options.saveItemLabel || "Save Item");
+        const saveItemMessagePrefix = String(options.saveItemMessagePrefix || `${label} item`).trim();
         const itemHeadingPrefix = String(options.itemHeadingPrefix || "").trim();
         const deleteConfirmPrefix = String(options.deleteConfirmPrefix || "Delete item").trim();
 
@@ -1516,6 +1663,21 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
           if (allowListActions) {
             const rowActions = document.createElement("div");
             rowActions.className = "actions";
+            if (showSaveItemButton) {
+              const saveItemBtn = document.createElement("button");
+              saveItemBtn.type = "button";
+              saveItemBtn.className = "primary";
+              saveItemBtn.textContent = saveItemLabel;
+              saveItemBtn.addEventListener("click", async () => {
+                try {
+                  const currentIndex =
+                    Array.from(itemsWrap.querySelectorAll(".bullet-item")).indexOf(bulletItem) + 1;
+                  await saveFromUi(`${saveItemMessagePrefix} ${currentIndex > 0 ? currentIndex : ""} updated.`.trim());
+                  saveItemBtn.classList.add("saved-ok");
+                } catch (_) {}
+              });
+              rowActions.appendChild(saveItemBtn);
+            }
             const deleteItemBtn = document.createElement("button");
             deleteItemBtn.type = "button";
             deleteItemBtn.className = "danger";
@@ -1647,6 +1809,12 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
         });
         if (state.doc.skills !== null) {
           state.doc.skills = state.doc.skills.map((_, idx) => read(`skill_${idx}_value`).trim());
+        }
+        if (state.doc.certifications !== null) {
+          state.doc.certifications = state.doc.certifications.map((_, idx) => read(`cert_${idx}_value`).trim());
+        }
+        if (state.doc.education !== null) {
+          state.doc.education = state.doc.education.map((_, idx) => read(`edu_${idx}_value`).trim());
         }
 
         state.doc.globalSections.forEach((g, gi) => {
@@ -1846,6 +2014,120 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
 
           rootEl.appendChild(skillsCard);
         }
+        if (state.doc.certifications !== null) {
+          const certCard = document.createElement("section");
+          certCard.className = "card";
+          const certTitle = document.createElement("h2");
+          certTitle.textContent = "CERTIFICATIONS";
+          certCard.appendChild(certTitle);
+          const certLocked = document.createElement("div");
+          certLocked.className = "locked";
+          certLocked.textContent = "Header locked: # Certifications. Each certification keeps a locked '-' markdown marker.";
+          certCard.appendChild(certLocked);
+
+          const certActionsTop = document.createElement("div");
+          certActionsTop.className = "actions";
+          const addCertBtn = document.createElement("button");
+          addCertBtn.type = "button";
+          addCertBtn.textContent = "Add Certification";
+          addCertBtn.addEventListener("click", () => {
+            try {
+              syncFromInputs();
+              state.doc.certifications.push("");
+              render();
+              setStatus("Certification row added. Enter a value, then save.");
+            } catch (_) {}
+          });
+          certActionsTop.appendChild(addCertBtn);
+          certCard.appendChild(certActionsTop);
+
+          const certItems = document.createElement("div");
+          certItems.className = "skills-items";
+          state.doc.certifications.forEach((cert, ci) => {
+            const certItem = document.createElement("section");
+            certItem.className = "skill-item";
+            certItem.dataset.sectionLabel = `Certification ${ci + 1}`;
+            const certHead = document.createElement("h4");
+            certHead.textContent = `CERTIFICATION ${ci + 1}`;
+            certItem.appendChild(certHead);
+            const certLockedMarker = document.createElement("div");
+            certLockedMarker.className = "locked";
+            certLockedMarker.textContent = "Locked marker: -";
+            certItem.appendChild(certLockedMarker);
+
+            const certLabel = document.createElement("div");
+            certLabel.className = "label";
+            certLabel.textContent = "Certification Value";
+            certItem.appendChild(certLabel);
+
+            const certRow = document.createElement("div");
+            certRow.className = "skill-row";
+            const marker = document.createElement("span");
+            marker.className = "skill-marker";
+            marker.textContent = "\u2022";
+            certRow.appendChild(marker);
+
+            const input = document.createElement("input");
+            input.type = "text";
+            input.id = `cert_${ci}_value`;
+            input.className = "skill-input";
+            input.value = cert || "";
+            autoSizeSingleLine(input);
+            input.addEventListener("input", () => autoSizeSingleLine(input));
+            certRow.appendChild(input);
+            certItem.appendChild(certRow);
+
+            const certActions = document.createElement("div");
+            certActions.className = "actions";
+            const saveCertBtn = document.createElement("button");
+            saveCertBtn.type = "button";
+            saveCertBtn.className = "primary";
+            saveCertBtn.textContent = "Save Certification";
+            saveCertBtn.addEventListener("click", async () => {
+              try {
+                await saveFromUi(`Certification ${ci + 1} updated.`);
+                saveCertBtn.classList.add("saved-ok");
+              } catch (_) {}
+            });
+            certActions.appendChild(saveCertBtn);
+
+            const deleteCertBtn = document.createElement("button");
+            deleteCertBtn.type = "button";
+            deleteCertBtn.className = "danger";
+            deleteCertBtn.textContent = "Delete Certification";
+            deleteCertBtn.addEventListener("click", async () => {
+              try {
+                syncFromInputs();
+                const ok = window.confirm(`Delete certification ${ci + 1}?`);
+                if (!ok) { setStatus("Delete cancelled."); return; }
+                state.doc.certifications.splice(ci, 1);
+                await postSave("Certification deleted.");
+                render();
+              } catch (_) {}
+            });
+            certActions.appendChild(deleteCertBtn);
+
+            certItem.appendChild(certActions);
+            certItems.appendChild(certItem);
+          });
+          certCard.appendChild(certItems);
+
+          const certActionsBottom = document.createElement("div");
+          certActionsBottom.className = "actions";
+          const saveCertsBtn = document.createElement("button");
+          saveCertsBtn.type = "button";
+          saveCertsBtn.className = "primary";
+          saveCertsBtn.textContent = "Save Section";
+          saveCertsBtn.addEventListener("click", async () => {
+            try {
+              await saveFromUi("Certifications updated.");
+              saveCertsBtn.classList.add("saved-ok");
+            } catch (_) {}
+          });
+          certActionsBottom.appendChild(saveCertsBtn);
+          certCard.appendChild(certActionsBottom);
+          rootEl.appendChild(certCard);
+        }
 
         state.doc.globalSections.forEach((g, gi) => {
           const card = document.createElement("section");
@@ -1906,11 +2188,16 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
         const addCompanyBtn = document.createElement("button");
         addCompanyBtn.type = "button";
         addCompanyBtn.textContent = "Add Company";
-        addCompanyBtn.addEventListener("click", () => {
+        addCompanyBtn.addEventListener("click", async () => {
           try {
             syncFromInputs();
             openCompanyPrompt();
-          } catch (_) {}
+            if (useChatGPTAccountEl?.checked) {
+              await startChatGptCompanyVoiceMode();
+            }
+          } catch (error) {
+            setStatus(error?.message || "Unable to start Add Company flow.", true);
+          }
         });
         expActions.appendChild(addCompanyBtn);
         expCard.appendChild(expActions);
@@ -1934,6 +2221,9 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
               {
                 allowListActions: true,
                 addItemLabel: "Add Signal",
+                showSaveItemButton: true,
+                saveItemLabel: "Save Signal",
+                saveItemMessagePrefix: "Signal",
                 deleteItemLabel: "Delete Signal",
                 itemHeadingPrefix: "SIGNAL",
                 deleteConfirmPrefix: "Delete signal",
@@ -1954,6 +2244,25 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
             } catch (_) {}
           });
           companyActions.appendChild(saveCompanyBtn);
+
+          const deleteCompanyBtn = document.createElement("button");
+          deleteCompanyBtn.type = "button";
+          deleteCompanyBtn.className = "danger";
+          deleteCompanyBtn.textContent = "Delete Company";
+          deleteCompanyBtn.addEventListener("click", async () => {
+            try {
+              syncFromInputs();
+              if (state.doc.experience.length <= 1) {
+                fail("Cannot delete the last company. At least one company is required.");
+              }
+              const ok = window.confirm(`Delete company '${c.name}'?`);
+              if (!ok) { setStatus("Delete cancelled."); return; }
+              state.doc.experience.splice(ci, 1);
+              await postSave(`Company '${c.name}' deleted.`);
+              render();
+            } catch (_) {}
+          });
+          companyActions.appendChild(deleteCompanyBtn);
 
           const addProjectBtn = document.createElement("button");
           addProjectBtn.type = "button";
@@ -2032,6 +2341,119 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
         });
 
         rootEl.appendChild(expCard);
+        if (state.doc.education !== null) {
+          const eduCard = document.createElement("section");
+          eduCard.className = "card";
+          const eduTitle = document.createElement("h2");
+          eduTitle.textContent = "EDUCATION";
+          eduCard.appendChild(eduTitle);
+          const eduLocked = document.createElement("div");
+          eduLocked.className = "locked";
+          eduLocked.textContent = "Header locked: # Education. Each education item keeps a locked '-' markdown marker.";
+          eduCard.appendChild(eduLocked);
+
+          const eduActionsTop = document.createElement("div");
+          eduActionsTop.className = "actions";
+          const addEduBtn = document.createElement("button");
+          addEduBtn.type = "button";
+          addEduBtn.textContent = "Add Education";
+          addEduBtn.addEventListener("click", () => {
+            try {
+              syncFromInputs();
+              state.doc.education.push("");
+              render();
+              setStatus("Education row added. Enter a value, then save.");
+            } catch (_) {}
+          });
+          eduActionsTop.appendChild(addEduBtn);
+          eduCard.appendChild(eduActionsTop);
+
+          const eduItems = document.createElement("div");
+          eduItems.className = "skills-items";
+          state.doc.education.forEach((item, ei) => {
+            const eduItem = document.createElement("section");
+            eduItem.className = "skill-item";
+            eduItem.dataset.sectionLabel = `Education ${ei + 1}`;
+            const eduHead = document.createElement("h4");
+            eduHead.textContent = `EDUCATION ${ei + 1}`;
+            eduItem.appendChild(eduHead);
+            const eduLockedMarker = document.createElement("div");
+            eduLockedMarker.className = "locked";
+            eduLockedMarker.textContent = "Locked marker: -";
+            eduItem.appendChild(eduLockedMarker);
+
+            const eduLabel = document.createElement("div");
+            eduLabel.className = "label";
+            eduLabel.textContent = "Education Value";
+            eduItem.appendChild(eduLabel);
+
+            const eduRow = document.createElement("div");
+            eduRow.className = "skill-row";
+            const marker = document.createElement("span");
+            marker.className = "skill-marker";
+            marker.textContent = "\u2022";
+            eduRow.appendChild(marker);
+
+            const input = document.createElement("input");
+            input.type = "text";
+            input.id = `edu_${ei}_value`;
+            input.className = "skill-input";
+            input.value = item || "";
+            autoSizeSingleLine(input);
+            input.addEventListener("input", () => autoSizeSingleLine(input));
+            eduRow.appendChild(input);
+            eduItem.appendChild(eduRow);
+
+            const eduActions = document.createElement("div");
+            eduActions.className = "actions";
+            const saveEduBtn = document.createElement("button");
+            saveEduBtn.type = "button";
+            saveEduBtn.className = "primary";
+            saveEduBtn.textContent = "Save Education";
+            saveEduBtn.addEventListener("click", async () => {
+              try {
+                await saveFromUi(`Education ${ei + 1} updated.`);
+                saveEduBtn.classList.add("saved-ok");
+              } catch (_) {}
+            });
+            eduActions.appendChild(saveEduBtn);
+
+            const deleteEduBtn = document.createElement("button");
+            deleteEduBtn.type = "button";
+            deleteEduBtn.className = "danger";
+            deleteEduBtn.textContent = "Delete Education";
+            deleteEduBtn.addEventListener("click", async () => {
+              try {
+                syncFromInputs();
+                const ok = window.confirm(`Delete education ${ei + 1}?`);
+                if (!ok) { setStatus("Delete cancelled."); return; }
+                state.doc.education.splice(ei, 1);
+                await postSave("Education deleted.");
+                render();
+              } catch (_) {}
+            });
+            eduActions.appendChild(deleteEduBtn);
+            eduItem.appendChild(eduActions);
+            eduItems.appendChild(eduItem);
+          });
+          eduCard.appendChild(eduItems);
+
+          const eduActionsBottom = document.createElement("div");
+          eduActionsBottom.className = "actions";
+          const saveEduSectionBtn = document.createElement("button");
+          saveEduSectionBtn.type = "button";
+          saveEduSectionBtn.className = "primary";
+          saveEduSectionBtn.textContent = "Save Section";
+          saveEduSectionBtn.addEventListener("click", async () => {
+            try {
+              await saveFromUi("Education updated.");
+              saveEduSectionBtn.classList.add("saved-ok");
+            } catch (_) {}
+          });
+          eduActionsBottom.appendChild(saveEduSectionBtn);
+          eduCard.appendChild(eduActionsBottom);
+          rootEl.appendChild(eduCard);
+        }
         if (activeChatAssistInputId) {
           const nextInput = document.getElementById(activeChatAssistInputId);
           if (nextInput instanceof HTMLInputElement || nextInput instanceof HTMLTextAreaElement) {

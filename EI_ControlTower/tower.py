@@ -95,6 +95,7 @@ def _append_cores_log(message: str):
 CORES_DIR = BASE_DIR.parent / "CORES"
 CORES_LOG_PATH = CORES_DIR / "cores.log"
 CORES_EMPTY_TEMPLATE_PATH = CORES_DIR / "CORES_EMPTY_TEMPLATE.md"
+CORES_COMPANY_TEMPLATE_PATH = CORES_DIR / "Company.md"
 CORE_ID_FILE_PATTERN = re.compile(r"^CORE-US-(\d{4})-(\d{6})\.md$", flags=re.IGNORECASE)
 CORES_REQUIRED_PROJECT_LABELS = [
     "Situation",
@@ -154,6 +155,45 @@ Rules:
 - "companyName", "role", and "signals" must not be empty.
 - "firstProject.sections" must include all required fields and each field must be non-empty.
 """
+
+
+def _load_company_template_markdown() -> str:
+    if not CORES_COMPANY_TEMPLATE_PATH.exists():
+        raise ValueError(f"Company template not found: {CORES_COMPANY_TEMPLATE_PATH.name}")
+    template_markdown = (
+        CORES_COMPANY_TEMPLATE_PATH.read_text(encoding="utf-8")
+        .replace("\r\n", "\n")
+        .replace("\r", "\n")
+        .strip()
+    )
+    if not template_markdown:
+        raise ValueError(f"Company template is empty: {CORES_COMPANY_TEMPLATE_PATH.name}")
+    return template_markdown
+
+
+def _build_company_formatter_block(template_markdown: str) -> str:
+    return (
+        "Everything above this line is the company story.\n\n"
+        "Return markdown only.\n"
+        "Do not add commentary.\n"
+        "Do not add explanations.\n"
+        "Do not add intro text.\n"
+        "Do not add headings beyond this structure.\n"
+        "Do not convert bullet markers to headings.\n"
+        "Return the final company block inside ONE fenced code block using triple backticks.\n"
+        "No text before the fenced block.\n"
+        "No text after the fenced block.\n"
+        "Keep literal markdown characters exactly as shown.\n"
+        "Use '-' dash bullets exactly; do not use Unicode bullets.\n"
+        "Do NOT create additional bullet items inside section content.\n"
+        "After each required label, write plain text only (no nested '-' bullets, no numbered lists).\n"
+        "For section content lines, never start with '-', '*', '#', or a numbered list marker like '1.'.\n"
+        "If source has multiple points, combine them into one plain sentence separated by semicolons.\n"
+        "Do not add extra bullet lines under any section.\n"
+        "The first heading line must start with exactly: ## COMPANY:\n\n"
+        "Use this exact company framework with all content populated:\n\n"
+        f"{template_markdown}\n"
+    )
 
 CORES_FORMATTER_BLOCK = """Everything above this line is the project story.
 
@@ -738,10 +778,37 @@ def _validate_cores_markdown(markdown_text: str) -> None:
 
     summary_match = re.search(r"^#\s+SUMMARY\s*$", normalized, flags=re.MULTILINE | re.IGNORECASE)
     global_match = re.search(r"^#\s+GLOBAL\s*$", normalized, flags=re.MULTILINE | re.IGNORECASE)
+    certifications_match = re.search(
+        r"^#\s+CERTIFICATIONS\s*$", normalized, flags=re.MULTILINE | re.IGNORECASE
+    )
     experience_match = re.search(r"^#\s+EXPERIENCE\s*$", normalized, flags=re.MULTILINE | re.IGNORECASE)
+    education_match = re.search(
+        r"^#\s*EDUCATION\s*:?\s*$", normalized, flags=re.MULTILINE | re.IGNORECASE
+    )
     if not (summary_match and global_match and experience_match):
         raise ValueError("Required section headers not found")
-    if not (summary_match.start() < global_match.start() < experience_match.start()):
+    if certifications_match and education_match:
+        if not (
+            summary_match.start()
+            < global_match.start()
+            < certifications_match.start()
+            < experience_match.start()
+            < education_match.start()
+        ):
+            raise ValueError(
+                "Header order invalid: expected # SUMMARY -> # GLOBAL -> # Certifications -> # EXPERIENCE -> # Education"
+            )
+    elif certifications_match:
+        if not (summary_match.start() < global_match.start() < certifications_match.start() < experience_match.start()):
+            raise ValueError(
+                "Header order invalid: expected # SUMMARY -> # GLOBAL -> # Certifications -> # EXPERIENCE"
+            )
+    elif education_match:
+        if not (summary_match.start() < global_match.start() < experience_match.start() < education_match.start()):
+            raise ValueError(
+                "Header order invalid: expected # SUMMARY -> # GLOBAL -> # EXPERIENCE -> # Education"
+            )
+    elif not (summary_match.start() < global_match.start() < experience_match.start()):
         raise ValueError("Header order invalid: expected # SUMMARY -> # GLOBAL -> # EXPERIENCE")
 
     companies = list(re.finditer(r"^##\s+COMPANY:\s*(.+)$", normalized, flags=re.MULTILINE | re.IGNORECASE))
@@ -1716,6 +1783,19 @@ def parse_company():
         return _with_cors(resp)
 
     payload = request.get_json(force=True, silent=True) or {}
+    raw_use_chatgpt = payload.get("useChatGPT", False)
+    if isinstance(raw_use_chatgpt, str):
+        use_chatgpt = raw_use_chatgpt.strip().lower() in {"1", "true", "yes", "on"}
+    else:
+        use_chatgpt = bool(raw_use_chatgpt)
+    raw_prompt_only = payload.get("promptOnly", False)
+    if isinstance(raw_prompt_only, str):
+        prompt_only = raw_prompt_only.strip().lower() in {"1", "true", "yes", "on"}
+    else:
+        prompt_only = bool(raw_prompt_only)
+    _append_cores_log(
+        f"[PARSE_COMPANY] useChatGPT={use_chatgpt} promptOnly={prompt_only}"
+    )
     transcript = str(payload.get("transcript") or "").strip()
     existing_company_names = payload.get("existingCompanyNames")
     if not isinstance(existing_company_names, list):
@@ -1723,6 +1803,19 @@ def parse_company():
     existing_company_names = [
         str(item or "").strip() for item in existing_company_names if str(item or "").strip()
     ]
+    if use_chatgpt and prompt_only:
+        try:
+            company_template_markdown = _load_company_template_markdown()
+            formatter_block = _build_company_formatter_block(company_template_markdown)
+            return _with_cors(jsonify({"prompt": formatter_block}))
+        except ValueError as exc:
+            _append_cores_log(f"[PARSE_COMPANY] template load failed: {exc}")
+            return _with_cors(app.make_response((jsonify({"error": str(exc)}), 422)))
+        except Exception as exc:
+            _append_cores_log(f"[PARSE_COMPANY] template read failed: {exc}")
+            return _with_cors(
+                app.make_response((jsonify({"error": "Failed to read company template", "details": str(exc)}), 500))
+            )
     if not transcript:
         return _with_cors(app.make_response((jsonify({"error": "Transcript is required"}), 400)))
 
@@ -1733,6 +1826,16 @@ def parse_company():
         )
 
     model = os.environ.get("OPENAI_MODEL", "gpt-4o-mini").strip() or "gpt-4o-mini"
+    try:
+        company_template_markdown = _load_company_template_markdown()
+    except ValueError as exc:
+        _append_cores_log(f"[PARSE_COMPANY] template load failed: {exc}")
+        return _with_cors(app.make_response((jsonify({"error": str(exc)}), 422)))
+    except Exception as exc:
+        _append_cores_log(f"[PARSE_COMPANY] template read failed: {exc}")
+        return _with_cors(
+            app.make_response((jsonify({"error": "Failed to read company template", "details": str(exc)}), 500))
+        )
     existing_context = (
         "Existing company names:\n"
         + "\n".join(f"- {name}" for name in existing_company_names)
@@ -1742,6 +1845,14 @@ def parse_company():
     )
     prompt = (
         f"{COMPANY_PARSE_PROMPT}\n\n"
+        "LOCKED COMPANY FRAMEWORK (reference for mapping fields):\n"
+        f"{company_template_markdown}\n\n"
+        "Use the story to populate this framework mapping in JSON only:\n"
+        '- "companyName" = value from "## COMPANY: ..."\n'
+        '- "role" = content under "### ROLE:"\n'
+        '- "signals" = content under "### SIGNALS:"\n'
+        '- "firstProject.projectTitle" = optional text after "### PROJECT:"\n'
+        '- "firstProject.sections" = Situation, What I did, Tools / systems, Result, Evidence / artifacts, Notes / caveats\n\n'
         f"{existing_context}"
         f"Input transcript:\n{transcript}\n"
     )
