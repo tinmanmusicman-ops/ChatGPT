@@ -73,6 +73,7 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
       <span class="toolbar-label">Markdown File</span>
       <select id="filePicker" class="toolbar-select" aria-label="Markdown file picker"></select>
       <button id="openFileBtn" type="button">Open File</button>
+      <button id="newTemplateBtn" type="button">New Template</button>
       <button id="refreshFilesBtn" type="button">Refresh Files</button>
       <button id="saveAllBtn" class="primary">Save All</button>
       <button id="reloadBtn">Reload</button>
@@ -147,6 +148,7 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
       const importResumeInput = document.getElementById("importResumeInput");
       const filePickerEl = document.getElementById("filePicker");
       const openFileBtn = document.getElementById("openFileBtn");
+      const newTemplateBtn = document.getElementById("newTemplateBtn");
       const refreshFilesBtn = document.getElementById("refreshFilesBtn");
       const saveAllBtn = document.getElementById("saveAllBtn");
       const reloadBtn = document.getElementById("reloadBtn");
@@ -331,19 +333,7 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
 
         importResumeBtn && (importResumeBtn.disabled = true);
         try {
-          setStatus("Creating new empty template file ...");
-          const createResponse = await fetch("/cores/new-template", {
-            method: "POST",
-          });
-          const createData = await createResponse.json().catch(() => ({}));
-          if (!createResponse.ok) {
-            const combined = [createData?.error, createData?.details].filter(Boolean).join(": ");
-            throw new Error(combined || `Template creation failed (${createResponse.status})`);
-          }
-
-          const newCoreId = normalizeCoreId(createData?.coreId || "");
-          await loadFileChoices(newCoreId);
-          await loadDoc(newCoreId);
+          const newCoreId = await createAndLoadNewTemplate();
 
           const templateMarkdown = buildMarkdown(state.doc);
           const formData = new FormData();
@@ -375,6 +365,22 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
         } finally {
           importResumeBtn && (importResumeBtn.disabled = false);
         }
+      };
+
+      const createAndLoadNewTemplate = async () => {
+        setStatus("Creating new empty template file ...");
+        const createResponse = await fetch("/cores/new-template", {
+          method: "POST",
+        });
+        const createData = await createResponse.json().catch(() => ({}));
+        if (!createResponse.ok) {
+          const combined = [createData?.error, createData?.details].filter(Boolean).join(": ");
+          throw new Error(combined || `Template creation failed (${createResponse.status})`);
+        }
+        const newCoreId = normalizeCoreId(createData?.coreId || "");
+        await loadFileChoices(newCoreId);
+        await loadDoc(newCoreId);
+        return newCoreId;
       };
 
       const labelKey = (raw) => String(raw || "").toLowerCase().replace(/[^a-z0-9/ ]+/g, " ").replace(/\s*\/\s*/g, "/").replace(/\s+/g, " ").trim();
@@ -1956,6 +1962,21 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
           if (!confirmDiscardUnsavedChanges()) { setStatus("Open file cancelled."); return; }
           await loadDoc(selectedFile);
         } catch (_) {}
+      });
+
+      newTemplateBtn?.addEventListener("click", async () => {
+        try {
+          if (!confirmDiscardUnsavedChanges()) {
+            setStatus("New template creation cancelled.");
+            return;
+          }
+          newTemplateBtn.disabled = true;
+          const newCoreId = await createAndLoadNewTemplate();
+          setStatus(`Created and loaded ${coreIdToFileName(newCoreId)}.`);
+        } catch (_) {
+        } finally {
+          newTemplateBtn.disabled = false;
+        }
       });
 
       refreshFilesBtn?.addEventListener("click", async () => {

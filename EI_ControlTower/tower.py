@@ -168,6 +168,11 @@ No text before the fenced block.
 No text after the fenced block.
 Keep literal markdown characters exactly as shown.
 Use '-' dash bullets exactly; do not use Unicode bullets.
+Do NOT create additional bullet items inside section content.
+After each required label, write plain text only (no nested '-' bullets, no numbered lists).
+For section content lines, never start with '-', '*', '#', or a numbered list marker like '1.'.
+If source has multiple points, combine them into one plain sentence separated by semicolons.
+Do not add extra bullet lines under any section.
 
 Project title must be blank.
 The first line must be exactly:
