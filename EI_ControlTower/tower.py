@@ -155,6 +155,41 @@ Rules:
 - "firstProject.sections" must include all required fields and each field must be non-empty.
 """
 
+CORES_FORMATTER_BLOCK = """Everything above this line is the project story.
+
+Return markdown only.
+Do not add commentary.
+Do not add explanations.
+Do not add intro text.
+Do not add headings beyond this structure.
+Do not convert bullet markers to headings.
+Return the final project inside ONE fenced code block using triple backticks.
+No text before the fenced block.
+No text after the fenced block.
+Keep literal markdown characters exactly as shown.
+Use '-' dash bullets exactly; do not use Unicode bullets.
+
+Project title must be blank.
+The first line must be exactly:
+### PROJECT:
+
+Use this exact structure with all content populated:
+
+### PROJECT:
+
+- Situation:
+
+- What I did:
+
+- Tools / systems:
+
+- Result:
+
+- Evidence / artifacts:
+
+- Notes / caveats:
+"""
+
 ASCII_CHAR_REPLACEMENTS = {
     "\u2018": "'",
     "\u2019": "'",
@@ -1493,7 +1528,64 @@ def parse_project():
         return _with_cors(resp)
 
     payload = request.get_json(force=True, silent=True) or {}
-    transcript = str(payload.get("transcript") or "").strip()
+    project_story = str(payload.get("projectStory") or payload.get("transcript") or "").strip()
+    raw_use_chatgpt = payload.get("useChatGPT", False)
+    if isinstance(raw_use_chatgpt, str):
+        use_chatgpt = raw_use_chatgpt.strip().lower() in {"1", "true", "yes", "on"}
+    else:
+        use_chatgpt = bool(raw_use_chatgpt)
+    raw_prompt_only = payload.get("promptOnly", False)
+    if isinstance(raw_prompt_only, str):
+        prompt_only = raw_prompt_only.strip().lower() in {"1", "true", "yes", "on"}
+    else:
+        prompt_only = bool(raw_prompt_only)
+    _append_cores_log(
+        f"[PARSE_PROJECT] useChatGPT={use_chatgpt} promptOnly={prompt_only} storyChars={len(project_story)}"
+    )
+    if use_chatgpt and prompt_only:
+        return _with_cors(jsonify({"prompt": CORES_FORMATTER_BLOCK}))
+    if use_chatgpt:
+        if not project_story:
+            return _with_cors(
+                app.make_response((jsonify({"error": "Project story is required"}), 400))
+            )
+        prompt = f"""Convert the following PROJECT STORY into a CORES project block.
+
+RULES:
+- Do NOT invent information
+- Use exact CORES project format
+- ASCII only
+- No em dashes
+- If unknown, leave blank but keep labels
+
+FORMAT:
+
+### PROJECT:
+
+- Situation:
+...
+
+- What I did:
+- ...
+
+- Tools / systems:
+- ...
+
+- Result:
+...
+
+- Evidence / artifacts:
+- ...
+
+- Notes / caveats:
+...
+
+PROJECT STORY:
+{project_story}
+"""
+        return _with_cors(jsonify({"mode": "chatgpt", "prompt": prompt}))
+
+    transcript = project_story
     company_name = str(payload.get("companyName") or "").strip()
     existing_project_titles = payload.get("existingProjectTitles")
     if not isinstance(existing_project_titles, list):
@@ -2280,4 +2372,3 @@ if __name__ == "__main__":
     schedule_dashboard_snapshot()
     print("HSST Control Tower Flask Server Running (Skeleton Mode)")
     app.run(host="0.0.0.0", port=5000, debug=True)
-

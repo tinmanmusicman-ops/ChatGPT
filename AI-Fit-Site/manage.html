@@ -59,8 +59,8 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
       <div class="top-actions">
         <button id="importResumeBtn" type="button" class="button">Import PDF/DOCX</button>
         <input id="importResumeInput" type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden />
-        <label class="top-account-toggle" for="useChatgptAccountToggle">
-          <input id="useChatgptAccountToggle" type="checkbox" />
+        <label class="top-account-toggle" for="useChatGPTAccount">
+          <input id="useChatGPTAccount" type="checkbox" />
           <span>Use ChatGPT Account</span>
         </label>
         <a href="/AI-Fit-Site" class="button">Back To Job Page</a>
@@ -91,6 +91,7 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
         <button id="projectPromptStartDictationBtn" type="button">Start Dictation</button>
         <button id="projectPromptStopDictationBtn" type="button" disabled>Stop</button>
         <button id="projectPromptSendBtn" type="button" class="primary">Send To AI</button>
+        <button id="projectPromptPasteResultBtn" type="button">Paste Result</button>
         <button id="projectPromptCancelBtn" type="button">Cancel</button>
       </div>
       <div id="projectPromptStatus" class="project-modal-status"></div>
@@ -130,7 +131,15 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
         "notes/caveats": "Notes / caveats",
       };
 
-      const state = { coreId: "", doc: null, savedMarkdown: "" };
+      const state = {
+        coreId: "",
+        doc: null,
+        savedMarkdown: "",
+        chatGptFormatterBlock: "",
+        chatGptPasteModalOpen: false,
+        chatGptPasteFocus: null,
+      };
+      window.coresChatGptMode = false;
       const statusEl = document.getElementById("statusLine");
       const coreIdEl = document.getElementById("coreIdLabel");
       const rootEl = document.getElementById("editorRoot");
@@ -141,7 +150,7 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
       const refreshFilesBtn = document.getElementById("refreshFilesBtn");
       const saveAllBtn = document.getElementById("saveAllBtn");
       const reloadBtn = document.getElementById("reloadBtn");
-      const useChatgptAccountToggleEl = document.getElementById("useChatgptAccountToggle");
+      const useChatGPTAccountEl = document.getElementById("useChatGPTAccount");
       const projectPromptModalEl = document.getElementById("projectPromptModal");
       const projectPromptCompanyEl = document.getElementById("projectPromptCompany");
       const projectPromptTranscriptEl = document.getElementById("projectPromptTranscript");
@@ -149,6 +158,7 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
       const projectPromptStartDictationBtn = document.getElementById("projectPromptStartDictationBtn");
       const projectPromptStopDictationBtn = document.getElementById("projectPromptStopDictationBtn");
       const projectPromptSendBtn = document.getElementById("projectPromptSendBtn");
+      const projectPromptPasteResultBtn = document.getElementById("projectPromptPasteResultBtn");
       const projectPromptCancelBtn = document.getElementById("projectPromptCancelBtn");
       const companyPromptModalEl = document.getElementById("companyPromptModal");
       const companyPromptTranscriptEl = document.getElementById("companyPromptTranscript");
@@ -169,11 +179,21 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
       const trimLines = (t) => nn(t).split("\n").map((l) => l.replace(/[ \t]+$/g, "")).join("\n");
       const sliceText = (lines, s, e) => trimLines(lines.slice(s, e).join("\n")).trim();
       const esc = (s) => String(s || "").toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+      const writeCoresLog = (message) => {
+        const line = String(message || "").trim();
+        if (!line) return;
+        fetch("/cores/log", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: line }),
+          keepalive: true,
+        }).catch(() => {});
+      };
       const CHATGPT_ACCOUNT_STORAGE_KEY = "manage.useChatgptAccount";
       const setUseChatgptAccount = (enabled) => {
         const next = !!enabled;
-        if (useChatgptAccountToggleEl) {
-          useChatgptAccountToggleEl.checked = next;
+        if (useChatGPTAccountEl) {
+          useChatGPTAccountEl.checked = next;
         }
         document.documentElement.dataset.useChatgptAccount = next ? "1" : "0";
         try {
@@ -181,14 +201,14 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
         } catch (_) {}
       };
       const initUseChatgptAccountToggle = () => {
-        if (!useChatgptAccountToggleEl) return;
+        if (!useChatGPTAccountEl) return;
         let enabled = false;
         try {
           enabled = window.localStorage.getItem(CHATGPT_ACCOUNT_STORAGE_KEY) === "1";
         } catch (_) {}
         setUseChatgptAccount(enabled);
-        useChatgptAccountToggleEl.addEventListener("change", () => {
-          setUseChatgptAccount(useChatgptAccountToggleEl.checked);
+        useChatGPTAccountEl.addEventListener("change", () => {
+          setUseChatgptAccount(useChatGPTAccountEl.checked);
         });
       };
 
@@ -801,25 +821,338 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
         projectRecognition = null;
         projectIsRecording = false;
         projectPromptCompanyIndex = null;
+        window.coresChatGptMode = false;
+        state.chatGptPasteModalOpen = false;
+        state.chatGptPasteFocus = null;
         if (projectPromptStartDictationBtn) projectPromptStartDictationBtn.disabled = false;
         if (projectPromptStopDictationBtn) projectPromptStopDictationBtn.disabled = true;
         if (projectPromptSendBtn) projectPromptSendBtn.disabled = false;
+        if (projectPromptPasteResultBtn) projectPromptPasteResultBtn.style.display = "none";
         setProjectPromptStatus("");
         setProjectPromptOpen(false);
       };
       const openProjectPrompt = (companyIndex, companyName) => {
         if (!state.doc) return;
         projectPromptCompanyIndex = companyIndex;
+        const useChatGPT = !!(useChatGPTAccountEl?.checked);
+        window.coresChatGptMode = useChatGPT;
+        state.chatGptPasteModalOpen = false;
+        state.chatGptPasteFocus = null;
         if (projectPromptCompanyEl) {
           projectPromptCompanyEl.textContent = `Company: ${companyName}`;
         }
         if (projectPromptTranscriptEl) {
           projectPromptTranscriptEl.value = "";
         }
-        setProjectPromptStatus("Dictate or type details, then click Send To AI.");
+        if (projectPromptPasteResultBtn) {
+          projectPromptPasteResultBtn.style.display = useChatGPT ? "inline-flex" : "none";
+        }
+        setProjectPromptStatus(
+          useChatGPT
+            ? "ChatGPT mode enabled. Dictate/type, then click Send To AI to generate the ChatGPT prompt."
+            : "Dictate or type details, then click Send To AI."
+        );
+        writeCoresLog(`[MANAGE] add_project_clicked useChatGPT=${useChatGPT} company=${companyName}`);
         setProjectPromptOpen(true);
       };
+      const openChatGptAccountWindow = (companyName) => {
+        const url = "https://chatgpt.com/";
+        const opened = window.open(url, "_blank", "noopener,noreferrer");
+        if (opened) {
+          const message = `Opened ChatGPT account window for company '${companyName}'.`;
+          setStatus(message);
+          writeCoresLog(`[MANAGE] chatgpt_window_opened company=${companyName}`);
+        } else {
+          const message = "Popup blocked. Allow popups to open ChatGPT account window.";
+          setStatus(message, true);
+          writeCoresLog(`[MANAGE] chatgpt_window_blocked company=${companyName}`);
+        }
+      };
+      const openChatGptProjectResultModal = ({
+        prompt,
+        initialPastedResult = "",
+        onInsert,
+        onClose = null,
+        autoFocusPaste = false,
+      }) => {
+        const overlay = document.createElement("div");
+        overlay.style.position = "fixed";
+        overlay.style.inset = "0";
+        overlay.style.zIndex = "3400";
+        overlay.style.display = "flex";
+        overlay.style.alignItems = "center";
+        overlay.style.justifyContent = "center";
+        overlay.style.padding = "16px";
+        overlay.style.background = "rgba(0,0,0,0.72)";
+
+        const card = document.createElement("div");
+        card.style.width = "min(960px, calc(100% - 32px))";
+        card.style.maxHeight = "92vh";
+        card.style.overflow = "auto";
+        card.style.border = "1px solid #334155";
+        card.style.borderRadius = "14px";
+        card.style.background = "#111827";
+        card.style.padding = "14px";
+
+        const title = document.createElement("h2");
+        title.textContent = "ChatGPT Project Mode";
+        title.style.margin = "0 0 10px";
+
+        const promptLabel = document.createElement("div");
+        promptLabel.className = "label";
+        promptLabel.textContent = "Prompt (readonly)";
+
+        const promptArea = document.createElement("textarea");
+        promptArea.readOnly = true;
+        promptArea.value = String(prompt || "");
+        promptArea.style.minHeight = "180px";
+
+        const actions = document.createElement("div");
+        actions.className = "project-modal-actions";
+
+        const copyBtn = document.createElement("button");
+        copyBtn.type = "button";
+        copyBtn.textContent = "COPY PROMPT";
+
+        const openBtn = document.createElement("button");
+        openBtn.type = "button";
+        openBtn.textContent = "OPEN CHATGPT";
+
+        const pasteClipboardBtn = document.createElement("button");
+        pasteClipboardBtn.type = "button";
+        pasteClipboardBtn.textContent = "PASTE FROM CLIPBOARD";
+
+        const cancelBtn = document.createElement("button");
+        cancelBtn.type = "button";
+        cancelBtn.textContent = "Cancel";
+
+        actions.appendChild(copyBtn);
+        actions.appendChild(openBtn);
+        actions.appendChild(pasteClipboardBtn);
+        actions.appendChild(cancelBtn);
+
+        const pasteLabel = document.createElement("div");
+        pasteLabel.className = "label";
+        pasteLabel.textContent = "Paste ChatGPT Result";
+
+        const pasteArea = document.createElement("textarea");
+        pasteArea.placeholder = "Paste the full ChatGPT project markdown block here.";
+        pasteArea.style.minHeight = "220px";
+        pasteArea.value = String(initialPastedResult || "");
+
+        const insertActions = document.createElement("div");
+        insertActions.className = "project-modal-actions";
+        const insertBtn = document.createElement("button");
+        insertBtn.type = "button";
+        insertBtn.className = "primary";
+        insertBtn.textContent = "Insert Project";
+        insertActions.appendChild(insertBtn);
+
+        const status = document.createElement("div");
+        status.className = "project-modal-status";
+        const gateActions = document.createElement("div");
+        gateActions.className = "project-modal-actions";
+        gateActions.style.display = "none";
+        const rerunBtn = document.createElement("button");
+        rerunBtn.type = "button";
+        rerunBtn.textContent = "A) Re-run in ChatGPT";
+        const forceHeaderBtn = document.createElement("button");
+        forceHeaderBtn.type = "button";
+        forceHeaderBtn.textContent = "B) Insert header verbatim and continue";
+        gateActions.appendChild(rerunBtn);
+        gateActions.appendChild(forceHeaderBtn);
+        let pendingGatePasted = "";
+
+        const focusPasteBox = () => {
+          pasteArea.focus();
+          setTimeout(() => pasteArea.focus(), 200);
+        };
+
+        const closeModal = () => {
+          overlay.remove();
+          document.body.style.overflow = "";
+          state.chatGptPasteModalOpen = false;
+          state.chatGptPasteFocus = null;
+          if (typeof onClose === "function") {
+            try { onClose(); } catch (_) {}
+          }
+        };
+
+        copyBtn.addEventListener("click", async () => {
+          try {
+            await navigator.clipboard.writeText(promptArea.value);
+            status.textContent = "Prompt copied.";
+            status.classList.remove("error");
+          } catch (_) {
+            status.textContent = "Copy failed. Copy manually.";
+            status.classList.add("error");
+          }
+        });
+
+        openBtn.addEventListener("click", () => {
+          window.open("https://chat.openai.com", "_blank", "noopener,noreferrer");
+        });
+        pasteClipboardBtn.addEventListener("click", async () => {
+          try {
+            const clip = await navigator.clipboard.readText();
+            pasteArea.value = String(clip || "");
+            status.textContent = "Loaded clipboard into paste box.";
+            status.classList.remove("error");
+            pasteArea.focus();
+          } catch (_) {
+            status.textContent = "Clipboard read failed. Paste manually.";
+            status.classList.add("error");
+          }
+        });
+        rerunBtn.addEventListener("click", () => {
+          window.open("https://chat.openai.com", "_blank", "noopener,noreferrer");
+        });
+        forceHeaderBtn.addEventListener("click", async () => {
+          const fallbackInput = String(pendingGatePasted || "").trim();
+          if (!fallbackInput) {
+            status.textContent = "No pasted result available for header insertion.";
+            status.classList.add("error");
+            return;
+          }
+          forceHeaderBtn.disabled = true;
+          const withHeader = `### PROJECT:\n${fallbackInput}`;
+          try {
+            await onInsert(withHeader);
+            closeModal();
+          } catch (error) {
+            status.textContent = error?.message || "Insert failed.";
+            status.classList.add("error");
+          } finally {
+            forceHeaderBtn.disabled = false;
+          }
+        });
+
+        cancelBtn.addEventListener("click", () => {
+          closeModal();
+        });
+
+        overlay.addEventListener("click", (event) => {
+          if (event.target === overlay) {
+            closeModal();
+          }
+        });
+
+        insertBtn.addEventListener("click", async () => {
+          let pasted = String(pasteArea.value || "").trim();
+          if (!pasted) {
+            status.textContent = "Paste ChatGPT result before inserting.";
+            status.classList.add("error");
+            pasteArea.focus();
+            return;
+          }
+          const fenced = pasted.match(/^```[^\n]*\n([\s\S]*?)\n```$/);
+          if (fenced) {
+            pasted = String(fenced[1] || "").trim();
+          }
+          const firstLine = String(pasted.split(/\r\n|\r|\n/)[0] || "");
+          if (firstLine !== "### PROJECT:") {
+            pendingGatePasted = pasted;
+            gateActions.style.display = "flex";
+            status.textContent = "CORES INGEST GATE: line 1 must be exactly '### PROJECT:'. Choose A or B.";
+            status.classList.add("error");
+            return;
+          }
+          gateActions.style.display = "none";
+          pendingGatePasted = "";
+          insertBtn.disabled = true;
+          try {
+            await onInsert(pasted);
+            closeModal();
+          } catch (error) {
+            status.textContent = error?.message || "Insert failed.";
+            status.classList.add("error");
+          } finally {
+            insertBtn.disabled = false;
+          }
+        });
+
+        card.appendChild(title);
+        card.appendChild(promptLabel);
+        card.appendChild(promptArea);
+        card.appendChild(actions);
+        card.appendChild(pasteLabel);
+        card.appendChild(pasteArea);
+        card.appendChild(insertActions);
+        card.appendChild(status);
+        card.appendChild(gateActions);
+        overlay.appendChild(card);
+        document.body.appendChild(overlay);
+        document.body.style.overflow = "hidden";
+        state.chatGptPasteModalOpen = true;
+        state.chatGptPasteFocus = focusPasteBox;
+        if (autoFocusPaste) {
+          focusPasteBox();
+        }
+        return { focusPasteBox, closeModal };
+      };
+      const startChatGptVoiceMode = async (companyName) => {
+        window.coresChatGptMode = true;
+        const response = await fetch("/parse_project", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ useChatGPT: true, promptOnly: true }),
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(data?.error || data?.details || `Prompt-only request failed (${response.status})`);
+        }
+        const formatterBlock = String(data?.prompt || "").trim();
+        if (!formatterBlock) {
+          throw new Error("Formatter block is empty.");
+        }
+        state.chatGptFormatterBlock = formatterBlock;
+
+        let copied = false;
+        try {
+          await navigator.clipboard.writeText(formatterBlock);
+          copied = true;
+        } catch (_) {}
+
+        const popup = window.open("https://chat.openai.com/", "_blank", "noopener,noreferrer");
+        const popupBlocked = !popup;
+        const instruction = "Click microphone in ChatGPT and tell your story.\nWhen finished, paste the formatter and send.";
+        setProjectPromptStatus(instruction);
+        setStatus(instruction, false);
+        writeCoresLog(`[MANAGE] chatgpt_voice_mode_started company=${companyName} copied=${copied} popupBlocked=${popupBlocked}`);
+      };
+      const insertChatGptPastedProject = async (pastedResult) => {
+        if (projectPromptCompanyIndex === null || projectPromptCompanyIndex < 0) {
+          throw new Error("Project target company is missing.");
+        }
+        const parsedProject = parseProjectBlock(pastedResult);
+        syncFromInputs();
+        state.doc.experience[projectPromptCompanyIndex].projects.push(parsedProject);
+        render();
+        setStatus(`AI added a project under '${state.doc.experience[projectPromptCompanyIndex].name}'. Review and save.`);
+        closeProjectPrompt();
+      };
+      const openChatGptPasteWindow = (initialPastedResult = "", autoFocusPaste = true) => {
+        if (window.coresChatGptMode !== true) return;
+        if (state.chatGptPasteModalOpen && typeof state.chatGptPasteFocus === "function") {
+          state.chatGptPasteFocus();
+          return;
+        }
+        const formatterBlock = String(state.chatGptFormatterBlock || "").trim();
+        if (!formatterBlock) {
+          setProjectPromptStatus("Formatter block missing. Click Add Project again in ChatGPT mode.", true);
+          return;
+        }
+        setProjectPromptStatus("Paste ChatGPT structured result and insert.");
+        openChatGptProjectResultModal({
+          prompt: formatterBlock,
+          initialPastedResult,
+          onInsert: insertChatGptPastedProject,
+          onClose: () => {},
+          autoFocusPaste,
+        });
+      };
       const sendTranscriptToAi = async () => {
+        const useChatGPT = document.getElementById("useChatGPTAccount")?.checked;
         if (projectPromptCompanyIndex === null || projectPromptCompanyIndex < 0) {
           setProjectPromptStatus("Project target company is missing.", true);
           return;
@@ -837,23 +1170,27 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
         setProjectPromptStatus("Sending to AI...");
 
         try {
-          const targetCompany = state.doc.experience[projectPromptCompanyIndex];
+          const storyText = transcript;
+          writeCoresLog(`[MANAGE] parse_project_send useChatGPT=${useChatGPT} storyChars=${storyText.length}`);
+          if (useChatGPT) {
+            openChatGptPasteWindow(storyText, true);
+            if (projectPromptSendBtn) projectPromptSendBtn.disabled = false;
+            if (projectPromptStartDictationBtn) projectPromptStartDictationBtn.disabled = false;
+            if (projectPromptStopDictationBtn) projectPromptStopDictationBtn.disabled = true;
+            return;
+          }
+          const requestPayload = useChatGPT
+            ? { transcript: storyText, useChatGPT: true }
+            : { projectStory: storyText, useChatGPT: false };
           const response = await fetch("/parse_project", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              transcript,
-              companyName: targetCompany?.name || "",
-              existingProjectTitles: Array.isArray(targetCompany?.projects)
-                ? targetCompany.projects.map((p) => trimLines(p?.title || "").trim()).filter(Boolean)
-                : [],
-            }),
+            body: JSON.stringify(requestPayload),
           });
           const data = await response.json().catch(() => ({}));
           if (!response.ok) {
             throw new Error(data?.error || data?.details || `AI parse failed (${response.status})`);
           }
-
           const parsedProject =
             normalizeAiProject(data?.project) ||
             parseProjectBlock(data?.projectBlock || "");
@@ -1487,10 +1824,13 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
           const addProjectBtn = document.createElement("button");
           addProjectBtn.type = "button";
           addProjectBtn.textContent = "Add Project";
-          addProjectBtn.addEventListener("click", () => {
+          addProjectBtn.addEventListener("click", async () => {
             try {
               syncFromInputs();
               openProjectPrompt(ci, c.name);
+              if (useChatGPTAccountEl?.checked) {
+                await startChatGptVoiceMode(c.name);
+              }
             } catch (_) {}
           });
           companyActions.appendChild(addProjectBtn);
@@ -1690,6 +2030,10 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
       projectPromptSendBtn?.addEventListener("click", async () => {
         await sendTranscriptToAi();
       });
+      projectPromptPasteResultBtn?.addEventListener("click", () => {
+        const initialPastedResult = projectPromptTranscriptEl?.value?.trim() || "";
+        openChatGptPasteWindow(initialPastedResult, true);
+      });
 
       projectPromptCancelBtn?.addEventListener("click", () => {
         closeProjectPrompt();
@@ -1779,6 +2123,12 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
           event.preventDefault();
           closeCompanyPrompt();
         }
+      });
+      window.addEventListener("focus", () => {
+        if (window.coresChatGptMode !== true) return;
+        if (!projectPromptModalEl || projectPromptModalEl.hidden) return;
+        const initialPastedResult = projectPromptTranscriptEl?.value?.trim() || "";
+        openChatGptPasteWindow(initialPastedResult, true);
       });
 
       initUseChatgptAccountToggle();
