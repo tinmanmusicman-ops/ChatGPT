@@ -47,6 +47,21 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
     .project-modal-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
     .project-modal-status { min-height: 20px; margin-top: 10px; color: #9ae6b4; }
     .project-modal-status.error { color: #fda4af; font-weight: 600; }
+    .chatgpt-float-btn {
+      position: fixed;
+      z-index: 6000;
+      display: none;
+      background: #0b5e9b;
+      border-color: #7dd3fc;
+      color: #f8fafc;
+      font-weight: 700;
+      box-shadow: 0 8px 24px rgba(2, 6, 23, 0.45);
+    }
+    .chatgpt-float-btn.visible { display: inline-flex; }
+    .chatgpt-target-active {
+      outline: 2px dashed #7dd3fc;
+      outline-offset: 4px;
+    }
   </style>
 </head>
 <body>
@@ -114,6 +129,7 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
       <div id="companyPromptStatus" class="project-modal-status"></div>
     </div>
   </div>
+  <button id="chatGptFieldAssistBtn" type="button" class="button chatgpt-float-btn">Ask ChatGPT</button>
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
@@ -153,6 +169,7 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
       const saveAllBtn = document.getElementById("saveAllBtn");
       const reloadBtn = document.getElementById("reloadBtn");
       const useChatGPTAccountEl = document.getElementById("useChatGPTAccount");
+      const chatGptFieldAssistBtn = document.getElementById("chatGptFieldAssistBtn");
       const projectPromptModalEl = document.getElementById("projectPromptModal");
       const projectPromptCompanyEl = document.getElementById("projectPromptCompany");
       const projectPromptTranscriptEl = document.getElementById("projectPromptTranscript");
@@ -174,6 +191,9 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
       let projectIsRecording = false;
       let companyRecognition = null;
       let companyIsRecording = false;
+      let activeChatAssistContainer = null;
+      let activeChatAssistInput = null;
+      let activeChatAssistInputId = "";
 
       const setStatus = (m, e = false) => { statusEl.textContent = m || ""; statusEl.classList.toggle("error", !!e); };
       const fail = (m) => { setStatus(m, true); throw new Error(m); };
@@ -736,6 +756,8 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
 
       const field = (label, id, value, multiline = true) => {
         const wrap = document.createElement("div");
+        wrap.className = "editable-container";
+        wrap.dataset.sectionLabel = String(label || "").trim();
         const l = document.createElement("div");
         l.className = "label";
         l.textContent = label;
@@ -759,6 +781,109 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
         el.cols = clamp(longest + 2, 22, 106);
         el.style.height = "auto";
         el.style.height = `${Math.max(72, el.scrollHeight)}px`;
+      };
+      const getEditableInputs = (container) => {
+        if (!container) return [];
+        return Array.from(container.querySelectorAll("textarea, input[type='text']")).filter((el) => !el.disabled);
+      };
+      const findInputInlineLabel = (inputEl) => {
+        if (!inputEl || !inputEl.parentElement) return "";
+        const siblings = Array.from(inputEl.parentElement.children);
+        const idx = siblings.indexOf(inputEl);
+        for (let i = idx - 1; i >= 0; i -= 1) {
+          const node = siblings[i];
+          if (node instanceof HTMLElement && node.classList.contains("label")) {
+            return trimLines(node.textContent || "").trim();
+          }
+        }
+        return "";
+      };
+      const getChatAssistLabel = (container, inputEl) => {
+        const fromData = trimLines(container?.dataset?.sectionLabel || "").trim();
+        if (fromData) return fromData;
+        const labelNode = container?.querySelector?.(".label");
+        const labelText = trimLines(labelNode?.textContent || "").trim();
+        if (labelText) return labelText;
+        const headingNode = container?.querySelector?.("h4, h3, h2");
+        const headingText = trimLines(headingNode?.textContent || "").trim();
+        if (headingText) return headingText;
+        const inputLabel = findInputInlineLabel(inputEl);
+        if (inputLabel) return inputLabel;
+        return "CORES Section";
+      };
+      const clearChatAssistTarget = () => {
+        if (activeChatAssistContainer) {
+          activeChatAssistContainer.classList.remove("chatgpt-target-active");
+        }
+        activeChatAssistContainer = null;
+        activeChatAssistInput = null;
+        activeChatAssistInputId = "";
+        if (chatGptFieldAssistBtn) {
+          chatGptFieldAssistBtn.classList.remove("visible");
+          chatGptFieldAssistBtn.style.left = "";
+          chatGptFieldAssistBtn.style.top = "";
+        }
+      };
+      const positionChatAssistButton = () => {
+        if (!chatGptFieldAssistBtn || !activeChatAssistContainer) return;
+        if (!document.body.contains(activeChatAssistContainer)) {
+          clearChatAssistTarget();
+          return;
+        }
+        const rect = activeChatAssistContainer.getBoundingClientRect();
+        const btnW = chatGptFieldAssistBtn.offsetWidth || 140;
+        const btnH = chatGptFieldAssistBtn.offsetHeight || 38;
+        const left = clamp(rect.right - btnW - 10, 8, Math.max(8, window.innerWidth - btnW - 8));
+        const top = clamp(rect.top + 8, 8, Math.max(8, window.innerHeight - btnH - 8));
+        chatGptFieldAssistBtn.style.left = `${left}px`;
+        chatGptFieldAssistBtn.style.top = `${top}px`;
+      };
+      const setChatAssistTarget = (inputEl) => {
+        if (!inputEl) return;
+        const container = inputEl.closest(".bullet-item, .skill-item, .editable-container");
+        if (!container) {
+          clearChatAssistTarget();
+          return;
+        }
+        if (activeChatAssistContainer && activeChatAssistContainer !== container) {
+          activeChatAssistContainer.classList.remove("chatgpt-target-active");
+        }
+        activeChatAssistContainer = container;
+        activeChatAssistInput = inputEl;
+        activeChatAssistInputId = inputEl.id || "";
+        activeChatAssistContainer.classList.add("chatgpt-target-active");
+        if (chatGptFieldAssistBtn) {
+          chatGptFieldAssistBtn.classList.add("visible");
+        }
+        positionChatAssistButton();
+      };
+      const buildChatAssistPrompt = (container, inputEl) => {
+        const label = getChatAssistLabel(container, inputEl);
+        const fields = getEditableInputs(container);
+        const payload = fields
+          .map((fieldEl, idx) => {
+            const value = trimLines(fieldEl.value || "").trim();
+            if (!value) return "";
+            const fieldLabel = findInputInlineLabel(fieldEl) || `Field ${idx + 1}`;
+            return `${fieldLabel}:\n${value}`;
+          })
+          .filter(Boolean)
+          .join("\n\n");
+        if (!payload) {
+          throw new Error("Current section is empty. Enter text first.");
+        }
+        return `You are editing one CORES section.\nReturn plain text only for this same section.\nDo not add markdown headings.\nDo not add bullets.\nDo not add numbered lists.\nDo not add commentary.\nDo not invent facts.\nUse ASCII characters only.\n\nSECTION:\n${label}\n\nSOURCE CONTENT:\n${payload}\n`;
+      };
+      const clearChatAssistContainerInputs = (container) => {
+        const fields = getEditableInputs(container);
+        fields.forEach((fieldEl) => {
+          fieldEl.value = "";
+          if (fieldEl instanceof HTMLTextAreaElement) {
+            autoSizeMultiline(fieldEl);
+          } else {
+            autoSizeSingleLine(fieldEl);
+          }
+        });
       };
       const getSpeechRecognitionCtor = () =>
         window.SpeechRecognition || window.webkitSpeechRecognition || null;
@@ -1317,6 +1442,8 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
         const parsedValue = parsed || { intro: trimLines(value || "").trim(), items: [] };
 
         const wrap = document.createElement("div");
+        wrap.className = "editable-container";
+        wrap.dataset.sectionLabel = String(label || "").trim();
         const l = document.createElement("div");
         l.className = "label";
         l.textContent = label;
@@ -1636,6 +1763,7 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
           state.doc.skills.forEach((skill, si) => {
             const skillItem = document.createElement("section");
             skillItem.className = "skill-item";
+            skillItem.dataset.sectionLabel = `Skill ${si + 1}`;
             const skillHead = document.createElement("h4");
             skillHead.textContent = `SKILL ${si + 1}`;
             skillItem.appendChild(skillHead);
@@ -1904,6 +2032,16 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
         });
 
         rootEl.appendChild(expCard);
+        if (activeChatAssistInputId) {
+          const nextInput = document.getElementById(activeChatAssistInputId);
+          if (nextInput instanceof HTMLInputElement || nextInput instanceof HTMLTextAreaElement) {
+            setChatAssistTarget(nextInput);
+          } else {
+            clearChatAssistTarget();
+          }
+        } else {
+          clearChatAssistTarget();
+        }
       };
 
       const loadDoc = async (targetCoreId = state.coreId) => {
@@ -1992,6 +2130,49 @@ margin: 0; font-family: Segoe UI, Tahoma, sans-serif; background: #0f172a; color
           await saveFromUi("All sections updated.");
           saveAllBtn.classList.add("saved-ok");
         } catch (_) {}
+      });
+      document.addEventListener("focusin", (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement)) return;
+        if (target instanceof HTMLInputElement && target.type !== "text") return;
+        if (!rootEl.contains(target)) {
+          clearChatAssistTarget();
+          return;
+        }
+        setChatAssistTarget(target);
+      });
+      window.addEventListener("scroll", () => {
+        positionChatAssistButton();
+      }, true);
+      window.addEventListener("resize", () => {
+        positionChatAssistButton();
+      });
+      chatGptFieldAssistBtn?.addEventListener("click", async () => {
+        try {
+          if (!activeChatAssistContainer || !activeChatAssistInput) {
+            setStatus("Click into a section field first.", true);
+            return;
+          }
+          const sectionLabel = getChatAssistLabel(activeChatAssistContainer, activeChatAssistInput);
+          const prompt = buildChatAssistPrompt(activeChatAssistContainer, activeChatAssistInput);
+          await navigator.clipboard.writeText(prompt);
+          clearChatAssistContainerInputs(activeChatAssistContainer);
+          const popup = window.open("https://chat.openai.com/", "_blank", "noopener,noreferrer");
+          const popupBlocked = !popup;
+          const message = popupBlocked
+            ? "Prompt copied and section cleared. Popup blocked; open ChatGPT manually and paste."
+            : "Prompt copied and section cleared. Paste ChatGPT response back into this section.";
+          setStatus(message, popupBlocked);
+          writeCoresLog(
+            `[MANAGE] field_chatgpt_assist section=${sectionLabel} promptChars=${prompt.length} popupBlocked=${popupBlocked}`
+          );
+          if (activeChatAssistInputId) {
+            const target = document.getElementById(activeChatAssistInputId);
+            target?.focus();
+          }
+        } catch (error) {
+          setStatus(error?.message || "Unable to launch ChatGPT assist.", true);
+        }
       });
 
       projectPromptStartDictationBtn?.addEventListener("click", () => {
