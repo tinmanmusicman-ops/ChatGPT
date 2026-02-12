@@ -1559,7 +1559,7 @@
   </div>
 </footer>
 
-  <script src="/AI-Fit-Site/assets/js/twilio.min.js?v=20260212b"></script>
+  <script src="/AI-Fit-Site/assets/js/twilio.min.js?v=20260212c"></script>
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const links = document.querySelectorAll(".ai-link");
@@ -1656,10 +1656,10 @@
       const contactMessageEl = document.getElementById("contactMessage");
       const contactSendBtn = document.getElementById("contactSend");
       const contactStatusEl = document.getElementById("contactStatus");
-        const liveCallBtn = document.getElementById("liveCallBtn");
+      const liveCallBtn = document.getElementById("liveCallBtn");
       const liveCallStatusEl = document.getElementById("liveCallStatus");
       const LIVE_CALLER_LABEL = "Website Visitor";
-      const TWILIO_SDK_URLS = ["/AI-Fit-Site/assets/js/twilio.min.js?v=20260212b"];
+      const TWILIO_SDK_VERSION = "20260212c";
       const LIVE_CALL_VERBOSE_LOGGING = false;
       const LIVE_CALL_SUPPRESSED_EVENTS = new Set([
         "sdk.load.attempt",
@@ -1869,26 +1869,66 @@
         });
       };
 
+      const getTwilioSdkUrls = async () => {
+        const urls = [];
+        const seen = new Set();
+        const addUrl = (value) => {
+          const url = String(value || "").trim();
+          if (!url || seen.has(url)) return;
+          seen.add(url);
+          urls.push(url);
+        };
+
+        addUrl(new URL(`/AI-Fit-Site/assets/js/twilio.min.js?v=${TWILIO_SDK_VERSION}`, window.location.origin).toString());
+        addUrl(new URL(`/assets/js/twilio.min.js?v=${TWILIO_SDK_VERSION}`, window.location.origin).toString());
+        addUrl(new URL(`assets/js/twilio.min.js?v=${TWILIO_SDK_VERSION}`, window.location.href).toString());
+        addUrl(new URL(`twilio.min.js?v=${TWILIO_SDK_VERSION}`, window.location.href).toString());
+
+        try {
+          await loadTowerConfig();
+          addUrl(getTowerEndpoint(`/AI-Fit-Site/assets/js/twilio.min.js?v=${TWILIO_SDK_VERSION}`));
+          addUrl(getTowerEndpoint(`/assets/js/twilio.min.js?v=${TWILIO_SDK_VERSION}`));
+        } catch (_) {
+          // Keep local candidates only when tower config is unavailable.
+        }
+
+        if (window.location.protocol === "http:") {
+          addUrl(`http://127.0.0.1:5000/AI-Fit-Site/assets/js/twilio.min.js?v=${TWILIO_SDK_VERSION}`);
+          addUrl(`http://127.0.0.1:5000/assets/js/twilio.min.js?v=${TWILIO_SDK_VERSION}`);
+          addUrl(`http://localhost:5000/AI-Fit-Site/assets/js/twilio.min.js?v=${TWILIO_SDK_VERSION}`);
+          addUrl(`http://localhost:5000/assets/js/twilio.min.js?v=${TWILIO_SDK_VERSION}`);
+        }
+
+        return urls;
+      };
+
       const ensureTwilioSdkLoaded = async () => {
         if (hasTwilioDeviceApi()) {
           return;
         }
         if (!twilioSdkLoadPromise) {
           twilioSdkLoadPromise = (async () => {
-            for (const src of TWILIO_SDK_URLS) {
+            const sdkUrls = await getTwilioSdkUrls();
+            const failed = [];
+            for (const src of sdkUrls) {
               try {
                 writeLiveCallClientLog("sdk.load.attempt", { src });
                 await loadExternalScript(src);
                 writeLiveCallClientLog("sdk.load.success", { src });
                 return;
               } catch (error) {
+                failed.push({ src, error: error?.message || String(error) });
                 writeLiveCallClientLog("sdk.load.failed", {
                   src,
                   error: error?.message || String(error),
                 });
               }
             }
-            throw new Error("Twilio Voice SDK could not be loaded from available sources.");
+            writeLiveCallClientLog("sdk.load.all_failed", {
+              attempted: sdkUrls,
+              failed,
+            });
+            throw new Error("Twilio Voice SDK could not be loaded from available sources. No SDK path reachable.");
           })();
         }
         await twilioSdkLoadPromise;
