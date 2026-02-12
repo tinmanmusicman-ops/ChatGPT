@@ -1,0 +1,25 @@
+{
+  "_README": [
+    "Copy this file to EI_ControlTower/twillo.json and fill real values.",
+    "Never commit twillo.json; it contains secrets.",
+    "All phone numbers must be E.164 format, ex: +15551234567."
+  ],
+  "_PRODUCTION_CHECKLIST": [
+    "TWILIO_ACCOUNT_SID starts with AC and is 34 chars total.",
+    "TWILIO_API_KEY_SID starts with SK and is 34 chars total.",
+    "TWILIO_TWIML_APP_SID starts with AP and is 34 chars total.",
+    "TWILIO_CALLER_ID is your Twilio voice-capable number in E.164.",
+    "DESTINATION_DEVICE is the phone/SIP/client target in E.164, sip:, or client: format.",
+    "TWILIO_AUTH_TOKEN matches the account used by TWILIO_ACCOUNT_SID.",
+    "TWILIO_CALL_TIMEOUT_SECONDS is a positive integer."
+  ],
+  "DESTINATION_DEVICE": "+15551234567",
+  "CALLER_LABEL": "Website Visitor",
+  "TWILIO_ACCOUNT_SID": "ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "TWILIO_API_KEY_SID": "SKxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "TWILIO_API_KEY_SECRET": "your_twilio_api_key_secret",
+  "TWILIO_TWIML_APP_SID": "APxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "TWILIO_CALLER_ID": "+15557654321",
+  "TWILIO_AUTH_TOKEN": "your_twilio_auth_token",
+  "TWILIO_CALL_TIMEOUT_SECONDS": 15
+}

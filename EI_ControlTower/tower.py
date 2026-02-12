@@ -5,11 +5,15 @@ import time
 import os
 import json
 import re
+import hmac
+import base64
+import hashlib
 import smtplib
 import textwrap
+import uuid
 from html import escape
 from datetime import datetime, timedelta
-from flask import Flask, send_from_directory, send_file, jsonify, request, redirect, abort
+from flask import Flask, Response, send_from_directory, send_file, jsonify, request, redirect, abort
 from werkzeug.exceptions import HTTPException
 import requests
 from pathlib import Path
@@ -57,6 +61,21 @@ DEFAULT_CORS_ORIGINS = {
     "http://127.0.0.1:80",
 }
 
+# -------------------------
+# LIVE CALL CONFIG (Twilio)
+# -------------------------
+# Source: EI_ControlTower/twillo.json
+TWILLO_CONFIG_PATH = BASE_DIR / "twillo.json"
+TWILLO_REQUIRED_KEYS = [
+    "DESTINATION_DEVICE",
+    "TWILIO_ACCOUNT_SID",
+    "TWILIO_API_KEY_SID",
+    "TWILIO_API_KEY_SECRET",
+    "TWILIO_TWIML_APP_SID",
+    "TWILIO_CALLER_ID",
+    "TWILIO_AUTH_TOKEN",
+]
+
 
 def _allowed_origins():
     allowed = set(DEFAULT_CORS_ORIGINS)
@@ -91,6 +110,25 @@ def _append_cores_log(message: str):
             fh.write(entry)
     except Exception:
         pass
+
+
+def _append_live_call_log(event: str, **fields):
+    clean_fields = {}
+    for key, value in fields.items():
+        if value is None:
+            continue
+        if isinstance(value, str):
+            clean_fields[key] = value.strip()
+        else:
+            clean_fields[key] = value
+    payload = "{}"
+    try:
+        payload = json.dumps(clean_fields, ensure_ascii=True, sort_keys=True, default=str)
+    except Exception:
+        payload = str(clean_fields)
+    suffix = f" {payload}" if payload and payload != "{}" else ""
+    _append_cores_log(f"[LIVE_CALL] {event}{suffix}")
+
 
 CORES_DIR = BASE_DIR.parent / "CORES"
 CORES_LOG_PATH = CORES_DIR / "cores.log"
@@ -2229,6 +2267,287 @@ def add_cors_headers(response):
     response.headers["Access-Control-Allow-Methods"] = "GET,POST,OPTIONS"
     response.headers["Access-Control-Allow-Headers"] = "Content-Type"
     return response
+
+
+def _load_twillo_config():
+    if not TWILLO_CONFIG_PATH.exists():
+        raise RuntimeError(f"Missing config file: {TWILLO_CONFIG_PATH}")
+
+    try:
+        raw = TWILLO_CONFIG_PATH.read_text(encoding="utf-8")
+    except Exception as exc:
+        raise RuntimeError(f"Unable to read config file: {TWILLO_CONFIG_PATH}") from exc
+
+    try:
+        parsed = json.loads(raw)
+    except Exception as exc:
+        raise RuntimeError(f"Invalid JSON in config file: {TWILLO_CONFIG_PATH}") from exc
+
+    if not isinstance(parsed, dict):
+        raise RuntimeError(f"Config root must be an object: {TWILLO_CONFIG_PATH}")
+
+    missing = []
+    for key in TWILLO_REQUIRED_KEYS:
+        value = str(parsed.get(key, "")).strip()
+        if not value:
+            missing.append(key)
+        parsed[key] = value
+
+    if missing:
+        raise RuntimeError(f"Missing required config keys: {', '.join(missing)}")
+
+    caller_label = str(parsed.get("CALLER_LABEL", "Website Visitor")).strip()
+    parsed["CALLER_LABEL"] = caller_label or "Website Visitor"
+
+    if not re.match(r"^AC[0-9a-fA-F]{32}$", parsed["TWILIO_ACCOUNT_SID"]):
+        raise RuntimeError("TWILIO_ACCOUNT_SID must look like ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.")
+    if not re.match(r"^SK[0-9a-fA-F]{32}$", parsed["TWILIO_API_KEY_SID"]):
+        raise RuntimeError("TWILIO_API_KEY_SID must look like SKxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.")
+    if not re.match(r"^AP[0-9a-fA-F]{32}$", parsed["TWILIO_TWIML_APP_SID"]):
+        raise RuntimeError(
+            "TWILIO_TWIML_APP_SID must be a Twilio TwiML App SID (AP...), not a URL."
+        )
+    if not re.match(r"^\+\d{7,15}$", parsed["TWILIO_CALLER_ID"]):
+        raise RuntimeError("TWILIO_CALLER_ID must be E.164 format like +15551234567.")
+
+    destination = parsed["DESTINATION_DEVICE"]
+    lower_destination = destination.lower()
+    if not (lower_destination.startswith("sip:") or lower_destination.startswith("client:")):
+        if not re.match(r"^\+\d{7,15}$", destination):
+            raise RuntimeError(
+            "DESTINATION_DEVICE must be E.164 format like +15551234567, or sip:/client:."
+        )
+
+    if not parsed.get("TWILIO_AUTH_TOKEN"):
+        raise RuntimeError("TWILIO_AUTH_TOKEN is required.")
+
+    timeout_raw = str(parsed.get("TWILIO_CALL_TIMEOUT_SECONDS", "15")).strip()
+    try:
+        timeout = int(timeout_raw)
+    except Exception as exc:
+        raise RuntimeError("TWILIO_CALL_TIMEOUT_SECONDS must be an integer.") from exc
+    if timeout <= 0:
+        raise RuntimeError("TWILIO_CALL_TIMEOUT_SECONDS must be greater than 0.")
+    parsed["TWILIO_CALL_TIMEOUT_SECONDS"] = timeout
+
+    return parsed
+
+
+def _b64url(data: bytes) -> str:
+    return base64.urlsafe_b64encode(data).rstrip(b"=").decode("ascii")
+
+
+def _build_twilio_access_token(twillo_config: dict, identity: str, ttl_seconds: int = 300) -> str:
+    now = int(time.time())
+    header = {"alg": "HS256", "typ": "JWT", "cty": "twilio-fpa;v=1"}
+    payload = {
+        "jti": f"{twillo_config['TWILIO_API_KEY_SID']}-{now}-{uuid.uuid4().hex}",
+        "grants": {
+            "identity": identity,
+            "voice": {
+                "outgoing": {"application_sid": twillo_config["TWILIO_TWIML_APP_SID"]},
+                "incoming": {"allow": True},
+            },
+        },
+        "iat": now,
+        "exp": now + int(ttl_seconds),
+        "iss": twillo_config["TWILIO_API_KEY_SID"],
+        "sub": twillo_config["TWILIO_ACCOUNT_SID"],
+    }
+    header_segment = _b64url(
+        json.dumps(header, separators=(",", ":"), ensure_ascii=True).encode("utf-8")
+    )
+    payload_segment = _b64url(
+        json.dumps(payload, separators=(",", ":"), ensure_ascii=True).encode("utf-8")
+    )
+    signing_input = f"{header_segment}.{payload_segment}"
+    signature = hmac.new(
+        twillo_config["TWILIO_API_KEY_SECRET"].encode("utf-8"),
+        signing_input.encode("utf-8"),
+        hashlib.sha256,
+    ).digest()
+    return f"{signing_input}.{_b64url(signature)}"
+
+
+def _build_twilio_client_twi_ml(caller_id: str, timeout_seconds: int, destination: str) -> str:
+    safe_caller_id = escape(caller_id, quote=True)
+    timeout = int(timeout_seconds)
+    safe_destination = escape(str(destination or ""))
+    return (
+        f'<Response><Dial callerId="{safe_caller_id}" timeout="{timeout}" '
+        f'answerOnBridge="true"><Number>{safe_destination}</Number></Dial></Response>'
+    )
+
+
+def _create_twilio_call(identity: str, twillo_config: dict) -> dict:
+    resp = requests.post(
+        f"https://api.twilio.com/2010-04-01/Accounts/{twillo_config['TWILIO_ACCOUNT_SID']}/Calls.json",
+        auth=(twillo_config["TWILIO_ACCOUNT_SID"], twillo_config["TWILIO_AUTH_TOKEN"]),
+        data={
+            "To": f"client:{identity}",
+            "From": twillo_config["TWILIO_CALLER_ID"],
+            "Twiml": _build_twilio_client_twi_ml(
+                twillo_config["TWILIO_CALLER_ID"],
+                twillo_config["TWILIO_CALL_TIMEOUT_SECONDS"],
+                twillo_config["DESTINATION_DEVICE"],
+            ),
+        },
+        timeout=30,
+    )
+    if not resp.ok:
+        raise RuntimeError(f"Twilio REST call failed ({resp.status_code}): {resp.text[:1024]}")
+    return resp.json()
+
+
+@app.route("/tower/live-call/token", methods=["OPTIONS", "POST"])
+def tower_live_call_token():
+    if request.method == "OPTIONS":
+        resp = app.make_response(("", 204))
+        return _with_cors(resp)
+
+    _append_live_call_log(
+        "token.request.start",
+        remote=request.remote_addr,
+        origin=request.headers.get("Origin", ""),
+        user_agent=request.headers.get("User-Agent", ""),
+    )
+
+    try:
+        twillo_config = _load_twillo_config()
+    except RuntimeError as exc:
+        _append_live_call_log("token.request.config_error", error=str(exc))
+        return _with_cors(app.make_response((jsonify({"error": str(exc)}), 500)))
+
+    destination = twillo_config.get("DESTINATION_DEVICE", "")
+    destination_type = "number"
+    if destination.lower().startswith("sip:"):
+        destination_type = "sip"
+    elif destination.lower().startswith("client:"):
+        destination_type = "client"
+    _append_live_call_log(
+        "token.request.config_loaded",
+        destination=destination,
+        destination_type=destination_type,
+        caller_label=twillo_config.get("CALLER_LABEL", ""),
+        timeout=twillo_config.get("TWILIO_CALL_TIMEOUT_SECONDS"),
+    )
+
+    try:
+        identity = f"anon-{uuid.uuid4().hex}"
+        jwt_token = _build_twilio_access_token(
+            twillo_config=twillo_config,
+            identity=identity,
+            ttl_seconds=300,
+        )
+    except Exception as exc:
+        _append_live_call_log("token.request.issue_error", error=str(exc))
+        return _with_cors(
+            app.make_response((jsonify({"error": "Failed to issue live call token."}), 500))
+        )
+
+    _append_live_call_log(
+        "token.request.success",
+        identity=identity,
+        twiml_app_sid=twillo_config.get("TWILIO_TWIML_APP_SID", ""),
+    )
+
+    return _with_cors(
+        jsonify(
+            {
+                "token": jwt_token,
+                "identity": identity,
+                "callerLabel": twillo_config["CALLER_LABEL"],
+            }
+        )
+    )
+
+
+@app.route("/tower/live-call/call", methods=["OPTIONS", "POST"])
+def tower_live_call_call():
+    if request.method == "OPTIONS":
+        resp = app.make_response(("", 204))
+        return _with_cors(resp)
+
+    payload = request.get_json(force=True, silent=True) or {}
+    identity = str(payload.get("identity") or "").strip()
+    if not identity:
+        return _with_cors(app.make_response((jsonify({"error": "identity is required"}), 400)))
+
+    _append_live_call_log("api.call.start", identity=identity, remote=request.remote_addr)
+
+    try:
+        twillo_config = _load_twillo_config()
+    except RuntimeError as exc:
+        _append_live_call_log("api.call.config_error", identity=identity, error=str(exc))
+        return _with_cors(app.make_response((jsonify({"error": str(exc)}), 500)))
+
+    try:
+        call_data = _create_twilio_call(identity, twillo_config)
+    except Exception as exc:
+        _append_live_call_log("api.call.error", identity=identity, error=str(exc))
+        return _with_cors(app.make_response((jsonify({"error": str(exc)}), 500)))
+
+    _append_live_call_log("api.call.success", identity=identity, call_sid=call_data.get("sid", ""))
+    return _with_cors(jsonify(call_data))
+
+
+@app.route("/tower/live-call/twiml", methods=["POST"])
+def tower_live_call_twiml():
+    form = request.form.to_dict(flat=True) if request.form else {}
+    call_sid = str(form.get("CallSid", "")).strip()
+    _append_live_call_log(
+        "twiml.request.start",
+        remote=request.remote_addr,
+        origin=request.headers.get("Origin", ""),
+        user_agent=request.headers.get("User-Agent", ""),
+        call_sid=call_sid,
+        account_sid=form.get("AccountSid", ""),
+        from_number=form.get("From", ""),
+        to_number=form.get("To", ""),
+        direction=form.get("Direction", ""),
+        parent_call_sid=form.get("ParentCallSid", ""),
+    )
+
+    try:
+        twillo_config = _load_twillo_config()
+    except RuntimeError as exc:
+        _append_live_call_log("twiml.request.config_error", call_sid=call_sid, error=str(exc))
+        return Response("<Response><Hangup/></Response>", status=500, mimetype="text/xml")
+    _append_live_call_log(
+        "twiml.request.config_loaded",
+        call_sid=call_sid,
+        destination=twillo_config.get("DESTINATION_DEVICE", ""),
+        caller_label=twillo_config.get("CALLER_LABEL", ""),
+    )
+
+    target = twillo_config["DESTINATION_DEVICE"]
+    lower_target = target.lower()
+    target_type = "number"
+    if lower_target.startswith("sip:"):
+        target_type = "sip"
+    elif lower_target.startswith("client:"):
+        target_type = "client"
+
+    try:
+        twiml = _build_live_call_twiml(
+            destination=target,
+            caller_id=twillo_config["TWILIO_CALLER_ID"],
+            timeout_seconds=twillo_config["TWILIO_CALL_TIMEOUT_SECONDS"],
+        )
+    except Exception as exc:
+        _append_live_call_log("twiml.response.build_error", call_sid=call_sid, error=str(exc))
+        return Response("<Response><Hangup/></Response>", status=500, mimetype="text/xml")
+
+    _append_live_call_log(
+        "twiml.response.generated",
+        call_sid=call_sid,
+        caller_id=twillo_config["TWILIO_CALLER_ID"],
+        destination=target,
+        destination_type=target_type,
+        timeout=twillo_config["TWILIO_CALL_TIMEOUT_SECONDS"],
+    )
+
+    return Response(twiml, mimetype="text/xml")
 
 
 @app.route("/tower/contact", methods=["OPTIONS", "POST"])

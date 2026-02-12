@@ -75,6 +75,8 @@ __pycache__/
 
 # Shared secrets/config (not in git)
 /ai-bots/shared/
+/EI_ControlTower/twillo.json
+!EI_ControlTower/twillo.example.json
 
 # Allow bridge folder contents to be tracked regardless of extension
 !/bridge/
@@ -94,6 +96,7 @@ CORES/cores.log
 # Common IDE/build outputs that should stay local
 **/bin/
 **/obj/
+node_modules/
 *.user
 *.suo
 *.userosscache

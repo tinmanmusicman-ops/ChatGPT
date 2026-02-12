@@ -127,6 +127,50 @@
       letter-spacing: 0.12em;
     }
 
+    .live-call-container {
+      width: min(520px, 100%);
+      margin: 0 auto 14px;
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px solid #c7ff40;
+      background: rgba(0, 0, 0, 0.56);
+    }
+
+    .live-call-subtext {
+      margin: 8px 0 0;
+      font-size: 0.9rem;
+      line-height: 1.45;
+      color: #d8f5db;
+    }
+
+    .live-call-button {
+      width: 100%;
+      min-height: 64px;
+      background: #546311;
+      border: 2px solid #ffffff;
+      color: #d6d0c1;
+      font-size: 1.08rem;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      text-transform: none;
+    }
+
+    .live-call-button[disabled] {
+      opacity: 0.62;
+      cursor: not-allowed;
+    }
+
+    .live-call-status {
+      min-height: 1.45rem;
+      margin-top: 10px;
+      font-size: 0.9rem;
+      color: #d4ffd7;
+    }
+
+    .live-call-status.error {
+      color: #ffd0d0;
+    }
+
     .top-resume-button {
       display: flex;
       margin: 10px auto 0;
@@ -1139,10 +1183,22 @@
 
     <h1>Verification Code: human<br>Timothy B Inman</h1>
 
-    <section class="top-contact" aria-label="Contact Tim">
+    <section class="top-contact" aria-label="E-Mail Tim">
       <div class="top-contact-headline">Interested? Reach out directly.</div>
       <div class="top-contact-subtext">If something you see here aligns with what you're building, hiring for, or exploring, click below and contact me directly.</div>
-      <button id="contactTim" type="button" class="top-contact-button">CONTACT TIM</button>
+      <div class="live-call-container">
+        <button
+          id="liveCallBtn"
+          type="button"
+          class="top-contact-button live-call-button"
+          aria-label="Start live call with Tim"
+        >
+          Call Tim Now — Live
+        </button>
+        <p class="live-call-subtext">Anonymous live call. No forms. No scheduling.</p>
+        <div id="liveCallStatus" class="live-call-status" role="status" aria-live="polite"></div>
+      </div>
+      <button id="contactTim" type="button" class="top-contact-button">E-Mail TIM</button>
       <button id="structuredTruthBtn" type="button" class="top-contact-button top-resume-button">Download Current Resume</button>
       <button id="topAskAboutMeShortcut" type="button" class="top-contact-button top-shortcut-button">Ask AI About Me</button>
       <button id="topFitShortcut" type="button" class="top-contact-button top-shortcut-button">Am I a fit for this job?</button>
@@ -1166,7 +1222,7 @@
       <div class="contact-backdrop" data-contact-close></div>
       <div class="contact-dialog" role="dialog" aria-modal="true" aria-labelledby="contactModalTitle">
         <button type="button" class="contact-close" aria-label="Close" data-contact-close>×</button>
-        <h3 id="contactModalTitle" class="contact-title">Contact Tim</h3>
+        <h3 id="contactModalTitle" class="contact-title">E=Mail Tim</h3>
         <div class="contact-subtitle">Share the best way to reach you and a quick note. This sends Tim an email directly.</div>
         <form id="contactForm" class="contact-form">
           <label class="contact-label contact-honeypot" aria-hidden="true">
@@ -1503,6 +1559,7 @@
   </div>
 </footer>
 
+  <script src="/AI-Fit-Site/assets/js/twilio.min.js?v=20260212b"></script>
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const links = document.querySelectorAll(".ai-link");
@@ -1599,6 +1656,20 @@
       const contactMessageEl = document.getElementById("contactMessage");
       const contactSendBtn = document.getElementById("contactSend");
       const contactStatusEl = document.getElementById("contactStatus");
+        const liveCallBtn = document.getElementById("liveCallBtn");
+      const liveCallStatusEl = document.getElementById("liveCallStatus");
+      const LIVE_CALLER_LABEL = "Website Visitor";
+      const TWILIO_SDK_URLS = ["/AI-Fit-Site/assets/js/twilio.min.js?v=20260212b"];
+      const LIVE_CALL_VERBOSE_LOGGING = false;
+      const LIVE_CALL_SUPPRESSED_EVENTS = new Set([
+        "sdk.load.attempt",
+        "sdk.load.success",
+        "microphone.permission.state",
+      ]);
+      let liveVoiceDevice = null;
+      let liveVoiceConnection = null;
+      let liveCallInFlight = false;
+      let twilioSdkLoadPromise = null;
 
       pasteJobDescBtn?.addEventListener("click", async () => {
         if (!jobDescriptionEl || !navigator.clipboard) return;
@@ -1747,10 +1818,315 @@
 
       const getTowerAskEndpoint = () => getTowerEndpoint("/tower/ask-ai");
       const getTowerContactEndpoint = () => getTowerEndpoint("/tower/contact");
+      const getTowerLiveCallTokenEndpoint = () => getTowerEndpoint("/tower/live-call/token");
       const getTowerManageEndpoint = (coreId, auth = "") => {
         const params = new URLSearchParams({ id: coreId });
         if (auth) params.set("auth", auth);
         return getTowerEndpoint(`/AI-Fit-Site/manage?${params.toString()}`);
+      };
+
+      const setLiveCallStatus = (message, isError = false) => {
+        if (!liveCallStatusEl) return;
+        liveCallStatusEl.textContent = message || "";
+        liveCallStatusEl.classList.toggle("error", !!isError);
+      };
+
+      const writeLiveCallClientLog = (event, data = null) => {
+        if (!LIVE_CALL_VERBOSE_LOGGING && LIVE_CALL_SUPPRESSED_EVENTS.has(event)) {
+          return;
+        }
+        const stamp = new Date().toISOString();
+        let payload = "";
+        if (data !== null && data !== undefined) {
+          try {
+            payload = ` ${JSON.stringify(data)}`;
+          } catch (_) {
+            payload = ` ${String(data)}`;
+          }
+        }
+        const line = `[LIVE_CALL_CLIENT ${stamp}] ${event}${payload}`;
+        fetch(getManageDebugLogEndpoint(), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: line }),
+          keepalive: true,
+        }).catch(() => {});
+      };
+
+      const hasTwilioDeviceApi = () => {
+        return !!(window.Twilio && typeof window.Twilio.Device === "function");
+      };
+
+      const loadExternalScript = (src) => {
+        return new Promise((resolve, reject) => {
+          const script = document.createElement("script");
+          script.src = src;
+          script.async = true;
+          script.defer = true;
+          script.onload = () => resolve(src);
+          script.onerror = () => reject(new Error(`Script load failed: ${src}`));
+          document.head.appendChild(script);
+        });
+      };
+
+      const ensureTwilioSdkLoaded = async () => {
+        if (hasTwilioDeviceApi()) {
+          return;
+        }
+        if (!twilioSdkLoadPromise) {
+          twilioSdkLoadPromise = (async () => {
+            for (const src of TWILIO_SDK_URLS) {
+              try {
+                writeLiveCallClientLog("sdk.load.attempt", { src });
+                await loadExternalScript(src);
+                writeLiveCallClientLog("sdk.load.success", { src });
+                return;
+              } catch (error) {
+                writeLiveCallClientLog("sdk.load.failed", {
+                  src,
+                  error: error?.message || String(error),
+                });
+              }
+            }
+            throw new Error("Twilio Voice SDK could not be loaded from available sources.");
+          })();
+        }
+        await twilioSdkLoadPromise;
+      };
+
+      const requestMicrophoneWithTimeout = async (timeoutMs = 15000) => {
+        if (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== "function") {
+          throw new Error("Microphone access is not available in this browser.");
+        }
+
+        if (navigator.permissions && typeof navigator.permissions.query === "function") {
+          try {
+            const status = await navigator.permissions.query({ name: "microphone" });
+            writeLiveCallClientLog("microphone.permission.state", { state: status?.state || "unknown" });
+            if (status && status.state === "denied") {
+              throw new Error("Microphone is blocked. Enable it in browser/site permissions and retry.");
+            }
+          } catch (error) {
+            writeLiveCallClientLog("microphone.permission.query_failed", {
+              error: error?.message || String(error),
+            });
+          }
+        }
+
+        let timeoutId = null;
+        try {
+          const timeoutPromise = new Promise((_, reject) => {
+            timeoutId = setTimeout(() => {
+              reject(
+                new Error(
+                  "Microphone permission timed out. Check browser prompt or site settings (lock icon) and allow mic."
+                )
+              );
+            }, timeoutMs);
+          });
+
+          const stream = await Promise.race([
+            navigator.mediaDevices.getUserMedia({ audio: true }),
+            timeoutPromise,
+          ]);
+          return stream;
+        } finally {
+          if (timeoutId) clearTimeout(timeoutId);
+        }
+      };
+
+      const closeLiveCall = (statusMessage, isError = false) => {
+        liveCallInFlight = false;
+        if (liveCallBtn) {
+          liveCallBtn.disabled = false;
+        }
+        if (liveVoiceConnection) {
+          try {
+            liveVoiceConnection.disconnect();
+          } catch (_) {}
+          liveVoiceConnection = null;
+        }
+        if (liveVoiceDevice) {
+          try {
+            liveVoiceDevice.destroy();
+          } catch (_) {}
+          liveVoiceDevice = null;
+        }
+        writeLiveCallClientLog("call.closed", { statusMessage, isError: !!isError });
+        setLiveCallStatus(statusMessage, isError);
+      };
+
+      const triggerLiveCall = async (identity) => {
+        const url = getTowerEndpoint("/tower/live-call/call");
+        writeLiveCallClientLog("api.call.trigger", { identity });
+        const response = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ identity }),
+        });
+        if (!response.ok) {
+          const payload = await response.json().catch(() => ({}));
+          throw new Error(payload?.error || `REST call failed (${response.status})`);
+        }
+        return response.json();
+      };
+
+      const startAnonymousLiveCall = async () => {
+        if (liveCallInFlight) return;
+        if (!liveCallBtn) return;
+        liveCallInFlight = true;
+        liveCallBtn.disabled = true;
+        writeLiveCallClientLog("call.start");
+        setLiveCallStatus("Loading call engine...");
+
+        try {
+          await ensureTwilioSdkLoaded();
+          if (!hasTwilioDeviceApi()) {
+            throw new Error("Twilio Voice SDK loaded but Device API is unavailable.");
+          }
+
+          setLiveCallStatus("Requesting microphone...");
+          try {
+            const mic = await requestMicrophoneWithTimeout(15000);
+            mic.getTracks().forEach((track) => track.stop());
+            writeLiveCallClientLog("microphone.access.granted");
+          } catch (micError) {
+            writeLiveCallClientLog("microphone.access.pending_or_failed", {
+              error: micError?.message || String(micError),
+            });
+            // Keep moving so call setup can continue even if the browser mic prompt is delayed.
+            setLiveCallStatus("Mic permission pending. Preparing call...");
+          }
+
+          await loadTowerConfig();
+          const tokenEndpoint = getTowerLiveCallTokenEndpoint();
+          const tokenResponse = await fetch(tokenEndpoint, {
+            method: "POST",
+          });
+          const tokenPayload = await tokenResponse.json().catch(() => ({}));
+          if (!tokenResponse.ok) {
+            throw new Error(tokenPayload?.error || `Token request failed (${tokenResponse.status})`);
+          }
+          const token = String(tokenPayload?.token || "").trim();
+          if (!token) {
+            throw new Error("Live call token was not returned.");
+          }
+          const identity = String(tokenPayload?.identity || "").trim();
+          if (!identity) {
+            throw new Error("Live call identity missing.");
+          }
+
+          writeLiveCallClientLog("token.received");
+          setLiveCallStatus("Starting secure call session...");
+
+          liveVoiceDevice = new window.Twilio.Device(token, {
+            codecPreferences: ["opus", "pcmu"],
+            logLevel: 1,
+          });
+          writeLiveCallClientLog("device.created");
+          setLiveCallStatus("Registering call session...");
+
+          const waitForDeviceReady = async (device, timeoutMs = 15000) => {
+            if (!device) return;
+            await new Promise((resolve, reject) => {
+              let done = false;
+              const cleanup = () => {
+                if (typeof device.off === "function") {
+                  device.off("ready", onReady);
+                  device.off("registered", onRegistered);
+                  device.off("error", onError);
+                }
+                clearTimeout(timerId);
+              };
+              const finish = (fn) => (value) => {
+                if (done) return;
+                done = true;
+                cleanup();
+                fn(value);
+              };
+              const onReady = finish(resolve);
+              const onRegistered = finish(resolve);
+              const onError = finish((error) => {
+                reject(new Error(error?.message || "Device failed while registering."));
+              });
+              const timerId = setTimeout(
+                finish(() => reject(new Error("Twilio device registration timed out."))),
+                timeoutMs
+              );
+
+              if (typeof device.on === "function") {
+                device.on("ready", onReady);
+                device.on("registered", onRegistered);
+                device.on("error", onError);
+              }
+              if (typeof device.register === "function") {
+                writeLiveCallClientLog("device.register.start");
+                Promise.resolve(device.register()).catch((error) => {
+                  onError(error);
+                });
+              } else {
+                // Older SDKs may not expose register(); rely on ready/registered events.
+                writeLiveCallClientLog("device.register.not_supported");
+              }
+            });
+          };
+
+          liveVoiceDevice.on("error", (error) => {
+            writeLiveCallClientLog("device.error", { error: error?.message || String(error) });
+            closeLiveCall(`Call failed: ${error?.message || "Unknown error"}`, true);
+          });
+
+          liveVoiceDevice.on("incoming", (connection) => {
+            if (liveVoiceConnection) {
+              try {
+                liveVoiceConnection.disconnect();
+              } catch (_) {}
+            }
+            liveVoiceConnection = connection;
+            writeLiveCallClientLog("call.incoming");
+            connection.accept();
+            connection.on("accept", () => {
+              writeLiveCallClientLog("call.accepted");
+              setLiveCallStatus("Live call connected.");
+            });
+            connection.on("disconnect", () => {
+              writeLiveCallClientLog("call.disconnected");
+              closeLiveCall("Call ended.");
+            });
+            connection.on("cancel", () => {
+              writeLiveCallClientLog("call.cancelled");
+              closeLiveCall("Tim did not answer.");
+            });
+            connection.on("reject", () => {
+              writeLiveCallClientLog("call.rejected");
+              closeLiveCall("Tim did not answer.");
+            });
+          });
+
+          let deviceReady = false;
+          try {
+            await waitForDeviceReady(liveVoiceDevice, 15000);
+            deviceReady = true;
+            writeLiveCallClientLog("device.register.ready");
+          } catch (registerError) {
+            writeLiveCallClientLog("device.register.timeout_or_error", {
+              error: registerError?.message || String(registerError),
+            });
+            // Continue to trigger call so we can see backend/Twilio behavior instead of hanging.
+          }
+
+          if (!deviceReady) {
+            setLiveCallStatus("Proceeding without ready event...");
+          }
+
+          setLiveCallStatus("Calling Tim now...");
+          await triggerLiveCall(identity);
+          writeLiveCallClientLog("call.triggered");
+          setLiveCallStatus("Waiting for Tim to answer...");
+        } catch (error) {
+          writeLiveCallClientLog("call.start.failed", { error: error?.message || String(error) });
+          closeLiveCall(error?.message || "Live call failed.", true);
+        }
       };
 
       const MANAGE_CORE_ID = "CORE-US-2026-000001";
@@ -2155,6 +2531,7 @@
       };
 
       askAboutMeBtn?.addEventListener("click", askAboutMe);
+      liveCallBtn?.addEventListener("click", startAnonymousLiveCall);
       topAskAboutMeShortcutBtn?.addEventListener("click", () => {
         expandCard(askAiAboutMeCardEl);
         scrollToCard(askAiAboutMeCardEl);
