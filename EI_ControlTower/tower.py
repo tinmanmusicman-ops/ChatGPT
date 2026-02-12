@@ -2491,6 +2491,75 @@ def tower_live_call_call():
     return _with_cors(jsonify(call_data))
 
 
+@app.route("/tower/sms/send", methods=["OPTIONS", "POST"])
+def tower_sms_send():
+    if request.method == "OPTIONS":
+        resp = app.make_response(("", 204))
+        return _with_cors(resp)
+
+    payload = request.get_json(force=True, silent=True) or {}
+    body = str(payload.get("body") or "").strip()
+    if not body:
+        return _with_cors(
+            app.make_response((jsonify({"error": "Message body is required"}), 400))
+        )
+
+    _append_live_call_log(
+        "sms.request.start",
+        remote=request.remote_addr,
+        origin=request.headers.get("Origin", ""),
+    )
+
+    try:
+        twillo_config = _load_twillo_config()
+    except RuntimeError as exc:
+        _append_live_call_log("sms.request.config_error", error=str(exc))
+        return _with_cors(app.make_response((jsonify({"error": str(exc)}), 500)))
+
+    destination = twillo_config["DESTINATION_DEVICE"]
+    lower_destination = destination.lower()
+    if lower_destination.startswith("client:") or lower_destination.startswith("sip:"):
+        error_msg = "DESTINATION_DEVICE must be a phone number for SMS."
+        _append_live_call_log("sms.request.invalid_destination", destination=destination)
+        return _with_cors(app.make_response((jsonify({"error": error_msg}), 400)))
+
+    try:
+        resp = requests.post(
+            f"https://api.twilio.com/2010-04-01/Accounts/{twillo_config['TWILIO_ACCOUNT_SID']}/Messages.json",
+            auth=(twillo_config["TWILIO_ACCOUNT_SID"], twillo_config["TWILIO_AUTH_TOKEN"]),
+            data={
+                "To": destination,
+                "From": twillo_config["TWILIO_CALLER_ID"],
+                "Body": body,
+            },
+            timeout=30,
+        )
+    except Exception as exc:
+        _append_live_call_log("sms.request.error", error=str(exc))
+        return _with_cors(
+            app.make_response((jsonify({"error": "Failed to send SMS", "details": str(exc)}), 500))
+        )
+
+    if not resp.ok:
+        _append_live_call_log("sms.request.error", error=f"Status {resp.status_code}")
+        return _with_cors(
+            app.make_response(
+                (
+                    jsonify({"error": "SMS request failed", "details": resp.text[:600]}),
+                    resp.status_code,
+                )
+            )
+        )
+
+    result = resp.json()
+    _append_live_call_log(
+        "sms.request.success",
+        sid=result.get("sid", ""),
+        message_preview=body[:100],
+    )
+    return _with_cors(jsonify(result))
+
+
 @app.route("/tower/live-call/twiml", methods=["POST"])
 def tower_live_call_twiml():
     form = request.form.to_dict(flat=True) if request.form else {}
@@ -2633,6 +2702,7 @@ def ask_ai():
     skills = payload.get("skills", "").strip()
     supplemental_context = payload.get("supplementalContext", "").strip()
     job_description = (payload.get("jobDescription") or "").strip()
+    ai_debug = os.environ.get("HSST_AI_DEBUG", "").strip() == "1"
 
     if mode not in {"summary", "deep"}:
         mode = "summary"
@@ -2650,6 +2720,17 @@ def ask_ai():
         f"supplemental_chars: {len(supplemental_context)}\n"
         f"job_desc_chars: {len(job_description)}\n"
     )
+    if ai_debug:
+        _append_live_call_log(
+            "ai.request.debug",
+            origin=request.headers.get("Origin", ""),
+            remote=request.remote_addr,
+            mode=mode,
+            question_preview=question[:200],
+            history=history[:200],
+            supplemental= supplemental_context[:200],
+            job_description_chars=len(job_description),
+        )
     if not question:
         job_pipeline.append_log("=== Ask AI ERROR ===\nerror: missing question\n")
         return _with_cors(app.make_response((jsonify({"error": "Question is required"}), 400)))
@@ -2726,6 +2807,13 @@ def ask_ai():
             "=== Ask AI RESPONSE ===\n"
             f"answer_chars: {len(answer)}\n"
         )
+        if ai_debug:
+            _append_live_call_log(
+                "ai.response.debug",
+                identity=request.headers.get("X-Request-ID", ""),
+                answer_preview=(answer or "")[:256],
+                status="ok",
+            )
         return _with_cors(app.make_response(jsonify({"answer": answer or "OpenAI returned an empty response."})))
     except requests.RequestException as exc:
         job_pipeline.append_log(
@@ -2733,6 +2821,8 @@ def ask_ai():
             f"error: Proxy request failed\n"
             f"details: {str(exc)!r}\n"
         )
+        if ai_debug:
+            _append_live_call_log("ai.request.error", error=str(exc), origin=request.headers.get("Origin", ""))
         return _with_cors(
             app.make_response((jsonify({"error": "Proxy request failed", "details": str(exc)}), 503))
         )

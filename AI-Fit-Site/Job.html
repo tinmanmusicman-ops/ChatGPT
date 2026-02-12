@@ -1188,6 +1188,14 @@
       <div class="top-contact-subtext">If something you see here aligns with what you're building, hiring for, or exploring, click below and contact me directly.</div>
       <div class="live-call-container">
         <button
+          id="textTimBtn"
+          type="button"
+          class="top-contact-button live-call-button"
+          aria-label="Send a text to Tim"
+        >
+          Text Tim — Live
+        </button>
+        <button
           id="liveCallBtn"
           type="button"
           class="top-contact-button live-call-button"
@@ -1202,7 +1210,7 @@
           style="margin-top: 8px; background: #3f1d1d; border-color: #631515;"
           disabled
         >
-          End call
+          Cancel call
         </button>
         <p class="live-call-subtext">Anonymous live call. No forms. No scheduling.</p>
         <div id="liveCallStatus" class="live-call-status" role="status" aria-live="polite"></div>
@@ -1665,6 +1673,7 @@
       const contactMessageEl = document.getElementById("contactMessage");
       const contactSendBtn = document.getElementById("contactSend");
       const contactStatusEl = document.getElementById("contactStatus");
+      const textTimBtn = document.getElementById("textTimBtn");
       const liveCallBtn = document.getElementById("liveCallBtn");
       const cancelLiveCallBtn = document.getElementById("cancelLiveCallBtn");
       const liveCallStatusEl = document.getElementById("liveCallStatus");
@@ -1829,6 +1838,7 @@
       const getTowerAskEndpoint = () => getTowerEndpoint("/tower/ask-ai");
       const getTowerContactEndpoint = () => getTowerEndpoint("/tower/contact");
       const getTowerLiveCallTokenEndpoint = () => getTowerEndpoint("/tower/live-call/token");
+      const getTowerSmsEndpoint = () => getTowerEndpoint("/tower/sms/send");
       const getTowerManageEndpoint = (coreId, auth = "") => {
         const params = new URLSearchParams({ id: coreId });
         if (auth) params.set("auth", auth);
@@ -2026,6 +2036,48 @@
           throw new Error(payload?.error || `REST call failed (${response.status})`);
         }
         return response.json();
+      };
+
+      const triggerTextMessage = async (body) => {
+        const url = getTowerSmsEndpoint();
+        writeLiveCallClientLog("sms.requested", { preview: body.slice(0, 80) });
+        const response = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ body }),
+        });
+        if (!response.ok) {
+          const payload = await response.json().catch(() => ({}));
+          throw new Error(payload?.error || `SMS request failed (${response.status})`);
+        }
+        return response.json();
+      };
+
+      const sendTextToTim = async () => {
+        if (!textTimBtn) return;
+        const message = window.prompt("Enter the message you want to send to Tim:", "");
+        if (!message) {
+          setLiveCallStatus("Text cancelled.");
+          return;
+        }
+        textTimBtn.disabled = true;
+        setLiveCallStatus("Sending text to Tim...");
+        try {
+          await loadTowerConfig();
+          const smsResponse = await triggerTextMessage(message);
+          writeLiveCallClientLog("sms.sent", {
+            preview: message.slice(0, 100),
+            sid: smsResponse?.sid || "",
+          });
+          setLiveCallStatus("Text sent.");
+        } catch (error) {
+          writeLiveCallClientLog("sms.failed", {
+            error: error?.message || String(error),
+          });
+          setLiveCallStatus(error?.message || "Text failed.", true);
+        } finally {
+          textTimBtn.disabled = false;
+        }
       };
 
       const startAnonymousLiveCall = async () => {
@@ -2597,6 +2649,7 @@
       };
 
       askAboutMeBtn?.addEventListener("click", askAboutMe);
+      textTimBtn?.addEventListener("click", sendTextToTim);
       liveCallBtn?.addEventListener("click", startAnonymousLiveCall);
       cancelLiveCallBtn?.addEventListener("click", cancelLiveCall);
       topAskAboutMeShortcutBtn?.addEventListener("click", () => {
