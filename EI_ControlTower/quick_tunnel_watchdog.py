@@ -10,10 +10,11 @@ import time
 import urllib.error
 import urllib.request
 from pathlib import Path
-from typing import Iterable, Optional
+from typing import Iterable, List, Optional
 
 
 URL_PATTERN = re.compile(r"https://[a-z0-9-]+\.trycloudflare\.com", re.IGNORECASE)
+DEFAULT_GIT_COMMIT_MESSAGE_TEMPLATE = "Update tower configs to {url}"
 
 
 def now_stamp() -> str:
@@ -99,6 +100,14 @@ class QuickTunnelWatchdog:
         check_interval_seconds: float,
         failure_threshold: int,
         startup_timeout_seconds: float,
+        repo_root: Path,
+        auto_git_push: bool,
+        git_commit_message_template: str,
+        git_remote: str,
+        git_branch: Optional[str],
+        manage_tower: bool,
+        tower_command: List[str],
+        tower_cwd: Path,
     ) -> None:
         self.cloudflared_path = cloudflared_path
         self.origin_url = normalize_url(origin_url)
@@ -107,6 +116,19 @@ class QuickTunnelWatchdog:
         self.check_interval_seconds = max(check_interval_seconds, 1.0)
         self.failure_threshold = max(failure_threshold, 1)
         self.startup_timeout_seconds = max(startup_timeout_seconds, 5.0)
+
+        self.repo_root = repo_root
+        self.auto_git_push = auto_git_push
+        self.git_commit_message_template = git_commit_message_template
+        self.git_remote = git_remote
+        self.git_branch = git_branch
+        self.git_available = bool(self.auto_git_push and shutil.which("git"))
+        if self.auto_git_push and not self.git_available:
+            log("git executable not found; automatic config pushes disabled")
+        self.manage_tower = manage_tower and bool(tower_command)
+        self.tower_command = list(tower_command) if tower_command else []
+        self.tower_cwd = tower_cwd
+        self.tower_process: Optional[subprocess.Popen[str]] = None
 
         self.current_tunnel_base_url = ""
         self.startup_deadline = 0.0
@@ -135,6 +157,8 @@ class QuickTunnelWatchdog:
             self.consecutive_public_failures = 0
         log(f"tunnel url discovered: {normalized}")
         write_tower_config_files(self.config_paths, normalized)
+        self._auto_push_configs(normalized)
+        self._restart_tower("new tunnel url discovered")
 
     def _configs_match_current_url(self, tunnel_base_url: str) -> bool:
         expected = normalize_url(tunnel_base_url)
@@ -143,6 +167,73 @@ class QuickTunnelWatchdog:
             if current != expected:
                 return False
         return True
+
+    def _relative_repo_path(self, path: Path) -> str:
+        try:
+            return str(path.relative_to(self.repo_root))
+        except ValueError:
+            return str(path)
+
+    def _config_relative_paths(self) -> List[str]:
+        return [self._relative_repo_path(path) for path in self.config_paths]
+
+    def _run_git_command(self, args: List[str]) -> Optional[subprocess.CompletedProcess[str]]:
+        if not self.git_available:
+            return None
+        try:
+            result = subprocess.run(
+                ["git", *args],
+                cwd=str(self.repo_root),
+                text=True,
+                capture_output=True,
+            )
+        except OSError as exc:
+            log(f"git command {' '.join(args)} failed: {exc}")
+            self.git_available = False
+            return None
+        if result.returncode != 0:
+            details = (result.stderr or result.stdout or "").strip()
+            log(f"git {' '.join(args)} exited {result.returncode}: {details}")
+        return result
+
+    def _git_has_changes(self, rel_paths: List[str]) -> bool:
+        if not rel_paths:
+            return False
+        result = self._run_git_command(["status", "--porcelain", "--", *rel_paths])
+        if not result or result.returncode != 0:
+            return False
+        return bool(result.stdout.strip())
+
+    def _format_commit_message(self, url: str) -> str:
+        template = self.git_commit_message_template or DEFAULT_GIT_COMMIT_MESSAGE_TEMPLATE
+        try:
+            return template.format(url=url)
+        except Exception as exc:
+            fallback = DEFAULT_GIT_COMMIT_MESSAGE_TEMPLATE.format(url=url)
+            log(f"git: invalid commit message template '{template}'; using fallback ('{fallback}'): {exc}")
+            return fallback
+
+    def _auto_push_configs(self, base_url: str) -> None:
+        if not self.auto_git_push or not self.git_available:
+            return
+        rel_paths = [path for path in self._config_relative_paths() if path]
+        if not rel_paths:
+            return
+        if not self._git_has_changes(rel_paths):
+            log("git: tower config files already match repo; skipping push")
+            return
+        add_result = self._run_git_command(["add", "--", *rel_paths])
+        if not add_result or add_result.returncode != 0:
+            return
+        commit_message = self._format_commit_message(base_url)
+        commit_result = self._run_git_command(["commit", "-m", commit_message])
+        if not commit_result or commit_result.returncode != 0:
+            return
+        target_ref = self.git_branch or "HEAD"
+        push_result = self._run_git_command(["push", self.git_remote, target_ref])
+        if not push_result or push_result.returncode != 0:
+            return
+        log(f"git: pushed config updates to {self.git_remote}/{target_ref}")
 
     def _read_process_output(self) -> None:
         assert self.process is not None
@@ -200,7 +291,47 @@ class QuickTunnelWatchdog:
         self.stop_process()
         self.start_process()
 
+    def start_tower(self) -> None:
+        if not self.manage_tower or not self.tower_command:
+            return
+        if self.tower_process and self.tower_process.poll() is None:
+            return
+        log(f"starting tower: {' '.join(self.tower_command)} (cwd={self.tower_cwd})")
+        try:
+            self.tower_process = subprocess.Popen(
+                self.tower_command,
+                cwd=str(self.tower_cwd),
+            )
+        except OSError as exc:
+            log(f"tower start failed: {exc}")
+            self.tower_process = None
+
+    def stop_tower(self) -> None:
+        process = self.tower_process
+        self.tower_process = None
+        if not process:
+            return
+
+        if process.poll() is None:
+            log("stopping tower process")
+            process.terminate()
+            try:
+                process.wait(timeout=8)
+            except subprocess.TimeoutExpired:
+                log("tower did not exit in time; killing")
+                process.kill()
+                process.wait(timeout=5)
+
+    def _restart_tower(self, reason: str) -> None:
+        if not self.manage_tower:
+            return
+        log(f"restarting tower: {reason}")
+        self.stop_tower()
+        self.start_tower()
+
     def run(self) -> int:
+        if self.manage_tower:
+            self.start_tower()
         self.start_process()
 
         while not self.stop_event.is_set():
@@ -250,6 +381,7 @@ class QuickTunnelWatchdog:
             time.sleep(self.check_interval_seconds)
 
         self.stop_process()
+        self.stop_tower()
         return 0
 
     def request_stop(self) -> None:
@@ -298,6 +430,44 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Print default config paths and exit.",
     )
+    parser.add_argument(
+        "--skip-git-push",
+        action="store_true",
+        default=False,
+        help="Do not automatically stage, commit, or push updated tower configs.",
+    )
+    parser.add_argument(
+        "--git-commit-message",
+        default=DEFAULT_GIT_COMMIT_MESSAGE_TEMPLATE,
+        help="Commit message template for config updates (supports {url}).",
+    )
+    parser.add_argument(
+        "--git-remote",
+        default="origin",
+        help="Remote to push config updates to.",
+    )
+    parser.add_argument(
+        "--git-branch",
+        default="",
+        help="Git ref to push after committing config updates (defaults to HEAD).",
+    )
+    parser.add_argument(
+        "--skip-tower",
+        action="store_true",
+        default=False,
+        help="Do not manage (start/restart/stop) the tower process.",
+    )
+    parser.add_argument(
+        "--tower-command",
+        nargs="+",
+        default=["python", "tower.py"],
+        help="Command used to run the tower (default: python tower.py).",
+    )
+    parser.add_argument(
+        "--tower-cwd",
+        default=str(script_dir),
+        help="Working directory for the tower command.",
+    )
 
     args = parser.parse_args()
     if not args.config_paths:
@@ -318,6 +488,13 @@ def main() -> int:
         return 2
 
     config_paths = [Path(path).resolve() for path in args.config_paths]
+    script_dir = Path(__file__).resolve().parent
+    repo_root = script_dir.parent
+    auto_git_push = not args.skip_git_push
+    git_branch = args.git_branch.strip() or None
+    tower_command = list(args.tower_command) if args.tower_command else []
+    tower_cwd = Path(args.tower_cwd).resolve()
+    manage_tower = not args.skip_tower
     watchdog = QuickTunnelWatchdog(
         cloudflared_path=cloudflared_path,
         origin_url=args.origin_url,
@@ -325,6 +502,14 @@ def main() -> int:
         check_interval_seconds=args.check_interval,
         failure_threshold=args.failure_threshold,
         startup_timeout_seconds=args.startup_timeout,
+        repo_root=repo_root,
+        auto_git_push=auto_git_push,
+        git_commit_message_template=args.git_commit_message,
+        git_remote=args.git_remote,
+        git_branch=git_branch,
+        manage_tower=manage_tower,
+        tower_command=tower_command,
+        tower_cwd=tower_cwd,
     )
 
     try:
@@ -333,6 +518,7 @@ def main() -> int:
         log("received interrupt; shutting down")
         watchdog.request_stop()
         watchdog.stop_process()
+        watchdog.stop_tower()
         return 0
 
 
