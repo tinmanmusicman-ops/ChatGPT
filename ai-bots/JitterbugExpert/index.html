@@ -32,6 +32,24 @@
       position: relative;
     }
 
+    @media (max-width: 640px) {
+      body {
+        padding: 3rem 1.25rem 2rem;
+        align-items: center;
+      }
+      .landing-card {
+        width: calc(100vw - 2rem);
+        padding: 2rem;
+      }
+      .landing-card h1 {
+        font-size: clamp(1.9rem, 8vw, 2.5rem);
+      }
+      .landing-card p {
+        font-size: 1rem;
+        line-height: 1.5;
+      }
+    }
+
     body::after {
       content: "";
       position: absolute;
