@@ -9,6 +9,7 @@
       font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
       background-color: #070711;
       color: #e5f8ff;
+      
     }
 
     * {
@@ -21,8 +22,30 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: radial-gradient(circle at top, #1e1f5c, #070711 60%);
-      padding: 1.5rem;
+      padding: 3rem;
+      background-color: #04040a;
+      background-image: url("../../../Images/JBBG.png");
+      background-size: 55% 75%;
+      background-position: center;
+      background-repeat: no-repeat;
+      position: relative;
+      isolation: isolate;
+    }
+
+    body::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at top, rgba(7, 8, 20, 0.85), rgba(7, 7, 17, 0.95)),
+        radial-gradient(circle at 25% 20%, rgba(110, 242, 232, 0.35), transparent 55%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    main.landing-card {
+      position: relative;
+      z-index: 1;
     }
 
     .landing-card {
@@ -30,9 +53,10 @@
       padding: 2.5rem;
       border-radius: 16px;
       text-align: center;
-      background: rgba(11, 12, 31, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.45);
+      background: rgba(7, 9, 22, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.55), inset 0 0 30px rgba(110, 242, 232, 0.15);
+      backdrop-filter: blur(12px);
     }
 
     .landing-card h1 {
