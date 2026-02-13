@@ -1,0 +1,7 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_CLASSES_ROOT\txtfile\shell\EvaluateJobFit]
+@="Evaluate Job Fit"
+
+[HKEY_CLASSES_ROOT\txtfile\shell\EvaluateJobFit\command]
+@="\"C:\\Program Files\\AutoHotkey\\v2\\AutoHotkey64.exe\" \"C:\\ChatGPT\\ai-bots\\AutoHotkey\\EvaluateJobFit\\EvaluateJobFit.ahk\" \"%1\""

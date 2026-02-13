@@ -145,18 +145,18 @@
 
     @media (max-width: 640px) {
       .help-button {
-        margin-left: 75px;
-        margin-top: 10px;
         padding: 1.5rem 3rem;
-        font-size: 40p;
+        font-size: 1.2rem;
         letter-spacing: 0.15em;
         border-width: 2px;
+        top: 0.5rem;
+        right: 0.5rem;
       }
     }
   </style>
 </head>
 <body>
-    <a class="help-button" href="/help">Help</a>
+    <a class="help-button" href="#" role="button">Help</a>
     <main class="landing-card">
       <h1>Welcome to the Jitterbug Expert</h1>
       <p>
@@ -164,6 +164,128 @@
       expertise and art of the jitterbug delivered directly to your screen.
       For now, take a breath and enjoy the glow.
     </p>
-  </main>
+    </main>
+    <script>
+      (function () {
+        const helpButton = document.querySelector(".help-button");
+        if (!helpButton) {
+          return;
+        }
+
+        const configCandidates = [
+          "/tower.config.json",
+          "tower.config.json",
+          "../tower.config.json",
+        ];
+        let cachedBaseUrl = "";
+
+        async function resolveTunnelBaseUrl() {
+          if (cachedBaseUrl) {
+            return cachedBaseUrl;
+          }
+          for (const path of configCandidates) {
+            try {
+              const response = await fetch(path, { cache: "no-store" });
+              if (!response.ok) {
+                continue;
+              }
+              const config = await response.json();
+              const base = (config && config.towerBaseUrl) || "";
+              if (base) {
+                cachedBaseUrl = base.replace(/\/+$/, "");
+                return cachedBaseUrl;
+              }
+            } catch (_) {
+              // ignore and try next candidate
+            }
+          }
+          const manual = window.prompt(
+            "Enter the active Cloudflare tunnel URL (https://...) so we can deliver help."
+          );
+          if (manual) {
+            cachedBaseUrl = manual.trim().replace(/\/+$/, "");
+            return cachedBaseUrl;
+          }
+          return "";
+        }
+
+        async function requestHelpPayload() {
+          const prompts = [
+            { key: "name", label: "Full name" },
+            { key: "phone", label: "Phone number" },
+            { key: "email", label: "Email address" },
+            {
+              key: "device",
+              label: "Device you are using (e.g., iPhone, laptop, tablet)",
+              default: navigator.platform || navigator.userAgent || "unknown",
+            },
+            {
+              key: "message",
+              label: "Message or issue details",
+            },
+          ];
+
+          const payload = {};
+          for (const field of prompts) {
+            const hint = field.default ? ` (default: ${field.default})` : "";
+            const response = window.prompt(`${field.label}${hint}`);
+            if (response === null) {
+              return null;
+            }
+            const trimmed = response.trim();
+            if (!trimmed && !field.default) {
+              window.alert(`${field.label} is required.`);
+              return null;
+            }
+            payload[field.key] = trimmed || field.default || "";
+          }
+          return payload;
+        }
+
+        async function submitHelpRequest() {
+          helpButton.setAttribute("aria-busy", "true");
+          helpButton.setAttribute("disabled", "true");
+          helpButton.style.pointerEvents = "none";
+          try {
+            const baseUrl = await resolveTunnelBaseUrl();
+            if (!baseUrl) {
+              window.alert("Unable to determine the tunnel URL. Please provide it manually.");
+              return;
+            }
+            const payload = await requestHelpPayload();
+            if (!payload) {
+              return;
+            }
+            const url = `${baseUrl}/help`;
+            const response = await fetch(url, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(payload),
+            });
+            if (!response.ok) {
+              const errorText = await response.text();
+              window.alert(`Help request failed (${response.status}): ${errorText}`);
+              return;
+            }
+            const result = await response.json().catch(() => ({}));
+            window.alert(`Help request received. Reference ${result.accountId || "saved"}.`);
+          } catch (error) {
+            console.error("help request failed", error);
+            window.alert("Help request failed; please try again.");
+          } finally {
+            helpButton.removeAttribute("aria-busy");
+            helpButton.removeAttribute("disabled");
+            helpButton.style.pointerEvents = "";
+          }
+        }
+
+        helpButton.addEventListener("click", function (event) {
+          event.preventDefault();
+          submitHelpRequest();
+        });
+      })();
+    </script>
 </body>
 </html>

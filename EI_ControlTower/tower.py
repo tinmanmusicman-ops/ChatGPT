@@ -54,6 +54,10 @@ GLOBAL_CONFIG_PATH = Path(
     os.environ.get("HSST_GLOBAL_CONFIG", str(AI_BOTS_ROOT / "shared" / "Global.json"))
 )
 
+DATA_DIR = BASE_DIR.parent / "data"
+CUSTOMERS_JSON_PATH = DATA_DIR / "customers.json"
+_CUSTOMERS_LOCK = threading.Lock()
+
 DEFAULT_CORS_ORIGINS = {
     "http://localhost",
     "http://127.0.0.1",
@@ -99,6 +103,29 @@ def _with_cors(resp):
         resp.headers["Access-Control-Allow-Methods"] = "POST, OPTIONS"
         resp.headers["Access-Control-Allow-Headers"] = "Content-Type"
     return resp
+
+
+def _load_customers() -> list:
+    try:
+        if not CUSTOMERS_JSON_PATH.exists():
+            return []
+        text = CUSTOMERS_JSON_PATH.read_text(encoding="utf-8")
+        entries = json.loads(text or "[]")
+        if isinstance(entries, list):
+            return entries
+    except Exception:
+        pass
+    return []
+
+
+def _write_customers(entries: list) -> None:
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    CUSTOMERS_JSON_PATH.write_text(json.dumps(entries, indent=2, ensure_ascii=False), encoding="utf-8")
+
+
+def _next_account_id(entries: list) -> str:
+    seq = len(entries) + 1
+    return f"JB-{seq:04d}"
 
 
 def _append_cores_log(message: str):
@@ -2687,6 +2714,56 @@ def tower_contact():
 
     _contact_last_sent_at[ip] = now
     return jsonify({"status": "ok"})
+
+
+@app.route("/help", methods=["OPTIONS", "POST"])
+def help_intake():
+    if request.method == "OPTIONS":
+        return ("", 204)
+
+    raw_payload = request.get_json(force=True, silent=True) or {}
+    form_payload = {k: v for k, v in request.form.items()}
+    combined = {}
+    for source in (raw_payload, form_payload):
+        for key, value in source.items():
+            if isinstance(value, str):
+                combined[key.lower()] = value.strip()
+            else:
+                combined[key.lower()] = value
+
+    required = ["name", "phone", "email", "device", "message"]
+    missing = [key for key in required if not combined.get(key)]
+    if missing:
+        return (
+            jsonify({"error": "Missing required fields", "missing": missing}),
+            400,
+        )
+
+    device_value = combined.get("device") or "unknown"
+    message_value = combined.get("message") or ""
+
+    with _CUSTOMERS_LOCK:
+        entries = _load_customers()
+        account_id = _next_account_id(entries)
+        entry = {
+            "autoAccountId": account_id,
+            "timestamp": datetime.utcnow().isoformat(timespec="seconds"),
+            "name": combined.get("name") or "",
+            "email": combined.get("email") or "",
+            "phone": combined.get("phone") or "",
+            "device": device_value,
+            "notes": message_value,
+            "history": message_value,
+        }
+        entries.append(entry)
+        try:
+            _write_customers(entries)
+        except OSError as exc:
+            app.logger.error("failed to write help intake: %s", exc)
+            return jsonify({"error": "Unable to store help request"}), 500
+
+    app.logger.info("received help intake %s", account_id)
+    return jsonify({"status": "ok", "accountId": account_id})
 
 
 @app.route("/tower/ask-ai", methods=["OPTIONS", "POST"])
