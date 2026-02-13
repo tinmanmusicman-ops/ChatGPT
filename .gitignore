@@ -16,6 +16,7 @@ __pycache__/
 *.jpg
 *.jpeg
 *.jfif
+!/Images/**
 
 # Local logs / caches / scratch
 *.log
@@ -30,7 +31,6 @@ __pycache__/
 !/bridge/**
 
 # Local folders in this repo
-/Images/
 /LinedIn/
 /ai-bots/Logs/
 /ai-bots/Temp/
