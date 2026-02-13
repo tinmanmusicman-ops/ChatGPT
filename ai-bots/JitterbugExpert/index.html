@@ -21,12 +21,12 @@
       margin: 0;
       min-height: 100vh;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
-      padding: 3rem;
+      padding: 5rem 3rem 3rem;
       background-color: #030409;
       background-image: url("../../Images/JBBG.png");
-      background-size: contain;
+      background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
       position: relative;
@@ -52,10 +52,11 @@
       padding: 2.5rem;
       border-radius: 12px;
       text-align: center;
-      background: #05060d;
+      background: rgba(5, 6, 13, 0.52);
       border: 1px solid rgba(255, 235, 215, 0.25);
       box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
       overflow: hidden;
+      backdrop-filter: blur(6px);
     }
 
     .landing-card::before {
