@@ -29,9 +29,25 @@
       background-size: contain;
       background-position: center;
       background-repeat: no-repeat;
+      position: relative;
+    }
+
+    body::after {
+      content: "";
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      width: 200px;
+      height: 200px;
+      background: url("../../Images/NOai.png") center/cover no-repeat;
+      filter: brightness(0.75);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.6);
+      border-radius: 18px;
+      opacity: 0.95;
     }
 
     .landing-card {
+      position: relative;
       width: min(540px, 90vw);
       padding: 2.5rem;
       border-radius: 12px;
@@ -39,6 +55,35 @@
       background: #05060d;
       border: 1px solid rgba(255, 235, 215, 0.25);
       box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+      overflow: hidden;
+    }
+
+    .landing-card::before {
+      content: "";
+      /* remove background overlay so image can be displayed separately */
+      position: absolute;
+      inset: 0;
+      background: none;
+    }
+
+    .landing-card::after {
+      content: "";
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      width: 120px;
+      height: 120px;
+
+      filter: brightness(0.85);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
+      border-radius: 12px;
+      opacity: 0.95;
+    }
+
+    .landing-card h1,
+    .landing-card p {
+      position: relative;
+      z-index: 2;
     }
 
     .landing-card h1 {
