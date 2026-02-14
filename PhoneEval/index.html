@@ -118,14 +118,14 @@
 <body>
   <main class="wrap">
     <h1>PhoneEval AI</h1>
-    <p class="hint">Phone flow: select text, Share to PhoneEval, and it auto-analyzes to HTML output.</p>
+    <p id="hintText" class="hint">Phone flow: select text, Share to PhoneEval, and it auto-analyzes to HTML output.</p>
 
-    <section class="panel">
+    <section id="endpointPanel" class="panel">
       <label for="endpoint">Flask Analyze Endpoint</label>
       <input id="endpoint" type="text" autocomplete="off" spellcheck="false">
     </section>
 
-    <section class="panel">
+    <section id="contentPanel" class="panel">
       <label for="content">Shared or Pasted Content</label>
       <textarea id="content" placeholder="Shared text appears here. You can also paste manually."></textarea>
       <div class="row">
@@ -165,6 +165,9 @@
     const shareEl = document.getElementById("share");
     const saveEndpointEl = document.getElementById("save-endpoint");
     const statusEl = document.getElementById("status");
+    const hintTextEl = document.getElementById("hintText");
+    const endpointPanelEl = document.getElementById("endpointPanel");
+    const contentPanelEl = document.getElementById("contentPanel");
     const resultEl = document.getElementById("result");
     const summaryTextEl = document.getElementById("summaryText");
     const keyPointsTextEl = document.getElementById("keyPointsText");
@@ -204,6 +207,17 @@
     function endpointFromQuery() {
       const params = new URLSearchParams(window.location.search);
       return (params.get("endpoint") || "").trim();
+    }
+
+    function isSharedMode() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("shared") === "1";
+    }
+
+    function applySharedModeUi() {
+      endpointPanelEl.style.display = "none";
+      contentPanelEl.style.display = "none";
+      hintTextEl.textContent = "Shared content received. Running analysis and returning HTML output.";
     }
 
     function isGitHubPagesHost() {
@@ -486,6 +500,9 @@
     async function init() {
       await loadEndpoint();
       registerServiceWorker();
+      if (isSharedMode()) {
+        applySharedModeUi();
+      }
       const sharedLoaded = await loadSharedTextIfPresent();
       if (sharedLoaded) {
         await analyze();

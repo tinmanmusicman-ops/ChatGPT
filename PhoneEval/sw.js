@@ -74,7 +74,7 @@ self.addEventListener("fetch", function (event) {
       }
 
       await writeSharedData(merged);
-      const target = new URL("./index.html?shared=1", self.registration.scope);
+      const target = new URL("./index.html?shared=1&auto=1", self.registration.scope);
       return Response.redirect(target.toString(), 303);
     })());
   }

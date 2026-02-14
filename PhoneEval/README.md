@@ -8,7 +8,7 @@ Flow:
 1. On phone, user selects text and uses Share (or pastes text manually).
 2. PhoneEval receives shared text and auto-runs POST /analyze.
 3. Flask reads OpenAI key from local global.json, calls OpenAI server-side, and returns strict JSON.
-4. PhoneEval renders the response as HTML and supports copy/share of output.
+4. PhoneEval hides input panels in share mode and returns straight to HTML results.
 
 Important:
 - API key is never exposed in browser code.
@@ -168,7 +168,7 @@ Android (best support):
 2. Install app (Add to Home Screen).
 3. Select text in any app/browser and tap Share.
 4. Choose PhoneEval.
-5. PhoneEval opens in browser/PWA and auto-analyzes the shared content.
+5. PhoneEval opens in browser/PWA, auto-analyzes the shared content, and shows HTML results directly (no extra Analyze tap).
 
 iPhone:
 - Use page as paste/analyze app in Safari.
