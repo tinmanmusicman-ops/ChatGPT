@@ -140,13 +140,10 @@ ActionItems: -</pre>
   </main>
 
   <script>
-    const CONFIG_CANDIDATES = [
-      "./tower.config.json",
-      "/tower.config.json",
-      "../tower.config.json",
-      "../../tower.config.json"
-    ];
+    const CONFIG_PATH = "./tower.config.json";
     const ENDPOINT_KEY = "phone_eval_endpoint";
+    const ENDPOINT_PINNED_KEY = "phone_eval_endpoint_pinned";
+    let cachedConfigEndpoint = "";
 
     const endpointEl = document.getElementById("endpoint");
     const contentEl = document.getElementById("content");
@@ -169,6 +166,11 @@ ActionItems: -</pre>
       return (params.get("endpoint") || "").trim();
     }
 
+    function isGitHubPagesHost() {
+      const host = String(window.location.hostname || "").toLowerCase();
+      return host.endsWith(".github.io");
+    }
+
     function normalizeBaseUrl(value) {
       const text = String(value || "").trim();
       if (!text) {
@@ -186,20 +188,22 @@ ActionItems: -</pre>
     }
 
     async function endpointFromConfig() {
-      for (const path of CONFIG_CANDIDATES) {
-        try {
-          const response = await fetch(path, { cache: "no-store" });
-          if (!response.ok) {
-            continue;
-          }
-          const config = await response.json();
-          const base = endpointFromBase(config && config.towerBaseUrl);
-          if (base) {
-            return base;
-          }
-        } catch (_) {
-          // try next candidate
+      if (cachedConfigEndpoint) {
+        return cachedConfigEndpoint;
+      }
+      try {
+        const response = await fetch(CONFIG_PATH, { cache: "no-store" });
+        if (!response.ok) {
+          return "";
         }
+        const config = await response.json();
+        const base = endpointFromBase(config && config.towerBaseUrl);
+        if (base) {
+          cachedConfigEndpoint = base;
+          return cachedConfigEndpoint;
+        }
+      } catch (_) {
+        return "";
       }
       return "";
     }
@@ -209,10 +213,40 @@ ActionItems: -</pre>
       if (!origin) {
         return "";
       }
-      if (origin.startsWith("http://127.0.0.1") || origin.startsWith("http://localhost")) {
+      if (!isGitHubPagesHost()) {
         return origin + "/analyze";
       }
       return "";
+    }
+
+    async function analyzeAtEndpoint(endpoint, text) {
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: text })
+      });
+      const raw = await res.text();
+      const contentType = String(res.headers.get("Content-Type") || "").toLowerCase();
+      if (contentType.indexOf("application/json") === -1) {
+        const preview = String(raw || "").replace(/\s+/g, " ").trim().slice(0, 140);
+        throw new Error(
+          "Non-JSON response (HTTP " + res.status + ", " + (contentType || "unknown type") + "): " +
+          (preview || "empty body")
+        );
+      }
+      let data = null;
+      try {
+        data = raw ? JSON.parse(raw) : null;
+      } catch (_) {
+        throw new Error("Invalid JSON response (HTTP " + res.status + ")");
+      }
+      if (!res.ok || (data && data.error)) {
+        throw new Error((data && data.error) || ("HTTP " + res.status));
+      }
+      if (!data || typeof data !== "object") {
+        throw new Error("Empty response from endpoint");
+      }
+      return data;
     }
 
     async function loadEndpoint() {
@@ -221,17 +255,25 @@ ActionItems: -</pre>
         endpointEl.value = fromQuery;
         return;
       }
+      const pinned = localStorage.getItem(ENDPOINT_PINNED_KEY) === "1";
       const fromStorage = (localStorage.getItem(ENDPOINT_KEY) || "").trim();
-      if (fromStorage) {
+      if (pinned && fromStorage) {
         endpointEl.value = fromStorage;
         return;
       }
-      const fromConfig = await endpointFromConfig();
-      if (fromConfig) {
-        endpointEl.value = fromConfig;
+      const fromOrigin = endpointFromOrigin();
+      if (fromOrigin) {
+        endpointEl.value = fromOrigin;
         return;
       }
-      endpointEl.value = endpointFromOrigin();
+      if (isGitHubPagesHost()) {
+        const fromConfig = await endpointFromConfig();
+        if (fromConfig) {
+          endpointEl.value = fromConfig;
+          return;
+        }
+      }
+      endpointEl.value = "";
     }
 
     function formatResult(data) {
@@ -273,6 +315,17 @@ ActionItems: -</pre>
         setStatus("Status: endpoint is required", true);
         return;
       }
+      try {
+        const endpointUrl = new URL(endpoint);
+        const path = String(endpointUrl.pathname || "").toLowerCase();
+        if (path !== "/analyze") {
+          setStatus("Status: endpoint must be exact /analyze URL", true);
+          return;
+        }
+      } catch (_) {
+        setStatus("Status: endpoint must be valid absolute URL", true);
+        return;
+      }
       if (!text) {
         setStatus("Status: text is required", true);
         return;
@@ -280,22 +333,13 @@ ActionItems: -</pre>
 
       analyzeEl.disabled = true;
       setStatus("Status: analyzing...", false);
-
       try {
-        const res = await fetch(endpoint, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text: text })
-        });
-        const data = await res.json();
-        if (!res.ok || data.error) {
-          throw new Error(data.error || ("HTTP " + res.status));
-        }
+        const data = await analyzeAtEndpoint(endpoint, text);
         resultEl.textContent = formatResult(data);
         setStatus("Status: success", false);
       } catch (err) {
         resultEl.textContent = "Summary: -\nKeyPoints: -\nActionItems: -";
-        setStatus("Status: " + (err.message || "analyze failed"), true);
+        setStatus("Status: " + ((err && err.message) ? err.message : "analyze failed"), true);
       } finally {
         analyzeEl.disabled = false;
       }
@@ -362,7 +406,19 @@ ActionItems: -</pre>
         setStatus("Status: endpoint is required", true);
         return;
       }
+      try {
+        const endpointUrl = new URL(endpoint);
+        const path = String(endpointUrl.pathname || "").toLowerCase();
+        if (path !== "/analyze") {
+          setStatus("Status: endpoint must be exact /analyze URL", true);
+          return;
+        }
+      } catch (_) {
+        setStatus("Status: endpoint must be valid absolute URL", true);
+        return;
+      }
       localStorage.setItem(ENDPOINT_KEY, endpoint);
+      localStorage.setItem(ENDPOINT_PINNED_KEY, "1");
       setStatus("Status: endpoint saved", false);
     }
 

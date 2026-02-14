@@ -94,12 +94,13 @@ Expected response shape:
 ## 6) Configure PhoneEval Frontend
 
 1. Open PhoneEval/index.html from Flask route (/phone-eval) or GitHub Pages URL.
-2. Endpoint auto-discovery runs first from these config files:
-   - ./tower.config.json
-   - /tower.config.json
-   - ../tower.config.json
-   - ../../tower.config.json
-3. If no config URL is found, set endpoint manually.
+2. Endpoint resolution is deterministic and fail-fast:
+   - Query override: `?endpoint=https://.../analyze`
+   - Pinned endpoint from `Save Endpoint`
+   - Same-origin `/analyze` when not on `*.github.io`
+   - `./tower.config.json` when on GitHub Pages
+3. If none of those are available, Analyze fails until endpoint is corrected.
+4. Endpoint must be a valid absolute URL with path exactly `/analyze`.
 4. In Flask Analyze Endpoint, set your live endpoint:
    - Local test: http://127.0.0.1:5000/analyze
    - Tunnel/public: https://<your-tunnel-domain>/analyze
@@ -134,7 +135,7 @@ Default config targets now include:
 - C:\ChatGPT\CORES\tower.config.json
 - C:\ChatGPT\PhoneEval\tower.config.json
 
-PhoneEval reads these config files and auto-builds `/analyze` endpoint from `towerBaseUrl`.
+PhoneEval reads `./tower.config.json` in the published PhoneEval site and auto-builds `/analyze` from `towerBaseUrl`.
 
 ## 7.2) GitHub Pages Auto-sync
 
@@ -212,6 +213,11 @@ Error response examples:
 - Error No text received:
   - Confirm payload contains text.
   - Confirm client sends JSON with Content-Type: application/json.
+
+- Error Non-JSON response:
+  - Endpoint is wrong or tunnel target is not Flask `/analyze`.
+  - Confirm endpoint path is exactly `/analyze`.
+  - Confirm tunnel/domain currently resolves and points to the active Flask server.
 
 - Error Text too short to analyze:
   - Send at least 10 characters.
