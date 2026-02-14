@@ -85,13 +85,22 @@
       opacity: 0.6;
       cursor: default;
     }
-    pre {
-      margin: 0;
-      white-space: pre-wrap;
-      word-break: break-word;
+    .result-view {
+      display: grid;
+      gap: 8px;
+    }
+    .result-item {
+      border: 1px solid #314056;
+      border-radius: 10px;
+      padding: 10px;
+      background: #0f151d;
       line-height: 1.45;
-      font-family: Consolas, "Courier New", monospace;
-      font-size: 0.95rem;
+      word-break: break-word;
+    }
+    .result-item strong {
+      color: #9ec6ff;
+      display: block;
+      margin-bottom: 4px;
     }
     .status {
       font-weight: 700;
@@ -109,7 +118,7 @@
 <body>
   <main class="wrap">
     <h1>PhoneEval AI</h1>
-    <p class="hint">Phone flow: select text, Share to PhoneEval (installed PWA), then Analyze.</p>
+    <p class="hint">Phone flow: select text, Share to PhoneEval, and it auto-analyzes to HTML output.</p>
 
     <section class="panel">
       <label for="endpoint">Flask Analyze Endpoint</label>
@@ -128,9 +137,11 @@
 
     <section class="panel">
       <p id="status" class="status">Status: idle</p>
-      <pre id="result">Summary: -
-KeyPoints: -
-ActionItems: -</pre>
+      <div id="result" class="result-view">
+        <div class="result-item"><strong>Summary</strong><span id="summaryText">-</span></div>
+        <div class="result-item"><strong>KeyPoints</strong><span id="keyPointsText">-</span></div>
+        <div class="result-item"><strong>ActionItems</strong><span id="actionItemsText">-</span></div>
+      </div>
       <div class="row">
         <button id="copy" type="button">Copy Result</button>
         <button id="share" type="button">Share Result</button>
@@ -155,10 +166,39 @@ ActionItems: -</pre>
     const saveEndpointEl = document.getElementById("save-endpoint");
     const statusEl = document.getElementById("status");
     const resultEl = document.getElementById("result");
+    const summaryTextEl = document.getElementById("summaryText");
+    const keyPointsTextEl = document.getElementById("keyPointsText");
+    const actionItemsTextEl = document.getElementById("actionItemsText");
 
     function setStatus(text, isError) {
       statusEl.textContent = text;
       statusEl.className = "status " + (isError ? "err" : "ok");
+    }
+
+    function setResult(summary, keyPoints, actionItems) {
+      summaryTextEl.textContent = (summary || "-").trim() || "-";
+      keyPointsTextEl.textContent = (keyPoints || "-").trim() || "-";
+      actionItemsTextEl.textContent = (actionItems || "-").trim() || "-";
+    }
+
+    function clearResult() {
+      setResult("-", "-", "-");
+    }
+
+    function hasResultData() {
+      return (
+        summaryTextEl.textContent.trim() !== "-" ||
+        keyPointsTextEl.textContent.trim() !== "-" ||
+        actionItemsTextEl.textContent.trim() !== "-"
+      );
+    }
+
+    function resultAsText() {
+      return (
+        "Summary: " + summaryTextEl.textContent.trim() + "\n" +
+        "KeyPoints: " + keyPointsTextEl.textContent.trim() + "\n" +
+        "ActionItems: " + actionItemsTextEl.textContent.trim()
+      );
     }
 
     function endpointFromQuery() {
@@ -280,31 +320,35 @@ ActionItems: -</pre>
       const summary = (data.summary || "-").trim();
       const keyPoints = (data.key_points || "-").trim();
       const actionItems = (data.action_items || "-").trim();
-      return "Summary: " + summary + "\n" +
-        "KeyPoints: " + keyPoints + "\n" +
-        "ActionItems: " + actionItems;
+      return {
+        summary: summary,
+        keyPoints: keyPoints,
+        actionItems: actionItems
+      };
     }
 
     async function loadSharedTextIfPresent() {
       const params = new URLSearchParams(window.location.search);
       if (params.get("shared") !== "1") {
-        return;
+        return false;
       }
       try {
         const res = await fetch("./shared-data", { cache: "no-store" });
         if (!res.ok) {
           setStatus("Status: shared content not available", true);
-          return;
+          return false;
         }
         const text = (await res.text()).trim();
         if (!text) {
           setStatus("Status: shared content is empty", true);
-          return;
+          return false;
         }
         contentEl.value = text;
         setStatus("Status: shared content loaded", false);
+        return true;
       } catch (err) {
         setStatus("Status: failed to load shared content", true);
+        return false;
       }
     }
 
@@ -335,10 +379,11 @@ ActionItems: -</pre>
       setStatus("Status: analyzing...", false);
       try {
         const data = await analyzeAtEndpoint(endpoint, text);
-        resultEl.textContent = formatResult(data);
+        const result = formatResult(data);
+        setResult(result.summary, result.keyPoints, result.actionItems);
         setStatus("Status: success", false);
       } catch (err) {
-        resultEl.textContent = "Summary: -\nKeyPoints: -\nActionItems: -";
+        clearResult();
         setStatus("Status: " + ((err && err.message) ? err.message : "analyze failed"), true);
       } finally {
         analyzeEl.disabled = false;
@@ -361,17 +406,17 @@ ActionItems: -</pre>
 
     function clearAll() {
       contentEl.value = "";
-      resultEl.textContent = "Summary: -\nKeyPoints: -\nActionItems: -";
+      clearResult();
       setStatus("Status: cleared", false);
     }
 
     async function copyResult() {
-      const text = resultEl.textContent.trim();
-      if (!text || text === "Summary: -\nKeyPoints: -\nActionItems: -") {
+      if (!hasResultData()) {
         setStatus("Status: nothing to copy", true);
         return;
       }
       try {
+        const text = resultAsText();
         await navigator.clipboard.writeText(text);
         setStatus("Status: result copied", false);
       } catch (err) {
@@ -380,16 +425,16 @@ ActionItems: -</pre>
     }
 
     async function shareResult() {
-      const text = resultEl.textContent.trim();
       if (!navigator.share) {
         setStatus("Status: system share not supported", true);
         return;
       }
-      if (!text || text === "Summary: -\nKeyPoints: -\nActionItems: -") {
+      if (!hasResultData()) {
         setStatus("Status: nothing to share", true);
         return;
       }
       try {
+        const text = resultAsText();
         await navigator.share({
           title: "PhoneEval Result",
           text: text
@@ -438,9 +483,16 @@ ActionItems: -</pre>
     shareEl.addEventListener("click", shareResult);
     saveEndpointEl.addEventListener("click", saveEndpoint);
 
-    loadEndpoint();
-    registerServiceWorker();
-    loadSharedTextIfPresent();
+    async function init() {
+      await loadEndpoint();
+      registerServiceWorker();
+      const sharedLoaded = await loadSharedTextIfPresent();
+      if (sharedLoaded) {
+        await analyze();
+      }
+    }
+
+    init();
   </script>
 </body>
 </html>

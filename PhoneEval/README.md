@@ -6,9 +6,9 @@ PhoneEval is the phone-facing web app that sends text to your Flask POST /analyz
 
 Flow:
 1. On phone, user selects text and uses Share (or pastes text manually).
-2. PhoneEval frontend sends text to Flask POST /analyze.
+2. PhoneEval receives shared text and auto-runs POST /analyze.
 3. Flask reads OpenAI key from local global.json, calls OpenAI server-side, and returns strict JSON.
-4. PhoneEval shows result and supports copy/share of output.
+4. PhoneEval renders the response as HTML and supports copy/share of output.
 
 Important:
 - API key is never exposed in browser code.
@@ -105,7 +105,7 @@ Expected response shape:
    - Local test: http://127.0.0.1:5000/analyze
    - Tunnel/public: https://<your-tunnel-domain>/analyze
 5. Tap Save Endpoint.
-6. Paste text and tap Analyze.
+6. For manual paste mode, tap Analyze. For share mode, analyze runs automatically.
 
 ## 7) Publish to GitHub Pages
 
@@ -168,7 +168,7 @@ Android (best support):
 2. Install app (Add to Home Screen).
 3. Select text in any app/browser and tap Share.
 4. Choose PhoneEval.
-5. Tap Analyze.
+5. PhoneEval opens in browser/PWA and auto-analyzes the shared content.
 
 iPhone:
 - Use page as paste/analyze app in Safari.
