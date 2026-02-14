@@ -11,6 +11,7 @@ import hashlib
 import smtplib
 import textwrap
 import uuid
+import traceback
 from html import escape
 from datetime import datetime, timedelta
 from flask import Flask, Response, send_from_directory, send_file, jsonify, request, redirect, abort
@@ -46,6 +47,8 @@ IMAGES_DIR = BASE_DIR.parent / "Images"
 FIT_SITE_DIR = BASE_DIR.parent / "AI-Fit-Site"
 AI_TOOLS_DIR = BASE_DIR.parent / "ai-tools"
 PHONE_EVAL_DIR = BASE_DIR.parent / "PhoneEval"
+BABY_CRM_DIR = BASE_DIR.parent / "BabyCRM"
+BABY_CRM_LOG_PATH = BABY_CRM_DIR / "deep.log"
 DEFAULT_RESUME_OUTPUT_DIR = Path(r"C:\!!!!!!!!!!!!!!!!!!!!!!!!!Stuff")
 BASE_OUTPUT_DIR = Path(os.environ.get("HSST_RESUME_OUTPUT_DIR", str(DEFAULT_RESUME_OUTPUT_DIR)))
 BASE_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -60,6 +63,9 @@ ANALYZE_GLOBAL_CONFIG_PATH = Path(r"C:\ChatGPT\ai-bots\shared\global.json")
 DATA_DIR = BASE_DIR.parent / "data"
 CUSTOMERS_JSON_PATH = DATA_DIR / "customers.json"
 _CUSTOMERS_LOCK = threading.Lock()
+CRM_DATA_DIR = DATA_DIR / "crm_data"
+CRM_JSON_PATH = CRM_DATA_DIR / "crm.json"
+_CRM_LOCK = threading.Lock()
 
 DEFAULT_CORS_ORIGINS = {
     "http://localhost",
@@ -181,6 +187,109 @@ def _write_customers(entries: list) -> None:
 def _next_account_id(entries: list) -> str:
     seq = len(entries) + 1
     return f"JB-{seq:04d}"
+
+
+def _crm_phone_key(value: str) -> str:
+    digits = re.sub(r"\D+", "", str(value or ""))
+    if len(digits) > 10:
+        return digits[-10:]
+    return digits
+
+
+def _crm_request_payload() -> dict:
+    payload = request.get_json(force=True, silent=True)
+    if isinstance(payload, dict):
+        return payload
+    return request.form.to_dict(flat=True)
+
+
+def _is_crm_request() -> bool:
+    path = str(getattr(request, "path", "") or "")
+    return path.startswith("/crm")
+
+
+def _crm_deep_log(event: str, **fields) -> None:
+    record = {
+        "timestamp": datetime.now().isoformat(timespec="seconds"),
+        "event": str(event or "").strip() or "crm.event",
+    }
+    for key, value in fields.items():
+        if value is None:
+            continue
+        if isinstance(value, (str, int, float, bool)):
+            record[str(key)] = value
+            continue
+        try:
+            record[str(key)] = json.loads(json.dumps(value, default=str))
+        except Exception:
+            record[str(key)] = str(value)
+    try:
+        BABY_CRM_DIR.mkdir(parents=True, exist_ok=True)
+        with open(BABY_CRM_LOG_PATH, "a", encoding="utf-8") as fh:
+            fh.write(json.dumps(record, ensure_ascii=True) + "\n")
+    except Exception:
+        pass
+
+
+def _ensure_crm_store() -> None:
+    CRM_DATA_DIR.mkdir(parents=True, exist_ok=True)
+    BABY_CRM_DIR.mkdir(parents=True, exist_ok=True)
+    if not BABY_CRM_LOG_PATH.exists():
+        BABY_CRM_LOG_PATH.write_text("", encoding="utf-8")
+    if CRM_JSON_PATH.exists():
+        _crm_deep_log("crm.store.ensure.exists", crm_json_path=str(CRM_JSON_PATH))
+        return
+    CRM_JSON_PATH.write_text(json.dumps({"people": []}, indent=2) + "\n", encoding="utf-8")
+    _crm_deep_log("crm.store.ensure.created", crm_json_path=str(CRM_JSON_PATH))
+
+
+def _load_crm_data() -> dict:
+    _ensure_crm_store()
+    try:
+        data = json.loads(CRM_JSON_PATH.read_text(encoding="utf-8-sig"))
+    except Exception as exc:
+        _crm_deep_log("crm.store.read.error", error=str(exc))
+        raise RuntimeError(f"Unable to read CRM data: {exc}")
+    if not isinstance(data, dict):
+        _crm_deep_log("crm.store.read.invalid_object")
+        raise RuntimeError("CRM data must be a JSON object.")
+    people = data.get("people")
+    if not isinstance(people, list):
+        _crm_deep_log("crm.store.read.invalid_people")
+        raise RuntimeError("CRM data must include people list.")
+    data["people"] = people
+    _crm_deep_log("crm.store.read.ok", people_count=len(people))
+    return data
+
+
+def _save_crm_data(data: dict) -> None:
+    if not isinstance(data, dict):
+        raise RuntimeError("CRM save failed: invalid data payload.")
+    if not isinstance(data.get("people"), list):
+        raise RuntimeError("CRM save failed: people must be a list.")
+    try:
+        _ensure_crm_store()
+        CRM_JSON_PATH.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        _crm_deep_log("crm.store.write.ok", people_count=len(data.get("people", [])))
+    except Exception as exc:
+        _crm_deep_log("crm.store.write.error", error=str(exc))
+        raise RuntimeError(f"Unable to write CRM data: {exc}")
+
+
+def _find_crm_person(people: list, phone: str) -> Optional[dict]:
+    incoming = str(phone or "").strip()
+    if not incoming:
+        return None
+    incoming_key = _crm_phone_key(incoming)
+    for person in people:
+        if not isinstance(person, dict):
+            continue
+        person_phone = str(person.get("phone") or "").strip()
+        if person_phone and person_phone == incoming:
+            return person
+        if incoming_key and _crm_phone_key(person_phone) == incoming_key:
+            return person
+    return None
 
 
 def _append_cores_log(message: str):
@@ -1267,6 +1376,189 @@ def phone_eval_index():
 @app.route("/phone-eval/<path:filename>")
 def phone_eval_static(filename):
     return send_from_directory(PHONE_EVAL_DIR, filename)
+
+
+@app.route("/crm", strict_slashes=False)
+def crm_index():
+    try:
+        _ensure_crm_store()
+        _crm_deep_log(
+            "crm.route.index",
+            remote=str(request.remote_addr or ""),
+            user_agent=str(request.headers.get("User-Agent", "")),
+        )
+        return send_from_directory(BABY_CRM_DIR, "index.html")
+    except Exception as exc:
+        app.logger.error("crm page load failed: %s", exc)
+        _crm_deep_log("crm.route.index.error", error=str(exc))
+        return jsonify({"error": "CRM UI unavailable"}), 500
+
+
+@app.route("/crm/find", methods=["POST"])
+def crm_find():
+    payload = _crm_request_payload()
+    phone = str(payload.get("phone") or "").strip()
+    _crm_deep_log(
+        "crm.route.find.request",
+        phone=phone,
+        phone_key=_crm_phone_key(phone),
+        remote=str(request.remote_addr or ""),
+    )
+    if not phone:
+        _crm_deep_log("crm.route.find.fail", reason="phone required")
+        return jsonify({"error": "Phone is required"}), 400
+
+    try:
+        with _CRM_LOCK:
+            data = _load_crm_data()
+            person = _find_crm_person(data.get("people", []), phone)
+        if person is None:
+            _crm_deep_log("crm.route.find.new", phone=phone, phone_key=_crm_phone_key(phone))
+            return jsonify({"new": True})
+        _crm_deep_log(
+            "crm.route.find.hit",
+            phone=phone,
+            matched_phone=str(person.get("phone") or ""),
+            history_count=len(person.get("history") if isinstance(person.get("history"), list) else []),
+        )
+        return jsonify({"new": False, "person": person})
+    except RuntimeError as exc:
+        app.logger.error("crm find failed: %s", exc)
+        _crm_deep_log("crm.route.find.error", error=str(exc))
+        return jsonify({"error": str(exc)}), 500
+    except Exception as exc:
+        app.logger.error("crm find failed: %s", exc)
+        _crm_deep_log("crm.route.find.error", error=str(exc))
+        return jsonify({"error": "CRM lookup failed"}), 500
+
+
+@app.route("/crm/create", methods=["POST"])
+def crm_create():
+    payload = _crm_request_payload()
+    name = str(payload.get("name") or "").strip()
+    phone = str(payload.get("phone") or "").strip()
+    device = str(payload.get("device") or "").strip()
+    notes = str(payload.get("notes") or "").strip()
+    _crm_deep_log(
+        "crm.route.create.request",
+        name=name,
+        phone=phone,
+        phone_key=_crm_phone_key(phone),
+        device=device,
+        notes=notes,
+        remote=str(request.remote_addr or ""),
+    )
+
+    if not phone:
+        _crm_deep_log("crm.route.create.fail", reason="phone required")
+        return jsonify({"error": "Phone is required"}), 400
+
+    person = {
+        "name": name,
+        "phone": phone,
+        "device": device,
+        "notes": notes,
+        "history": [],
+    }
+
+    try:
+        with _CRM_LOCK:
+            data = _load_crm_data()
+            people = data.get("people", [])
+            existing = _find_crm_person(people, phone)
+            if existing is not None:
+                _crm_deep_log(
+                    "crm.route.create.conflict",
+                    phone=phone,
+                    matched_phone=str(existing.get("phone") or ""),
+                )
+                return jsonify({"error": "Person already exists for this phone"}), 409
+            people.append(person)
+            _save_crm_data(data)
+        _crm_deep_log("crm.route.create.ok", phone=phone, people_count=len(data.get("people", [])))
+        return jsonify({"ok": True, "person": person})
+    except RuntimeError as exc:
+        app.logger.error("crm create failed: %s", exc)
+        _crm_deep_log("crm.route.create.error", error=str(exc))
+        return jsonify({"error": str(exc)}), 500
+    except Exception as exc:
+        app.logger.error("crm create failed: %s", exc)
+        _crm_deep_log("crm.route.create.error", error=str(exc))
+        return jsonify({"error": "CRM create failed"}), 500
+
+
+@app.route("/crm/add_note", methods=["POST"])
+def crm_add_note():
+    payload = _crm_request_payload()
+    phone = str(payload.get("phone") or "").strip()
+    reason = str(payload.get("reason") or "").strip()
+    action = str(payload.get("action") or "").strip()
+    result = str(payload.get("result") or "").strip()
+    charge = str(payload.get("charge") or "").strip()
+    _crm_deep_log(
+        "crm.route.add_note.request",
+        phone=phone,
+        phone_key=_crm_phone_key(phone),
+        reason=reason,
+        action=action,
+        result=result,
+        charge=charge,
+        remote=str(request.remote_addr or ""),
+    )
+
+    if not phone:
+        _crm_deep_log("crm.route.add_note.fail", reason="phone required")
+        return jsonify({"error": "Phone is required"}), 400
+
+    entry = {
+        "timestamp": datetime.now().strftime("%m/%d/%Y %I:%M %p"),
+        "reason": reason,
+        "action": action,
+        "result": result,
+        "charge": charge,
+    }
+
+    try:
+        with _CRM_LOCK:
+            data = _load_crm_data()
+            people = data.get("people", [])
+            person = _find_crm_person(people, phone)
+            if person is None:
+                _crm_deep_log("crm.route.add_note.not_found", phone=phone)
+                return jsonify({"error": "Person not found"}), 404
+            history = person.get("history")
+            if not isinstance(history, list):
+                history = []
+                person["history"] = history
+            history.append(entry)
+            _save_crm_data(data)
+        _crm_deep_log(
+            "crm.route.add_note.ok",
+            phone=phone,
+            history_count=len(person.get("history") if isinstance(person.get("history"), list) else []),
+        )
+        return jsonify({"ok": True, "person": person, "entry": entry})
+    except RuntimeError as exc:
+        app.logger.error("crm add_note failed: %s", exc)
+        _crm_deep_log("crm.route.add_note.error", error=str(exc))
+        return jsonify({"error": str(exc)}), 500
+    except Exception as exc:
+        app.logger.error("crm add_note failed: %s", exc)
+        _crm_deep_log("crm.route.add_note.error", error=str(exc))
+        return jsonify({"error": "CRM add note failed"}), 500
+
+
+@app.route("/crm/log", methods=["POST"])
+def crm_log_event():
+    payload = _crm_request_payload()
+    event_name = str(payload.get("event") or "crm.client.event").strip() or "crm.client.event"
+    _crm_deep_log(
+        event_name,
+        payload=payload,
+        remote=str(request.remote_addr or ""),
+        user_agent=str(request.headers.get("User-Agent", "")),
+    )
+    return jsonify({"ok": True})
 
 
 @app.route("/manage", strict_slashes=False)
@@ -2368,7 +2660,60 @@ def add_cors_headers(response):
     response.headers["Access-Control-Allow-Origin"] = "*"
     response.headers["Access-Control-Allow-Methods"] = "GET,POST,OPTIONS"
     response.headers["Access-Control-Allow-Headers"] = "Content-Type"
+    try:
+        if _is_crm_request() and int(getattr(response, "status_code", 200) or 200) >= 400:
+            _crm_deep_log(
+                "crm.response.error_status",
+                path=str(request.path or ""),
+                method=str(request.method or ""),
+                status_code=int(response.status_code),
+                remote=str(request.remote_addr or ""),
+                endpoint=str(request.endpoint or ""),
+                content_type=str(response.content_type or ""),
+            )
+    except Exception:
+        pass
     return response
+
+
+@app.teardown_request
+def crm_capture_unhandled_errors(error):
+    if error is None:
+        return
+    try:
+        if _is_crm_request():
+            tb = "".join(traceback.format_exception(type(error), error, error.__traceback__))[-4000:]
+            _crm_deep_log(
+                "crm.request.exception",
+                path=str(request.path or ""),
+                method=str(request.method or ""),
+                endpoint=str(request.endpoint or ""),
+                remote=str(request.remote_addr or ""),
+                error_type=type(error).__name__,
+                error=str(error),
+                traceback=tb,
+            )
+    except Exception:
+        pass
+
+
+@app.errorhandler(HTTPException)
+def crm_http_exception_handler(exc: HTTPException):
+    try:
+        if _is_crm_request():
+            _crm_deep_log(
+                "crm.http_exception",
+                path=str(request.path or ""),
+                method=str(request.method or ""),
+                status_code=int(getattr(exc, "code", 500) or 500),
+                description=str(getattr(exc, "description", "") or ""),
+            )
+            return jsonify({"error": str(getattr(exc, "description", "HTTP error") or "HTTP error")}), int(
+                getattr(exc, "code", 500) or 500
+            )
+    except Exception:
+        pass
+    return exc
 
 
 def _load_twillo_config():

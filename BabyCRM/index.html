@@ -1,0 +1,602 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark" />
+
+  <title>Baby CRM</title>
+  <style>
+    :root {
+      color-scheme: dark;
+  forced-color-adjust: none;
+      --bg: #1a0b3a;
+      --panel: #2c3541;
+      --panel-charcoal: #12161e;
+      --line: #222933;
+      --text: antiquewhite;
+      --muted: #9cabba;
+      --ok: #0c9344;
+      --err: #ff7a7a;
+      --accent: #2f81f7;
+      --ui-scale: 3;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: calc(18px * var(--ui-scale));
+      line-height: 1.45;
+    }
+    .wrap {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: calc(14px * var(--ui-scale));
+      display: grid;
+      gap: calc(12px * var(--ui-scale));
+    }
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: calc(12px * var(--ui-scale));
+      background: var(--panel);
+      padding: calc(12px * var(--ui-scale));
+    }
+    .panel.form-panel {
+      background: var(--panel-charcoal);
+    }
+    .panel.header-panel {
+      background: #1f2937;
+    }
+    h1 {
+      margin: 0;
+      font-size: calc(1.45rem * var(--ui-scale));
+      color: var(--accent);
+    }
+    h2 {
+      margin: 0 0 calc(8px * var(--ui-scale)) 0;
+      font-size: calc(1.1rem * var(--ui-scale));
+    }
+    h3 {
+      margin: 0;
+      font-size: calc(1rem * var(--ui-scale));
+    }
+    .muted {
+      margin: 0;
+      color: var(--muted);
+      font-size: calc(0.95rem * var(--ui-scale));
+    }
+    .row {
+      display: grid;
+      gap: calc(8px * var(--ui-scale));
+      grid-template-columns: 2fr 1fr 1fr;
+    }
+    .row-2 {
+      display: grid;
+      gap: calc(8px * var(--ui-scale));
+      grid-template-columns: 1fr 1fr;
+    }
+    label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: calc(6px * var(--ui-scale));
+    }
+    input, textarea, button, select {
+      width: 100%;
+      border-radius: calc(10px * var(--ui-scale));
+      border: 1px solid #3a4655;
+      background: #2c3d54;
+      color: var(--text);
+      padding: calc(10px * var(--ui-scale));
+      font-size: calc(1rem * var(--ui-scale));
+    }
+    textarea {
+      min-height: calc(96px * var(--ui-scale));
+      resize: vertical;
+    }
+    button {
+      background: #1a2d45;
+      font-weight: 700;
+      cursor: pointer;
+      min-height: calc(58px * var(--ui-scale));
+    }
+    .status {
+      font-weight: 700;
+      margin: 0;
+    }
+    .ok { color: var(--ok); }
+    .err { color: var(--err); }
+    .person-grid {
+      display: grid;
+      gap: calc(8px * var(--ui-scale));
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-bottom: calc(10px * var(--ui-scale));
+    }
+    .tile {
+      border: 1px solid #344151;
+      border-radius: calc(10px * var(--ui-scale));
+      padding: calc(8px * var(--ui-scale));
+      background: #0f151d;
+    }
+    .tile b { color: #1f2a3a; }
+    .history-item {
+      border: 1px solid #364356;
+      border-radius: calc(10px * var(--ui-scale));
+      padding: calc(8px * var(--ui-scale));
+      background: #18222f;
+      margin-top: calc(8px * var(--ui-scale));
+    }
+    .popup {
+      position: fixed;
+      top: calc(24px * var(--ui-scale));
+      right: calc(24px * var(--ui-scale));
+      padding: calc(10px * var(--ui-scale)) calc(16px * var(--ui-scale));
+      background: var(--ok);
+      color: #06110a;
+      border-radius: calc(8px * var(--ui-scale));
+      font-weight: 700;
+      box-shadow: 0 0 calc(14px * var(--ui-scale)) rgba(0, 0, 0, 0.4);
+      z-index: 10;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .hidden { display: none; }
+    @media (max-width: 760px) {
+      .row { grid-template-columns: 1fr; }
+      .row-2 { grid-template-columns: 1fr; }
+      .person-grid { grid-template-columns: 1fr; }
+      :root { --ui-scale: 2; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="panel header-panel">
+      <h1>Baby CRM</h1>
+      <p class="muted">Phone number is primary lookup for live call handling.</p>
+    </section>
+
+    <section class="panel form-panel">
+      <div class="row">
+        <div>
+          <label for="incomingPhone">Incoming number</label>
+          <input id="incomingPhone" type="text" inputmode="tel" autocomplete="tel-national" maxlength="17" placeholder="+N (ZZZ) NNN NNNN">
+        </div>
+        <div>
+          <label>&nbsp;</label>
+          <button id="findBtn" type="button">Find</button>
+        </div>
+        <div>
+          <label>&nbsp;</label>
+          <button id="newBtn" type="button">New Person</button>
+        </div>
+      </div>
+      <p id="status" class="status">Status: ready</p>
+    </section>
+
+    <section id="resultPanel" class="panel">
+      <div id="personView" class="muted">No person loaded.</div>
+    </section>
+
+    <section id="createPanel" class="panel hidden">
+      <h2>Quick Create</h2>
+      <div>
+        <label for="createPhone">Phone</label>
+        <input id="createPhone" type="text" inputmode="tel" autocomplete="tel-national" maxlength="17" placeholder="+N (ZZZ) NNN NNNN">
+      </div>
+      <div class="row-2">
+        <div>
+          <label for="createName">Name</label>
+          <input id="createName" type="text">
+        </div>
+        <div>
+          <label for="createDevice">Device</label>
+          <select id="createDevice">
+            <option value="Flip2">Flip2</option>
+            <option value="Smart3">Smart3</option>
+            <option value="Smart4">Smart4</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label for="createNotes">Notes</label>
+        <textarea id="createNotes"></textarea>
+      </div>
+      <button id="createBtn" type="button">Create</button>
+      <p id="createStatus" class="status">Status: waiting to create</p>
+    </section>
+
+    <section id="interactionPanel" class="panel hidden">
+      <h2>Add Interaction</h2>
+      <div class="row-2">
+        <div>
+          <label for="reason">Reason</label>
+          <input id="reason" type="text">
+        </div>
+        <div>
+          <label for="charge">Charge</label>
+          <select id="charge">
+            <option value="$10">$10</option>
+            <option value="$25">$25</option>
+            <option value="$35">$35</option>
+            <option value="$50">$50</option>
+            <option value="$75">$75</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label for="action">Action</label>
+        <textarea id="action"></textarea>
+      </div>
+      <div>
+        <label for="result">Result</label>
+        <textarea id="result"></textarea>
+      </div>
+      <button id="addNoteBtn" type="button">Save Interaction</button>
+      <p id="interactionStatus" class="status">Status: waiting to save</p>
+    </section>
+    <div id="recordPopup" class="popup hidden">Record updated</div>
+  </main>
+
+  <script>
+    const incomingPhoneEl = document.getElementById("incomingPhone");
+    const statusEl = document.getElementById("status");
+    const personViewEl = document.getElementById("personView");
+    const createPanelEl = document.getElementById("createPanel");
+    const interactionPanelEl = document.getElementById("interactionPanel");
+    const createPhoneEl = document.getElementById("createPhone");
+    const createNameEl = document.getElementById("createName");
+    const createDeviceEl = document.getElementById("createDevice");
+    const createNotesEl = document.getElementById("createNotes");
+    const createStatusEl = document.getElementById("createStatus");
+    const interactionStatusEl = document.getElementById("interactionStatus");
+    const reasonEl = document.getElementById("reason");
+    const actionEl = document.getElementById("action");
+    const resultEl = document.getElementById("result");
+    const chargeEl = document.getElementById("charge");
+
+    const apiBase = (function () {
+      const params = new URLSearchParams(window.location.search);
+      const fromQuery = String(params.get("api") || "").trim();
+      const base = fromQuery || String(window.location.origin || "").trim();
+      return base.replace(/\/+$/, "");
+    })();
+
+    const historyColors = [
+      "#141924",
+      "#1a2232",
+      "#1f2d42",
+      "#102033",
+      "#1c1e28"
+    ];
+    let currentPerson = null;
+
+    function setStatus(text, isError) {
+      statusEl.textContent = text;
+      statusEl.className = "status " + (isError ? "err" : "ok");
+    }
+
+    function setCreateStatus(text, isError) {
+      createStatusEl.textContent = text;
+      createStatusEl.className = "status " + (isError ? "err" : "ok");
+    }
+
+    function setInteractionStatus(text, isError) {
+      interactionStatusEl.textContent = text;
+      interactionStatusEl.className = "status " + (isError ? "err" : "ok");
+    }
+
+    function showRecordPopup(message) {
+      const popup = document.getElementById("recordPopup");
+      if (!popup) {
+        alert(message);
+        return;
+      }
+      popup.textContent = message;
+      popup.classList.remove("hidden");
+      setTimeout(() => {
+        popup.classList.add("hidden");
+      }, 1800);
+    }
+
+    function logEvent(eventName, payload) {
+      const body = JSON.stringify({
+        event: eventName,
+        payload: payload || {}
+      });
+      fetch(apiBase + "/crm/log", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        keepalive: true,
+        body: body
+      }).catch(function () {});
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function currentPhoneInput() {
+      return String(incomingPhoneEl.value || "").trim();
+    }
+
+    function splitPhone(value) {
+      const onlyDigits = String(value || "").replace(/\D+/g, "").slice(0, 11);
+      if (!onlyDigits) {
+        return { country: "", local: "" };
+      }
+      if (onlyDigits.length <= 10) {
+        return { country: "1", local: onlyDigits };
+      }
+      return {
+        country: onlyDigits.slice(0, 1),
+        local: onlyDigits.slice(1, 11)
+      };
+    }
+
+    function formatPhoneParts(parts) {
+      const country = String((parts && parts.country) || "");
+      const local = String((parts && parts.local) || "");
+      if (!country && !local) {
+        return "";
+      }
+      const cc = country || "1";
+      if (!local) {
+        return "+" + cc;
+      }
+      if (local.length <= 3) {
+        return "+" + cc + " (" + local;
+      }
+      if (local.length <= 6) {
+        return "+" + cc + " (" + local.slice(0, 3) + ") " + local.slice(3);
+      }
+      return "+" + cc + " (" + local.slice(0, 3) + ") " + local.slice(3, 6) + " " + local.slice(6, 10);
+    }
+
+    function applyPhoneMask(inputEl) {
+      const parts = splitPhone(inputEl.value);
+      inputEl.value = formatPhoneParts(parts);
+      return parts;
+    }
+
+    function setPhoneValue(inputEl, value) {
+      const parts = splitPhone(value);
+      inputEl.value = formatPhoneParts(parts);
+      return parts;
+    }
+
+    async function postJson(url, payload) {
+      const targetUrl = apiBase + url;
+      const res = await fetch(targetUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const raw = await res.text();
+      let data = null;
+      try {
+        data = raw ? JSON.parse(raw) : null;
+      } catch (_) {
+        const ctype = String(res.headers.get("Content-Type") || "unknown");
+        const preview = String(raw || "").replace(/\s+/g, " ").trim().slice(0, 180);
+        logEvent("crm.client.response.invalid_json", {
+          url: targetUrl,
+          status: res.status,
+          content_type: ctype,
+          preview: preview
+        });
+        throw new Error("Invalid server response: HTTP " + res.status + " " + ctype + " (" + targetUrl + ")");
+      }
+      if (!res.ok || data.error) {
+        logEvent("crm.client.response.error_status", {
+          url: targetUrl,
+          status: res.status,
+          error: String((data && data.error) || ""),
+        });
+        throw new Error(data.error || ("HTTP " + res.status));
+      }
+      return data;
+    }
+
+    function renderPerson(person) {
+      currentPerson = person || null;
+      if (!currentPerson) {
+        personViewEl.innerHTML = "No person loaded.";
+        interactionPanelEl.classList.add("hidden");
+        setInteractionStatus("Status: waiting to save", false);
+        return;
+      }
+      const history = Array.isArray(currentPerson.history) ? currentPerson.history.slice().reverse() : [];
+      const historyHtml = history.length
+        ? history
+            .map(function (item, idx) {
+              const color = historyColors[idx % historyColors.length];
+              return (
+                '<div class="history-item" style="background: ' + color + ';">' +
+                "<div><b>Time:</b> " + escapeHtml(item.timestamp) + "</div>" +
+                "<div><b>Reason:</b> " + escapeHtml(item.reason) + "</div>" +
+                "<div><b>Action:</b> " + escapeHtml(item.action) + "</div>" +
+                "<div><b>Result:</b> " + escapeHtml(item.result) + "</div>" +
+                "<div><b>Charge:</b> " + escapeHtml(item.charge) + "</div>" +
+                "</div>"
+              );
+            })
+            .join("")
+        : '<p class="muted">No history yet.</p>';
+
+      personViewEl.innerHTML =
+        '<div class="person-grid">' +
+        '<div class="tile"><b>Name:</b> ' + escapeHtml(currentPerson.name) + "</div>" +
+        '<div class="tile"><b>Phone:</b> ' + escapeHtml(currentPerson.phone) + "</div>" +
+        '<div class="tile"><b>Device:</b> ' + escapeHtml(currentPerson.device) + "</div>" +
+        '<div class="tile"><b>Notes:</b> ' + escapeHtml(currentPerson.notes) + "</div>" +
+        "</div>" +
+        "<h3>History</h3>" +
+        historyHtml;
+
+      interactionPanelEl.classList.remove("hidden");
+      setInteractionStatus("Status: ready to save interaction", false);
+    }
+
+    function openCreatePanel(phoneValue) {
+      const phone = String(phoneValue || "").trim();
+      setPhoneValue(incomingPhoneEl, phone);
+      setPhoneValue(createPhoneEl, phone);
+      createNameEl.value = "";
+      createDeviceEl.value = "";
+      createNotesEl.value = "";
+      setCreateStatus("Status: fill form and click Create", false);
+      createPanelEl.classList.remove("hidden");
+      interactionPanelEl.classList.add("hidden");
+      setInteractionStatus("Status: waiting to save", false);
+      currentPerson = null;
+      personViewEl.innerHTML = '<p class="muted">Create a new person for this number.</p>';
+      logEvent("crm.client.create_panel.open", { phone: phone });
+    }
+
+    async function onFind() {
+      const incomingParts = applyPhoneMask(incomingPhoneEl);
+      const phone = currentPhoneInput();
+      logEvent("crm.client.find.click", { phone: phone });
+      if (!phone) {
+        setStatus("Status: phone is required", true);
+        logEvent("crm.client.find.fail", { reason: "phone required" });
+        return;
+      }
+      if (incomingParts.local.length !== 10) {
+        setStatus("Status: enter full 10-digit phone", true);
+        logEvent("crm.client.find.fail", { reason: "phone incomplete", digits: incomingParts.local.length });
+        return;
+      }
+      setStatus("Status: searching...", false);
+      try {
+        const data = await postJson("/crm/find", { phone: phone });
+        if (data.new) {
+          openCreatePanel(phone);
+          setStatus("Status: person not found, create new record", false);
+          logEvent("crm.client.find.new", { phone: phone });
+          return;
+        }
+        createPanelEl.classList.add("hidden");
+        renderPerson(data.person);
+        setStatus("Status: person loaded", false);
+        logEvent("crm.client.find.hit", { phone: phone });
+      } catch (err) {
+        setStatus("Status: " + err.message, true);
+        logEvent("crm.client.find.error", { phone: phone, error: String(err.message || "") });
+      }
+    }
+
+    async function onCreate() {
+      const createParts = applyPhoneMask(createPhoneEl);
+      const phone = String(createPhoneEl.value || "").trim();
+      logEvent("crm.client.create.click", {
+        phone: phone,
+        name: createNameEl.value.trim(),
+        device: createDeviceEl.value.trim()
+      });
+      if (createParts.local.length !== 10) {
+        setStatus("Status: full 10-digit phone required", true);
+        setCreateStatus("Status: full 10-digit phone required", true);
+        logEvent("crm.client.create.fail", { reason: "phone incomplete", digits: createParts.local.length });
+        return;
+      }
+      setPhoneValue(incomingPhoneEl, phone);
+      setStatus("Status: creating...", false);
+      setCreateStatus("Status: creating...", false);
+      try {
+        const data = await postJson("/crm/create", {
+          name: createNameEl.value.trim(),
+          phone: phone,
+          device: createDeviceEl.value.trim(),
+          notes: createNotesEl.value.trim()
+        });
+        createPanelEl.classList.add("hidden");
+        renderPerson(data.person);
+        setStatus("Status: person created", false);
+        setCreateStatus("Status: person created", false);
+        logEvent("crm.client.create.ok", { phone: phone });
+      } catch (err) {
+        setStatus("Status: " + err.message, true);
+        setCreateStatus("Status: " + err.message, true);
+        logEvent("crm.client.create.error", { phone: phone, error: String(err.message || "") });
+      }
+    }
+
+    async function onAddNote() {
+      logEvent("crm.client.add_note.click", {
+        phone: currentPerson && currentPerson.phone ? currentPerson.phone : "",
+        reason: reasonEl.value.trim(),
+        charge: chargeEl.value.trim()
+      });
+      if (!currentPerson || !currentPerson.phone) {
+        setStatus("Status: load a person first", true);
+        setInteractionStatus("Status: load a person first", true);
+        logEvent("crm.client.add_note.fail", { reason: "no current person" });
+        return;
+      }
+      setStatus("Status: saving interaction...", false);
+      setInteractionStatus("Status: saving interaction...", false);
+      try {
+        const data = await postJson("/crm/add_note", {
+          phone: currentPerson.phone,
+          reason: reasonEl.value.trim(),
+          action: actionEl.value.trim(),
+          result: resultEl.value.trim(),
+          charge: chargeEl.value.trim()
+        });
+        renderPerson(data.person);
+        reasonEl.value = "";
+        actionEl.value = "";
+        resultEl.value = "";
+        chargeEl.value = "$10";
+        setStatus("Status: interaction saved", false);
+        setInteractionStatus("Status: interaction saved", false);
+        showRecordPopup("Record updated");
+        logEvent("crm.client.add_note.ok", { phone: currentPerson.phone });
+      } catch (err) {
+        setStatus("Status: " + err.message, true);
+        setInteractionStatus("Status: " + err.message, true);
+        logEvent("crm.client.add_note.error", { phone: currentPerson.phone, error: String(err.message || "") });
+      }
+    }
+
+    document.getElementById("findBtn").addEventListener("click", onFind);
+    document.getElementById("newBtn").addEventListener("click", function () {
+      openCreatePanel(currentPhoneInput());
+      setStatus("Status: new person form open", false);
+    });
+    document.getElementById("createBtn").addEventListener("click", onCreate);
+    document.getElementById("addNoteBtn").addEventListener("click", onAddNote);
+    window.addEventListener("error", function (evt) {
+      logEvent("crm.client.window_error", {
+        message: String(evt.message || ""),
+        source: String(evt.filename || ""),
+        line: Number(evt.lineno || 0),
+        column: Number(evt.colno || 0)
+      });
+    });
+    window.addEventListener("unhandledrejection", function (evt) {
+      logEvent("crm.client.unhandled_rejection", {
+        reason: String((evt.reason && evt.reason.message) || evt.reason || "")
+      });
+    });
+    incomingPhoneEl.addEventListener("input", function () {
+      applyPhoneMask(incomingPhoneEl);
+    });
+    createPhoneEl.addEventListener("input", function () {
+      applyPhoneMask(createPhoneEl);
+    });
+    logEvent("crm.client.page_load", { path: window.location.pathname });
+    setStatus("Status: ready (" + apiBase + ")", false);
+    setCreateStatus("Status: waiting to create", false);
+    setInteractionStatus("Status: waiting to save", false);
+  </script>
+</body>
+</html>
