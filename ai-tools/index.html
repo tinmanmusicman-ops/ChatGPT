@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>AI Analyze Test</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b0f14;
+      --panel: #151c24;
+      --text: #e8eef5;
+      --accent: #3fa9f5;
+      --muted: #9db0c2;
+      --ok: #72d572;
+      --err: #ff7a7a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 1rem;
+      font-family: Segoe UI, system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 18px;
+    }
+    .wrap {
+      max-width: 860px;
+      margin: 0 auto;
+      display: grid;
+      gap: 0.8rem;
+    }
+    h1 {
+      margin: 0.3rem 0 0.1rem;
+      font-size: 1.5rem;
+      color: var(--accent);
+    }
+    .hint {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid #243240;
+      border-radius: 12px;
+      padding: 0.9rem;
+    }
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.35rem;
+    }
+    input, textarea, button {
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid #2e3f50;
+      background: #0f151d;
+      color: var(--text);
+      padding: 0.75rem;
+      font-size: 1rem;
+    }
+    textarea {
+      min-height: 220px;
+      resize: vertical;
+      line-height: 1.45;
+    }
+    button {
+      margin-top: 0.6rem;
+      background: #1a3349;
+      border-color: #2a4f6f;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .result p {
+      margin: 0.55rem 0;
+      line-height: 1.5;
+    }
+    .status {
+      font-weight: 700;
+    }
+    .ok { color: var(--ok); }
+    .err { color: var(--err); }
+    @media (max-width: 600px) {
+      body { font-size: 19px; padding: 0.75rem; }
+      h1 { font-size: 1.35rem; }
+      textarea { min-height: 260px; }
+      button { padding: 0.9rem; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <h1>AI Analyze Endpoint Test</h1>
+    <div class="hint">Paste any text, tap Analyze, and review JSON-backed output from your Flask /analyze route.</div>
+
+    <section class="panel">
+      <label for="endpoint">Analyze Endpoint</label>
+      <input id="endpoint" type="text" value="https://respect-clinics-lines-argue.trycloudflare.com/analyze">
+    </section>
+
+    <section class="panel">
+      <label for="content">Content</label>
+      <textarea id="content">Paste text here...</textarea>
+      <button id="analyzeBtn" type="button">Analyze</button>
+    </section>
+
+    <section class="panel result">
+      <div id="status" class="status">Status: idle</div>
+      <p><strong>Summary:</strong> <span id="summary">-</span></p>
+      <p><strong>Key Points:</strong> <span id="key_points">-</span></p>
+      <p><strong>Action Items:</strong> <span id="action_items">-</span></p>
+    </section>
+  </main>
+
+  <script>
+    const endpointEl = document.getElementById("endpoint");
+    const contentEl = document.getElementById("content");
+    const statusEl = document.getElementById("status");
+    const summaryEl = document.getElementById("summary");
+    const keyPointsEl = document.getElementById("key_points");
+    const actionItemsEl = document.getElementById("action_items");
+    const buttonEl = document.getElementById("analyzeBtn");
+
+    function setStatus(text, isError) {
+      statusEl.textContent = text;
+      statusEl.className = "status " + (isError ? "err" : "ok");
+    }
+
+    async function runAnalyze() {
+      const endpoint = endpointEl.value.trim();
+      const text = contentEl.value.trim();
+      if (!endpoint) {
+        setStatus("Status: endpoint is required", true);
+        return;
+      }
+      if (!text) {
+        setStatus("Status: text is required", true);
+        return;
+      }
+
+      setStatus("Status: analyzing...", false);
+      buttonEl.disabled = true;
+
+      try {
+        const res = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text })
+        });
+        const data = await res.json();
+        if (!res.ok || data.error) {
+          throw new Error(data.error || ("HTTP " + res.status));
+        }
+        summaryEl.textContent = data.summary || "-";
+        keyPointsEl.textContent = data.key_points || "-";
+        actionItemsEl.textContent = data.action_items || "-";
+        setStatus("Status: success", false);
+      } catch (err) {
+        summaryEl.textContent = "-";
+        keyPointsEl.textContent = "-";
+        actionItemsEl.textContent = "-";
+        setStatus("Status: " + err.message, true);
+      } finally {
+        buttonEl.disabled = false;
+      }
+    }
+
+    buttonEl.addEventListener("click", runAnalyze);
+  </script>
+</body>
+</html>

@@ -15,6 +15,7 @@ from typing import Iterable, List, Optional
 
 URL_PATTERN = re.compile(r"https://[a-z0-9-]+\.trycloudflare\.com", re.IGNORECASE)
 DEFAULT_GIT_COMMIT_MESSAGE_TEMPLATE = "Update tower configs to {url}"
+DEFAULT_PHONEEVAL_PAGES_COMMIT_TEMPLATE = "Sync PhoneEval site ({url})"
 
 
 def now_stamp() -> str:
@@ -105,6 +106,11 @@ class QuickTunnelWatchdog:
         git_commit_message_template: str,
         git_remote: str,
         git_branch: Optional[str],
+        pages_branch: str,
+        pages_remote: str,
+        pages_source_dir: str,
+        pages_target_path: str,
+        pages_commit_message_template: str,
         manage_tower: bool,
         tower_command: List[str],
         tower_cwd: Path,
@@ -125,6 +131,13 @@ class QuickTunnelWatchdog:
         self.git_available = bool(self.auto_git_push and shutil.which("git"))
         if self.auto_git_push and not self.git_available:
             log("git executable not found; automatic config pushes disabled")
+        self.pages_branch = pages_branch.strip()
+        self.pages_remote = pages_remote.strip() or git_remote
+        self.pages_source_dir = pages_source_dir.strip() or "PhoneEval"
+        self.pages_target_path = pages_target_path.strip() or "."
+        self.pages_commit_message_template = (
+            pages_commit_message_template.strip() or DEFAULT_PHONEEVAL_PAGES_COMMIT_TEMPLATE
+        )
         self.manage_tower = manage_tower and bool(tower_command)
         self.tower_command = list(tower_command) if tower_command else []
         self.tower_cwd = tower_cwd
@@ -158,6 +171,7 @@ class QuickTunnelWatchdog:
         log(f"tunnel url discovered: {normalized}")
         write_tower_config_files(self.config_paths, normalized)
         self._auto_push_configs(normalized)
+        self._sync_phoneeval_pages_branch(normalized)
         self._restart_tower("new tunnel url discovered")
 
     def _configs_match_current_url(self, tunnel_base_url: str) -> bool:
@@ -234,6 +248,38 @@ class QuickTunnelWatchdog:
         if not push_result or push_result.returncode != 0:
             return
         log(f"git: pushed config updates to {self.git_remote}/{target_ref}")
+
+    def _sync_phoneeval_pages_branch(self, base_url: str) -> None:
+        if not self.pages_branch:
+            return
+        script_path = self.repo_root / "PhoneEval" / "sync_phoneeval_pages.py"
+        if not script_path.exists():
+            log(f"pages sync script missing: {script_path}")
+            return
+        cmd = [
+            sys.executable,
+            str(script_path),
+            "--branch",
+            self.pages_branch,
+            "--remote",
+            self.pages_remote,
+            "--source-dir",
+            self.pages_source_dir,
+            "--target-path",
+            self.pages_target_path,
+            "--base-url",
+            normalize_url(base_url),
+            "--commit-message",
+            self.pages_commit_message_template,
+        ]
+        log(f"running PhoneEval pages sync for {self.pages_branch}")
+        result = subprocess.run(cmd, cwd=str(self.repo_root), text=True, capture_output=True)
+        if result.stdout:
+            log(f"pages sync stdout: {result.stdout.strip()}")
+        if result.stderr:
+            log(f"pages sync stderr: {result.stderr.strip()}")
+        if result.returncode != 0:
+            log(f"pages sync process exited {result.returncode}")
 
     def _read_process_output(self) -> None:
         assert self.process is not None
@@ -395,6 +441,7 @@ def parse_args() -> argparse.Namespace:
         repo_root / "tower.config.json",
         repo_root / "AI-Fit-Site" / "tower.config.json",
         repo_root / "CORES" / "tower.config.json",
+        repo_root / "PhoneEval" / "tower.config.json",
     ]
 
     parser = argparse.ArgumentParser(
@@ -452,6 +499,31 @@ def parse_args() -> argparse.Namespace:
         help="Git ref to push after committing config updates (defaults to HEAD).",
     )
     parser.add_argument(
+        "--pages-branch",
+        default="",
+        help="Branch name where PhoneEval should be deployed (e.g., gh-pages).",
+    )
+    parser.add_argument(
+        "--pages-remote",
+        default="",
+        help="Remote name used to push the PhoneEval branch (defaults to --git-remote).",
+    )
+    parser.add_argument(
+        "--pages-source-dir",
+        default="PhoneEval",
+        help="Path to the PhoneEval source directory relative to the repo root.",
+    )
+    parser.add_argument(
+        "--pages-target-path",
+        default=".",
+        help="Destination path inside the pages branch where PhoneEval is copied.",
+    )
+    parser.add_argument(
+        "--pages-commit-message",
+        default=DEFAULT_PHONEEVAL_PAGES_COMMIT_TEMPLATE,
+        help="Commit message template for PhoneEval branch updates (supports {url}).",
+    )
+    parser.add_argument(
         "--skip-tower",
         action="store_true",
         default=False,
@@ -507,6 +579,11 @@ def main() -> int:
         git_commit_message_template=args.git_commit_message,
         git_remote=args.git_remote,
         git_branch=git_branch,
+        pages_branch=args.pages_branch,
+        pages_remote=args.pages_remote,
+        pages_source_dir=args.pages_source_dir,
+        pages_target_path=args.pages_target_path,
+        pages_commit_message_template=args.pages_commit_message,
         manage_tower=manage_tower,
         tower_command=tower_command,
         tower_cwd=tower_cwd,

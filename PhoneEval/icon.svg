@@ -1,0 +1,7 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="PhoneEval icon">
+  <rect width="256" height="256" rx="40" fill="#101826"/>
+  <rect x="26" y="26" width="204" height="204" rx="30" fill="#182742" stroke="#2e77e5" stroke-width="8"/>
+  <path d="M64 84h128M64 124h128M64 164h88" stroke="#e6edf3" stroke-width="14" stroke-linecap="round"/>
+  <circle cx="186" cy="166" r="30" fill="#1f6feb"/>
+  <path d="M171 166l11 11 19-23" fill="none" stroke="#ffffff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

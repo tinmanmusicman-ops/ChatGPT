@@ -1,0 +1,390 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PhoneEval AI</title>
+  <meta name="theme-color" content="#1f6feb">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0d1117;
+      --panel: #161b22;
+      --line: #2f3d4f;
+      --text: #e6edf3;
+      --muted: #9fb0c2;
+      --accent: #1f6feb;
+      --ok: #4dd98a;
+      --err: #ff7575;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 14px;
+      background: radial-gradient(circle at top, #1a202a 0%, var(--bg) 45%);
+      color: var(--text);
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      font-size: 19px;
+    }
+    .wrap {
+      max-width: 940px;
+      margin: 0 auto;
+      display: grid;
+      gap: 12px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 1.55rem;
+      color: #9ec6ff;
+    }
+    .hint {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.45;
+    }
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--panel);
+      padding: 12px;
+    }
+    label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 7px;
+    }
+    input, textarea, button {
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid #3a495e;
+      background: #0f141b;
+      color: var(--text);
+      font-size: 1rem;
+      padding: 11px;
+    }
+    textarea {
+      min-height: 280px;
+      line-height: 1.45;
+      resize: vertical;
+    }
+    .row {
+      display: grid;
+      gap: 8px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      margin-top: 8px;
+    }
+    button {
+      font-weight: 700;
+      background: #183255;
+      border-color: #2d4f79;
+      cursor: pointer;
+    }
+    button:disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
+    pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      line-height: 1.45;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.95rem;
+    }
+    .status {
+      font-weight: 700;
+      margin: 0;
+    }
+    .ok { color: var(--ok); }
+    .err { color: var(--err); }
+    @media (max-width: 700px) {
+      .row { grid-template-columns: 1fr; }
+      body { font-size: 20px; padding: 10px; }
+      textarea { min-height: 320px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <h1>PhoneEval AI</h1>
+    <p class="hint">Phone flow: select text, Share to PhoneEval (installed PWA), then Analyze.</p>
+
+    <section class="panel">
+      <label for="endpoint">Flask Analyze Endpoint</label>
+      <input id="endpoint" type="text" autocomplete="off" spellcheck="false">
+    </section>
+
+    <section class="panel">
+      <label for="content">Shared or Pasted Content</label>
+      <textarea id="content" placeholder="Shared text appears here. You can also paste manually."></textarea>
+      <div class="row">
+        <button id="analyze" type="button">Analyze</button>
+        <button id="paste" type="button">Paste</button>
+        <button id="clear" type="button">Clear</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <p id="status" class="status">Status: idle</p>
+      <pre id="result">Summary: -
+KeyPoints: -
+ActionItems: -</pre>
+      <div class="row">
+        <button id="copy" type="button">Copy Result</button>
+        <button id="share" type="button">Share Result</button>
+        <button id="save-endpoint" type="button">Save Endpoint</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const CONFIG_CANDIDATES = [
+      "./tower.config.json",
+      "/tower.config.json",
+      "../tower.config.json",
+      "../../tower.config.json"
+    ];
+    const ENDPOINT_KEY = "phone_eval_endpoint";
+
+    const endpointEl = document.getElementById("endpoint");
+    const contentEl = document.getElementById("content");
+    const analyzeEl = document.getElementById("analyze");
+    const pasteEl = document.getElementById("paste");
+    const clearEl = document.getElementById("clear");
+    const copyEl = document.getElementById("copy");
+    const shareEl = document.getElementById("share");
+    const saveEndpointEl = document.getElementById("save-endpoint");
+    const statusEl = document.getElementById("status");
+    const resultEl = document.getElementById("result");
+
+    function setStatus(text, isError) {
+      statusEl.textContent = text;
+      statusEl.className = "status " + (isError ? "err" : "ok");
+    }
+
+    function endpointFromQuery() {
+      const params = new URLSearchParams(window.location.search);
+      return (params.get("endpoint") || "").trim();
+    }
+
+    function normalizeBaseUrl(value) {
+      const text = String(value || "").trim();
+      if (!text) {
+        return "";
+      }
+      return text.replace(/\/+$/, "");
+    }
+
+    function endpointFromBase(base) {
+      const normalized = normalizeBaseUrl(base);
+      if (!normalized) {
+        return "";
+      }
+      return normalized + "/analyze";
+    }
+
+    async function endpointFromConfig() {
+      for (const path of CONFIG_CANDIDATES) {
+        try {
+          const response = await fetch(path, { cache: "no-store" });
+          if (!response.ok) {
+            continue;
+          }
+          const config = await response.json();
+          const base = endpointFromBase(config && config.towerBaseUrl);
+          if (base) {
+            return base;
+          }
+        } catch (_) {
+          // try next candidate
+        }
+      }
+      return "";
+    }
+
+    function endpointFromOrigin() {
+      const origin = normalizeBaseUrl(window.location.origin);
+      if (!origin) {
+        return "";
+      }
+      if (origin.startsWith("http://127.0.0.1") || origin.startsWith("http://localhost")) {
+        return origin + "/analyze";
+      }
+      return "";
+    }
+
+    async function loadEndpoint() {
+      const fromQuery = endpointFromQuery();
+      if (fromQuery) {
+        endpointEl.value = fromQuery;
+        return;
+      }
+      const fromStorage = (localStorage.getItem(ENDPOINT_KEY) || "").trim();
+      if (fromStorage) {
+        endpointEl.value = fromStorage;
+        return;
+      }
+      const fromConfig = await endpointFromConfig();
+      if (fromConfig) {
+        endpointEl.value = fromConfig;
+        return;
+      }
+      endpointEl.value = endpointFromOrigin();
+    }
+
+    function formatResult(data) {
+      const summary = (data.summary || "-").trim();
+      const keyPoints = (data.key_points || "-").trim();
+      const actionItems = (data.action_items || "-").trim();
+      return "Summary: " + summary + "\n" +
+        "KeyPoints: " + keyPoints + "\n" +
+        "ActionItems: " + actionItems;
+    }
+
+    async function loadSharedTextIfPresent() {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("shared") !== "1") {
+        return;
+      }
+      try {
+        const res = await fetch("./shared-data", { cache: "no-store" });
+        if (!res.ok) {
+          setStatus("Status: shared content not available", true);
+          return;
+        }
+        const text = (await res.text()).trim();
+        if (!text) {
+          setStatus("Status: shared content is empty", true);
+          return;
+        }
+        contentEl.value = text;
+        setStatus("Status: shared content loaded", false);
+      } catch (err) {
+        setStatus("Status: failed to load shared content", true);
+      }
+    }
+
+    async function analyze() {
+      const endpoint = endpointEl.value.trim();
+      const text = contentEl.value.trim();
+      if (!endpoint) {
+        setStatus("Status: endpoint is required", true);
+        return;
+      }
+      if (!text) {
+        setStatus("Status: text is required", true);
+        return;
+      }
+
+      analyzeEl.disabled = true;
+      setStatus("Status: analyzing...", false);
+
+      try {
+        const res = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: text })
+        });
+        const data = await res.json();
+        if (!res.ok || data.error) {
+          throw new Error(data.error || ("HTTP " + res.status));
+        }
+        resultEl.textContent = formatResult(data);
+        setStatus("Status: success", false);
+      } catch (err) {
+        resultEl.textContent = "Summary: -\nKeyPoints: -\nActionItems: -";
+        setStatus("Status: " + (err.message || "analyze failed"), true);
+      } finally {
+        analyzeEl.disabled = false;
+      }
+    }
+
+    async function pasteText() {
+      try {
+        const text = await navigator.clipboard.readText();
+        if (!text.trim()) {
+          setStatus("Status: clipboard is empty", true);
+          return;
+        }
+        contentEl.value = text;
+        setStatus("Status: pasted from clipboard", false);
+      } catch (err) {
+        setStatus("Status: clipboard read blocked", true);
+      }
+    }
+
+    function clearAll() {
+      contentEl.value = "";
+      resultEl.textContent = "Summary: -\nKeyPoints: -\nActionItems: -";
+      setStatus("Status: cleared", false);
+    }
+
+    async function copyResult() {
+      const text = resultEl.textContent.trim();
+      if (!text || text === "Summary: -\nKeyPoints: -\nActionItems: -") {
+        setStatus("Status: nothing to copy", true);
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(text);
+        setStatus("Status: result copied", false);
+      } catch (err) {
+        setStatus("Status: copy blocked", true);
+      }
+    }
+
+    async function shareResult() {
+      const text = resultEl.textContent.trim();
+      if (!navigator.share) {
+        setStatus("Status: system share not supported", true);
+        return;
+      }
+      if (!text || text === "Summary: -\nKeyPoints: -\nActionItems: -") {
+        setStatus("Status: nothing to share", true);
+        return;
+      }
+      try {
+        await navigator.share({
+          title: "PhoneEval Result",
+          text: text
+        });
+        setStatus("Status: result shared", false);
+      } catch (err) {
+        setStatus("Status: share cancelled", true);
+      }
+    }
+
+    function saveEndpoint() {
+      const endpoint = endpointEl.value.trim();
+      if (!endpoint) {
+        setStatus("Status: endpoint is required", true);
+        return;
+      }
+      localStorage.setItem(ENDPOINT_KEY, endpoint);
+      setStatus("Status: endpoint saved", false);
+    }
+
+    function registerServiceWorker() {
+      if (!("serviceWorker" in navigator)) {
+        return;
+      }
+      navigator.serviceWorker.register("./sw.js").catch(function () {
+        setStatus("Status: service worker registration failed", true);
+      });
+    }
+
+    analyzeEl.addEventListener("click", analyze);
+    pasteEl.addEventListener("click", pasteText);
+    clearEl.addEventListener("click", clearAll);
+    copyEl.addEventListener("click", copyResult);
+    shareEl.addEventListener("click", shareResult);
+    saveEndpointEl.addEventListener("click", saveEndpoint);
+
+    loadEndpoint();
+    registerServiceWorker();
+    loadSharedTextIfPresent();
+  </script>
+</body>
+</html>

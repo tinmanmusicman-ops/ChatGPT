@@ -44,6 +44,8 @@ BASE_DIR = Path(__file__).resolve().parent
 UI_DIR = BASE_DIR / "ui"
 IMAGES_DIR = BASE_DIR.parent / "Images"
 FIT_SITE_DIR = BASE_DIR.parent / "AI-Fit-Site"
+AI_TOOLS_DIR = BASE_DIR.parent / "ai-tools"
+PHONE_EVAL_DIR = BASE_DIR.parent / "PhoneEval"
 DEFAULT_RESUME_OUTPUT_DIR = Path(r"C:\!!!!!!!!!!!!!!!!!!!!!!!!!Stuff")
 BASE_OUTPUT_DIR = Path(os.environ.get("HSST_RESUME_OUTPUT_DIR", str(DEFAULT_RESUME_OUTPUT_DIR)))
 BASE_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -53,6 +55,7 @@ THERMOSTATS_WEB_DIR = AI_BOTS_ROOT / "Thermostats" / "Web"
 GLOBAL_CONFIG_PATH = Path(
     os.environ.get("HSST_GLOBAL_CONFIG", str(AI_BOTS_ROOT / "shared" / "Global.json"))
 )
+ANALYZE_GLOBAL_CONFIG_PATH = Path(r"C:\ChatGPT\ai-bots\shared\global.json")
 
 DATA_DIR = BASE_DIR.parent / "data"
 CUSTOMERS_JSON_PATH = DATA_DIR / "customers.json"
@@ -103,6 +106,58 @@ def _with_cors(resp):
         resp.headers["Access-Control-Allow-Methods"] = "POST, OPTIONS"
         resp.headers["Access-Control-Allow-Headers"] = "Content-Type"
     return resp
+
+
+def _with_open_cors(resp):
+    origin = request.headers.get("Origin", "").strip()
+    resp.headers["Access-Control-Allow-Origin"] = origin if origin else "*"
+    if origin:
+        resp.headers["Vary"] = "Origin"
+    resp.headers["Access-Control-Allow-Methods"] = "POST, OPTIONS"
+    resp.headers["Access-Control-Allow-Headers"] = "Content-Type"
+    return resp
+
+
+def _load_analyze_api_key() -> str:
+    config_path = ANALYZE_GLOBAL_CONFIG_PATH
+    if not config_path.exists():
+        raise RuntimeError(f"Global config missing: {config_path}")
+    try:
+        raw = config_path.read_text(encoding="utf-8")
+        data = json.loads(raw)
+    except Exception:
+        raise RuntimeError(f"Invalid JSON in global config: {config_path}")
+    if not isinstance(data, dict):
+        raise RuntimeError(f"Global config must be a JSON object: {config_path}")
+    for key_name in ("openai_api_key", "OPENAI_API_KEY"):
+        value = data.get(key_name)
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+    raise RuntimeError(f"OpenAI API key not found in {config_path}")
+
+
+def _ascii_line(value: str) -> str:
+    text = re.sub(r"\s+", " ", str(value or "")).strip()
+    return text.encode("ascii", "ignore").decode("ascii").strip()
+
+
+def _trim_words(value: str, max_words: int) -> str:
+    if max_words <= 0:
+        return ""
+    words = str(value or "").split()
+    if len(words) <= max_words:
+        return " ".join(words)
+    return " ".join(words[:max_words])
+
+
+def _enforce_analysis_word_limit(summary: str, key_points: str, action_items: str, limit: int = 150) -> tuple[str, str, str]:
+    remaining = max(limit, 1)
+    summary_trimmed = _trim_words(summary, remaining)
+    remaining -= len(summary_trimmed.split())
+    key_points_trimmed = _trim_words(key_points, remaining)
+    remaining -= len(key_points_trimmed.split())
+    action_items_trimmed = _trim_words(action_items, remaining)
+    return summary_trimmed, key_points_trimmed, action_items_trimmed
 
 
 def _load_customers() -> list:
@@ -1192,6 +1247,26 @@ _visit_last_notified_at = {}
 def fit_site_index():
     _maybe_notify_fit_site_visit(page="Job.html")
     return send_from_directory(FIT_SITE_DIR, "Job.html")
+
+
+@app.route("/ai-tools", strict_slashes=False)
+def ai_tools_index():
+    return send_from_directory(AI_TOOLS_DIR, "index.html")
+
+
+@app.route("/ai-tools/<path:filename>")
+def ai_tools_static(filename):
+    return send_from_directory(AI_TOOLS_DIR, filename)
+
+
+@app.route("/phone-eval", strict_slashes=False)
+def phone_eval_index():
+    return send_from_directory(PHONE_EVAL_DIR, "index.html")
+
+
+@app.route("/phone-eval/<path:filename>")
+def phone_eval_static(filename):
+    return send_from_directory(PHONE_EVAL_DIR, filename)
 
 
 @app.route("/manage", strict_slashes=False)
@@ -2764,6 +2839,120 @@ def help_intake():
 
     app.logger.info("received help intake %s", account_id)
     return jsonify({"status": "ok", "accountId": account_id})
+
+
+@app.route("/analyze", methods=["OPTIONS", "POST"])
+def analyze_content():
+    if request.method == "OPTIONS":
+        resp = app.make_response(("", 204))
+        return _with_open_cors(resp)
+
+    payload = request.get_json(force=True, silent=True)
+    text = ""
+    if isinstance(payload, dict):
+        text = str(payload.get("text") or "").strip()
+    if not text:
+        text = str(request.form.get("text") or "").strip()
+
+    if not text:
+        return _with_open_cors(app.make_response((jsonify({"error": "No text received"}), 400)))
+    if len(text) < 10:
+        return _with_open_cors(app.make_response((jsonify({"error": "Text too short to analyze"}), 400)))
+
+    try:
+        openai_key = _load_analyze_api_key()
+    except RuntimeError as exc:
+        app.logger.error("analyze config error: %s", exc)
+        return _with_open_cors(app.make_response((jsonify({"error": str(exc)}), 500)))
+
+    model = os.environ.get("OPENAI_MODEL", "gpt-4o-mini").strip() or "gpt-4o-mini"
+    system_prompt = (
+        "Analyze and summarize the provided content clearly and concisely. "
+        "Return: Summary (3-5 sentences max), Key points, Action items if present (otherwise 'None'). "
+        "Keep under 150 words total. Plain ASCII only. Do not invent details not present in text. "
+        "Return JSON only with keys: summary, key_points, action_items."
+    )
+
+    try:
+        response = requests.post(
+            "https://api.openai.com/v1/chat/completions",
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {openai_key}",
+            },
+            json={
+                "model": model,
+                "temperature": 0.2,
+                "messages": [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": text},
+                ],
+                "response_format": {"type": "json_object"},
+                "max_tokens": 450,
+            },
+            timeout=60,
+        )
+    except requests.RequestException as exc:
+        app.logger.error("analyze request failed: %s", exc)
+        return _with_open_cors(app.make_response((jsonify({"error": "AI request failed"}), 503)))
+
+    if response.status_code >= 400:
+        app.logger.error("analyze request failed status=%s", response.status_code)
+        return _with_open_cors(app.make_response((jsonify({"error": "AI request failed"}), response.status_code)))
+
+    try:
+        data = response.json()
+        content = (
+            data.get("choices", [{}])[0]
+            .get("message", {})
+            .get("content", "")
+            .strip()
+        )
+        json_text = _extract_first_json_object(content)
+        parsed = json.loads(json_text)
+    except Exception as exc:
+        app.logger.error("analyze parse failed: %s", exc)
+        return _with_open_cors(app.make_response((jsonify({"error": "AI response parse failed"}), 502)))
+
+    summary = _ascii_line(parsed.get("summary") or parsed.get("Summary") or "")
+    key_points = _ascii_line(
+        parsed.get("key_points")
+        or parsed.get("keyPoints")
+        or parsed.get("KeyPoints")
+        or ""
+    )
+    action_items = _ascii_line(
+        parsed.get("action_items")
+        or parsed.get("actionItems")
+        or parsed.get("ActionItems")
+        or "None"
+    )
+
+    if not summary or not key_points:
+        return _with_open_cors(
+            app.make_response((jsonify({"error": "AI returned incomplete analysis"}), 502))
+        )
+
+    summary, key_points, action_items = _enforce_analysis_word_limit(
+        summary=summary,
+        key_points=key_points,
+        action_items=action_items or "None",
+        limit=150,
+    )
+    if not action_items:
+        action_items = "None"
+
+    return _with_open_cors(
+        app.make_response(
+            jsonify(
+                {
+                    "summary": summary,
+                    "key_points": key_points,
+                    "action_items": action_items,
+                }
+            )
+        )
+    )
 
 
 @app.route("/tower/ask-ai", methods=["OPTIONS", "POST"])
