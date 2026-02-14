@@ -3,12 +3,13 @@ from __future__ import annotations
 import argparse
 import html as html_module
 import json
+import re
 import subprocess
 import sys
 import webbrowser
 from datetime import datetime
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Tuple
 
 try:
     import requests
@@ -22,7 +23,7 @@ LAST_RESULT_PATH = LOG_DIR / "last_result.txt"
 LAST_RESULT_HTML = LOG_DIR / "last_result.html"
 DEEP_LOG_PATH = LOG_DIR / "deep_debug.log"
 GLOBAL_CONFIG_PATH = Path(r"C:\ChatGPT\ai-bots\shared\global.json")
-RESUME_PATH = Path(r"C:\ChatGPT\ai-bots\AI-FIT-Site\core-US-2026-000001.md")
+RESUME_PATH = Path(r"C:\ChatGPT\CORES\CORE-US-2026-000001.md")
 
 
 class FailFastError(RuntimeError):
@@ -81,6 +82,13 @@ def _system_prompt() -> str:
     return (
         "You compare a job description against a master resume. "
         "Use only facts present in the resume text. Do not invent facts. "
+        "Review the entire resume before writing output. "
+        "Use the provided priority evidence index only as a navigation aid, not as a replacement for full resume review. "
+        "Before writing Gaps, run an evidence check against the full resume text and the priority evidence index. "
+        "Every gap must be truly absent from both. "
+        "If directly related or transferable evidence exists anywhere in either source, do not claim it is missing. "
+        "When evidence is partial, describe it as partial rather than missing. "
+        "Return compact sentence text on each field line; do not use bullet formatting. "
         "Return plain ASCII only. No markdown. Use exactly these lines in order:\n"
         "FitScore: N\n"
         "Strengths: ...\n"
@@ -91,16 +99,237 @@ def _system_prompt() -> str:
     )
 
 
+def _extract_priority_resume_evidence(job_text: str, resume_text: str, max_lines: int = 20) -> str:
+    job_tokens = {token for token in re.findall(r"[a-z0-9]+", job_text.lower()) if len(token) >= 3}
+    scored_lines = []
+    seen = set()
+
+    for raw_line in resume_text.splitlines():
+        line = raw_line.strip()
+        if not line:
+            continue
+        if line in seen:
+            continue
+        line_lower = line.lower()
+        line_tokens = set(re.findall(r"[a-z0-9]+", line_lower))
+        overlap = job_tokens & line_tokens
+        if not overlap:
+            continue
+
+        score = len(overlap)
+        if line.startswith("-"):
+            score += 2
+
+        scored_lines.append((score, line))
+        seen.add(line)
+
+    scored_lines.sort(key=lambda item: item[0], reverse=True)
+    selected = [line for _, line in scored_lines[:max_lines]]
+    if not selected:
+        return "NONE"
+    return "\n".join(selected)
+
+
 def _user_prompt(job_text: str, resume_text: str) -> str:
+    priority_evidence = _extract_priority_resume_evidence(job_text=job_text, resume_text=resume_text)
     return (
         "Resume:\n"
         f"{resume_text}\n\n"
+        "Priority Evidence Note:\n"
+        "The priority evidence lines below are auto-selected from the full resume by lexical overlap with the job description.\n\n"
+        "Priority Resume Evidence:\n"
+        f"{priority_evidence}\n\n"
         "Job Description:\n"
         f"{job_text}\n"
     )
 
 
-def _call_openai_with_sdk(api_key: str, model: str, job_text: str, resume_text: str) -> str:
+def _correction_system_prompt() -> str:
+    return (
+        "You are validating a job-fit summary against a resume and job description. "
+        "Fix contradictions where Gaps claims missing evidence that appears in the resume. "
+        "Use only facts from the resume. Do not invent facts. "
+        "Return plain ASCII only. No markdown. Use exactly these lines in order:\n"
+        "FitScore: N\n"
+        "Strengths: ...\n"
+        "Gaps: ...\n"
+        "Tailor: ...\n"
+        "Recommendation: Apply|Skip|Investigate\n"
+        "Use compact sentence text on each line."
+    )
+
+
+def _correction_user_prompt(
+    job_text: str,
+    resume_text: str,
+    current_summary: str,
+    contradictions: list[str],
+) -> str:
+    contradiction_lines = "\n".join(f"- {item}" for item in contradictions)
+    return (
+        "Resume:\n"
+        f"{resume_text}\n\n"
+        "Job Description:\n"
+        f"{job_text}\n\n"
+        "Current Summary:\n"
+        f"{current_summary}\n\n"
+        "Detected Contradictions To Fix:\n"
+        f"{contradiction_lines}\n\n"
+        "Rewrite the full summary in the required five-line format."
+    )
+
+
+def _parse_summary_fields(summary: str) -> Dict[str, str]:
+    data: Dict[str, str] = {}
+    for line in summary.strip().splitlines():
+        if ":" not in line:
+            continue
+        key, value = line.split(":", 1)
+        data[key.strip()] = value.strip()
+    return data
+
+
+def _split_gap_claims(gaps_text: str) -> list[str]:
+    if " - " in gaps_text:
+        return [part.strip(" -.;") for part in gaps_text.split(" - ") if part.strip(" -.;")]
+    return [part.strip(" -.;") for part in re.split(r";|\.\s+", gaps_text) if part.strip(" -.;")]
+
+
+def _extract_claim_tokens(claim: str) -> list[str]:
+    stopwords = {
+        "about",
+        "after",
+        "also",
+        "and",
+        "any",
+        "are",
+        "been",
+        "being",
+        "direct",
+        "does",
+        "evidence",
+        "explicit",
+        "from",
+        "have",
+        "here",
+        "into",
+        "lack",
+        "lacks",
+        "less",
+        "like",
+        "line",
+        "lines",
+        "many",
+        "mention",
+        "mentioned",
+        "missing",
+        "more",
+        "most",
+        "none",
+        "not",
+        "only",
+        "other",
+        "role",
+        "roles",
+        "same",
+        "such",
+        "that",
+        "their",
+        "there",
+        "these",
+        "this",
+        "those",
+        "through",
+        "with",
+        "without",
+    }
+    return [
+        token
+        for token in re.findall(r"[a-z0-9]+", claim.lower())
+        if len(token) >= 4 and token not in stopwords
+    ]
+
+
+def _find_gap_contradictions(summary: str, resume_text: str) -> list[str]:
+    fields = _parse_summary_fields(summary)
+    gaps_text = fields.get("Gaps", "")
+    if not gaps_text:
+        return []
+
+    resume_lower = resume_text.lower()
+    contradictions: list[str] = []
+    for claim in _split_gap_claims(gaps_text):
+        claim_lower = claim.lower()
+        if not re.search(r"\b(no|not|without|lack|lacks|missing)\b", claim_lower):
+            continue
+        tokens = _extract_claim_tokens(claim)
+        if not tokens:
+            continue
+        matched = [token for token in tokens if re.search(rf"\b{re.escape(token)}\b", resume_lower)]
+        unique_matched = sorted(set(matched))
+        overlap_ratio = len(unique_matched) / len(set(tokens))
+        if len(unique_matched) >= 3 and overlap_ratio >= 0.6:
+            matched_text = ", ".join(sorted(set(matched))[:8])
+            contradictions.append(f"{claim} [matched: {matched_text}]")
+    return contradictions
+
+
+def _find_gap_overlap_claims(summary: str, resume_text: str) -> list[str]:
+    fields = _parse_summary_fields(summary)
+    gaps_text = fields.get("Gaps", "")
+    if not gaps_text:
+        return []
+
+    resume_lower = resume_text.lower()
+    overlap_claims: list[str] = []
+    for claim in _split_gap_claims(gaps_text):
+        claim_lower = claim.lower()
+        if not re.search(r"\b(no|not|without|lack|lacks|missing)\b", claim_lower):
+            continue
+        tokens = _extract_claim_tokens(claim)
+        if not tokens:
+            continue
+        matched = [token for token in tokens if re.search(rf"\b{re.escape(token)}\b", resume_lower)]
+        unique_matched = sorted(set(matched))
+        if unique_matched:
+            matched_text = ", ".join(unique_matched[:8])
+            overlap_claims.append(f"{claim} [matched: {matched_text}]")
+    return overlap_claims
+
+
+def _sanitize_contradicted_gaps(summary: str, contradictions: list[str]) -> str:
+    fields = _parse_summary_fields(summary)
+    required_fields = ("FitScore", "Strengths", "Gaps", "Tailor", "Recommendation")
+    for key in required_fields:
+        if key not in fields:
+            raise FailFastError(f"Unable to sanitize summary; missing field: {key}")
+
+    contradiction_claims = {
+        item.split(" [matched:", 1)[0].strip().lower()
+        for item in contradictions
+        if item.strip()
+    }
+    gap_claims = _split_gap_claims(fields["Gaps"])
+    kept_claims = [claim for claim in gap_claims if claim.strip().lower() not in contradiction_claims]
+    if kept_claims:
+        fields["Gaps"] = "; ".join(kept_claims)
+    else:
+        fields["Gaps"] = (
+            "Limited direct evidence for some role-specific details; "
+            "transferable evidence exists across customer service, retail operations, and process execution."
+        )
+
+    sanitized = (
+        f"FitScore: {fields['FitScore']}\n"
+        f"Strengths: {fields['Strengths']}\n"
+        f"Gaps: {fields['Gaps']}\n"
+        f"Tailor: {fields['Tailor']}\n"
+        f"Recommendation: {fields['Recommendation']}\n"
+    )
+    return _normalize_output(sanitized)
+
+
+def _call_openai_with_sdk(api_key: str, model: str, system_prompt: str, user_prompt: str) -> str:
     try:
         from openai import OpenAI
     except ImportError:
@@ -109,17 +338,17 @@ def _call_openai_with_sdk(api_key: str, model: str, job_text: str, resume_text: 
     client = OpenAI(api_key=api_key)
     response = client.responses.create(
         model=model,
-        temperature=0.2,
+        temperature=0.0,
         input=[
-            {"role": "system", "content": _system_prompt()},
-            {"role": "user", "content": _user_prompt(job_text, resume_text)},
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
         ],
     )
     output = getattr(response, "output_text", "") or ""
     return output.strip()
 
 
-def _call_openai_with_http(api_key: str, model: str, job_text: str, resume_text: str) -> str:
+def _call_openai_with_http(api_key: str, model: str, system_prompt: str, user_prompt: str) -> str:
     if requests is None:
         raise FailFastError("Neither OpenAI SDK nor requests is available for API call.")
 
@@ -130,10 +359,10 @@ def _call_openai_with_http(api_key: str, model: str, job_text: str, resume_text:
     }
     payload = {
         "model": model,
-        "temperature": 0.2,
+        "temperature": 0.0,
         "input": [
-            {"role": "system", "content": _system_prompt()},
-            {"role": "user", "content": _user_prompt(job_text, resume_text)},
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
         ],
     }
     response = requests.post(url, headers=headers, json=payload, timeout=60)
@@ -159,36 +388,76 @@ def _call_openai_with_http(api_key: str, model: str, job_text: str, resume_text:
     return "\n".join(parts).strip()
 
 
+def _call_openai(api_key: str, model: str, system_prompt: str, user_prompt: str) -> Tuple[str, str]:
+    api_source = "SDK"
+    raw_output = _call_openai_with_sdk(
+        api_key=api_key,
+        model=model,
+        system_prompt=system_prompt,
+        user_prompt=user_prompt,
+    )
+    if raw_output:
+        return api_source, raw_output
+
+    api_source = "HTTP"
+    raw_output = _call_openai_with_http(
+        api_key=api_key,
+        model=model,
+        system_prompt=system_prompt,
+        user_prompt=user_prompt,
+    )
+    if not raw_output:
+        raise FailFastError("OpenAI returned an empty response.")
+    return api_source, raw_output
+
+
 def _ascii_clean(value: str) -> str:
     return value.encode("ascii", "ignore").decode("ascii")
 
 
 def _normalize_output(raw_output: str) -> str:
     required = ("FitScore", "Strengths", "Gaps", "Tailor", "Recommendation")
-    parsed: Dict[str, str] = {}
+    parsed_blocks: Dict[str, list[str]] = {label: [] for label in required}
+    current_label = ""
 
     for line in raw_output.splitlines():
         clean_line = _ascii_clean(line).strip()
-        if not clean_line or ":" not in clean_line:
+        if not clean_line:
             continue
-        label, value = clean_line.split(":", 1)
-        label = label.strip()
-        value = value.strip()
-        if label in required and value:
-            parsed[label] = value
+
+        match = re.match(r"^(FitScore|Strengths|Gaps|Tailor|Recommendation)\s*:\s*(.*)$", clean_line)
+        if match:
+            current_label = match.group(1)
+            first_value = match.group(2).strip()
+            if first_value:
+                parsed_blocks[current_label].append(first_value)
+            continue
+
+        if current_label:
+            parsed_blocks[current_label].append(clean_line)
+
+    parsed: Dict[str, str] = {}
+    for label in required:
+        joined = " ".join(part.strip() for part in parsed_blocks[label] if part.strip()).strip()
+        if joined:
+            parsed[label] = joined
 
     for label in required:
         if label not in parsed:
             raise FailFastError(f"Model output missing required field: {label}")
 
     try:
-        score = int(parsed["FitScore"])
+        score_match = re.search(r"\d+", parsed["FitScore"])
+        if not score_match:
+            raise ValueError(parsed["FitScore"])
+        score = int(score_match.group(0))
     except ValueError as exc:
         raise FailFastError(f"Invalid FitScore value: {parsed['FitScore']}") from exc
     if score < 0 or score > 100:
         raise FailFastError(f"FitScore out of range 0-100: {score}")
 
-    recommendation = parsed["Recommendation"].strip()
+    recommendation_match = re.search(r"\b(Apply|Skip|Investigate)\b", parsed["Recommendation"], flags=re.IGNORECASE)
+    recommendation = recommendation_match.group(1).title() if recommendation_match else ""
     if recommendation not in {"Apply", "Skip", "Investigate"}:
         raise FailFastError(f"Invalid Recommendation value: {recommendation}")
 
@@ -202,24 +471,50 @@ def _normalize_output(raw_output: str) -> str:
     return "\n".join(_ascii_clean(line) for line in lines) + "\n"
 
 
-def _append_deep_log(job_file_path: Path, job_text: str, raw_output: str, summary: str, api_source: str) -> None:
+def _append_deep_log(
+    *,
+    model: str,
+    api_source: str,
+    job_file_path: Path,
+    job_text: str,
+    resume_file_path: Path,
+    resume_text: str,
+    raw_output: str,
+    summary: str,
+    error_text: str,
+    audit_notes: str,
+) -> None:
     LOG_DIR.mkdir(parents=True, exist_ok=True)
-    snippet = ' '.join(job_text.splitlines())
-    snippet = snippet.strip()
-    if len(snippet) > 400:
-        snippet = snippet[:400] + '... (truncated)'
+    job_abs = job_file_path.resolve()
+    resume_abs = resume_file_path.resolve()
     raw_clean = raw_output.strip()
     summary_clean = summary.strip()
+    user_prompt = _user_prompt(job_text=job_text, resume_text=resume_text)
+    error_block = error_text.strip() or "NONE"
     entry = (
         f"Timestamp: {datetime.now().isoformat(timespec='seconds')}\n"
-        f"JobFile: {job_file_path}\n"
-        f"JobLength: {len(job_text)}\n"
+        f"Model: {model}\n"
         f"ApiSource: {api_source}\n"
-        f"JobSnippet: {snippet}\n"
+        f"JobFile: {job_abs}\n"
+        f"JobLength: {len(job_text)}\n"
+        f"ResumeFile: {resume_abs}\n"
+        f"ResumeLength: {len(resume_text)}\n"
+        "SystemPrompt:\n"
+        f"{_system_prompt()}\n"
+        "UserPrompt:\n"
+        f"{user_prompt}\n"
+        "JobText:\n"
+        f"{job_text}\n"
+        "ResumeText:\n"
+        f"{resume_text}\n"
         "RawOutput:\n"
         f"{raw_clean}\n"
         "Normalized:\n"
         f"{summary_clean}\n"
+        "Error:\n"
+        f"{error_block}\n"
+        "AuditNotes:\n"
+        f"{audit_notes}\n"
         + '-' * 60
         + '\n'
     )
@@ -248,12 +543,7 @@ def _write_results(summary: str, job_file_path: Path, job_title: str, company: s
 
 
 def _write_html(summary: str, job_file_path: Path, log_path: Path, job_title: str, company: str) -> Path:
-    data = {}
-    for line in summary.strip().splitlines():
-        if ":" not in line:
-            continue
-        key, value = line.split(":", 1)
-        data[key.strip()] = value.strip()
+    data = _parse_summary_fields(summary)
 
     pillar = {
         "FitScore": data.get("FitScore", ""),
@@ -334,20 +624,64 @@ def main() -> int:
     api_key = _load_api_key()
 
     api_source = "SDK"
-    raw_output = _call_openai_with_sdk(api_key=api_key, model=args.model, job_text=job_text, resume_text=resume_text)
-    if not raw_output:
-        api_source = "HTTP"
-        raw_output = _call_openai_with_http(
+    raw_output = ""
+    summary = ""
+    error_text = ""
+    audit_notes = "NONE"
+    try:
+        api_source, raw_output = _call_openai(
             api_key=api_key,
             model=args.model,
-            job_text=job_text,
-            resume_text=resume_text,
+            system_prompt=_system_prompt(),
+            user_prompt=_user_prompt(job_text=job_text, resume_text=resume_text),
         )
-    if not raw_output:
-        raise FailFastError("OpenAI returned an empty response.")
+        summary = _normalize_output(raw_output)
+        overlap_claims = _find_gap_overlap_claims(summary=summary, resume_text=resume_text)
+        if overlap_claims:
+            audit_notes = "INITIAL_GAP_OVERLAP_CLAIMS:\n" + "\n".join(f"- {item}" for item in overlap_claims)
+            correction_source, correction_raw = _call_openai(
+                api_key=api_key,
+                model=args.model,
+                system_prompt=_correction_system_prompt(),
+                user_prompt=_correction_user_prompt(
+                    job_text=job_text,
+                    resume_text=resume_text,
+                    current_summary=summary,
+                    contradictions=overlap_claims,
+                ),
+            )
+            api_source = f"{api_source}+{correction_source}"
+            raw_output = raw_output + "\n\n[CorrectionPass]\n" + correction_raw
+            summary = _normalize_output(correction_raw)
+            remaining = _find_gap_contradictions(summary=summary, resume_text=resume_text)
+            if remaining:
+                summary = _sanitize_contradicted_gaps(summary=summary, contradictions=remaining)
+                remaining = _find_gap_contradictions(summary=summary, resume_text=resume_text)
+                if remaining:
+                    raise FailFastError(
+                        "Gap contradiction check failed after correction pass and sanitization: "
+                        + "; ".join(remaining)
+                    )
+                audit_notes += "\nCORRECTION_PASS: PARTIAL\nSANITIZATION: APPLIED"
+            else:
+                audit_notes += "\nCORRECTION_PASS: RESOLVED"
+    except Exception as exc:
+        error_text = f"{type(exc).__name__}: {exc}"
+        raise
+    finally:
+        _append_deep_log(
+            model=args.model,
+            api_source=api_source,
+            job_file_path=job_file_path,
+            job_text=job_text,
+            resume_file_path=RESUME_PATH,
+            resume_text=resume_text,
+            raw_output=raw_output,
+            summary=summary,
+            error_text=error_text,
+            audit_notes=audit_notes,
+        )
 
-    summary = _normalize_output(raw_output)
-    _append_deep_log(job_file_path, job_text, raw_output, summary, api_source)
     _write_results(summary=summary, job_file_path=job_file_path, job_title=job_title, company=company)
     print(summary, end="")
     if not args.no_open:

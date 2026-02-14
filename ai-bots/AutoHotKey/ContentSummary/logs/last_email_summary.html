@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Email Summary</title>
+  <style>
+    :root { color-scheme: dark; forced-color-adjust: none; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background:#000; color:#faebd7; padding:30px; }
+    .container { max-width:900px; margin:0 auto; background:#111; border:4px solid #ff8c00; border-radius:18px; padding:28px; box-shadow:0 30px 50px rgba(0,0,0,0.75); }
+    h1 { font-size:2rem; margin:0 0 10px; color:#ff9a00; text-transform:uppercase; letter-spacing:0.12rem; }
+    .meta { color:#fffacd; font-size:0.95rem; margin-bottom:16px; }
+    p { line-height:1.7; margin:12px 0; font-size:1.04rem; }
+    strong { color:#5aa4ff; }
+    .tone strong { color:#ffa500; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Email Summary</h1>
+    <div class="meta">Input: email.txt | Log: email_summary_20260213_160758.txt | 2026-02-13T16:07:58</div>
+    <p><strong>Summary:</strong> The Email Summary Tool combines an AutoHotkey script and Python to capture selected text and generate summaries using OpenAI. It retrieves the API key from a shared JSON file and saves output summaries and errors in a logs folder with timestamped and fixed filenames. A direct test can be run using a specified Python virtual environment and sample email file.</p>
+    <p><strong>KeyPoints:</strong> Captures text via Ctrl+Win+S from EvaluateJobFit.ahk; Uses OpenAI API key from global.json; Outputs summaries and errors to logs folder with timestamps; Testable via Python script and sample email file.</p>
+    <p><strong>ActionItems:</strong> None</p>
+    <p class="tone"><strong>Tone:</strong> Informational</p>
+  </div>
+</body>
+</html>
