@@ -262,19 +262,36 @@
           }
           if (!towerConfigPromise) {
             towerConfigPromise = (async () => {
-              const response = await fetch("/tower.config.json", { cache: "no-store" });
-              if (!response.ok) {
-                throw new Error(`tower.config.json load failed (${response.status})`);
+              const candidates = [
+                new URL("/tower.config.json", window.location.origin).toString(),
+                new URL("/ai-bots/JitterbugExpert/tower.config.json", window.location.origin).toString(),
+                new URL("/AI-Fit-Site/tower.config.json", window.location.origin).toString(),
+                new URL("tower.config.json", window.location.href).toString(),
+              ];
+              const failures = [];
+
+              for (const configUrl of candidates) {
+                try {
+                  const response = await fetch(configUrl, { cache: "no-store" });
+                  if (!response.ok) {
+                    failures.push(`${configUrl} -> HTTP ${response.status}`);
+                    continue;
+                  }
+                  const config = await response.json().catch(() => null);
+                  const base = String(config?.towerBaseUrl || "").trim();
+                  if (!base) {
+                    failures.push(`${configUrl} -> missing towerBaseUrl`);
+                    continue;
+                  }
+                  towerBaseUrl = base.replace(/\/+$/, "");
+                  return towerBaseUrl;
+                } catch (error) {
+                  failures.push(`${configUrl} -> ${error?.message || String(error)}`);
+                }
               }
-              const config = await response.json().catch(() => {
-                throw new Error("tower.config.json is not valid JSON.");
-              });
-              const base = String(config?.towerBaseUrl || "").trim();
-              if (!base) {
-                throw new Error("tower.config.json missing required towerBaseUrl.");
-              }
-              towerBaseUrl = base.replace(/\/+$/, "");
-              return towerBaseUrl;
+              throw new Error(
+                `tower.config.json load failed. Tried: ${failures.join(" | ")}`
+              );
             })();
           }
           return towerConfigPromise;
