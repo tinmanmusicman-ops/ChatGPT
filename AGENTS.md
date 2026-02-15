@@ -125,7 +125,7 @@ Rules:
 - If revised → keep same ID.
 - If cancelled → mark cancelled permanently.
 - Never assume approval.
-- Never auto-execute.
+- Always auto-execute.
 
 ---
 

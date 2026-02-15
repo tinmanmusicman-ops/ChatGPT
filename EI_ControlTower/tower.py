@@ -15,6 +15,7 @@ import traceback
 from html import escape
 from datetime import datetime, timedelta
 from flask import Flask, Response, send_from_directory, send_file, jsonify, request, redirect, abort
+from flask_socketio import SocketIO, emit
 from werkzeug.exceptions import HTTPException
 import requests
 from pathlib import Path
@@ -40,6 +41,7 @@ from modules import (
 )
 
 app = Flask(__name__)
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
 
 BASE_DIR = Path(__file__).resolve().parent
 UI_DIR = BASE_DIR / "ui"
@@ -53,6 +55,9 @@ DEFAULT_RESUME_OUTPUT_DIR = Path(r"C:\!!!!!!!!!!!!!!!!!!!!!!!!!Stuff")
 BASE_OUTPUT_DIR = Path(os.environ.get("HSST_RESUME_OUTPUT_DIR", str(DEFAULT_RESUME_OUTPUT_DIR)))
 BASE_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 AI_BOTS_ROOT = BASE_DIR.parent / "ai-bots"
+JITTERBUG_EXPERT_DIR = AI_BOTS_ROOT / "JitterbugExpert"
+SOFTPHONE_TEMPLATE_PATH = JITTERBUG_EXPERT_DIR / "templates" / "softphone.html"
+SOFTPHONE_STATIC_DIR = JITTERBUG_EXPERT_DIR / "static"
 DASHBOARD_SCRIPT_PATH = AI_BOTS_ROOT / "Thermostats" / "scripts" / "Dashboard.py"
 THERMOSTATS_WEB_DIR = AI_BOTS_ROOT / "Thermostats" / "Web"
 GLOBAL_CONFIG_PATH = Path(
@@ -87,6 +92,13 @@ TWILLO_REQUIRED_KEYS = [
     "TWILIO_TWIML_APP_SID",
     "TWILIO_CALLER_ID",
     "TWILIO_AUTH_TOKEN",
+]
+SOFTPHONE_IDENTITY = "tim_operator"
+SOFTPHONE_REQUIRED_KEYS = [
+    "TWILIO_ACCOUNT_SID",
+    "TWILIO_API_KEY_SID",
+    "TWILIO_API_KEY_SECRET",
+    "TWILIO_TWIML_APP_SID",
 ]
 
 
@@ -1699,6 +1711,97 @@ def thermostats_web_assets(filename):
     return send_from_directory(THERMOSTATS_WEB_DIR, filename)
 
 
+@app.route("/softphone", methods=["GET"])
+def softphone_page():
+    if not SOFTPHONE_TEMPLATE_PATH.exists():
+        _append_live_call_log("softphone.page.error", error="template missing", path=str(SOFTPHONE_TEMPLATE_PATH))
+        return jsonify({"error": f"Missing softphone template: {SOFTPHONE_TEMPLATE_PATH}"}), 500
+    _append_live_call_log(
+        "softphone.page.served",
+        remote=request.remote_addr,
+        origin=request.headers.get("Origin", ""),
+        user_agent=request.headers.get("User-Agent", ""),
+    )
+    return send_file(SOFTPHONE_TEMPLATE_PATH)
+
+
+@app.route("/softphone/static/<path:filename>", methods=["GET"])
+def softphone_static(filename):
+    if not SOFTPHONE_STATIC_DIR.exists():
+        _append_live_call_log("softphone.static.error", error="static dir missing", path=str(SOFTPHONE_STATIC_DIR))
+        return jsonify({"error": f"Missing softphone static directory: {SOFTPHONE_STATIC_DIR}"}), 500
+    _append_live_call_log("softphone.static.served", filename=filename, remote=request.remote_addr)
+    return send_from_directory(SOFTPHONE_STATIC_DIR, filename)
+
+
+@app.route("/token", methods=["GET"])
+def softphone_token():
+    _append_live_call_log(
+        "softphone.token.request.start",
+        remote=request.remote_addr,
+        origin=request.headers.get("Origin", ""),
+        user_agent=request.headers.get("User-Agent", ""),
+    )
+    try:
+        twilio_config = _load_softphone_twilio_config_from_global()
+        token = _build_twilio_access_token(
+            twillo_config=twilio_config,
+            identity=SOFTPHONE_IDENTITY,
+            ttl_seconds=3600,
+        )
+        _append_live_call_log(
+            "softphone.token.request.success",
+            identity=SOFTPHONE_IDENTITY,
+            token_length=len(token),
+        )
+        return jsonify({"token": token})
+    except Exception as exc:
+        _append_live_call_log("softphone.token.request.error", error=str(exc))
+        return jsonify({"error": str(exc)}), 500
+
+
+@app.route("/voice", methods=["GET", "POST"])
+def softphone_voice_webhook():
+    form = request.form.to_dict(flat=True) if request.form else {}
+    client = escape(SOFTPHONE_IDENTITY)
+    _append_live_call_log(
+        "softphone.voice.webhook",
+        remote=request.remote_addr,
+        call_sid=form.get("CallSid", ""),
+        from_number=form.get("From", ""),
+        to_number=form.get("To", ""),
+    )
+    twiml = (
+        '<?xml version="1.0" encoding="UTF-8"?>'
+        f'<Response><Dial answerOnBridge="true"><Client>{client}</Client></Dial></Response>'
+    )
+    return Response(twiml, mimetype="text/xml")
+
+
+@socketio.on("connect", namespace="/softphone-ws")
+def softphone_ws_connect():
+    _append_live_call_log(
+        "softphone.ws.connect",
+        sid=getattr(request, "sid", ""),
+        remote=request.remote_addr,
+    )
+    emit(
+        "server_status",
+        {"status": "connected", "sid": getattr(request, "sid", "")},
+        namespace="/softphone-ws",
+    )
+
+
+@socketio.on("disconnect", namespace="/softphone-ws")
+def softphone_ws_disconnect():
+    _append_live_call_log(
+        "softphone.ws.disconnect",
+        sid=getattr(request, "sid", ""),
+        remote=request.remote_addr,
+    )
+    return None
+
+
 # -------------------------
 # Serve static files (CSS/JS)
 # -------------------------
@@ -2716,6 +2819,47 @@ def crm_http_exception_handler(exc: HTTPException):
     return exc
 
 
+def _load_softphone_twilio_config_from_global() -> dict:
+    config_path = GLOBAL_CONFIG_PATH
+    if not config_path.exists():
+        raise RuntimeError(f"Global config missing: {config_path}")
+
+    try:
+        raw = config_path.read_text(encoding="utf-8")
+        data = json.loads(raw)
+    except Exception as exc:
+        raise RuntimeError(f"Invalid JSON in global config: {config_path}") from exc
+
+    if not isinstance(data, dict):
+        raise RuntimeError(f"Global config must be a JSON object: {config_path}")
+
+    twilio = data.get("twilio")
+    if not isinstance(twilio, dict):
+        raise RuntimeError(f"Missing required object 'twilio' in global config: {config_path}")
+
+    parsed = {}
+    missing = []
+    for key in SOFTPHONE_REQUIRED_KEYS:
+        value = str(twilio.get(key, "")).strip()
+        if not value:
+            missing.append(key)
+        parsed[key] = value
+
+    if missing:
+        raise RuntimeError(
+            f"Missing required Twilio keys in global config twilio object: {', '.join(missing)}"
+        )
+
+    if not re.match(r"^AC[0-9a-fA-F]{32}$", parsed["TWILIO_ACCOUNT_SID"]):
+        raise RuntimeError("TWILIO_ACCOUNT_SID must look like ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.")
+    if not re.match(r"^SK[0-9a-fA-F]{32}$", parsed["TWILIO_API_KEY_SID"]):
+        raise RuntimeError("TWILIO_API_KEY_SID must look like SKxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.")
+    if not re.match(r"^AP[0-9a-fA-F]{32}$", parsed["TWILIO_TWIML_APP_SID"]):
+        raise RuntimeError("TWILIO_TWIML_APP_SID must look like APxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.")
+
+    return parsed
+
+
 def _load_twillo_config():
     if not TWILLO_CONFIG_PATH.exists():
         raise RuntimeError(f"Missing config file: {TWILLO_CONFIG_PATH}")
@@ -2816,27 +2960,63 @@ def _build_twilio_access_token(twillo_config: dict, identity: str, ttl_seconds: 
     return f"{signing_input}.{_b64url(signature)}"
 
 
-def _build_twilio_client_twi_ml(caller_id: str, timeout_seconds: int, destination: str) -> str:
+def _build_twilio_client_twi_ml(
+    caller_id: str, timeout_seconds: int, destination: str, destination_type: str = "number"
+) -> str:
     safe_caller_id = escape(caller_id, quote=True)
     timeout = int(timeout_seconds)
     safe_destination = escape(str(destination or ""))
     return (
         f'<Response><Dial callerId="{safe_caller_id}" timeout="{timeout}" '
-        f'answerOnBridge="true"><Number>{safe_destination}</Number></Dial></Response>'
+        f'answerOnBridge="true">{_render_dial_target(safe_destination, destination_type)}</Dial></Response>'
     )
 
 
-def _create_twilio_call(identity: str, twillo_config: dict) -> dict:
+def _render_dial_target(destination: str, destination_type: str) -> str:
+    if destination_type == "sip":
+        return f"<Sip>{destination}</Sip>"
+    if destination_type == "client":
+        return f"<Client>{destination}</Client>"
+    return f"<Number>{destination}</Number>"
+
+
+def _normalize_destination_for_twiml(destination: str) -> tuple[str, str]:
+    raw = str(destination or "").strip()
+    if not raw:
+        return "", "number"
+    lower = raw.lower()
+    if lower.startswith("sip:"):
+        return raw, "sip"
+    if lower.startswith("client:"):
+        return raw.split(":", 1)[1].strip(), "client"
+    return raw, "number"
+
+
+def _create_twilio_call(
+    identity: str,
+    twillo_config: dict,
+    destination: str,
+    destination_type: str = "number",
+) -> dict:
+    # Number mode keeps legacy behavior: call the visitor client, then dial configured destination.
+    if destination_type == "client":
+        to_value = f"client:{destination}"
+        bridge_destination = identity
+        bridge_type = "client"
+    else:
+        to_value = f"client:{identity}"
+        bridge_destination, bridge_type = _normalize_destination_for_twiml(destination)
     resp = requests.post(
         f"https://api.twilio.com/2010-04-01/Accounts/{twillo_config['TWILIO_ACCOUNT_SID']}/Calls.json",
         auth=(twillo_config["TWILIO_ACCOUNT_SID"], twillo_config["TWILIO_AUTH_TOKEN"]),
         data={
-            "To": f"client:{identity}",
+            "To": to_value,
             "From": twillo_config["TWILIO_CALLER_ID"],
             "Twiml": _build_twilio_client_twi_ml(
                 twillo_config["TWILIO_CALLER_ID"],
                 twillo_config["TWILIO_CALL_TIMEOUT_SECONDS"],
-                twillo_config["DESTINATION_DEVICE"],
+                bridge_destination,
+                destination_type=bridge_type,
             ),
         },
         timeout=30,
@@ -2920,7 +3100,13 @@ def tower_live_call_call():
     if not identity:
         return _with_cors(app.make_response((jsonify({"error": "identity is required"}), 400)))
 
-    _append_live_call_log("api.call.start", identity=identity, remote=request.remote_addr)
+    target = str(payload.get("target") or "").strip().lower()
+    _append_live_call_log(
+        "api.call.start",
+        identity=identity,
+        remote=request.remote_addr,
+        target=target or "number",
+    )
 
     try:
         twillo_config = _load_twillo_config()
@@ -2928,13 +3114,27 @@ def tower_live_call_call():
         _append_live_call_log("api.call.config_error", identity=identity, error=str(exc))
         return _with_cors(app.make_response((jsonify({"error": str(exc)}), 500)))
 
+    destination = twillo_config["DESTINATION_DEVICE"]
+    destination_type = "number"
+    if target == "client":
+        destination = SOFTPHONE_IDENTITY
+        destination_type = "client"
     try:
-        call_data = _create_twilio_call(identity, twillo_config)
+        call_data = _create_twilio_call(identity, twillo_config, destination, destination_type)
     except Exception as exc:
-        _append_live_call_log("api.call.error", identity=identity, error=str(exc))
+        _append_live_call_log("api.call.error", identity=identity, error=str(exc), target=target)
         return _with_cors(app.make_response((jsonify({"error": str(exc)}), 500)))
 
-    _append_live_call_log("api.call.success", identity=identity, call_sid=call_data.get("sid", ""))
+    _append_live_call_log(
+        "api.call.success",
+        identity=identity,
+        call_sid=call_data.get("sid", ""),
+        target=target or "number",
+        destination=destination,
+        destination_type=destination_type,
+        call_to=call_data.get("to", ""),
+        call_from=call_data.get("from", ""),
+    )
     return _with_cors(jsonify(call_data))
 
 
@@ -3011,6 +3211,9 @@ def tower_sms_send():
 def tower_live_call_twiml():
     form = request.form.to_dict(flat=True) if request.form else {}
     call_sid = str(form.get("CallSid", "")).strip()
+    direction = str(form.get("Direction", "")).strip().lower()
+    to_number = str(form.get("To", "")).strip()
+    parent_call_sid = str(form.get("ParentCallSid", "")).strip()
     _append_live_call_log(
         "twiml.request.start",
         remote=request.remote_addr,
@@ -3019,9 +3222,9 @@ def tower_live_call_twiml():
         call_sid=call_sid,
         account_sid=form.get("AccountSid", ""),
         from_number=form.get("From", ""),
-        to_number=form.get("To", ""),
-        direction=form.get("Direction", ""),
-        parent_call_sid=form.get("ParentCallSid", ""),
+        to_number=to_number,
+        direction=direction,
+        parent_call_sid=parent_call_sid,
     )
 
     try:
@@ -3037,18 +3240,24 @@ def tower_live_call_twiml():
     )
 
     target = twillo_config["DESTINATION_DEVICE"]
+    # Direct inbound calls to the Twilio number should ring the CRM softphone.
+    if direction.startswith("inbound") and to_number == twillo_config["TWILIO_CALLER_ID"]:
+        target = SOFTPHONE_IDENTITY
     lower_target = target.lower()
     target_type = "number"
     if lower_target.startswith("sip:"):
         target_type = "sip"
     elif lower_target.startswith("client:"):
         target_type = "client"
+    elif target == SOFTPHONE_IDENTITY:
+        target_type = "client"
 
     try:
-        twiml = _build_live_call_twiml(
+        twiml = _build_twilio_client_twi_ml(
             destination=target,
             caller_id=twillo_config["TWILIO_CALLER_ID"],
             timeout_seconds=twillo_config["TWILIO_CALL_TIMEOUT_SECONDS"],
+            destination_type=target_type,
         )
     except Exception as exc:
         _append_live_call_log("twiml.response.build_error", call_sid=call_sid, error=str(exc))
@@ -3061,6 +3270,7 @@ def tower_live_call_twiml():
         destination=target,
         destination_type=target_type,
         timeout=twillo_config["TWILIO_CALL_TIMEOUT_SECONDS"],
+        inbound_to_crm=bool(direction.startswith("inbound") and to_number == twillo_config["TWILIO_CALLER_ID"]),
     )
 
     return Response(twiml, mimetype="text/xml")
@@ -3507,4 +3717,4 @@ def schedule_dashboard_snapshot() -> None:
 if __name__ == "__main__":
     schedule_dashboard_snapshot()
     print("HSST Control Tower Flask Server Running (Skeleton Mode)")
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    socketio.run(app, host="0.0.0.0", port=5000, debug=True, allow_unsafe_werkzeug=True)

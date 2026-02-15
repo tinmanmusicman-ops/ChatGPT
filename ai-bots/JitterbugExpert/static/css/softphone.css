@@ -1,0 +1,115 @@
+﻿:root {
+  color-scheme: dark;
+  --bg: #0d1117;
+  --panel: #151b23;
+  --border: #2f3947;
+  --text: #e6edf3;
+  --muted: #9fb0c2;
+  --ok: #59d185;
+  --warn: #ffd166;
+  --active: #4cc9f0;
+  --danger: #ef476f;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle at 20% 20%, #172131 0%, var(--bg) 55%);
+  color: var(--text);
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+.softphone-wrap {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 24px;
+}
+
+.softphone-panel {
+  width: min(460px, 100%);
+  background: linear-gradient(180deg, #1a2230, var(--panel));
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 22px 48px rgba(0, 0, 0, 0.45);
+}
+
+.softphone-panel h1 {
+  margin: 0;
+  font-size: 1.45rem;
+  letter-spacing: 0.02em;
+}
+
+.status-line {
+  margin: 10px 0 0;
+  font-size: 1rem;
+  color: var(--ok);
+  font-weight: 600;
+}
+
+.status-line.warn {
+  color: var(--warn);
+}
+
+.status-line.active {
+  color: var(--active);
+}
+
+.status-line.error {
+  color: var(--danger);
+}
+
+.caller-display {
+  margin-top: 14px;
+  min-height: 60px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: #0f151f;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  text-align: center;
+  font-size: 1rem;
+}
+
+.actions {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.actions button {
+  min-height: 56px;
+  border-radius: 12px;
+  border: 1px solid #3a4b63;
+  background: #243146;
+  color: var(--text);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.actions button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+#answerBtn:not(:disabled) {
+  border-color: #2f6b4c;
+  background: #1e4f37;
+}
+
+#hangupBtn:not(:disabled) {
+  border-color: #6d3240;
+  background: #532631;
+}

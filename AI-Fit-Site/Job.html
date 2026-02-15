@@ -2023,13 +2023,13 @@
         }
       };
 
-      const triggerLiveCall = async (identity) => {
+      const triggerLiveCall = async (identity, target = "number") => {
         const url = getTowerEndpoint("/tower/live-call/call");
-        writeLiveCallClientLog("api.call.trigger", { identity });
+        writeLiveCallClientLog("api.call.trigger", { identity, target });
         const response = await fetch(url, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ identity }),
+          body: JSON.stringify({ identity, target }),
         });
         if (!response.ok) {
           const payload = await response.json().catch(() => ({}));
@@ -2229,7 +2229,7 @@
           }
 
           setLiveCallStatus("Calling Tim now...");
-          await triggerLiveCall(identity);
+          await triggerLiveCall(identity, "client");
           writeLiveCallClientLog("call.triggered");
           setLiveCallStatus("Waiting for Tim to answer...");
         } catch (error) {

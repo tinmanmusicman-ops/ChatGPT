@@ -1,4 +1,5 @@
 import argparse
+import base64
 import json
 import os
 import re
@@ -8,6 +9,7 @@ import sys
 import threading
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from pathlib import Path
 from typing import Iterable, List, Optional
@@ -16,6 +18,12 @@ from typing import Iterable, List, Optional
 URL_PATTERN = re.compile(r"https://[a-z0-9-]+\.trycloudflare\.com", re.IGNORECASE)
 DEFAULT_GIT_COMMIT_MESSAGE_TEMPLATE = "Update tower configs to {url}"
 DEFAULT_PHONEEVAL_PAGES_COMMIT_TEMPLATE = "Sync PhoneEval site ({url})"
+DEFAULT_TWILIO_VOICE_WEBHOOK_PATH = "/voice"
+TWILIO_REQUIRED_KEYS = (
+    "TWILIO_ACCOUNT_SID",
+    "TWILIO_AUTH_TOKEN",
+    "TWILIO_CALLER_ID",
+)
 
 
 def now_stamp() -> str:
@@ -28,6 +36,16 @@ def log(message: str) -> None:
 
 def normalize_url(url: str) -> str:
     return str(url or "").strip().rstrip("/")
+
+
+def join_base_and_path(base_url: str, path: str) -> str:
+    base = normalize_url(base_url)
+    clean_path = str(path or "").strip()
+    if not clean_path:
+        clean_path = "/"
+    if not clean_path.startswith("/"):
+        clean_path = f"/{clean_path}"
+    return f"{base}{clean_path}"
 
 
 def http_ok(url: str, timeout_seconds: float = 6.0) -> bool:
@@ -111,6 +129,9 @@ class QuickTunnelWatchdog:
         pages_source_dir: str,
         pages_target_path: str,
         pages_commit_message_template: str,
+        twilio_sync_enabled: bool,
+        twilio_config_path: Path,
+        twilio_voice_path: str,
         manage_tower: bool,
         tower_command: List[str],
         tower_cwd: Path,
@@ -138,6 +159,13 @@ class QuickTunnelWatchdog:
         self.pages_commit_message_template = (
             pages_commit_message_template.strip() or DEFAULT_PHONEEVAL_PAGES_COMMIT_TEMPLATE
         )
+        self.twilio_sync_enabled = bool(twilio_sync_enabled)
+        self.twilio_config_path = twilio_config_path
+        self.twilio_voice_path = str(twilio_voice_path or DEFAULT_TWILIO_VOICE_WEBHOOK_PATH).strip()
+        if not self.twilio_voice_path:
+            self.twilio_voice_path = DEFAULT_TWILIO_VOICE_WEBHOOK_PATH
+        if not self.twilio_voice_path.startswith("/"):
+            self.twilio_voice_path = f"/{self.twilio_voice_path}"
         self.manage_tower = manage_tower and bool(tower_command)
         self.tower_command = list(tower_command) if tower_command else []
         self.tower_cwd = tower_cwd
@@ -170,9 +198,152 @@ class QuickTunnelWatchdog:
             self.consecutive_public_failures = 0
         log(f"tunnel url discovered: {normalized}")
         write_tower_config_files(self.config_paths, normalized)
+        self._sync_twilio_voice_webhook(normalized)
         self._auto_push_configs(normalized)
         self._sync_phoneeval_pages_branch(normalized)
         self._restart_tower("new tunnel url discovered")
+
+    def _load_twilio_config(self) -> Optional[dict]:
+        path = self.twilio_config_path
+        if not path.exists():
+            log(f"twilio sync: config not found: {path}")
+            return None
+        try:
+            raw = path.read_text(encoding="utf-8")
+            data = json.loads(raw)
+        except Exception as exc:
+            log(f"twilio sync: invalid config JSON at {path}: {exc}")
+            return None
+        if not isinstance(data, dict):
+            log(f"twilio sync: config root must be object: {path}")
+            return None
+
+        missing = []
+        parsed = {}
+        for key in TWILIO_REQUIRED_KEYS:
+            value = str(data.get(key, "")).strip()
+            if not value:
+                missing.append(key)
+            parsed[key] = value
+        if missing:
+            log(f"twilio sync: missing required keys in {path.name}: {', '.join(missing)}")
+            return None
+        return parsed
+
+    def _twilio_api_request(
+        self,
+        *,
+        account_sid: str,
+        auth_token: str,
+        method: str,
+        endpoint: str,
+        form_data: Optional[dict] = None,
+    ) -> Optional[dict]:
+        url = f"https://api.twilio.com/2010-04-01/Accounts/{account_sid}/{endpoint.lstrip('/')}"
+        body = None
+        headers = {}
+        if form_data is not None:
+            body = urllib.parse.urlencode(form_data).encode("utf-8")
+            headers["Content-Type"] = "application/x-www-form-urlencoded"
+        auth_bytes = f"{account_sid}:{auth_token}".encode("utf-8")
+        headers["Authorization"] = f"Basic {base64.b64encode(auth_bytes).decode('ascii')}"
+        req = urllib.request.Request(url, data=body, headers=headers, method=method.upper())
+        try:
+            with urllib.request.urlopen(req, timeout=30) as resp:
+                payload = resp.read().decode("utf-8")
+                return json.loads(payload) if payload else {}
+        except urllib.error.HTTPError as exc:
+            try:
+                details = exc.read().decode("utf-8", errors="replace")
+            except Exception:
+                details = str(exc)
+            log(
+                f"twilio sync: HTTP {getattr(exc, 'code', 'ERR')} for {endpoint} "
+                f"({method.upper()}): {details[:400]}"
+            )
+            return None
+        except Exception as exc:
+            log(f"twilio sync: request failed for {endpoint} ({method.upper()}): {exc}")
+            return None
+
+    def _find_incoming_phone_number(self, account_sid: str, auth_token: str, caller_id: str) -> Optional[dict]:
+        page_token = ""
+        while True:
+            endpoint = f"IncomingPhoneNumbers.json?PageSize=200{page_token}"
+            payload = self._twilio_api_request(
+                account_sid=account_sid,
+                auth_token=auth_token,
+                method="GET",
+                endpoint=endpoint,
+            )
+            if not isinstance(payload, dict):
+                return None
+            numbers = payload.get("incoming_phone_numbers")
+            if not isinstance(numbers, list):
+                return None
+            for number_entry in numbers:
+                if not isinstance(number_entry, dict):
+                    continue
+                phone = str(number_entry.get("phone_number", "")).strip()
+                if phone == caller_id:
+                    return number_entry
+
+            next_page_uri = str(payload.get("next_page_uri", "")).strip()
+            if not next_page_uri:
+                return None
+            separator = "&" if "?" in next_page_uri else "?"
+            page_token = f"{separator}{next_page_uri.split('?', 1)[1]}" if "?" in next_page_uri else ""
+
+    def _sync_twilio_voice_webhook(self, base_url: str) -> None:
+        if not self.twilio_sync_enabled:
+            return
+
+        config = self._load_twilio_config()
+        if not config:
+            return
+
+        account_sid = config["TWILIO_ACCOUNT_SID"]
+        auth_token = config["TWILIO_AUTH_TOKEN"]
+        caller_id = config["TWILIO_CALLER_ID"]
+        target_voice_url = join_base_and_path(base_url, self.twilio_voice_path)
+
+        number_entry = self._find_incoming_phone_number(account_sid, auth_token, caller_id)
+        if not number_entry:
+            log(f"twilio sync: incoming number not found for {caller_id}")
+            return
+
+        number_sid = str(number_entry.get("sid", "")).strip()
+        current_voice_url = normalize_url(str(number_entry.get("voice_url", "")))
+        current_voice_method = str(number_entry.get("voice_method", "")).strip().upper()
+        if not number_sid:
+            log(f"twilio sync: missing phone number sid for {caller_id}")
+            return
+
+        if current_voice_url == normalize_url(target_voice_url) and current_voice_method == "POST":
+            log(f"twilio sync: webhook already current for {caller_id} -> {target_voice_url}")
+            return
+
+        result = self._twilio_api_request(
+            account_sid=account_sid,
+            auth_token=auth_token,
+            method="POST",
+            endpoint=f"IncomingPhoneNumbers/{number_sid}.json",
+            form_data={
+                "VoiceUrl": target_voice_url,
+                "VoiceMethod": "POST",
+            },
+        )
+        if not isinstance(result, dict):
+            return
+        updated_url = str(result.get("voice_url", "")).strip()
+        updated_method = str(result.get("voice_method", "")).strip().upper()
+        if normalize_url(updated_url) != normalize_url(target_voice_url) or updated_method != "POST":
+            log(
+                f"twilio sync: update verification failed for {caller_id}; "
+                f"expected {target_voice_url} POST, got {updated_url} {updated_method}"
+            )
+            return
+        log(f"twilio sync: updated webhook for {caller_id} -> {target_voice_url} (POST)")
 
     def _configs_match_current_url(self, tunnel_base_url: str) -> bool:
         expected = normalize_url(tunnel_base_url)
@@ -524,6 +695,22 @@ def parse_args() -> argparse.Namespace:
         help="Commit message template for PhoneEval branch updates (supports {url}).",
     )
     parser.add_argument(
+        "--skip-twilio-sync",
+        action="store_true",
+        default=False,
+        help="Do not auto-sync Twilio Voice webhook when tunnel URL changes.",
+    )
+    parser.add_argument(
+        "--twilio-config-path",
+        default=str(Path(__file__).resolve().parent / "twillo.json"),
+        help="Path to Twilio JSON config containing account SID, auth token, and caller ID.",
+    )
+    parser.add_argument(
+        "--twilio-voice-path",
+        default=DEFAULT_TWILIO_VOICE_WEBHOOK_PATH,
+        help="Voice webhook path to append to tunnel base URL (default: /voice).",
+    )
+    parser.add_argument(
         "--skip-tower",
         action="store_true",
         default=False,
@@ -567,6 +754,8 @@ def main() -> int:
     tower_command = list(args.tower_command) if args.tower_command else []
     tower_cwd = Path(args.tower_cwd).resolve()
     manage_tower = not args.skip_tower
+    twilio_sync_enabled = not args.skip_twilio_sync
+    twilio_config_path = Path(args.twilio_config_path).resolve()
     watchdog = QuickTunnelWatchdog(
         cloudflared_path=cloudflared_path,
         origin_url=args.origin_url,
@@ -584,6 +773,9 @@ def main() -> int:
         pages_source_dir=args.pages_source_dir,
         pages_target_path=args.pages_target_path,
         pages_commit_message_template=args.pages_commit_message,
+        twilio_sync_enabled=twilio_sync_enabled,
+        twilio_config_path=twilio_config_path,
+        twilio_voice_path=args.twilio_voice_path,
         manage_tower=manage_tower,
         tower_command=tower_command,
         tower_cwd=tower_cwd,

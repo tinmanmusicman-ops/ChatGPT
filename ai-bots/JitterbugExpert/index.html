@@ -55,8 +55,8 @@
       position: absolute;
       top: 1rem;
       left: 1rem;
-      width: 100px;
-      height: 100px;
+      width: 300px;
+      height: 300px;
       background: url("../../Images/NOai.png") center/cover no-repeat;
       filter: brightness(0.75);
       box-shadow: 0 15px 30px rgba(0, 0, 0, 0.6);
@@ -101,7 +101,8 @@
     }
 
     .landing-card h1,
-    .landing-card p {
+    .landing-card p,
+    .live-call-container {
       position: relative;
       z-index: 2;
     }
@@ -123,6 +124,60 @@
 
     .accent {
       color: #6ef2e8;
+    }
+
+    .live-call-container {
+      width: min(460px, 100%);
+      margin: 1.75rem auto 0;
+      padding: 1rem;
+      border-radius: 14px;
+      border: 1px solid rgba(199, 255, 64, 0.85);
+      background: rgba(0, 0, 0, 0.52);
+      text-align: left;
+    }
+
+    .live-call-button {
+      width: 100%;
+      min-height: 56px;
+      border-radius: 12px;
+      border: 2px solid #ffffff;
+      background: #546311;
+      color: #d6d0c1;
+      font-size: 1rem;
+      font-weight: 900;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+    }
+
+    .live-call-button[disabled] {
+      opacity: 0.62;
+      cursor: not-allowed;
+    }
+
+    .cancel-call-button {
+      margin-top: 0.55rem;
+      background: #3f1d1d;
+      border-color: #631515;
+    }
+
+    .live-call-subtext {
+      margin: 0.75rem 0 0;
+      font-size: 0.9rem;
+      line-height: 1.4;
+      color: #d8f5db;
+      text-align: center;
+    }
+
+    .live-call-status {
+      min-height: 1.35rem;
+      margin-top: 0.65rem;
+      font-size: 0.9rem;
+      color: #d4ffd7;
+      text-align: center;
+    }
+
+    .live-call-status.error {
+      color: #ffd0d0;
     }
 
     .help-button {
@@ -156,7 +211,7 @@
   </style>
 </head>
 <body>
-    <a class="help-button" href="#" role="button">Help</a>
+<!-- <a class="help-button" href="#" role="button">Help</a> -->
     <main class="landing-card">
       <h1>Welcome to the Jitterbug Expert</h1>
       <p>
@@ -164,49 +219,305 @@
       expertise and art of the jitterbug delivered directly to your screen.
       For now, take a breath and enjoy the glow.
     </p>
+      <div class="live-call-container">
+        <button id="liveCallBtn" type="button" class="live-call-button" aria-label="Start live call with Tim">
+          Call Tim Now - Live
+        </button>
+        <button
+          id="cancelLiveCallBtn"
+          type="button"
+          class="live-call-button cancel-call-button"
+          disabled
+          aria-label="Cancel live call"
+        >
+          Cancel call
+        </button>
+        <p class="live-call-subtext">Anonymous live call. No forms. No scheduling.</p>
+        <div id="liveCallStatus" class="live-call-status" role="status" aria-live="polite"></div>
+      </div>
     </main>
     <script>
       (function () {
         const helpButton = document.querySelector(".help-button");
-        if (!helpButton) {
+        const liveCallBtn = document.getElementById("liveCallBtn");
+        const cancelLiveCallBtn = document.getElementById("cancelLiveCallBtn");
+        const liveCallStatusEl = document.getElementById("liveCallStatus");
+        const TWILIO_SDK_VERSION = "20260212c";
+
+        if (!liveCallBtn || !cancelLiveCallBtn || !liveCallStatusEl) {
+          console.error("[JitterbugExpert] FAIL-FAST: missing required live call DOM elements.");
           return;
         }
 
-        const configCandidates = [
-          "/tower.config.json",
-          "tower.config.json",
-          "../tower.config.json",
-        ];
-        let cachedBaseUrl = "";
+        let towerBaseUrl = "";
+        let towerConfigPromise = null;
+        let twilioSdkLoadPromise = null;
+        let liveVoiceDevice = null;
+        let liveVoiceConnection = null;
+        let liveCallInFlight = false;
 
-        async function resolveTunnelBaseUrl() {
-          if (cachedBaseUrl) {
-            return cachedBaseUrl;
+        async function loadTowerConfig() {
+          if (towerBaseUrl) {
+            return towerBaseUrl;
           }
-          for (const path of configCandidates) {
-            try {
-              const response = await fetch(path, { cache: "no-store" });
+          if (!towerConfigPromise) {
+            towerConfigPromise = (async () => {
+              const response = await fetch("/tower.config.json", { cache: "no-store" });
               if (!response.ok) {
-                continue;
+                throw new Error(`tower.config.json load failed (${response.status})`);
               }
-              const config = await response.json();
-              const base = (config && config.towerBaseUrl) || "";
-              if (base) {
-                cachedBaseUrl = base.replace(/\/+$/, "");
-                return cachedBaseUrl;
+              const config = await response.json().catch(() => {
+                throw new Error("tower.config.json is not valid JSON.");
+              });
+              const base = String(config?.towerBaseUrl || "").trim();
+              if (!base) {
+                throw new Error("tower.config.json missing required towerBaseUrl.");
               }
-            } catch (_) {
-              // ignore and try next candidate
+              towerBaseUrl = base.replace(/\/+$/, "");
+              return towerBaseUrl;
+            })();
+          }
+          return towerConfigPromise;
+        }
+
+        function getTowerEndpoint(path) {
+          if (!towerBaseUrl) {
+            throw new Error("Tower base URL is not configured.");
+          }
+          const cleanPath = String(path || "").trim();
+          if (!cleanPath) {
+            return towerBaseUrl;
+          }
+          return `${towerBaseUrl}${cleanPath.startsWith("/") ? cleanPath : `/${cleanPath}`}`;
+        }
+
+        const getTowerLiveCallTokenEndpoint = () => getTowerEndpoint("/tower/live-call/token");
+        const getTowerLiveCallEndpoint = () => getTowerEndpoint("/tower/live-call/call");
+
+        function setLiveCallStatus(message, isError = false) {
+          liveCallStatusEl.textContent = message || "";
+          liveCallStatusEl.classList.toggle("error", !!isError);
+        }
+
+        function setCallControls(inFlight) {
+          liveCallBtn.disabled = inFlight;
+          cancelLiveCallBtn.disabled = !inFlight;
+        }
+
+        function hasTwilioDeviceApi() {
+          return !!(window.Twilio && typeof window.Twilio.Device === "function");
+        }
+
+        function loadExternalScript(src) {
+          return new Promise((resolve, reject) => {
+            const script = document.createElement("script");
+            script.src = src;
+            script.async = true;
+            script.defer = true;
+            script.onload = () => resolve(src);
+            script.onerror = () => reject(new Error(`Script load failed: ${src}`));
+            document.head.appendChild(script);
+          });
+        }
+
+        async function ensureTwilioSdkLoaded() {
+          if (hasTwilioDeviceApi()) {
+            return;
+          }
+          if (!twilioSdkLoadPromise) {
+            twilioSdkLoadPromise = (async () => {
+              await loadTowerConfig();
+              const sdkUrl = getTowerEndpoint(
+                `/AI-Fit-Site/assets/js/twilio.min.js?v=${TWILIO_SDK_VERSION}`
+              );
+              await loadExternalScript(sdkUrl);
+              if (!hasTwilioDeviceApi()) {
+                throw new Error("Twilio Voice SDK loaded but Device API is unavailable.");
+              }
+            })();
+          }
+          await twilioSdkLoadPromise;
+        }
+
+        async function requestMicrophoneWithTimeout(timeoutMs = 15000) {
+          if (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== "function") {
+            throw new Error("Microphone access is not available in this browser.");
+          }
+
+          let timeoutId = null;
+          try {
+            const timeoutPromise = new Promise((_, reject) => {
+              timeoutId = setTimeout(() => {
+                reject(
+                  new Error(
+                    "Microphone permission timed out. Allow microphone access in browser settings and retry."
+                  )
+                );
+              }, timeoutMs);
+            });
+
+            const stream = await Promise.race([
+              navigator.mediaDevices.getUserMedia({ audio: true }),
+              timeoutPromise,
+            ]);
+            return stream;
+          } finally {
+            if (timeoutId) {
+              clearTimeout(timeoutId);
             }
           }
-          const manual = window.prompt(
-            "Enter the active Cloudflare tunnel URL (https://...) so we can deliver help."
-          );
-          if (manual) {
-            cachedBaseUrl = manual.trim().replace(/\/+$/, "");
-            return cachedBaseUrl;
+        }
+
+        async function waitForDeviceReady(device, timeoutMs = 15000) {
+          if (!device) return;
+          await new Promise((resolve, reject) => {
+            let done = false;
+            const cleanup = () => {
+              if (typeof device.off === "function") {
+                device.off("ready", onReady);
+                device.off("registered", onRegistered);
+                device.off("error", onError);
+              }
+              clearTimeout(timerId);
+            };
+            const finish = (fn) => (value) => {
+              if (done) return;
+              done = true;
+              cleanup();
+              fn(value);
+            };
+            const onReady = finish(resolve);
+            const onRegistered = finish(resolve);
+            const onError = finish((error) => {
+              reject(new Error(error?.message || "Device failed while registering."));
+            });
+            const timerId = setTimeout(
+              finish(() => reject(new Error("Twilio device registration timed out."))),
+              timeoutMs
+            );
+
+            if (typeof device.on === "function") {
+              device.on("ready", onReady);
+              device.on("registered", onRegistered);
+              device.on("error", onError);
+            }
+            if (typeof device.register === "function") {
+              Promise.resolve(device.register()).catch((error) => {
+                onError(error);
+              });
+            }
+          });
+        }
+
+        async function triggerLiveCall(identity, target = "client") {
+          const response = await fetch(getTowerLiveCallEndpoint(), {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ identity, target }),
+          });
+          if (!response.ok) {
+            const payload = await response.json().catch(() => ({}));
+            throw new Error(payload?.error || `REST call failed (${response.status})`);
           }
-          return "";
+          return response.json();
+        }
+
+        function closeLiveCall(statusMessage, isError = false) {
+          liveCallInFlight = false;
+          setCallControls(false);
+          if (liveVoiceConnection) {
+            try {
+              liveVoiceConnection.disconnect();
+            } catch (_) {}
+            liveVoiceConnection = null;
+          }
+          if (liveVoiceDevice) {
+            try {
+              liveVoiceDevice.destroy();
+            } catch (_) {}
+            liveVoiceDevice = null;
+          }
+          setLiveCallStatus(statusMessage, isError);
+        }
+
+        async function startAnonymousLiveCall() {
+          if (liveCallInFlight) return;
+          liveCallInFlight = true;
+          setCallControls(true);
+          setLiveCallStatus("Loading call engine...");
+
+          try {
+            await ensureTwilioSdkLoaded();
+
+            setLiveCallStatus("Requesting microphone...");
+            const mic = await requestMicrophoneWithTimeout(15000);
+            mic.getTracks().forEach((track) => track.stop());
+
+            await loadTowerConfig();
+            const tokenResponse = await fetch(getTowerLiveCallTokenEndpoint(), {
+              method: "POST",
+            });
+            const tokenPayload = await tokenResponse.json().catch(() => ({}));
+            if (!tokenResponse.ok) {
+              throw new Error(tokenPayload?.error || `Token request failed (${tokenResponse.status})`);
+            }
+            const token = String(tokenPayload?.token || "").trim();
+            if (!token) {
+              throw new Error("Live call token was not returned.");
+            }
+            const identity = String(tokenPayload?.identity || "").trim();
+            if (!identity) {
+              throw new Error("Live call identity missing.");
+            }
+
+            setLiveCallStatus("Starting secure call session...");
+            liveVoiceDevice = new window.Twilio.Device(token, {
+              codecPreferences: ["opus", "pcmu"],
+              logLevel: 1,
+            });
+
+            liveVoiceDevice.on("error", (error) => {
+              closeLiveCall(`Call failed: ${error?.message || "Unknown error"}`, true);
+            });
+
+            liveVoiceDevice.on("incoming", (connection) => {
+              if (liveVoiceConnection) {
+                try {
+                  liveVoiceConnection.disconnect();
+                } catch (_) {}
+              }
+              liveVoiceConnection = connection;
+              connection.accept();
+              connection.on("accept", () => {
+                setLiveCallStatus("Live call connected.");
+              });
+              connection.on("disconnect", () => {
+                closeLiveCall("Call ended.");
+              });
+              connection.on("cancel", () => {
+                closeLiveCall("Tim did not answer.");
+              });
+              connection.on("reject", () => {
+                closeLiveCall("Tim did not answer.");
+              });
+            });
+
+            setLiveCallStatus("Registering call session...");
+            await waitForDeviceReady(liveVoiceDevice, 15000);
+            setLiveCallStatus("Calling Tim now...");
+            await triggerLiveCall(identity, "client");
+            setLiveCallStatus("Waiting for Tim to answer...");
+          } catch (error) {
+            closeLiveCall(error?.message || "Live call failed.", true);
+          }
+        }
+
+        function cancelLiveCall() {
+          if (!liveCallInFlight) {
+            setLiveCallStatus("No call in progress.", true);
+            return;
+          }
+          closeLiveCall("Call cancelled.", true);
         }
 
         async function requestHelpPayload() {
@@ -243,20 +554,16 @@
         }
 
         async function submitHelpRequest() {
+          if (!helpButton) return;
           helpButton.setAttribute("aria-busy", "true");
-          helpButton.setAttribute("disabled", "true");
           helpButton.style.pointerEvents = "none";
           try {
-            const baseUrl = await resolveTunnelBaseUrl();
-            if (!baseUrl) {
-              window.alert("Unable to determine the tunnel URL. Please provide it manually.");
-              return;
-            }
+            await loadTowerConfig();
             const payload = await requestHelpPayload();
             if (!payload) {
               return;
             }
-            const url = `${baseUrl}/help`;
+            const url = getTowerEndpoint("/help");
             const response = await fetch(url, {
               method: "POST",
               headers: {
@@ -276,15 +583,21 @@
             window.alert("Help request failed; please try again.");
           } finally {
             helpButton.removeAttribute("aria-busy");
-            helpButton.removeAttribute("disabled");
             helpButton.style.pointerEvents = "";
           }
         }
 
-        helpButton.addEventListener("click", function (event) {
-          event.preventDefault();
-          submitHelpRequest();
-        });
+        setCallControls(false);
+        setLiveCallStatus("Ready to place live call.");
+        liveCallBtn.addEventListener("click", startAnonymousLiveCall);
+        cancelLiveCallBtn.addEventListener("click", cancelLiveCall);
+
+        if (helpButton) {
+          helpButton.addEventListener("click", function (event) {
+            event.preventDefault();
+            submitHelpRequest();
+          });
+        }
       })();
     </script>
 </body>

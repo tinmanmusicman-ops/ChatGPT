@@ -1,0 +1,25 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jitterbug Expert Console</title>
+  <link rel="stylesheet" href="/softphone/static/css/softphone.css" />
+</head>
+<body>
+  <main class="softphone-wrap">
+    <section class="softphone-panel" aria-label="Jitterbug Expert Softphone">
+      <h1>Jitterbug Expert Console</h1>
+      <p id="statusLine" class="status-line">Waiting</p>
+      <div id="callerDisplay" class="caller-display">No active caller</div>
+      <div class="actions">
+        <button id="answerBtn" type="button" disabled>Answer</button>
+        <button id="hangupBtn" type="button" disabled>Hang Up</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="/AI-Fit-Site/assets/js/twilio.min.js?v=20260215a"></script>
+  <script src="/softphone/static/js/softphone.js?v=20260215b"></script>
+</body>
+</html>
