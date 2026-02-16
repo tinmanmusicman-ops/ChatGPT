@@ -1390,6 +1390,17 @@ def phone_eval_static(filename):
     return send_from_directory(PHONE_EVAL_DIR, filename)
 
 
+@app.route("/jitterbug-expert", strict_slashes=False)
+@app.route("/ai-bots/JitterbugExpert", strict_slashes=False)
+def jitterbug_expert_index():
+    return send_from_directory(JITTERBUG_EXPERT_DIR, "index.html")
+
+
+@app.route("/ai-bots/JitterbugExpert/<path:filename>")
+def jitterbug_expert_static(filename):
+    return send_from_directory(JITTERBUG_EXPERT_DIR, filename)
+
+
 @app.route("/crm", strict_slashes=False)
 def crm_index():
     try:

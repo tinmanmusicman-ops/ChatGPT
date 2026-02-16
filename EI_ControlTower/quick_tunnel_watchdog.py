@@ -613,6 +613,7 @@ def parse_args() -> argparse.Namespace:
         repo_root / "AI-Fit-Site" / "tower.config.json",
         repo_root / "CORES" / "tower.config.json",
         repo_root / "PhoneEval" / "tower.config.json",
+        repo_root / "ai-bots" / "JitterbugExpert" / "tower.config.json",
     ]
 
     parser = argparse.ArgumentParser(

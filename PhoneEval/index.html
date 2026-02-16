@@ -155,6 +155,8 @@
     const ENDPOINT_KEY = "phone_eval_endpoint";
     const ENDPOINT_PINNED_KEY = "phone_eval_endpoint_pinned";
     let cachedConfigEndpoint = "";
+    let cachedConfigLoadedAt = 0;
+    const CONFIG_CACHE_TTL_MS = 15000;
 
     const endpointEl = document.getElementById("endpoint");
     const contentEl = document.getElementById("content");
@@ -209,6 +211,10 @@
       return (params.get("endpoint") || "").trim();
     }
 
+    function hasEndpointQueryOverride() {
+      return !!endpointFromQuery();
+    }
+
     function isSharedMode() {
       const params = new URLSearchParams(window.location.search);
       return params.get("shared") === "1";
@@ -241,23 +247,41 @@
       return normalized + "/analyze";
     }
 
-    async function endpointFromConfig() {
-      if (cachedConfigEndpoint) {
+    async function endpointFromConfig(forceRefresh) {
+      const force = !!forceRefresh;
+      if (!force && cachedConfigEndpoint && (Date.now() - cachedConfigLoadedAt) < CONFIG_CACHE_TTL_MS) {
         return cachedConfigEndpoint;
       }
-      try {
-        const response = await fetch(CONFIG_PATH, { cache: "no-store" });
-        if (!response.ok) {
-          return "";
+      const candidates = [
+        new URL(CONFIG_PATH, window.location.href).toString(),
+        new URL("tower.config.json", window.location.href).toString(),
+        new URL("/PhoneEval/tower.config.json", window.location.origin).toString(),
+        new URL("/tower.config.json", window.location.origin).toString(),
+      ];
+      const seen = new Set();
+      const uniqueCandidates = candidates.filter((url) => {
+        if (seen.has(url)) {
+          return false;
         }
-        const config = await response.json();
-        const base = endpointFromBase(config && config.towerBaseUrl);
-        if (base) {
-          cachedConfigEndpoint = base;
-          return cachedConfigEndpoint;
+        seen.add(url);
+        return true;
+      });
+      for (const configUrl of uniqueCandidates) {
+        try {
+          const response = await fetch(configUrl, { cache: "no-store" });
+          if (!response.ok) {
+            continue;
+          }
+          const config = await response.json();
+          const base = endpointFromBase(config && config.towerBaseUrl);
+          if (base) {
+            cachedConfigEndpoint = base;
+            cachedConfigLoadedAt = Date.now();
+            return cachedConfigEndpoint;
+          }
+        } catch (_) {
+          // Try next config candidate.
         }
-      } catch (_) {
-        return "";
       }
       return "";
     }
@@ -309,6 +333,13 @@
         endpointEl.value = fromQuery;
         return;
       }
+      if (isGitHubPagesHost()) {
+        const fromConfig = await endpointFromConfig(true);
+        if (fromConfig) {
+          endpointEl.value = fromConfig;
+          return;
+        }
+      }
       const pinned = localStorage.getItem(ENDPOINT_PINNED_KEY) === "1";
       const fromStorage = (localStorage.getItem(ENDPOINT_KEY) || "").trim();
       if (pinned && fromStorage) {
@@ -319,13 +350,6 @@
       if (fromOrigin) {
         endpointEl.value = fromOrigin;
         return;
-      }
-      if (isGitHubPagesHost()) {
-        const fromConfig = await endpointFromConfig();
-        if (fromConfig) {
-          endpointEl.value = fromConfig;
-          return;
-        }
       }
       endpointEl.value = "";
     }
@@ -367,8 +391,15 @@
     }
 
     async function analyze() {
-      const endpoint = endpointEl.value.trim();
+      let endpoint = endpointEl.value.trim();
       const text = contentEl.value.trim();
+      if (isGitHubPagesHost() && !hasEndpointQueryOverride()) {
+        const fromConfig = await endpointFromConfig(true);
+        if (fromConfig) {
+          endpoint = fromConfig;
+          endpointEl.value = fromConfig;
+        }
+      }
       if (!endpoint) {
         setStatus("Status: endpoint is required", true);
         return;
@@ -392,7 +423,24 @@
       analyzeEl.disabled = true;
       setStatus("Status: analyzing...", false);
       try {
-        const data = await analyzeAtEndpoint(endpoint, text);
+        let data = null;
+        try {
+          data = await analyzeAtEndpoint(endpoint, text);
+        } catch (firstErr) {
+          const firstMessage = (firstErr && firstErr.message) ? firstErr.message : "";
+          if (isGitHubPagesHost() && !hasEndpointQueryOverride() && /failed to fetch/i.test(firstMessage)) {
+            const refreshed = await endpointFromConfig(true);
+            if (refreshed && refreshed !== endpoint) {
+              endpoint = refreshed;
+              endpointEl.value = refreshed;
+              data = await analyzeAtEndpoint(endpoint, text);
+            } else {
+              throw firstErr;
+            }
+          } else {
+            throw firstErr;
+          }
+        }
         const result = formatResult(data);
         setResult(result.summary, result.keyPoints, result.actionItems);
         setStatus("Status: success", false);

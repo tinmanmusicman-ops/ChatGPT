@@ -41,9 +41,7 @@ CaptureAndEvaluate() {
     WriteLauncherLog("Hotkey flow started.")
     savedClipboard := ClipboardAll()
     A_Clipboard := ""
-    ; Auto-select current focused text region and copy.
-    Send "^a"
-    Sleep 120
+    ; Copy current selection only.
     Send "^c"
     if !ClipWait(0.8) {
         A_Clipboard := savedClipboard
@@ -107,9 +105,7 @@ CaptureAndSummarize() {
     WriteLauncherLog("Summarize hotkey flow started.")
     savedClipboard := ClipboardAll()
     A_Clipboard := ""
-    ; Auto-select current focused text region and copy.
-    Send "^a"
-    Sleep 120
+    ; Copy current selection only.
     Send "^c"
     if !ClipWait(0.8) {
         A_Clipboard := savedClipboard
