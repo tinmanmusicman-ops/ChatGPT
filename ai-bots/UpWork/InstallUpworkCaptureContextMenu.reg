@@ -1,0 +1,7 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_CURRENT_USER\Software\Classes\SystemFileAssociations\.json\shell\EvaluateUpworkCapture]
+@="Evaluate Upwork Capture (BID/MAYBE/SKIP)"
+
+[HKEY_CURRENT_USER\Software\Classes\SystemFileAssociations\.json\shell\EvaluateUpworkCapture\command]
+@="\"C:\\ChatGPT\\ai-bots\\UpWork\\Run_Upwork_Evaluation.bat\" \"%1\""

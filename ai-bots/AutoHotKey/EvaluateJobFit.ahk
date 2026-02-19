@@ -16,6 +16,12 @@ global LastContentSummaryText := ContentLogsDir "\last_content_summary.txt"
 global LastContentSummaryHtml := ContentLogsDir "\last_content_summary.html"
 global LastContentSummaryError := ContentLogsDir "\last_content_summary_error.txt"
 global LauncherLog := LogsDir "\launcher_debug.log"
+global UpworkProjectDir := "C:\ChatGPT\ai-bots\UpWork"
+global UpworkCaptureScript := UpworkProjectDir "\capture_visible_upwork_jobs.py"
+global UpworkCaptureOutput := LogsDir "\upwork_capture_output.txt"
+global UpworkEvalScript := UpworkProjectDir "\evaluate_upwork_capture.py"
+global UpworkEvalProfile := UpworkProjectDir "\upwork_fit_profile.json"
+global UpworkEvalOutput := LogsDir "\upwork_eval_output.txt"
 
 DirCreate(LogsDir)
 WriteLauncherLog("Launcher start. Args=" A_Args.Length)
@@ -35,6 +41,8 @@ if (A_Args.Length >= 1) {
 
 ^#j::CaptureAndEvaluate()
 ^#s::CaptureAndSummarize()
+^#u::CaptureVisibleUpworkJobs()
+^#i::EvaluateLatestUpworkCapture()
 
 CaptureAndEvaluate() {
     global TmpDir
@@ -170,19 +178,178 @@ RunSummary(inputPath) {
     if FileExist(LastContentSummaryHtml) {
         WriteLauncherLog("Summarize success. Opening HTML summary.")
         Run('"' LastContentSummaryHtml '"')
-    } else if FileExist(LastContentSummaryText) {
-        WriteLauncherLog("Summarize fallback: HTML missing, opening text summary.")
-        Run('notepad.exe "' LastContentSummaryText '"')
     } else {
         WriteLauncherLog("ERROR summarize succeeded but last_content_summary missing.")
         MsgBox "Summarization completed, but no summary output file was found.", "Content Summary", "Iconx"
     }
 }
 
+CaptureVisibleUpworkJobs() {
+    global PythonExe, UpworkProjectDir, UpworkCaptureScript, UpworkCaptureOutput
+    WriteLauncherLog("Upwork capture hotkey flow started.")
+    ShowStatusTip("Upwork capture started (up to 25 pages).")
+
+    if !FileExist(PythonExe) {
+        WriteLauncherLog("ERROR Upwork capture Python executable missing: " PythonExe)
+        MsgBox "FAIL-FAST: Python executable not found:`n" PythonExe, "Upwork Capture", "Iconx T8"
+        return
+    }
+    if !DirExist(UpworkProjectDir) {
+        WriteLauncherLog("ERROR Upwork capture project directory missing: " UpworkProjectDir)
+        MsgBox "FAIL-FAST: Upwork project directory missing:`n" UpworkProjectDir, "Upwork Capture", "Iconx T8"
+        return
+    }
+    if !FileExist(UpworkCaptureScript) {
+        WriteLauncherLog("ERROR Upwork capture script missing: " UpworkCaptureScript)
+        MsgBox "FAIL-FAST: Upwork capture script missing:`n" UpworkCaptureScript, "Upwork Capture", "Iconx T8"
+        return
+    }
+
+    result := RunUpworkCaptureOnce()
+    exitCode := result.exitCode
+    outputText := result.outputText
+
+    if (exitCode != 0) {
+        WriteLauncherLog("ERROR Upwork capture failed: " outputText)
+        MsgBox outputText, "Upwork Capture", "Iconx T10"
+        return
+    }
+
+    WriteLauncherLog("Upwork capture success output=" outputText)
+    A_Clipboard := outputText
+    MsgBox outputText, "Upwork Capture", "Iconi T8"
+}
+
+EvaluateLatestUpworkCapture() {
+    global PythonExe, UpworkProjectDir, UpworkEvalScript, UpworkEvalProfile
+    WriteLauncherLog("Upwork evaluation hotkey flow started.")
+    ShowStatusTip("Upwork evaluation started.")
+
+    if !FileExist(PythonExe) {
+        WriteLauncherLog("ERROR Upwork evaluation Python executable missing: " PythonExe)
+        MsgBox "FAIL-FAST: Python executable not found:`n" PythonExe, "Upwork Evaluation", "Iconx T8"
+        return
+    }
+    if !DirExist(UpworkProjectDir) {
+        WriteLauncherLog("ERROR Upwork evaluation project directory missing: " UpworkProjectDir)
+        MsgBox "FAIL-FAST: Upwork project directory missing:`n" UpworkProjectDir, "Upwork Evaluation", "Iconx T8"
+        return
+    }
+    if !FileExist(UpworkEvalScript) {
+        WriteLauncherLog("ERROR Upwork evaluation script missing: " UpworkEvalScript)
+        MsgBox "FAIL-FAST: Upwork evaluation script missing:`n" UpworkEvalScript, "Upwork Evaluation", "Iconx T8"
+        return
+    }
+    if !FileExist(UpworkEvalProfile) {
+        WriteLauncherLog("ERROR Upwork evaluation profile missing: " UpworkEvalProfile)
+        MsgBox "FAIL-FAST: Upwork evaluation profile missing:`n" UpworkEvalProfile, "Upwork Evaluation", "Iconx T8"
+        return
+    }
+
+    result := RunUpworkEvaluationOnce()
+    exitCode := result.exitCode
+    outputText := result.outputText
+
+    if (exitCode != 0) {
+        WriteLauncherLog("ERROR Upwork evaluation failed: " outputText)
+        MsgBox outputText, "Upwork Evaluation", "Iconx T10"
+        return
+    }
+
+    WriteLauncherLog("Upwork evaluation success output=" outputText)
+    A_Clipboard := outputText
+    MsgBox outputText, "Upwork Evaluation", "Iconi T8"
+}
+
+RunUpworkCaptureOnce() {
+    global PythonExe, UpworkProjectDir, UpworkCaptureScript, UpworkCaptureOutput
+    if FileExist(UpworkCaptureOutput) {
+        FileDelete(UpworkCaptureOutput)
+    }
+    command := '"' A_ComSpec '" /c "set NODE_NO_WARNINGS=1 && set UPWORK_MAX_PAGES=25 && "' PythonExe '" "' UpworkCaptureScript '" > "' UpworkCaptureOutput '" 2>&1"'
+    WriteLauncherLog("Upwork RunWait command=" command)
+    exitCode := RunWait(command, UpworkProjectDir, "Hide")
+    WriteLauncherLog("Upwork RunWait exitCode=" exitCode)
+
+    outputText := ""
+    if FileExist(UpworkCaptureOutput) {
+        outputText := Trim(FileRead(UpworkCaptureOutput, "UTF-8"))
+    }
+    if (outputText = "") {
+        outputText := "FAIL-FAST: Upwork capture returned no output."
+    }
+    outputText := NormalizeUpworkCaptureOutput(outputText)
+    return { exitCode: exitCode, outputText: outputText }
+}
+
+RunUpworkEvaluationOnce() {
+    global PythonExe, UpworkProjectDir, UpworkEvalScript, UpworkEvalProfile, UpworkEvalOutput
+    if FileExist(UpworkEvalOutput) {
+        FileDelete(UpworkEvalOutput)
+    }
+    command := '"' A_ComSpec '" /c "set NODE_NO_WARNINGS=1 && "' PythonExe '" "' UpworkEvalScript '" --profile "' UpworkEvalProfile '" > "' UpworkEvalOutput '" 2>&1"'
+    WriteLauncherLog("Upwork Eval RunWait command=" command)
+    exitCode := RunWait(command, UpworkProjectDir, "Hide")
+    WriteLauncherLog("Upwork Eval RunWait exitCode=" exitCode)
+
+    outputText := ""
+    if FileExist(UpworkEvalOutput) {
+        outputText := Trim(FileRead(UpworkEvalOutput, "UTF-8"))
+    }
+    if (outputText = "") {
+        outputText := "FAIL-FAST: Upwork evaluation returned no output."
+    }
+    outputText := NormalizeUpworkCaptureOutput(outputText)
+    return { exitCode: exitCode, outputText: outputText }
+}
+
+NormalizeUpworkCaptureOutput(rawText) {
+    lines := StrSplit(StrReplace(rawText, "`r", ""), "`n")
+    kept := []
+    for line in lines {
+        clean := Trim(line)
+        if (clean = "") {
+            continue
+        }
+        if RegExMatch(clean, "i)^\(node:\d+\)\s+\[DEP\d+\]\s+DeprecationWarning:") {
+            continue
+        }
+        if InStr(clean, "Use the WHATWG URL API instead.") {
+            continue
+        }
+        if InStr(clean, "node --trace-deprecation") {
+            continue
+        }
+        if InStr(clean, "DEP0169") {
+            continue
+        }
+        if InStr(clean, "url.parse()") {
+            continue
+        }
+        kept.Push(clean)
+    }
+    if (kept.Length = 0) {
+        return "FAIL-FAST: Upwork capture returned no usable output."
+    }
+    out := ""
+    for idx, item in kept {
+        if (idx > 1) {
+            out .= "`n"
+        }
+        out .= item
+    }
+    return out
+}
+
 WriteLauncherLog(message) {
     global LauncherLog
     timestamp := FormatTime(, "yyyy-MM-dd HH:mm:ss")
     FileAppend(timestamp " | " message "`n", LauncherLog, "UTF-8")
+}
+
+ShowStatusTip(message, durationMs := 2500) {
+    ToolTip message
+    SetTimer () => ToolTip(), -durationMs
 }
 
 EnsureContentSummaryBridge() {

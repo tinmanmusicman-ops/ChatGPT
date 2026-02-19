@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>&#xFEFF;</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="preload"  as="style">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    html,
+    body {
+      width: 100%;
+      border: 0;
+      font: 400 14px/1.2 'Poppins', 'Helvetica-Neue', 'Helvetica', 'Arial', sans-serif;
+      color: #000;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    p {
+      margin: 0;
+      padding: 0;
+    }
+
+    .open-dialog {
+      display: flex;
+      width: 100%;
+    }
+
+    .open-content {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      padding: 40px 40px 40px 10px;
+    }
+
+    .open-image {
+      display: block;
+      max-width: 100%;
+    }
+
+    .open-image-brand {
+      min-width: 256px;
+      max-width: 256px;
+    }
+
+    .open-image-box {
+      position: relative;
+      left: -15px;
+    }
+
+    .open-image-box img {
+      margin-right: auto;
+    }
+
+    .open-title {
+      font-size: 18px;
+      line-height: 1.5;
+      font-weight: 600;
+    }
+
+    .open-text {
+      font-size: 16px;
+      line-height: 1.5;
+      font-weight: 300;
+    }
+
+    .open-button-wrap {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .open-button {
+      display: inline-flex;
+      padding: 12px 24px;
+      justify-content: center;
+      align-items: center;
+      gap: 16px;
+      font: 600 16px/1.5 'Poppins', sans-serif;
+      color: #fff;
+      border-radius: 5px;
+      background: #0068DF;
+      border: none;
+      transition: bacground .2s ease-in;
+      cursor: pointer;
+
+      &:hover {
+        background: #0054D1;
+      }
+    }
+
+  </style>
+</head>
+<body>
+  <div class="open-dialog">
+
+    <div class="open-image-brand">
+      <img src="./../../assets/images/open-graphic.png" alt="Soda PDF" class="open-image" />
+    </div>
+
+    <div class="open-content">
+      <div class="open-title">Open your local files with Soda PDF</div>
+
+      <p class="open-text">Take full advantage of the Soda PDF extension and open all of your PDF files with ease!</p>
+
+      <div class="open-image-box">
+        <img src="./../../assets/images/graphic-browse.png" alt="View browser" class="open-image" />
+      </div>
+
+      <p class="open-text">Go to the browser extension settings, scroll down and turn on “Allow access to file URLs.”</p>
+
+      <div class="open-button-wrap">
+        <button id="goToSettings" type="button" class="filled-cta open-button">Go to settings</button>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script src="open-dialog.js"></script>
+</body>
+</html>

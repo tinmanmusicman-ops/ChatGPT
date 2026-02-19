@@ -1,0 +1,14 @@
+2026/02/15-21:59:59.376 18a0 Reusing MANIFEST C:\ChatGPT\ai-bots\UpWork\cdp-profile\Default\IndexedDB\https_www.upwork.com_0.indexeddb.leveldb/MANIFEST-000001
+2026/02/15-21:59:59.378 18a0 Recovering log #32
+2026/02/15-21:59:59.379 18a0 Reusing old log C:\ChatGPT\ai-bots\UpWork\cdp-profile\Default\IndexedDB\https_www.upwork.com_0.indexeddb.leveldb/000032.log 
+2026/02/15-21:59:59.380 18a0 Delete type=2 #30
+2026/02/15-21:59:59.760 520c Level-0 table #37: started
+2026/02/15-21:59:59.764 520c Level-0 table #37: 5083 bytes OK
+2026/02/15-21:59:59.766 520c Delete type=0 #32
+2026/02/15-21:59:59.767 520c Manual compaction at level-0 from '\x00\x0e\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x0f\x00\x00\x00' @ 0 : 0; will stop at '\x00\x0e\x00\x00\x05' @ 726 : 1
+2026/02/15-21:59:59.768 520c Compacting 1@0 + 1@1 files
+2026/02/15-21:59:59.772 520c Generated table #38@0: 180 keys, 26831 bytes
+2026/02/15-21:59:59.772 520c Compacted 1@0 + 1@1 files => 26831 bytes
+2026/02/15-21:59:59.773 520c compacted to: files[ 0 1 1 0 0 0 0 ]
+2026/02/15-21:59:59.774 520c Delete type=2 #37
+2026/02/15-21:59:59.775 520c Manual compaction at level-0 from '\x00\x0e\x00\x00\x05' @ 726 : 1 .. '\x00\x0f\x00\x00\x00' @ 0 : 0; will stop at (end)
