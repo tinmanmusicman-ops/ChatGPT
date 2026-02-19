@@ -78,6 +78,7 @@
     <br><a href="AI-Fit-Site/Job.html">Job Fit</a><br>
     <br><a href="CORES/CORES.html">CORES</a><br>
     <br><a id="towerLink" href="">HSST Control Tower</a><br>
+    <br><a id="leadgenLink" href="">LeadGen Monitor</a><br>
     <br><a href="ai-bots/JitterbugExpert/index.html">Jitterbug Expert</a>
 
 
@@ -134,6 +135,24 @@
       }
     } catch (error) {
       console.warn("Tower link unavailable:", error);
+      link.removeAttribute("href");
+      link.classList.add("disabled");
+    }
+  })();
+</script>
+
+<script>
+  (async () => {
+    const link = document.getElementById("leadgenLink");
+    if (!link) return;
+    try {
+      await window.loadTowerConfig();
+      if (window.towerBaseUrl) {
+        link.href = `${window.towerBaseUrl}/tower/leadgen`;
+        link.target = "_blank";
+      }
+    } catch (error) {
+      console.warn("LeadGen link unavailable:", error);
       link.removeAttribute("href");
       link.classList.add("disabled");
     }
