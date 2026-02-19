@@ -14,7 +14,7 @@ import uuid
 import traceback
 from html import escape
 from datetime import datetime, timedelta
-from flask import Flask, Response, send_from_directory, send_file, jsonify, request, redirect, abort
+from flask import Flask, Response, send_from_directory, send_file, jsonify, request, redirect, abort, stream_with_context
 from flask_socketio import SocketIO, emit
 from werkzeug.exceptions import HTTPException
 import requests
@@ -55,6 +55,9 @@ DEFAULT_RESUME_OUTPUT_DIR = Path(r"C:\!!!!!!!!!!!!!!!!!!!!!!!!!Stuff")
 BASE_OUTPUT_DIR = Path(os.environ.get("HSST_RESUME_OUTPUT_DIR", str(DEFAULT_RESUME_OUTPUT_DIR)))
 BASE_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 AI_BOTS_ROOT = BASE_DIR.parent / "ai-bots"
+LEADGEN_MONITOR_DIR = AI_BOTS_ROOT / "n8n" / "LeadGen" / "Monitor"
+LEADGEN_MONITOR_STATIC_DIR = LEADGEN_MONITOR_DIR / "static"
+LEADGEN_MONITOR_INDEX_PATH = LEADGEN_MONITOR_STATIC_DIR / "index.html"
 JITTERBUG_EXPERT_DIR = AI_BOTS_ROOT / "JitterbugExpert"
 SOFTPHONE_TEMPLATE_PATH = JITTERBUG_EXPERT_DIR / "templates" / "softphone.html"
 SOFTPHONE_STATIC_DIR = JITTERBUG_EXPERT_DIR / "static"
@@ -1300,6 +1303,179 @@ def health():
 
 _global_config_cache = None
 _global_config_mtime = None
+
+
+def _leadgen_monitor_base_url() -> str:
+    base_url = os.environ.get("HSST_LEADGEN_MONITOR_BASE_URL", "").strip()
+    if not base_url:
+        raise RuntimeError("HSST_LEADGEN_MONITOR_BASE_URL is required")
+    if not (base_url.startswith("http://") or base_url.startswith("https://")):
+        raise RuntimeError("HSST_LEADGEN_MONITOR_BASE_URL must start with http:// or https://")
+    return base_url.rstrip("/")
+
+
+def _leadgen_monitor_get_json(path: str, timeout_sec: float = 20.0) -> tuple[int, dict]:
+    return _leadgen_monitor_request_json("GET", path, timeout_sec=timeout_sec)
+
+
+def _leadgen_monitor_request_json(
+    method: str,
+    path: str,
+    *,
+    params: Optional[dict] = None,
+    json_body: Optional[dict] = None,
+    timeout_sec: float = 60.0,
+) -> tuple[int, dict]:
+    route = str(path or "").strip()
+    if not route.startswith("/"):
+        raise RuntimeError("LeadGen monitor route must start with '/'")
+    target_url = f"{_leadgen_monitor_base_url()}{route}"
+    try:
+        response = requests.request(
+            method=method.upper(),
+            url=target_url,
+            params=params,
+            json=json_body,
+            timeout=timeout_sec,
+        )
+    except requests.RequestException as exc:
+        raise RuntimeError(f"LeadGen monitor request failed: {exc}") from exc
+    try:
+        payload = response.json()
+    except ValueError as exc:
+        raise RuntimeError("LeadGen monitor returned non-JSON response") from exc
+    if not isinstance(payload, dict):
+        raise RuntimeError("LeadGen monitor JSON response must be an object")
+    return response.status_code, payload
+
+
+def _leadgen_monitor_rewrite_index_html() -> str:
+    if not LEADGEN_MONITOR_INDEX_PATH.exists():
+        raise RuntimeError(f"LeadGen monitor html not found: {LEADGEN_MONITOR_INDEX_PATH}")
+    html = LEADGEN_MONITOR_INDEX_PATH.read_text(encoding="utf-8")
+    replacements = {
+        'fetch("/graph"': 'fetch("/tower/leadgen/graph"',
+        'fetch("/history"': 'fetch("/tower/leadgen/history"',
+        'new EventSource("/events")': 'new EventSource("/tower/leadgen/events")',
+        'fetch(`/node-code?node_id=${encodeURIComponent(nodeId)}`': 'fetch(`/tower/leadgen/node-code?node_id=${encodeURIComponent(nodeId)}`',
+        'fetch(`/open-in-vscode?node_id=${encodeURIComponent(activeCodeNodeId)}`': 'fetch(`/tower/leadgen/open-in-vscode?node_id=${encodeURIComponent(activeCodeNodeId)}`',
+        'fetch("/trigger-run"': 'fetch("/tower/leadgen/trigger-run"',
+        'fetch("/trigger-cold-run"': 'fetch("/tower/leadgen/trigger-cold-run"',
+    }
+    for old, new in replacements.items():
+        if old not in html:
+            raise RuntimeError(f"LeadGen monitor html token missing: {old}")
+        html = html.replace(old, new)
+    return html
+
+
+@app.route("/tower/leadgen", strict_slashes=False, methods=["GET"])
+def tower_leadgen_ui():
+    try:
+        html = _leadgen_monitor_rewrite_index_html()
+    except RuntimeError as exc:
+        return jsonify({"ok": False, "error": str(exc)}), 502
+    return Response(html, mimetype="text/html")
+
+
+@app.route("/tower/leadgen/graph", methods=["GET"])
+def tower_leadgen_graph():
+    try:
+        status_code, payload = _leadgen_monitor_get_json("/graph")
+    except RuntimeError as exc:
+        return jsonify({"ok": False, "error": str(exc)}), 502
+    return jsonify(payload), status_code
+
+
+@app.route("/tower/leadgen/history", methods=["GET"])
+def tower_leadgen_history():
+    try:
+        status_code, payload = _leadgen_monitor_get_json("/history")
+    except RuntimeError as exc:
+        return jsonify({"ok": False, "error": str(exc)}), 502
+    return jsonify(payload), status_code
+
+
+@app.route("/tower/leadgen/node-code", methods=["GET"])
+def tower_leadgen_node_code():
+    node_id = str(request.args.get("node_id", "")).strip()
+    if not node_id:
+        return jsonify({"ok": False, "error": "node_id is required"}), 400
+    try:
+        status_code, payload = _leadgen_monitor_request_json("GET", "/node-code", params={"node_id": node_id})
+    except RuntimeError as exc:
+        return jsonify({"ok": False, "error": str(exc)}), 502
+    return jsonify(payload), status_code
+
+
+@app.route("/tower/leadgen/open-in-vscode", methods=["GET"])
+def tower_leadgen_open_in_vscode():
+    node_id = str(request.args.get("node_id", "")).strip()
+    if not node_id:
+        return jsonify({"ok": False, "error": "node_id is required"}), 400
+    try:
+        status_code, payload = _leadgen_monitor_request_json("GET", "/open-in-vscode", params={"node_id": node_id})
+    except RuntimeError as exc:
+        return jsonify({"ok": False, "error": str(exc)}), 502
+    return jsonify(payload), status_code
+
+
+@app.route("/tower/leadgen/trigger-run", methods=["POST"])
+def tower_leadgen_trigger_run():
+    payload = request.get_json(force=True, silent=True)
+    if payload is None:
+        payload = {}
+    if not isinstance(payload, dict):
+        return jsonify({"ok": False, "error": "JSON payload must be an object"}), 400
+    try:
+        status_code, proxy_payload = _leadgen_monitor_request_json("POST", "/trigger-run", json_body=payload)
+    except RuntimeError as exc:
+        return jsonify({"ok": False, "error": str(exc)}), 502
+    return jsonify(proxy_payload), status_code
+
+
+@app.route("/tower/leadgen/trigger-cold-run", methods=["POST"])
+def tower_leadgen_trigger_cold_run():
+    payload = request.get_json(force=True, silent=True)
+    if payload is None:
+        payload = {}
+    if not isinstance(payload, dict):
+        return jsonify({"ok": False, "error": "JSON payload must be an object"}), 400
+    try:
+        status_code, proxy_payload = _leadgen_monitor_request_json("POST", "/trigger-cold-run", json_body=payload)
+    except RuntimeError as exc:
+        return jsonify({"ok": False, "error": str(exc)}), 502
+    return jsonify(proxy_payload), status_code
+
+
+@app.route("/tower/leadgen/events", methods=["GET"])
+def tower_leadgen_events():
+    try:
+        target_url = f"{_leadgen_monitor_base_url()}/events"
+    except RuntimeError as exc:
+        return jsonify({"ok": False, "error": str(exc)}), 502
+
+    def _event_stream():
+        try:
+            with requests.get(target_url, stream=True, timeout=(10, None)) as upstream:
+                if upstream.status_code >= 400:
+                    payload = json.dumps(
+                        {"ok": False, "error": f"LeadGen monitor events endpoint returned {upstream.status_code}"},
+                        ensure_ascii=True,
+                    )
+                    yield f"data: {payload}\n\n".encode("utf-8")
+                    return
+                for chunk in upstream.iter_content(chunk_size=1024):
+                    if chunk:
+                        yield chunk
+        except requests.RequestException as exc:
+            payload = json.dumps({"ok": False, "error": str(exc)}, ensure_ascii=True)
+            yield f"data: {payload}\n\n".encode("utf-8")
+
+    response = Response(stream_with_context(_event_stream()), mimetype="text/event-stream")
+    response.headers["Cache-Control"] = "no-cache"
+    response.headers["X-Accel-Buffering"] = "no"
+    return response
 
 
 def _load_global_config() -> dict:

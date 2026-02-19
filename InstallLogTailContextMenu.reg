@@ -1,0 +1,8 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_CURRENT_USER\Software\Classes\SystemFileAssociations\.log\shell\TailLogFile]
+@="Tail Log (PowerShell)"
+"Icon"="powershell.exe"
+
+[HKEY_CURRENT_USER\Software\Classes\SystemFileAssociations\.log\shell\TailLogFile\command]
+@="powershell.exe -NoLogo -ExecutionPolicy Bypass -File \"C:\\ChatGPT\\tail_log.ps1\" \"%1\""

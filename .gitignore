@@ -112,3 +112,17 @@ node_modules/
 
 # SARes packaging artifacts
 /ai-bots/SARes/dist/
+
+# LeadGen runtime/state files (local only)
+/ai-bots/n8n/LeadGen/monitor_feed.jsonl
+/ai-bots/n8n/LeadGen/.service_account.from_global.json
+/ai-bots/n8n/LeadGen/**/status.log
+/ai-bots/n8n/LeadGen/**/Runtime.log
+/ai-bots/n8n/LeadGen/**/*.sqlite
+/ai-bots/n8n/LeadGen/**/*.sqlite-*
+
+# UpWork n8n runtime/backups (local only)
+/ai-bots/UpWork/**/*.sqlite
+/ai-bots/UpWork/**/*.sqlite-*
+/ai-bots/UpWork/**/config
+/ai-bots/UpWork/**/crash.journal
