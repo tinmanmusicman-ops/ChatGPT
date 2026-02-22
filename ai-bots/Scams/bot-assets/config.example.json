@@ -1,0 +1,6 @@
+{
+  "gmail_user": "your_email@gmail.com",
+  "gmail_app_password": "your_app_password",
+  "openai_model": "gpt-4o-mini",
+  "openai_temperature": 0.1
+}
