@@ -1,0 +1,2405 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Upworks Monitor</title>
+  <style>
+:root {
+  --bg: #0f1622;
+  --panel: #121d2d;
+  --panel-border: #1f3047;
+  --text: #dce6f5;
+  --muted: #8ca1bc;
+  --edge: #3c4f6b;
+  --edge-active: #62a9ff;
+  --node-idle: #2c3e58;
+  --node-running: #2b6cb0;
+  --node-success: #22863a;
+  --node-error: #b73434;
+}
+
+* {
+  box-sizing: border-box;
+
+}
+
+body {
+        forced-color-adjust: none;
+      -ms-high-contrast-adjust: none;
+
+  margin: 0;
+  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+  background: radial-gradient(circle at top left, #1a2740 0%, var(--bg) 52%);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--panel-border);
+  background: rgba(8, 12, 18, 0.8);
+}
+
+.title-block h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.title-block p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.meta-block {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.chip {
+  display: inline-block;
+  font-size: 12px;
+  border: 1px solid var(--panel-border);
+  border-radius: 999px;
+  padding: 4px 10px;
+  background: #1a2738;
+  color: #c6d7ef;
+}
+
+.chip-ok {
+  border-color: #2e7d32;
+  background: #1b3c24;
+}
+
+.chip-warn {
+  border-color: #946d2f;
+  background: #3d2f16;
+}
+
+.chip-error {
+  border-color: #8d3030;
+  background: #3d1b1b;
+}
+
+.trigger-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.trigger-row-input {
+  width: 88px;
+  height: 26px;
+  border: 1px solid var(--panel-border);
+  border-radius: 6px;
+  background: #121d2d;
+  color: #dce6f5;
+  font-size: 12px;
+  padding: 0 8px;
+}
+
+.trigger-run-button {
+  height: 26px;
+  border: 1px solid #3e6fa7;
+  border-radius: 6px;
+  background: #173355;
+  color: #dce6f5;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 0 10px;
+  cursor: pointer;
+}
+
+.trigger-run-button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.trigger-cold-button {
+  height: 26px;
+  border: 1px solid #8b6a2f;
+  border-radius: 6px;
+  background: #4b3816;
+  color: #f1e5c8;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 0 10px;
+  cursor: pointer;
+}
+
+.trigger-cold-button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: 14px;
+  padding: 14px;
+  height: calc(100vh - 84px);
+}
+
+.panel {
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+  background: rgba(16, 26, 40, 0.92);
+  overflow: hidden;
+  min-height: 0;
+}
+
+.panel-header {
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #b8cae2;
+  border-bottom: 1px solid var(--panel-border);
+  letter-spacing: 0.02em;
+}
+
+.panel-header-graph {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.zoom-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.zoom-button {
+  min-width: 28px;
+  height: 24px;
+  border: 1px solid var(--panel-border);
+  border-radius: 6px;
+  background: #1a2738;
+  color: #dce6f5;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.zoom-button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.zoom-label {
+  min-width: 48px;
+  text-align: center;
+  font-size: 11px;
+  color: #c6d7ef;
+}
+
+.panel-graph {
+  margin-top: 30px;
+  display: flex;
+  flex-direction: column;
+}
+
+.graph-scroll {
+  position: relative;
+  overflow: auto;
+  flex: 1;
+  background:
+    linear-gradient(90deg, rgba(89, 115, 154, 0.05) 1px, transparent 1px) 0 0 / 40px 40px,
+    linear-gradient(rgba(89, 115, 154, 0.05) 1px, transparent 1px) 0 0 / 40px 40px;
+}
+
+.graph-legend {
+  position: sticky;
+  top: 8px;
+  left: 8px;
+  z-index: 20;
+  width: fit-content;
+  margin: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  background: rgba(8, 13, 20, 0.92);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.legend-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #cddbf0;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #dbe8fb;
+  line-height: 1.2;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.legend-divider {
+  width: 1px;
+  height: 18px;
+  border-left: 1px solid var(--panel-border);
+  opacity: 0.9;
+}
+
+.legend-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+#legend-status,
+#legend-types {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.legend-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  border: 1px solid #9db1cf;
+}
+
+.legend-idle {
+  background: var(--node-idle);
+}
+
+.legend-running {
+  background: var(--node-running);
+}
+
+.legend-success {
+  background: var(--node-success);
+}
+
+.legend-error {
+  background: var(--node-error);
+}
+
+.legend-type-icon {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 2px;
+  border: 1px solid #9db1cf;
+  background-color: #142238;
+  background-image: var(--type-image);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 10px 10px;
+}
+
+#edge-layer {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+#node-layer {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.graph-stage-wrap {
+  position: relative;
+}
+
+.graph-stage {
+  position: relative;
+  transform-origin: 0 0;
+}
+
+.node {
+  position: absolute;
+  width: 48px;
+  height: 48px;
+  border-radius: 6px;
+  border: 1px solid #405578;
+  background-color: #15233a;
+  background-image: var(--node-image);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 28px 28px;
+  overflow: visible;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.node::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.node:hover {
+  transform: translateY(-1px);
+}
+
+.node:focus-visible {
+  outline: 2px solid #8fc5ff;
+  outline-offset: 2px;
+}
+
+.node.has-code {
+  cursor: pointer;
+}
+
+.node.has-code::after {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+}
+
+.node::after {
+  content: attr(data-label);
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 11px;
+  font-weight: 700;
+  color: antiquewhite;
+  line-height: 1.2;
+  z-index: 2;
+}
+
+.node-count {
+  position: absolute;
+  left: 50%;
+  top: -34px;
+  transform: translateX(-50%);
+  min-width: 40px;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: rgba(9, 17, 29, 0.86);
+  border: 1px solid #87b6ff;
+  color: #d7e9ff;
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.1;
+  text-align: center;
+  letter-spacing: 0.3px;
+  z-index: 8;
+  display: none;
+  pointer-events: none;
+}
+
+.node-elapsed {
+  position: absolute;
+  right: -8px;
+  top: -8px;
+  min-width: 24px;
+  padding: 1px 4px;
+  border: 1px solid #5b7091;
+  border-radius: 999px;
+  background: rgba(8, 14, 22, 0.95);
+  color: #e7eef9;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  z-index: 6;
+}
+
+.node-tooltip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 10px);
+  transform: translateX(-50%) translateY(6px);
+  min-width: 180px;
+  max-width: 260px;
+  padding: 8px 10px;
+  border: 1px solid #5e7394;
+  border-radius: 8px;
+  background: rgba(7, 12, 20, 0.96);
+  color: #dbe8fb;
+  font-size: 11px;
+  line-height: 1.35;
+  white-space: normal;
+  text-align: left;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.35);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.14s ease, transform 0.14s ease;
+  z-index: 25;
+}
+
+.node-tooltip::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: rgba(7, 12, 20, 0.96);
+}
+
+.node-error-bubble {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 56px);
+  transform: translateX(-50%);
+  min-width: 200px;
+  max-width: 360px;
+  padding: 8px 10px;
+  border: 1px solid #f3a6a6;
+  border-radius: 8px;
+  background: rgba(61, 27, 27, 0.96);
+  color: #ffd7d7;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.3;
+  white-space: normal;
+  text-align: left;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.35);
+  z-index: 30;
+  display: none;
+  pointer-events: none;
+}
+
+.node-error-bubble::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: rgba(61, 27, 27, 0.96);
+}
+
+.node:hover .node-tooltip,
+.node:focus-visible .node-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+.node.status-idle::before {
+  background: transparent;
+}
+
+.node.status-running::before {
+  background: rgba(43, 108, 176, 0.18);
+}
+
+.node.status-running.running-blink-on::before {
+  background: rgba(43, 108, 176, 0.62);
+}
+
+.node.status-running {
+  border-color: #8fc5ff;
+  box-shadow: 0 0 0 1px rgba(143, 197, 255, 0.45), 0 8px 20px rgba(15, 48, 94, 0.5);
+}
+
+.node.status-duplicate::before {
+  background: rgba(255, 157, 51, 0.44);
+  animation: duplicate-pulse 0.38s ease-in-out infinite alternate;
+}
+
+.node.status-duplicate {
+  border-color: #ffbb66;
+  box-shadow: 0 0 0 1px rgba(255, 180, 94, 0.5), 0 8px 20px rgba(107, 66, 22, 0.5);
+}
+
+.node.status-success::before {
+  background: rgba(34, 134, 58, 0.42);
+}
+
+.node.status-success {
+  border-color: #8ee19d;
+}
+
+.node.status-error::before {
+  background: transparent;
+}
+
+.node.status-error {
+  border-color: #f3a6a6;
+}
+
+.edge {
+  stroke: var(--edge);
+  stroke-width: 1.8;
+  fill: none;
+  stroke-linecap: round;
+  opacity: 0.92;
+  transition: stroke 0.15s ease, stroke-width 0.15s ease;
+}
+
+.edge.error-edge {
+  opacity: 0;
+  stroke: transparent;
+}
+
+.edge.error-edge.completed {
+  opacity: 0.98;
+  stroke: var(--node-error);
+}
+
+.edge.completed {
+  stroke: var(--node-success);
+  stroke-width: 2.4;
+}
+
+.edge.active {
+  stroke: var(--edge-active);
+  stroke-width: 3.1;
+  stroke-dasharray: 8 6;
+  animation: edge-flow 0.7s linear infinite;
+}
+
+@keyframes edge-flow {
+  from { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: -14; }
+}
+
+@keyframes duplicate-pulse {
+  from { opacity: 0.35; }
+  to { opacity: 1; }
+}
+
+.panel-events {
+  display: flex;
+  flex-direction: column;
+}
+
+.events {
+  flex: 1;
+  overflow: auto;
+  padding: 8px;
+}
+
+.event-line {
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 12px;
+  line-height: 1.35;
+  padding: 6px 7px;
+  border-bottom: 1px solid rgba(62, 84, 116, 0.35);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.event-line.status {
+  color: #d8e6f8;
+}
+
+.event-line.payload_pair {
+  color: #bfe7c6;
+}
+
+.event-line.text {
+  color: #c5cedd;
+}
+
+.code-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.56);
+}
+
+.code-modal-backdrop.open {
+  display: flex;
+}
+
+.code-modal {
+  width: min(920px, calc(100vw - 36px));
+  max-height: calc(100vh - 52px);
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+  background: #101a29;
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.code-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--panel-border);
+}
+
+.code-modal-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #dce6f5;
+}
+
+.code-modal-meta {
+  font-size: 11px;
+  color: #9db1cf;
+}
+
+.code-modal-close {
+  border: 1px solid var(--panel-border);
+  border-radius: 6px;
+  background: #1a2738;
+  color: #dce6f5;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 4px 9px;
+}
+
+.code-modal-open {
+  border: 1px solid #3e6fa7;
+  border-radius: 6px;
+  background: #173355;
+  color: #dce6f5;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 4px 9px;
+}
+
+.code-modal-open:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.code-modal-body {
+  margin: 0;
+  padding: 12px;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #cfe1fb;
+  background: #0d1623;
+  overflow: auto;
+  white-space: pre;
+}
+
+#error-modal-backdrop .code-modal {
+  width: min(1280px, calc(100vw - 28px));
+  max-height: calc(100vh - 24px);
+}
+
+#error-modal-title {
+  font-size: 26px;
+  line-height: 1.1;
+}
+
+#error-modal-meta {
+  font-size: 18px;
+}
+
+#error-modal-body {
+  font-size: 22px;
+  line-height: 1.45;
+  min-height: 340px;
+  white-space: pre-wrap;
+}
+
+@media (max-width: 1200px) {
+  .layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(360px, 1fr) 280px;
+  }
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --bg: #000000;
+    --panel: #000000;
+    --panel-border: #ffffff;
+    --text: #ffffff;
+    --muted: #ffffff;
+    --edge: #ffffff;
+    --edge-active: #ffff00;
+    --node-idle: #1f2937;
+    --node-running: #005fcc;
+    --node-success: #107c10;
+    --node-error: #c50f1f;
+  }
+
+  .node,
+  .panel,
+  .chip,
+  .event-line,
+  .graph-legend,
+  .legend-swatch,
+  .node-tooltip,
+  .code-modal {
+    border-width: 2px;
+  }
+
+  .node.status-running {
+    box-shadow: none;
+  }
+}
+
+@media (forced-colors: active) {
+  body,
+  .topbar,
+  .panel,
+  .chip,
+  .event-line,
+  .graph-scroll,
+  .graph-legend {
+    forced-color-adjust: none;
+    -ms-high-contrast-adjust: none;
+    background: Canvas;
+    color: CanvasText;
+    border-color: CanvasText;
+    box-shadow: none;
+  }
+
+  .node,
+  .legend-swatch,
+  .node-tooltip,
+  .code-modal {
+    forced-color-adjust: none;
+    -ms-high-contrast-adjust: none;
+    color: CanvasText;
+    border-color: CanvasText;
+    box-shadow: none;
+  }
+
+  .node-tooltip {
+    background: Canvas;
+  }
+
+  .code-modal {
+    background: Canvas;
+  }
+
+  .code-modal-body {
+    background: Canvas;
+    color: CanvasText;
+  }
+
+  #error-modal-body {
+    border-top: 2px solid CanvasText;
+  }
+
+  .node-tooltip::after {
+    border-top-color: CanvasText;
+  }
+
+  .node {
+    background-color: #15233a;
+    background-image: var(--node-image);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 28px 28px;
+  }
+
+  .node.status-idle::before {
+    background: transparent;
+  }
+
+  .node.status-running::before {
+    background: rgba(0, 95, 204, 0.18);
+  }
+
+  .node.status-running.running-blink-on::before {
+    background: rgba(0, 95, 204, 0.62);
+  }
+
+  .node.status-success::before {
+    background: rgba(16, 124, 16, 0.42);
+  }
+
+  .node.status-error::before {
+    background: transparent;
+  }
+
+  .legend-idle {
+    background: #1f2937;
+  }
+
+  .legend-running {
+    background: #005fcc;
+  }
+
+  .legend-success {
+    background: #107c10;
+  }
+
+  .legend-error {
+    background: #c50f1f;
+  }
+
+  .edge {
+    stroke: CanvasText;
+  }
+
+  .edge.error-edge {
+    opacity: 0;
+    stroke: transparent;
+  }
+
+  .edge.error-edge.completed {
+    opacity: 1;
+    stroke: Highlight;
+  }
+
+  .edge.active {
+    stroke: Highlight;
+  }
+}
+
+</style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="title-block">
+      <h1>Upworks Flow Monitor</h1>
+      <p>Code-driven runtime view of the pipeline</p>
+    </div>
+    <div class="meta-block">
+      <div class="trigger-controls">
+        <input id="trigger-row" class="trigger-row-input" type="number" min="2" step="1" value="2" aria-label="Row number to run">
+        <button id="trigger-run" class="trigger-run-button" type="button" aria-label="Run job">Run Job</button>
+        <button id="trigger-cold-run" class="trigger-cold-button" type="button" aria-label="Run cold start job">Run Cold Start</button>
+        <button id="reset-page" class="trigger-cold-button" type="button" aria-label="Reset monitor page">Reset</button>
+      </div>
+      <span id="trigger-state" class="chip">idle</span>
+      <span id="active-run" class="chip">run: n/a</span>
+      <span id="connection-state" class="chip chip-warn">connecting</span>
+      <span id="last-event" class="chip">waiting for events</span>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="panel panel-graph">
+      <div class="panel-header panel-header-graph">
+        <span>Flow Graph</span>
+        <div class="zoom-controls">
+          <button id="zoom-out" class="zoom-button" type="button" aria-label="Zoom out">-</button>
+          <span id="zoom-label" class="zoom-label">100%</span>
+          <button id="zoom-in" class="zoom-button" type="button" aria-label="Zoom in">+</button>
+          <button id="zoom-reset" class="zoom-button" type="button" aria-label="Reset zoom">100%</button>
+        </div>
+      </div>
+      <div id="graph-scroll" class="graph-scroll">
+        <div class="graph-legend" aria-label="Color legend">
+          <div class="legend-group">
+            <div class="legend-title">Status</div>
+            <div id="legend-status">
+              <div class="legend-item"><span class="legend-swatch legend-idle"></span><span>idle</span></div>
+              <div class="legend-item"><span class="legend-swatch legend-running"></span><span>running</span></div>
+              <div class="legend-item"><span class="legend-swatch legend-success"></span><span>success</span></div>
+              <div class="legend-item"><span class="legend-swatch legend-error"></span><span>error</span></div>
+            </div>
+          </div>
+          <div class="legend-divider"></div>
+          <div class="legend-group">
+            <div class="legend-title">Types</div>
+            <div id="legend-types"></div>
+          </div>
+        </div>
+        <div id="graph-stage-wrap" class="graph-stage-wrap">
+          <div id="graph-stage" class="graph-stage">
+            <svg id="edge-layer"></svg>
+            <div id="node-layer"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="panel panel-events">
+      <div class="panel-header">
+        <span>Live Events</span>
+      </div>
+      <div id="events" class="events"></div>
+    </aside>
+  </main>
+
+  <div id="code-modal-backdrop" class="code-modal-backdrop" aria-hidden="true">
+    <div class="code-modal" role="dialog" aria-modal="true" aria-labelledby="code-modal-title">
+      <div class="code-modal-header">
+        <div>
+          <div id="code-modal-title" class="code-modal-title">Node Code</div>
+          <div id="code-modal-meta" class="code-modal-meta"></div>
+        </div>
+        <div>
+          <button id="code-modal-open" class="code-modal-open" type="button" aria-label="Open in VS Code" disabled>Open in VS Code</button>
+          <button id="code-modal-close" class="code-modal-close" type="button" aria-label="Close code viewer">Close</button>
+        </div>
+      </div>
+      <pre id="code-modal-body" class="code-modal-body"></pre>
+    </div>
+  </div>
+
+  <div id="error-modal-backdrop" class="code-modal-backdrop" aria-hidden="true">
+    <div class="code-modal" role="dialog" aria-modal="true" aria-labelledby="error-modal-title">
+      <div class="code-modal-header">
+        <div>
+          <div id="error-modal-title" class="code-modal-title">Flow Error</div>
+          <div id="error-modal-meta" class="code-modal-meta"></div>
+        </div>
+        <div>
+          <button id="error-modal-close" class="code-modal-close" type="button" aria-label="Close error viewer">Close</button>
+        </div>
+      </div>
+      <pre id="error-modal-body" class="code-modal-body"></pre>
+    </div>
+  </div>
+
+  <script>
+"use strict";
+
+const NODE_WIDTH = 48;
+const NODE_HEIGHT = 48;
+const NODE_TOP_OFFSET = 70;
+const EDGE_PULSE_MS = 900;
+const EDGE_BRANCH_SLOT_PX = 14;
+const EDGE_CURVE_MIN_PX = 40;
+const EDGE_CURVE_CLAMP_PX = 120;
+const EDGE_FALLBACK_LANE_PX = 72;
+const EVENT_LIMIT = 500;
+const RUNNING_BLINK_INTERVAL_MS = 260;
+const NODE_UPDATE_DELAY_MS = 1000;
+const NODE_SEQUENCE_GAP_MS = 120;
+const DUPLICATE_HOLD_MS = 2000;
+
+const nodeLayer = document.getElementById("node-layer");
+const edgeLayer = document.getElementById("edge-layer");
+const eventBox = document.getElementById("events");
+const connectionState = document.getElementById("connection-state");
+const lastEvent = document.getElementById("last-event");
+const activeRunChip = document.getElementById("active-run");
+const triggerRowInput = document.getElementById("trigger-row");
+const triggerRunButton = document.getElementById("trigger-run");
+const triggerColdRunButton = document.getElementById("trigger-cold-run");
+const resetPageButton = document.getElementById("reset-page");
+const triggerState = document.getElementById("trigger-state");
+const graphScroll = document.getElementById("graph-scroll");
+const graphStageWrap = document.getElementById("graph-stage-wrap");
+const graphStage = document.getElementById("graph-stage");
+const legendTypes = document.getElementById("legend-types");
+const zoomOutButton = document.getElementById("zoom-out");
+const zoomInButton = document.getElementById("zoom-in");
+const zoomResetButton = document.getElementById("zoom-reset");
+const zoomLabel = document.getElementById("zoom-label");
+const codeModalBackdrop = document.getElementById("code-modal-backdrop");
+const codeModalTitle = document.getElementById("code-modal-title");
+const codeModalMeta = document.getElementById("code-modal-meta");
+const codeModalBody = document.getElementById("code-modal-body");
+const codeModalOpenButton = document.getElementById("code-modal-open");
+const codeModalCloseButton = document.getElementById("code-modal-close");
+const errorModalBackdrop = document.getElementById("error-modal-backdrop");
+const errorModalMeta = document.getElementById("error-modal-meta");
+const errorModalBody = document.getElementById("error-modal-body");
+const errorModalCloseButton = document.getElementById("error-modal-close");
+
+let graph = null;
+let nodeById = new Map();
+let nodeTypeById = new Map();
+let nodeElementById = new Map();
+let incomingEdgesByNode = new Map();
+let outgoingEdgesByNode = new Map();
+let edgeElements = [];
+let graphBaseWidth = 0;
+let graphBaseHeight = 0;
+let zoomLevel = 1;
+let nodeBlinkTimerById = new Map();
+let nodeBlinkOnById = new Map();
+let duplicateResolveTimerById = new Map();
+let lastFocusedNode = null;
+let activeCodeRequestId = 0;
+let activeCodeNodeId = "";
+let nextNodeVisualUpdateAt = 0;
+let scheduledVisualTimerIds = [];
+let nodeStartTsById = new Map();
+let nodeFirstSeenTsById = new Map();
+let activeRunId = "";
+let runNodeErrorContextById = new Map();
+let runErrorPopupShownById = new Set();
+
+const ZOOM_MIN = 0.5;
+const ZOOM_MAX = 2.0;
+const ZOOM_STEP = 0.1;
+
+function setConnection(label, klass) {
+  connectionState.className = "chip " + klass;
+  connectionState.textContent = label;
+}
+
+function setLastEvent(text) {
+  lastEvent.textContent = text;
+}
+
+function setTriggerState(label, klass = "") {
+  triggerState.className = klass ? `chip ${klass}` : "chip";
+  triggerState.textContent = label;
+}
+
+function normalizeRequestId(value) {
+  if (value === null || value === undefined) {
+    return "";
+  }
+  let text = String(value).trim();
+  if (!text) {
+    return "";
+  }
+  if ((text.startsWith("\"") && text.endsWith("\"")) || (text.startsWith("'") && text.endsWith("'"))) {
+    text = text.slice(1, -1).trim();
+  }
+  return text;
+}
+
+function shortRunId(requestId) {
+  if (!requestId) {
+    return "n/a";
+  }
+  return requestId.length > 12 ? `${requestId.slice(0, 12)}...` : requestId;
+}
+
+function generateRequestId() {
+  if (window.crypto && typeof window.crypto.randomUUID === "function") {
+    return window.crypto.randomUUID();
+  }
+  return `run-${Date.now()}-${Math.floor(Math.random() * 1000000)}`;
+}
+
+function setActiveRun(requestId, fromHistory = false) {
+  const normalized = normalizeRequestId(requestId);
+  if (!normalized) {
+    return;
+  }
+  if (normalized === activeRunId) {
+    return;
+  }
+  activeRunId = normalized;
+  activeRunChip.textContent = `run: ${shortRunId(normalized)}`;
+  if (!fromHistory) {
+    addEventLine(`=== run ${normalized} ===`, "text");
+  }
+}
+
+function extractEventRequestId(event) {
+  if (!event || typeof event !== "object") {
+    return "";
+  }
+  const direct = normalizeRequestId(event.request_id);
+  if (direct) {
+    return direct;
+  }
+  if (event.kind === "payload_pair" && String(event.key || "").trim() === "request_id") {
+    return normalizeRequestId(event.value);
+  }
+  return "";
+}
+
+function eventTsMs(event) {
+  const raw = event && typeof event.ts_utc === "string" ? event.ts_utc : "";
+  const parsed = Date.parse(raw);
+  if (Number.isFinite(parsed)) {
+    return parsed;
+  }
+  return Date.now();
+}
+
+function formatElapsedMs(valueMs) {
+  const ms = Math.max(0, Math.round(Number(valueMs) || 0));
+  if (ms < 1000) {
+    return `${ms}ms`;
+  }
+  if (ms < 60000) {
+    return `${(ms / 1000).toFixed(ms < 10000 ? 1 : 0)}s`;
+  }
+  return `${(ms / 60000).toFixed(1)}m`;
+}
+
+function setNodeElapsed(nodeId, elapsedText) {
+  const el = nodeElementById.get(nodeId);
+  if (!el) {
+    return;
+  }
+  const badge = el.querySelector(".node-elapsed");
+  if (!badge) {
+    return;
+  }
+  const text = String(elapsedText || "").trim();
+  badge.textContent = text;
+  badge.style.display = text ? "inline-block" : "none";
+}
+
+function clearNodeElapsed(nodeId) {
+  setNodeElapsed(nodeId, "");
+}
+
+function setNodeCount(nodeId, countText) {
+  const el = nodeElementById.get(nodeId);
+  if (!el) {
+    return;
+  }
+  const badge = el.querySelector(".node-count");
+  if (!badge) {
+    return;
+  }
+  const text = String(countText || "").trim();
+  if (!text) {
+    badge.textContent = "";
+    badge.style.display = "none";
+    return;
+  }
+  badge.textContent = text;
+  badge.style.display = "block";
+}
+
+function setNodeErrorBubble(nodeId, messageText) {
+  const el = nodeElementById.get(nodeId);
+  if (!el) {
+    return;
+  }
+  const bubble = el.querySelector(".node-error-bubble");
+  if (!bubble) {
+    return;
+  }
+  const text = String(messageText || "").trim();
+  if (!text) {
+    bubble.textContent = "";
+    bubble.style.display = "none";
+    return;
+  }
+  bubble.textContent = text;
+  bubble.style.display = "block";
+}
+
+function clearDuplicateResolveTimer(nodeId) {
+  const timer = duplicateResolveTimerById.get(nodeId);
+  if (timer) {
+    window.clearTimeout(timer);
+    duplicateResolveTimerById.delete(nodeId);
+  }
+}
+
+function addEventLine(text, kind) {
+  const line = document.createElement("div");
+  line.className = "event-line " + kind;
+  line.textContent = text;
+  eventBox.prepend(line);
+  while (eventBox.childElementCount > EVENT_LIMIT) {
+    eventBox.removeChild(eventBox.lastChild);
+  }
+}
+
+function closeCodeModal() {
+  if (!codeModalBackdrop.classList.contains("open")) {
+    return;
+  }
+  activeCodeRequestId += 1;
+  activeCodeNodeId = "";
+  codeModalOpenButton.disabled = true;
+  codeModalBackdrop.classList.remove("open");
+  codeModalBackdrop.setAttribute("aria-hidden", "true");
+  if (lastFocusedNode) {
+    lastFocusedNode.focus();
+    lastFocusedNode = null;
+  }
+}
+
+function closeErrorModal() {
+  if (!errorModalBackdrop.classList.contains("open")) {
+    return;
+  }
+  errorModalBackdrop.classList.remove("open");
+  errorModalBackdrop.setAttribute("aria-hidden", "true");
+}
+
+function resolveNodeLabel(nodeId) {
+  const id = String(nodeId || "").trim();
+  if (!id) {
+    return "";
+  }
+  const node = nodeById.get(id);
+  if (!node || typeof node.label !== "string") {
+    return id;
+  }
+  return node.label;
+}
+
+function openErrorModal(payload) {
+  const runId = String(payload && payload.runId ? payload.runId : "").trim() || "n/a";
+  const failedNodeId = String(payload && payload.failedNodeId ? payload.failedNodeId : "").trim();
+  const failedNodeLabel = String(payload && payload.failedNodeLabel ? payload.failedNodeLabel : "").trim();
+  const source = String(payload && payload.source ? payload.source : "").trim();
+  const timestamp = String(payload && payload.timestamp ? payload.timestamp : "").trim();
+  const message = String(payload && payload.message ? payload.message : "").trim() || "Unknown error";
+  const errorNodeMessage = String(payload && payload.errorNodeMessage ? payload.errorNodeMessage : "").trim();
+
+  const failedNodeText = failedNodeLabel
+    ? `${failedNodeLabel}${failedNodeId ? ` (${failedNodeId})` : ""}`
+    : (failedNodeId || "unknown");
+
+  errorModalMeta.textContent = `Run: ${runId}`;
+
+  const lines = [
+    `Failed node: ${failedNodeText}`,
+    `Timestamp: ${timestamp || "n/a"}`,
+    `Source: ${source || "n/a"}`,
+    "",
+    "Error detail:",
+    message,
+  ];
+  if (errorNodeMessage && errorNodeMessage !== message) {
+    lines.push("", "Error node message:", errorNodeMessage);
+  }
+  errorModalBody.textContent = lines.join("\n");
+  errorModalBackdrop.classList.add("open");
+  errorModalBackdrop.setAttribute("aria-hidden", "false");
+  errorModalCloseButton.focus();
+}
+
+function openNodeDetails(node, sourceEl) {
+  const runId = normalizeRequestId(activeRunId);
+  const nodeId = typeof node.id === "string" ? node.id.trim() : "";
+  const remembered = runId ? runNodeErrorContextById.get(runId) : null;
+  const rememberedNodeId = remembered ? String(remembered.nodeId || "").trim() : "";
+  const shouldShowError = Boolean(remembered && (nodeId === "error" || nodeId === rememberedNodeId));
+  if (shouldShowError) {
+    openErrorModal({
+      runId: runId || "n/a",
+      failedNodeId: rememberedNodeId || nodeId,
+      failedNodeLabel: (remembered && remembered.nodeLabel) ? String(remembered.nodeLabel) : resolveNodeLabel(rememberedNodeId || nodeId),
+      message: remembered && remembered.message ? String(remembered.message) : "Unknown error",
+      source: remembered && remembered.source ? String(remembered.source) : "",
+      timestamp: remembered && remembered.timestamp ? String(remembered.timestamp) : "",
+      errorNodeMessage: "",
+    });
+    return;
+  }
+  void openCodeModal(node, sourceEl);
+}
+
+async function openCodeModal(node, sourceEl) {
+  const nodeId = typeof node.id === "string" ? node.id.trim() : "";
+  if (!nodeId) {
+    return;
+  }
+  activeCodeNodeId = nodeId;
+  codeModalOpenButton.disabled = true;
+  const requestId = ++activeCodeRequestId;
+  codeModalTitle.textContent = `Node Code: ${node.label}`;
+  codeModalMeta.textContent = typeof node.code_source === "string" ? node.code_source : "";
+  codeModalBody.textContent = "Loading full function source...";
+  lastFocusedNode = sourceEl;
+  codeModalBackdrop.classList.add("open");
+  codeModalBackdrop.setAttribute("aria-hidden", "false");
+  codeModalCloseButton.focus();
+  try {
+    const response = await fetch(`/node-code?node_id=${encodeURIComponent(nodeId)}`, { cache: "no-store" });
+    const payload = await response.json();
+    if (requestId !== activeCodeRequestId) {
+      return;
+    }
+    if (!response.ok || !payload || payload.ok !== true) {
+      const errorText = payload && payload.error ? String(payload.error) : `HTTP ${response.status}`;
+      codeModalMeta.textContent = "code lookup error";
+      codeModalBody.textContent = `Unable to load node code.\n\n${errorText}`;
+      return;
+    }
+    codeModalMeta.textContent = `${payload.code_source} :: ${payload.code_symbol}`;
+    codeModalBody.textContent = String(payload.code || "");
+    codeModalOpenButton.disabled = false;
+  } catch (error) {
+    if (requestId !== activeCodeRequestId) {
+      return;
+    }
+    codeModalMeta.textContent = "code lookup error";
+    codeModalBody.textContent = `Unable to load node code.\n\n${String(error)}`;
+  }
+}
+
+async function openInVsCode() {
+  if (!activeCodeNodeId) {
+    return;
+  }
+  const requestId = activeCodeRequestId;
+  codeModalOpenButton.disabled = true;
+  try {
+    const response = await fetch(`/open-in-vscode?node_id=${encodeURIComponent(activeCodeNodeId)}`, { cache: "no-store" });
+    const payload = await response.json();
+    if (requestId !== activeCodeRequestId) {
+      return;
+    }
+    if (!response.ok || !payload || payload.ok !== true) {
+      const errorText = payload && payload.error ? String(payload.error) : `HTTP ${response.status}`;
+      codeModalMeta.textContent = `open error: ${errorText}`;
+      codeModalOpenButton.disabled = false;
+      return;
+    }
+    codeModalMeta.textContent = `Opened: ${payload.target}`;
+    codeModalOpenButton.disabled = false;
+  } catch (error) {
+    if (requestId !== activeCodeRequestId) {
+      return;
+    }
+    codeModalMeta.textContent = `open error: ${String(error)}`;
+    codeModalOpenButton.disabled = false;
+  }
+}
+
+function wireCodeModal() {
+  codeModalCloseButton.addEventListener("click", closeCodeModal);
+  codeModalOpenButton.addEventListener("click", () => { void openInVsCode(); });
+  codeModalBackdrop.addEventListener("click", (event) => {
+    if (event.target === codeModalBackdrop) {
+      closeCodeModal();
+    }
+  });
+  window.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      closeCodeModal();
+    }
+  });
+}
+
+function wireErrorModal() {
+  errorModalCloseButton.addEventListener("click", () => {
+    closeErrorModal();
+  });
+  errorModalBackdrop.addEventListener("click", (event) => {
+    if (event.target === errorModalBackdrop) {
+      closeErrorModal();
+    }
+  });
+  window.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && errorModalBackdrop.classList.contains("open")) {
+      closeErrorModal();
+    }
+  });
+}
+
+async function triggerRun() {
+  const rowText = String(triggerRowInput.value || "").trim();
+  const rowNumber = Number.parseInt(rowText, 10);
+  if (!Number.isInteger(rowNumber) || rowNumber < 2) {
+    setTriggerState("invalid row", "chip-error");
+    addEventLine(`trigger error invalid rowNumber: ${rowText}`, "text");
+    return;
+  }
+
+  const requestId = generateRequestId();
+  setActiveRun(requestId);
+  resetPipelineNodes();
+  triggerRunButton.disabled = true;
+  triggerColdRunButton.disabled = true;
+  setTriggerState("triggering", "chip-warn");
+  try {
+    const response = await fetch("/trigger-run", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ rowNumber, requestId }),
+    });
+    const payload = await response.json();
+    if (!response.ok || !payload || payload.ok !== true) {
+      const errorText = payload && payload.error ? String(payload.error) : `HTTP ${response.status}`;
+      setTriggerState("trigger failed", "chip-error");
+      addEventLine(`trigger error ${errorText}`, "text");
+      setLastEvent(`trigger error ${errorText}`);
+      return;
+    }
+    const responseRequestId = payload.triggered && payload.triggered.requestId ? String(payload.triggered.requestId) : "";
+    setActiveRun(responseRequestId);
+    setTriggerState("triggered", "chip-ok");
+    addEventLine(`trigger ok row=${rowNumber} requestId=${responseRequestId}`, "text");
+    setLastEvent(`trigger row ${rowNumber}`);
+  } catch (error) {
+    setTriggerState("trigger failed", "chip-error");
+    addEventLine(`trigger error ${String(error)}`, "text");
+    setLastEvent(`trigger error ${String(error)}`);
+  } finally {
+    triggerRunButton.disabled = false;
+    triggerColdRunButton.disabled = false;
+  }
+}
+
+async function triggerColdRun() {
+  const rowText = String(triggerRowInput.value || "").trim();
+  const rowNumber = Number.parseInt(rowText, 10);
+  if (!Number.isInteger(rowNumber) || rowNumber < 2) {
+    setTriggerState("invalid row", "chip-error");
+    addEventLine(`cold start error invalid rowNumber: ${rowText}`, "text");
+    return;
+  }
+
+  const requestId = generateRequestId();
+  setActiveRun(requestId);
+  resetPipelineNodes();
+  triggerRunButton.disabled = true;
+  triggerColdRunButton.disabled = true;
+  setTriggerState("cold starting", "chip-warn");
+  try {
+    const response = await fetch("/trigger-cold-run", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ rowNumber, requestId }),
+    });
+    const payload = await response.json();
+    if (!response.ok || !payload || payload.ok !== true) {
+      const errorText = payload && payload.error ? String(payload.error) : `HTTP ${response.status}`;
+      setTriggerState("cold start failed", "chip-error");
+      addEventLine(`cold start error ${errorText}`, "text");
+      setLastEvent(`cold start error ${errorText}`);
+      return;
+    }
+    const responseRequestId = payload.triggered && payload.triggered.requestId ? String(payload.triggered.requestId) : "";
+    setActiveRun(responseRequestId);
+    setTriggerState("cold started", "chip-ok");
+    addEventLine(`cold start ok row=${rowNumber} requestId=${responseRequestId}`, "text");
+    setLastEvent(`cold start row ${rowNumber}`);
+  } catch (error) {
+    setTriggerState("cold start failed", "chip-error");
+    addEventLine(`cold start error ${String(error)}`, "text");
+    setLastEvent(`cold start error ${String(error)}`);
+  } finally {
+    triggerRunButton.disabled = false;
+    triggerColdRunButton.disabled = false;
+  }
+}
+
+function wireTriggerControls() {
+  triggerRunButton.addEventListener("click", () => { void triggerRun(); });
+  triggerColdRunButton.addEventListener("click", () => { void triggerColdRun(); });
+  resetPageButton.addEventListener("click", () => { window.location.reload(); });
+  triggerRowInput.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      void triggerRun();
+    }
+  });
+}
+
+function stopNodeBlink(nodeId) {
+  const timer = nodeBlinkTimerById.get(nodeId);
+  if (timer) {
+    window.clearInterval(timer);
+    nodeBlinkTimerById.delete(nodeId);
+  }
+  nodeBlinkOnById.delete(nodeId);
+  const el = nodeElementById.get(nodeId);
+  if (el) {
+    el.classList.remove("running-blink-on");
+  }
+}
+
+function startNodeBlink(nodeId) {
+  const el = nodeElementById.get(nodeId);
+  if (!el) {
+    return;
+  }
+  if (nodeBlinkTimerById.has(nodeId)) {
+    return;
+  }
+  let isOn = false;
+  const tick = () => {
+    const current = nodeElementById.get(nodeId);
+    if (!current || !current.classList.contains("status-running")) {
+      stopNodeBlink(nodeId);
+      return;
+    }
+    isOn = !isOn;
+    nodeBlinkOnById.set(nodeId, isOn);
+    current.classList.toggle("running-blink-on", isOn);
+  };
+  tick();
+  const timer = window.setInterval(tick, RUNNING_BLINK_INTERVAL_MS);
+  nodeBlinkTimerById.set(nodeId, timer);
+}
+
+function clampZoom(value) {
+  if (value < ZOOM_MIN) {
+    return ZOOM_MIN;
+  }
+  if (value > ZOOM_MAX) {
+    return ZOOM_MAX;
+  }
+  return value;
+}
+
+function updateZoomControls() {
+  zoomLabel.textContent = `${Math.round(zoomLevel * 100)}%`;
+  zoomOutButton.disabled = zoomLevel <= ZOOM_MIN;
+  zoomInButton.disabled = zoomLevel >= ZOOM_MAX;
+}
+
+function applyZoom(anchorClientX = null, anchorClientY = null) {
+  const previousZoom = Number(graphStage.dataset.zoom || "1");
+  const rect = graphScroll.getBoundingClientRect();
+  const anchorX = anchorClientX === null ? rect.left + rect.width / 2 : anchorClientX;
+  const anchorY = anchorClientY === null ? rect.top + rect.height / 2 : anchorClientY;
+  const viewportX = anchorX - rect.left;
+  const viewportY = anchorY - rect.top;
+  const graphX = (graphScroll.scrollLeft + viewportX) / previousZoom;
+  const graphY = (graphScroll.scrollTop + viewportY) / previousZoom;
+
+  graphStage.dataset.zoom = String(zoomLevel);
+  graphStage.style.transform = `scale(${zoomLevel})`;
+  graphStageWrap.style.width = `${Math.max(1, Math.round(graphBaseWidth * zoomLevel))}px`;
+  graphStageWrap.style.height = `${Math.max(1, Math.round(graphBaseHeight * zoomLevel))}px`;
+  graphScroll.scrollLeft = Math.max(0, Math.round(graphX * zoomLevel - viewportX));
+  graphScroll.scrollTop = Math.max(0, Math.round(graphY * zoomLevel - viewportY));
+  updateZoomControls();
+}
+
+function setZoom(targetZoom, anchorClientX = null, anchorClientY = null) {
+  const nextZoom = clampZoom(targetZoom);
+  if (Math.abs(nextZoom - zoomLevel) < 0.001) {
+    return;
+  }
+  zoomLevel = nextZoom;
+  applyZoom(anchorClientX, anchorClientY);
+}
+
+function validateGraphDefinition(data) {
+  if (!data || !Array.isArray(data.nodes) || !Array.isArray(data.edges)) {
+    throw new Error("graph payload missing nodes/edges arrays");
+  }
+  if (!Array.isArray(data.node_types) || data.node_types.length === 0) {
+    throw new Error("graph payload missing node_types");
+  }
+
+  const seenTypes = new Set();
+  nodeTypeById = new Map();
+  for (const type of data.node_types) {
+    if (!type || typeof type.id !== "string" || typeof type.label !== "string" || typeof type.image !== "string") {
+      throw new Error("node_types entries require id, label, image");
+    }
+    const typeId = type.id.trim();
+    const typeLabel = type.label.trim();
+    const typeImage = type.image.trim();
+    if (!typeId || !typeLabel || !typeImage) {
+      throw new Error("node_types entries cannot be empty");
+    }
+    if (seenTypes.has(typeId)) {
+      throw new Error(`duplicate node_type id: ${typeId}`);
+    }
+    seenTypes.add(typeId);
+    nodeTypeById.set(typeId, { id: typeId, label: typeLabel, image: typeImage });
+  }
+
+  const nodeIds = new Set();
+  for (const node of data.nodes) {
+    if (!node || typeof node.id !== "string") {
+      throw new Error("node missing id");
+    }
+    const nodeId = node.id.trim();
+    if (!nodeId) {
+      throw new Error("node id cannot be empty");
+    }
+    if (nodeIds.has(nodeId)) {
+      throw new Error(`duplicate node id: ${nodeId}`);
+    }
+    const activityType = typeof node.activity_type === "string" ? node.activity_type.trim() : "";
+    if (!activityType) {
+      throw new Error(`node ${nodeId} missing activity_type`);
+    }
+    const summary = typeof node.summary === "string" ? node.summary.trim() : "";
+    if (!summary) {
+      throw new Error(`node ${nodeId} missing summary`);
+    }
+    const codeSource = typeof node.code_source === "string" ? node.code_source.trim() : "";
+    if (!codeSource) {
+      throw new Error(`node ${nodeId} missing code_source`);
+    }
+    if (!nodeTypeById.has(activityType)) {
+      throw new Error(`node ${nodeId} has unknown activity_type: ${activityType}`);
+    }
+    nodeIds.add(nodeId);
+  }
+
+  for (const edge of data.edges) {
+    const source = edge && typeof edge.source === "string" ? edge.source.trim() : "";
+    const target = edge && typeof edge.target === "string" ? edge.target.trim() : "";
+    if (!source || !target) {
+      throw new Error("edge missing source/target");
+    }
+    if (!nodeIds.has(source)) {
+      throw new Error(`edge source not found: ${source}`);
+    }
+    if (!nodeIds.has(target)) {
+      throw new Error(`edge target not found: ${target}`);
+    }
+  }
+}
+
+function renderTypeLegend(data) {
+  legendTypes.innerHTML = "";
+  for (const type of data.node_types) {
+    const item = document.createElement("div");
+    item.className = "legend-item";
+
+    const icon = document.createElement("span");
+    icon.className = "legend-type-icon";
+    icon.style.setProperty("--type-image", `url("${type.image}")`);
+    item.appendChild(icon);
+
+    const label = document.createElement("span");
+    label.textContent = type.label;
+    item.appendChild(label);
+
+    legendTypes.appendChild(item);
+  }
+}
+
+function edgeSlotOffset(index, count) {
+  if (!Number.isFinite(index) || !Number.isFinite(count) || count <= 1) {
+    return 0;
+  }
+  return (index - (count - 1) / 2) * EDGE_BRANCH_SLOT_PX;
+}
+
+function nodeWidth(node) {
+  const value = Number(node && node.width);
+  if (Number.isFinite(value) && value > 0) {
+    return value;
+  }
+  return NODE_WIDTH;
+}
+
+function buildEdgePath(src, dst, sourceOffset, targetOffset, edge = null) {
+  const sourceAnchor = edge && typeof edge.source_anchor === "string" ? edge.source_anchor.trim() : "";
+  const targetAnchor = edge && typeof edge.target_anchor === "string" ? edge.target_anchor.trim() : "";
+  const srcWidth = nodeWidth(src);
+  const dstWidth = nodeWidth(dst);
+
+  let sx = src.x + srcWidth;
+  let sy = src.y + NODE_TOP_OFFSET + NODE_HEIGHT / 2 + sourceOffset;
+  let tx = dst.x;
+  let ty = dst.y + NODE_TOP_OFFSET + NODE_HEIGHT / 2 + targetOffset;
+
+  if (sourceAnchor === "top") {
+    sx = src.x + srcWidth / 2 + sourceOffset;
+    sy = src.y + NODE_TOP_OFFSET;
+  } else if (sourceAnchor === "bottom") {
+    sx = src.x + srcWidth / 2 + sourceOffset;
+    sy = src.y + NODE_TOP_OFFSET + NODE_HEIGHT;
+  } else if (sourceAnchor === "left") {
+    sx = src.x;
+    sy = src.y + NODE_TOP_OFFSET + NODE_HEIGHT / 2 + sourceOffset;
+  } else if (sourceAnchor === "right") {
+    sx = src.x + srcWidth;
+    sy = src.y + NODE_TOP_OFFSET + NODE_HEIGHT / 2 + sourceOffset;
+  }
+
+  if (targetAnchor === "top") {
+    tx = dst.x + dstWidth / 2 + targetOffset;
+    ty = dst.y + NODE_TOP_OFFSET;
+  } else if (targetAnchor === "bottom") {
+    tx = dst.x + dstWidth / 2 + targetOffset;
+    ty = dst.y + NODE_TOP_OFFSET + NODE_HEIGHT;
+  } else if (targetAnchor === "left") {
+    tx = dst.x;
+    ty = dst.y + NODE_TOP_OFFSET + NODE_HEIGHT / 2 + targetOffset;
+  } else if (targetAnchor === "right") {
+    tx = dst.x + dstWidth;
+    ty = dst.y + NODE_TOP_OFFSET + NODE_HEIGHT / 2 + targetOffset;
+  }
+
+  const dx = tx - sx;
+  const dy = ty - sy;
+
+  if ((sourceAnchor === "top" || sourceAnchor === "bottom") && (targetAnchor === "top" || targetAnchor === "bottom")) {
+    const bend = Math.max(36, Math.min(120, Math.abs(dy) * 0.35));
+    const c1y = sy + (dy >= 0 ? bend : -bend);
+    const c2y = ty - (dy >= 0 ? bend : -bend);
+    return `M ${sx} ${sy} C ${sx} ${c1y}, ${tx} ${c2y}, ${tx} ${ty}`;
+  }
+
+  if (dx >= EDGE_CURVE_MIN_PX) {
+    const bend = Math.max(42, Math.min(EDGE_CURVE_CLAMP_PX, dx * 0.34));
+    const c1x = sx + bend;
+    const c2x = tx - bend;
+    return `M ${sx} ${sy} C ${c1x} ${sy}, ${c2x} ${ty}, ${tx} ${ty}`;
+  }
+
+  const laneY = Math.max(sy, ty) + EDGE_FALLBACK_LANE_PX + Math.abs(sourceOffset - targetOffset);
+  const c1x = sx + 40;
+  const c2x = tx - 40;
+  return `M ${sx} ${sy} C ${c1x} ${sy}, ${c1x} ${laneY}, ${sx} ${laneY} L ${tx} ${laneY} C ${c2x} ${laneY}, ${c2x} ${ty}, ${tx} ${ty}`;
+}
+
+function buildGraph(data) {
+  validateGraphDefinition(data);
+  graph = data;
+  renderTypeLegend(data);
+  nodeById = new Map(data.nodes.map((n) => [n.id, n]));
+  incomingEdgesByNode = new Map();
+  outgoingEdgesByNode = new Map();
+  edgeElements = [];
+  nodeElementById = new Map();
+  for (const timer of nodeBlinkTimerById.values()) {
+    window.clearInterval(timer);
+  }
+  nodeBlinkTimerById = new Map();
+  nodeBlinkOnById = new Map();
+  nodeLayer.innerHTML = "";
+  edgeLayer.innerHTML = "";
+
+  const maxX = Math.max(...data.nodes.map((n) => n.x + nodeWidth(n))) + 120;
+  const maxY = Math.max(...data.nodes.map((n) => n.y)) + NODE_HEIGHT + NODE_TOP_OFFSET + 120;
+  graphBaseWidth = maxX;
+  graphBaseHeight = maxY;
+  edgeLayer.setAttribute("width", String(maxX));
+  edgeLayer.setAttribute("height", String(maxY));
+  edgeLayer.setAttribute("viewBox", `0 0 ${maxX} ${maxY}`);
+  graphStage.style.width = `${maxX}px`;
+  graphStage.style.height = `${maxY}px`;
+  nodeLayer.style.width = `${maxX}px`;
+  nodeLayer.style.height = `${maxY}px`;
+  graphScroll.scrollLeft = 0;
+  graphScroll.scrollTop = 0;
+  graphStage.dataset.zoom = "1";
+  zoomLevel = 1;
+  applyZoom();
+
+  const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+  const markerDot = document.createElementNS("http://www.w3.org/2000/svg", "marker");
+  markerDot.setAttribute("id", "edge-dot");
+  markerDot.setAttribute("viewBox", "0 0 6 6");
+  markerDot.setAttribute("refX", "3");
+  markerDot.setAttribute("refY", "3");
+  markerDot.setAttribute("markerUnits", "strokeWidth");
+  markerDot.setAttribute("markerWidth", "4");
+  markerDot.setAttribute("markerHeight", "4");
+  markerDot.setAttribute("orient", "auto");
+  const markerDotCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+  markerDotCircle.setAttribute("cx", "3");
+  markerDotCircle.setAttribute("cy", "3");
+  markerDotCircle.setAttribute("r", "2");
+  markerDotCircle.setAttribute("fill", "#8fa5c4");
+  markerDot.appendChild(markerDotCircle);
+  defs.appendChild(markerDot);
+
+  const markerArrow = document.createElementNS("http://www.w3.org/2000/svg", "marker");
+  markerArrow.setAttribute("id", "edge-arrow");
+  markerArrow.setAttribute("viewBox", "0 0 7 7");
+  markerArrow.setAttribute("refX", "6");
+  markerArrow.setAttribute("refY", "3.5");
+  markerArrow.setAttribute("markerUnits", "strokeWidth");
+  markerArrow.setAttribute("markerWidth", "6");
+  markerArrow.setAttribute("markerHeight", "6");
+  markerArrow.setAttribute("orient", "auto");
+  const markerArrowPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  markerArrowPath.setAttribute("d", "M0,0 L0,7 L7,3.5 z");
+  markerArrowPath.setAttribute("fill", "#8fa5c4");
+  markerArrow.appendChild(markerArrowPath);
+  defs.appendChild(markerArrow);
+
+  const markerArrowSuccess = document.createElementNS("http://www.w3.org/2000/svg", "marker");
+  markerArrowSuccess.setAttribute("id", "edge-arrow-success");
+  markerArrowSuccess.setAttribute("viewBox", "0 0 7 7");
+  markerArrowSuccess.setAttribute("refX", "6");
+  markerArrowSuccess.setAttribute("refY", "3.5");
+  markerArrowSuccess.setAttribute("markerUnits", "strokeWidth");
+  markerArrowSuccess.setAttribute("markerWidth", "6");
+  markerArrowSuccess.setAttribute("markerHeight", "6");
+  markerArrowSuccess.setAttribute("orient", "auto");
+  const markerArrowSuccessPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  markerArrowSuccessPath.setAttribute("d", "M0,0 L0,7 L7,3.5 z");
+  markerArrowSuccessPath.setAttribute("fill", "#22863a");
+  markerArrowSuccess.appendChild(markerArrowSuccessPath);
+  defs.appendChild(markerArrowSuccess);
+
+  const markerArrowError = document.createElementNS("http://www.w3.org/2000/svg", "marker");
+  markerArrowError.setAttribute("id", "edge-arrow-error");
+  markerArrowError.setAttribute("viewBox", "0 0 7 7");
+  markerArrowError.setAttribute("refX", "6");
+  markerArrowError.setAttribute("refY", "3.5");
+  markerArrowError.setAttribute("markerUnits", "strokeWidth");
+  markerArrowError.setAttribute("markerWidth", "6");
+  markerArrowError.setAttribute("markerHeight", "6");
+  markerArrowError.setAttribute("orient", "auto");
+  const markerArrowErrorPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  markerArrowErrorPath.setAttribute("d", "M0,0 L0,7 L7,3.5 z");
+  markerArrowErrorPath.setAttribute("fill", "#b73434");
+  markerArrowError.appendChild(markerArrowErrorPath);
+  defs.appendChild(markerArrowError);
+
+  edgeLayer.appendChild(defs);
+
+  const edgeDefsOutgoing = new Map();
+  const edgeDefsIncoming = new Map();
+  for (const edge of data.edges) {
+    if (!edgeDefsOutgoing.has(edge.source)) {
+      edgeDefsOutgoing.set(edge.source, []);
+    }
+    if (!edgeDefsIncoming.has(edge.target)) {
+      edgeDefsIncoming.set(edge.target, []);
+    }
+    edgeDefsOutgoing.get(edge.source).push(edge);
+    edgeDefsIncoming.get(edge.target).push(edge);
+  }
+
+  for (const edge of data.edges) {
+    const src = nodeById.get(edge.source);
+    const dst = nodeById.get(edge.target);
+    if (!src || !dst) {
+      continue;
+    }
+    const sourceEdges = edgeDefsOutgoing.get(edge.source) || [];
+    const targetEdges = edgeDefsIncoming.get(edge.target) || [];
+    const sourceOffset = edgeSlotOffset(sourceEdges.indexOf(edge), sourceEdges.length);
+    const targetOffset = edgeSlotOffset(targetEdges.indexOf(edge), targetEdges.length);
+    const pathD = buildEdgePath(src, dst, sourceOffset, targetOffset, edge);
+
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.classList.add("edge");
+    if (edge.target === "error") {
+      path.classList.add("error-edge");
+    }
+    path.dataset.source = edge.source;
+    path.dataset.target = edge.target;
+    path.setAttribute("d", pathD);
+    path.setAttribute("marker-start", "url(#edge-dot)");
+    path.setAttribute("marker-end", "url(#edge-arrow)");
+    edgeLayer.appendChild(path);
+    edgeElements.push(path);
+
+    if (!incomingEdgesByNode.has(edge.target)) {
+      incomingEdgesByNode.set(edge.target, []);
+    }
+    if (!outgoingEdgesByNode.has(edge.source)) {
+      outgoingEdgesByNode.set(edge.source, []);
+    }
+    incomingEdgesByNode.get(edge.target).push(path);
+    outgoingEdgesByNode.get(edge.source).push(path);
+  }
+
+  for (const node of data.nodes) {
+    const nodeType = nodeTypeById.get(node.activity_type);
+    if (!nodeType) {
+      throw new Error(`node ${node.id} has unresolved activity_type: ${node.activity_type}`);
+    }
+    const summary = typeof node.summary === "string" ? node.summary.trim() : "";
+    if (!summary) {
+      throw new Error(`node ${node.id} has unresolved summary`);
+    }
+    const codeSource = typeof node.code_source === "string" ? node.code_source.trim() : "";
+    if (!codeSource) {
+      throw new Error(`node ${node.id} has unresolved code_source`);
+    }
+    const el = document.createElement("div");
+    el.className = "node status-idle";
+    el.dataset.nodeId = node.id;
+    el.dataset.activityType = node.activity_type;
+    el.dataset.status = "idle";
+    el.tabIndex = 0;
+    el.style.left = `${node.x}px`;
+    el.style.top = `${node.y + NODE_TOP_OFFSET}px`;
+    el.style.width = `${nodeWidth(node)}px`;
+    el.dataset.label = node.label;
+    el.setAttribute("aria-label", `${node.label}: ${summary}`);
+    el.style.setProperty("--node-image", `url("${nodeType.image}")`);
+    el.classList.add("has-code");
+    el.addEventListener("click", () => { openNodeDetails(node, el); });
+    el.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        openNodeDetails(node, el);
+      }
+    });
+
+    const tooltip = document.createElement("div");
+    tooltip.className = "node-tooltip";
+    tooltip.textContent = summary;
+    el.appendChild(tooltip);
+
+    const elapsed = document.createElement("span");
+    elapsed.className = "node-elapsed";
+    elapsed.style.display = "none";
+    el.appendChild(elapsed);
+
+    const countBadge = document.createElement("span");
+    countBadge.className = "node-count";
+    countBadge.style.display = "none";
+    el.appendChild(countBadge);
+
+    const errorBubble = document.createElement("div");
+    errorBubble.className = "node-error-bubble";
+    errorBubble.style.display = "none";
+    el.appendChild(errorBubble);
+
+    nodeLayer.appendChild(el);
+    nodeElementById.set(node.id, el);
+  }
+}
+
+function applyNodeStatusNow(nodeId, statusName) {
+  const el = nodeElementById.get(nodeId);
+  if (!el) {
+    return;
+  }
+  if (statusName !== "duplicate") {
+    clearDuplicateResolveTimer(nodeId);
+  }
+  const currentStatus = el.dataset.status || "idle";
+  if (currentStatus === statusName) {
+    if (statusName === "running") {
+      startNodeBlink(nodeId);
+    } else {
+      stopNodeBlink(nodeId);
+    }
+    return;
+  }
+  el.classList.remove("status-idle", "status-running", "status-success", "status-error", "status-duplicate");
+  el.classList.remove("running-blink-on");
+  el.classList.add(`status-${statusName}`);
+  el.dataset.status = statusName;
+  if (statusName === "running") {
+    startNodeBlink(nodeId);
+  } else {
+    stopNodeBlink(nodeId);
+  }
+}
+
+function setNodeStatus(nodeId, statusName) {
+  applyNodeStatusNow(nodeId, statusName);
+}
+
+function scheduleNodeVisualUpdate(callback) {
+  const now = Date.now();
+  const runAt = Math.max(now + NODE_UPDATE_DELAY_MS, nextNodeVisualUpdateAt);
+  const delayMs = Math.max(0, runAt - now);
+  nextNodeVisualUpdateAt = runAt + NODE_SEQUENCE_GAP_MS;
+  const timerId = window.setTimeout(() => {
+    scheduledVisualTimerIds = scheduledVisualTimerIds.filter((id) => id !== timerId);
+    callback();
+  }, delayMs);
+  scheduledVisualTimerIds.push(timerId);
+}
+
+function pulseEdges(lines) {
+  if (!lines || lines.length === 0) {
+    return;
+  }
+  for (const line of lines) {
+    line.classList.add("active");
+  }
+  window.setTimeout(() => {
+    for (const line of lines) {
+      line.classList.remove("active");
+    }
+  }, EDGE_PULSE_MS);
+}
+
+function resetPipelineNodes() {
+  if (!graph || !Array.isArray(graph.pipeline_reset_nodes)) {
+    return;
+  }
+  for (const timerId of scheduledVisualTimerIds) {
+    window.clearTimeout(timerId);
+  }
+  scheduledVisualTimerIds = [];
+  for (const timerId of duplicateResolveTimerById.values()) {
+    window.clearTimeout(timerId);
+  }
+  duplicateResolveTimerById = new Map();
+  nextNodeVisualUpdateAt = Date.now();
+  for (const edge of edgeElements) {
+    edge.classList.remove("active", "completed");
+    edge.setAttribute("marker-end", "url(#edge-arrow)");
+    edge.style.removeProperty("opacity");
+    edge.style.removeProperty("stroke");
+    if (String(edge.dataset.target || "").trim() === "error") {
+      edge.classList.add("error-edge");
+    }
+  }
+  for (const nodeId of graph.pipeline_reset_nodes) {
+    nodeStartTsById.delete(nodeId);
+    nodeFirstSeenTsById.delete(nodeId);
+    clearNodeElapsed(nodeId);
+    setNodeCount(nodeId, "");
+    setNodeErrorBubble(nodeId, "");
+    setNodeStatus(nodeId, "idle");
+  }
+  runNodeErrorContextById = new Map();
+  runErrorPopupShownById = new Set();
+}
+
+function setEdgeCompletedVisual(edge) {
+  edge.classList.add("completed");
+  const isErrorTarget = String(edge.dataset.target || "").trim() === "error";
+  edge.setAttribute("marker-end", isErrorTarget ? "url(#edge-arrow-error)" : "url(#edge-arrow-success)");
+  if (String(edge.dataset.target || "").trim() === "error") {
+    edge.classList.remove("error-edge");
+    edge.style.setProperty("opacity", "0.98");
+    edge.style.setProperty("stroke", "var(--node-error)");
+  }
+}
+
+function markIncomingEdgesCompleted(nodeId, sourceNodeId = "") {
+  const incoming = incomingEdgesByNode.get(nodeId);
+  if (!incoming || incoming.length === 0) {
+    return;
+  }
+  const sourceFilter = String(sourceNodeId || "").trim();
+  if (nodeId === "error" && !sourceFilter) {
+    return;
+  }
+  for (const edge of incoming) {
+    if (sourceFilter && String(edge.dataset.source || "").trim() !== sourceFilter) {
+      continue;
+    }
+    setEdgeCompletedVisual(edge);
+  }
+}
+
+function markEdgeCompleted(sourceNodeId, targetNodeId) {
+  const sourceId = String(sourceNodeId || "").trim();
+  const targetId = String(targetNodeId || "").trim();
+  if (!sourceId || !targetId) {
+    return;
+  }
+  const outgoing = outgoingEdgesByNode.get(sourceId) || [];
+  for (const edge of outgoing) {
+    if (String(edge.dataset.target || "").trim() !== targetId) {
+      continue;
+    }
+    setEdgeCompletedVisual(edge);
+  }
+}
+
+function incomingEdgesForNode(nodeId, sourceNodeId = "") {
+  const incoming = incomingEdgesByNode.get(nodeId) || [];
+  const sourceFilter = String(sourceNodeId || "").trim();
+  if (nodeId === "error" && !sourceFilter) {
+    return [];
+  }
+  if (!sourceFilter) {
+    return incoming;
+  }
+  return incoming.filter((edge) => String(edge.dataset.source || "").trim() === sourceFilter);
+}
+
+function statusSummary(event) {
+  const msg = event.message ? ` ${event.message}` : "";
+  return `${event.ts} ${event.source} ${event.status}${msg}`;
+}
+
+function consumeEvent(event, fromHistory = false) {
+  if (!event || !event.kind) {
+    return;
+  }
+  const requestId = extractEventRequestId(event);
+  if (requestId) {
+    if (!activeRunId || (event.source === "Function LeadVettingPipeline.run_single_row" && event.status === "start")) {
+      setActiveRun(requestId, fromHistory);
+    }
+  }
+  if (!fromHistory && activeRunId && requestId && requestId !== activeRunId) {
+    return;
+  }
+  const eventMs = eventTsMs(event);
+
+  if (event.kind === "status") {
+    addEventLine(statusSummary(event), "status");
+    if (!fromHistory && event.node_id) {
+      const edgeFrom = typeof event.edge_from === "string" ? event.edge_from.trim() : "";
+      const popupRunId = normalizeRequestId(requestId || activeRunId);
+      let effectiveEdgeFrom = edgeFrom;
+      if (event.node_id === "error" && !effectiveEdgeFrom && popupRunId) {
+        const rememberedError = runNodeErrorContextById.get(popupRunId);
+        const rememberedNodeId = rememberedError ? String(rememberedError.nodeId || "").trim() : "";
+        if (rememberedNodeId) {
+          effectiveEdgeFrom = rememberedNodeId;
+        }
+      }
+      const incomingEdges = incomingEdgesForNode(event.node_id, effectiveEdgeFrom);
+      if (!nodeFirstSeenTsById.has(event.node_id)) {
+        nodeFirstSeenTsById.set(event.node_id, eventMs);
+      }
+      if (event.status === "start") {
+        nodeStartTsById.set(event.node_id, eventMs);
+        clearNodeElapsed(event.node_id);
+        scheduleNodeVisualUpdate(() => {
+          if (event.node_id !== "error" && effectiveEdgeFrom && effectiveEdgeFrom !== event.node_id) {
+            const prevEl = nodeElementById.get(effectiveEdgeFrom);
+            if (prevEl) {
+              const prevStatus = String(prevEl.dataset.status || "idle");
+              if (prevStatus !== "error" && prevStatus !== "duplicate") {
+                setNodeStatus(effectiveEdgeFrom, "success");
+                const prevStartMs =
+                  nodeStartTsById.get(effectiveEdgeFrom)
+                  ?? nodeFirstSeenTsById.get(effectiveEdgeFrom)
+                  ?? eventMs;
+                setNodeElapsed(effectiveEdgeFrom, formatElapsedMs(eventMs - prevStartMs));
+              }
+            }
+          }
+          setNodeStatus(event.node_id, "running");
+          markIncomingEdgesCompleted(event.node_id, effectiveEdgeFrom);
+          if (event.node_id !== "error") {
+            pulseEdges(incomingEdges);
+          }
+        });
+      } else if (event.status === "ok") {
+        const messageText = String(event.message || "").toLowerCase();
+        const isDuplicate = event.node_id === "dedupe" && (event.is_duplicate === true || messageText.includes("duplicate"));
+        if (isDuplicate) {
+          scheduleNodeVisualUpdate(() => {
+            setNodeStatus(event.node_id, "duplicate");
+            const startMs = nodeStartTsById.get(event.node_id) ?? nodeFirstSeenTsById.get(event.node_id) ?? eventMs;
+            setNodeElapsed(event.node_id, formatElapsedMs(eventMs - startMs));
+            markIncomingEdgesCompleted(event.node_id, effectiveEdgeFrom);
+            clearDuplicateResolveTimer(event.node_id);
+            const timerId = window.setTimeout(() => {
+              duplicateResolveTimerById.delete(event.node_id);
+              scheduleNodeVisualUpdate(() => {
+                setNodeStatus(event.node_id, "success");
+                markIncomingEdgesCompleted(event.node_id, effectiveEdgeFrom);
+                pulseEdges(outgoingEdgesByNode.get(event.node_id));
+              });
+            }, DUPLICATE_HOLD_MS);
+            duplicateResolveTimerById.set(event.node_id, timerId);
+          });
+        } else {
+          scheduleNodeVisualUpdate(() => {
+            setNodeStatus(event.node_id, "success");
+            const startMs = nodeStartTsById.get(event.node_id) ?? nodeFirstSeenTsById.get(event.node_id) ?? eventMs;
+            setNodeElapsed(event.node_id, formatElapsedMs(eventMs - startMs));
+            markIncomingEdgesCompleted(event.node_id, effectiveEdgeFrom);
+            pulseEdges(outgoingEdgesByNode.get(event.node_id));
+            if (event.node_id === "complete" || event.node_id === "finished") {
+              setNodeStatus("boot", "success");
+            }
+          });
+        }
+      } else if (event.status === "error") {
+        scheduleNodeVisualUpdate(() => {
+          setNodeStatus(event.node_id, "error");
+          const startMs = nodeStartTsById.get(event.node_id) ?? nodeFirstSeenTsById.get(event.node_id) ?? eventMs;
+          setNodeElapsed(event.node_id, formatElapsedMs(eventMs - startMs));
+          markIncomingEdgesCompleted(event.node_id, effectiveEdgeFrom);
+          const nodeErrorText = String(event.message || "").trim();
+          if (event.node_id !== "error") {
+            setNodeErrorBubble(event.node_id, nodeErrorText || "Node error");
+          } else if (effectiveEdgeFrom) {
+            setNodeErrorBubble(effectiveEdgeFrom, nodeErrorText || "Node error");
+          }
+          if (event.node_id !== "error") {
+            markEdgeCompleted(event.node_id, "error");
+          }
+          if (event.node_id !== "error") {
+            pulseEdges(incomingEdges);
+          }
+          if (popupRunId) {
+            if (event.node_id !== "error") {
+              runNodeErrorContextById.set(popupRunId, {
+                nodeId: event.node_id,
+                nodeLabel: resolveNodeLabel(event.node_id),
+                message: String(event.message || "").trim(),
+                source: String(event.source || "").trim(),
+                timestamp: String(event.ts || "").trim(),
+              });
+              runErrorPopupShownById.delete(popupRunId);
+            } else if (!runErrorPopupShownById.has(popupRunId)) {
+              const remembered = runNodeErrorContextById.get(popupRunId);
+              const edgeNodeId = edgeFrom || "";
+              const failedNodeId = edgeNodeId || (remembered ? String(remembered.nodeId || "").trim() : "");
+              const failedNodeLabel = resolveNodeLabel(failedNodeId) || (remembered ? String(remembered.nodeLabel || "").trim() : "");
+              const errorNodeMessage = String(event.message || "").trim();
+              const errorNodeMessageLower = errorNodeMessage.toLowerCase();
+              const useRememberedMessage = !errorNodeMessage
+                || errorNodeMessageLower.includes("workflow process exited with code")
+                || errorNodeMessageLower.includes("run completed with errors");
+              const detailMessage = useRememberedMessage && remembered && remembered.message
+                ? String(remembered.message)
+                : errorNodeMessage;
+              const detailSource = remembered && remembered.source ? String(remembered.source) : String(event.source || "");
+              const detailTimestamp = remembered && remembered.timestamp ? String(remembered.timestamp) : String(event.ts || "");
+              window.setTimeout(() => {
+                openErrorModal({
+                  runId: popupRunId,
+                  failedNodeId,
+                  failedNodeLabel,
+                  message: detailMessage,
+                  source: detailSource,
+                  timestamp: detailTimestamp,
+                  errorNodeMessage,
+                });
+              }, 800);
+              runErrorPopupShownById.add(popupRunId);
+            }
+          }
+        });
+      } else if (event.status === "info") {
+        const el = nodeElementById.get(event.node_id);
+        if (el && el.classList.contains("status-idle")) {
+          scheduleNodeVisualUpdate(() => {
+            setNodeStatus(event.node_id, "success");
+            const startMs = nodeStartTsById.get(event.node_id) ?? nodeFirstSeenTsById.get(event.node_id) ?? eventMs;
+            setNodeElapsed(event.node_id, formatElapsedMs(eventMs - startMs));
+            markIncomingEdgesCompleted(event.node_id, edgeFrom);
+            pulseEdges(outgoingEdgesByNode.get(event.node_id));
+          });
+        }
+      }
+    }
+    if (!fromHistory) {
+      setLastEvent(statusSummary(event));
+    }
+    return;
+  }
+
+  if (event.kind === "payload_pair") {
+    addEventLine(`${event.key}=${event.value}`, "payload_pair");
+    if (!fromHistory) {
+      if (event.source === "imap_fetch" && String(event.key || "").trim() === "emails_found") {
+        const value = Number.parseInt(String(event.value), 10);
+        const count = Number.isFinite(value) ? value : 0;
+        setNodeCount("imap_fetch", String(count));
+      }
+      if (event.source === "extract" && String(event.key || "").trim() === "record_index") {
+        setNodeCount("extract", String(event.value || ""));
+      }
+      if (event.source === "dedupe" && String(event.key || "").trim() === "duplicate_count") {
+        setNodeCount("dedupe", `dup ${String(event.value || "0")}`);
+      }
+      if (String(event.key || "").trim() === "request_id") {
+        setActiveRun(event.value);
+      }
+      if (event.source === "LeadVettingPipeline.sheet_update_payload" && event.key === "status") {
+        if (String(event.value).toUpperCase().includes("COMPLETE")) {
+          scheduleNodeVisualUpdate(() => {
+            setNodeStatus("complete", "success");
+            markIncomingEdgesCompleted("complete");
+          });
+        }
+        if (String(event.value).toUpperCase().includes("ERROR")) {
+          scheduleNodeVisualUpdate(() => {
+            setNodeStatus("error", "error");
+            markIncomingEdgesCompleted("error");
+          });
+        }
+      }
+      if (event.source === "LeadVettingPipeline.sheet_update_result" && event.key === "updated_keys") {
+        scheduleNodeVisualUpdate(() => {
+          setNodeStatus("complete", "success");
+          markIncomingEdgesCompleted("complete");
+        });
+      }
+    }
+    if (!fromHistory) {
+      setLastEvent(`${event.key}=...`);
+    }
+    return;
+  }
+
+  if (event.raw_line) {
+    addEventLine(event.raw_line, "text");
+    if (!fromHistory) {
+      setLastEvent(event.raw_line);
+    }
+  }
+}
+
+async function loadGraphAndHistory() {
+  const graphResponse = await fetch("/graph", { cache: "no-store" });
+  const graphJson = await graphResponse.json();
+  buildGraph(graphJson);
+
+  const historyResponse = await fetch("/history", { cache: "no-store" });
+  const historyJson = await historyResponse.json();
+  if (Array.isArray(historyJson.events)) {
+    for (const event of historyJson.events) {
+      consumeEvent(event, true);
+    }
+  }
+}
+
+function connectEvents() {
+  const source = new EventSource("/events");
+  source.onopen = () => {
+    setConnection("connected", "chip-ok");
+  };
+  source.onerror = () => {
+    setConnection("reconnecting", "chip-warn");
+  };
+  source.onmessage = (msg) => {
+    try {
+      const event = JSON.parse(msg.data);
+      consumeEvent(event, false);
+    } catch (_err) {
+      addEventLine(msg.data, "text");
+    }
+  };
+}
+
+function wireZoomControls() {
+  zoomOutButton.addEventListener("click", () => {
+    setZoom(Number((zoomLevel - ZOOM_STEP).toFixed(2)));
+  });
+  zoomInButton.addEventListener("click", () => {
+    setZoom(Number((zoomLevel + ZOOM_STEP).toFixed(2)));
+  });
+  zoomResetButton.addEventListener("click", () => {
+    setZoom(1);
+  });
+  graphScroll.addEventListener(
+    "wheel",
+    (event) => {
+      if (!graphBaseWidth || !graphBaseHeight) {
+        return;
+      }
+      event.preventDefault();
+      const delta = event.deltaY < 0 ? ZOOM_STEP : -ZOOM_STEP;
+      const next = Number((zoomLevel + delta).toFixed(2));
+      setZoom(next, event.clientX, event.clientY);
+    },
+    { passive: false },
+  );
+  updateZoomControls();
+}
+
+async function boot() {
+  setConnection("connecting", "chip-warn");
+  setTriggerState("idle");
+  try {
+    wireZoomControls();
+    wireCodeModal();
+    wireErrorModal();
+    wireTriggerControls();
+    await loadGraphAndHistory();
+    connectEvents();
+  } catch (err) {
+    setConnection("error", "chip-error");
+    setLastEvent("failed to load monitor UI");
+    addEventLine(String(err), "text");
+  }
+}
+
+boot();
+
+</script>
+</body>
+</html>
+

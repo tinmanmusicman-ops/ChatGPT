@@ -1,0 +1,368 @@
+:root {
+  --bg: #0f1622;
+  --panel: #121d2d;
+  --panel-border: #1f3047;
+  --text: #dce6f5;
+  --muted: #8ca1bc;
+  --edge: #3c4f6b;
+  --edge-active: #62a9ff;
+  --node-idle: #2c3e58;
+  --node-running: #2b6cb0;
+  --node-success: #22863a;
+  --node-error: #b73434;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+  background: radial-gradient(circle at top left, #1a2740 0%, var(--bg) 52%);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--panel-border);
+  background: rgba(8, 12, 18, 0.8);
+}
+
+.title-block h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.title-block p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.meta-block {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.chip {
+  display: inline-block;
+  font-size: 12px;
+  border: 1px solid var(--panel-border);
+  border-radius: 999px;
+  padding: 4px 10px;
+  background: #1a2738;
+  color: #c6d7ef;
+}
+
+.chip-ok {
+  border-color: #2e7d32;
+  background: #1b3c24;
+}
+
+.chip-warn {
+  border-color: #946d2f;
+  background: #3d2f16;
+}
+
+.chip-error {
+  border-color: #8d3030;
+  background: #3d1b1b;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: 14px;
+  padding: 14px;
+  height: calc(100vh - 84px);
+}
+
+.panel {
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+  background: rgba(16, 26, 40, 0.92);
+  overflow: hidden;
+  min-height: 0;
+}
+
+.panel-header {
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #b8cae2;
+  border-bottom: 1px solid var(--panel-border);
+  letter-spacing: 0.02em;
+}
+
+.panel-graph {
+  display: flex;
+  flex-direction: column;
+}
+
+.graph-scroll {
+  position: relative;
+  overflow: auto;
+  flex: 1;
+  background:
+    linear-gradient(90deg, rgba(89, 115, 154, 0.05) 1px, transparent 1px) 0 0 / 40px 40px,
+    linear-gradient(rgba(89, 115, 154, 0.05) 1px, transparent 1px) 0 0 / 40px 40px;
+}
+
+.graph-legend {
+  position: sticky;
+  top: 8px;
+  left: 8px;
+  z-index: 20;
+  width: fit-content;
+  margin: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  background: rgba(8, 13, 20, 0.92);
+  backdrop-filter: blur(2px);
+}
+
+.legend-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #cddbf0;
+  margin-bottom: 4px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #dbe8fb;
+  line-height: 1.2;
+  margin-top: 3px;
+}
+
+.legend-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  border: 1px solid #9db1cf;
+}
+
+.legend-idle {
+  background: var(--node-idle);
+}
+
+.legend-running {
+  background: var(--node-running);
+}
+
+.legend-success {
+  background: var(--node-success);
+}
+
+.legend-error {
+  background: var(--node-error);
+}
+
+#edge-layer {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+#node-layer {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.node {
+  position: absolute;
+  width: 48px;
+  height: 48px;
+  border-radius: 6px;
+  border: 1px solid #405578;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.node:hover {
+  transform: translateY(-1px);
+}
+
+.node::after {
+  content: attr(data-label);
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 11px;
+  font-weight: 700;
+  color: #dbe8fb;
+  line-height: 1.2;
+}
+
+.node.status-idle {
+  background: var(--node-idle);
+}
+
+.node.status-running {
+  background: var(--node-running);
+  border-color: #8fc5ff;
+  box-shadow: 0 0 0 1px rgba(143, 197, 255, 0.45), 0 8px 20px rgba(15, 48, 94, 0.5);
+}
+
+.node.status-success {
+  background: var(--node-success);
+  border-color: #8ee19d;
+}
+
+.node.status-error {
+  background: var(--node-error);
+  border-color: #f3a6a6;
+}
+
+.edge {
+  stroke: var(--edge);
+  stroke-width: 2;
+  fill: none;
+  transition: stroke 0.15s ease, stroke-width 0.15s ease;
+}
+
+.edge.active {
+  stroke: var(--edge-active);
+  stroke-width: 3.5;
+}
+
+.panel-events {
+  display: flex;
+  flex-direction: column;
+}
+
+.events {
+  flex: 1;
+  overflow: auto;
+  padding: 8px;
+}
+
+.event-line {
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 12px;
+  line-height: 1.35;
+  padding: 6px 7px;
+  border-bottom: 1px solid rgba(62, 84, 116, 0.35);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.event-line.status {
+  color: #d8e6f8;
+}
+
+.event-line.payload_pair {
+  color: #bfe7c6;
+}
+
+.event-line.text {
+  color: #c5cedd;
+}
+
+@media (max-width: 1200px) {
+  .layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(360px, 1fr) 280px;
+  }
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --bg: #000000;
+    --panel: #000000;
+    --panel-border: #ffffff;
+    --text: #ffffff;
+    --muted: #ffffff;
+    --edge: #ffffff;
+    --edge-active: #ffff00;
+    --node-idle: #000000;
+    --node-running: #000000;
+    --node-success: #000000;
+    --node-error: #000000;
+  }
+
+  .node,
+  .panel,
+  .chip,
+  .event-line,
+  .graph-legend,
+  .legend-swatch {
+    border-width: 2px;
+  }
+
+  .node.status-running {
+    box-shadow: none;
+  }
+}
+
+@media (forced-colors: active) {
+  :root {
+    --bg: Canvas;
+    --panel: Canvas;
+    --panel-border: CanvasText;
+    --text: CanvasText;
+    --muted: CanvasText;
+    --edge: CanvasText;
+    --edge-active: Highlight;
+    --node-idle: Canvas;
+    --node-running: Canvas;
+    --node-success: Canvas;
+    --node-error: Canvas;
+  }
+
+  body,
+  .topbar,
+  .panel,
+  .chip,
+  .node,
+  .event-line,
+  .graph-scroll,
+  .graph-legend {
+    forced-color-adjust: none;
+    -ms-high-contrast-adjust: none;
+    background: Canvas;
+    color: CanvasText;
+    border-color: CanvasText;
+    box-shadow: none;
+  }
+
+  .legend-swatch {
+    forced-color-adjust: none;
+    -ms-high-contrast-adjust: none;
+    background: Canvas;
+    border-color: CanvasText;
+  }
+
+  .chip-ok,
+  .chip-warn,
+  .chip-error {
+    background: Canvas;
+    color: CanvasText;
+    border-color: CanvasText;
+  }
+
+  .edge {
+    stroke: CanvasText;
+  }
+
+  .edge.active {
+    stroke: Highlight;
+  }
+}
