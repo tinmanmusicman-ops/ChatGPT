@@ -27,6 +27,7 @@ __pycache__/
 !AI-Fit-Site/tower.config.json
 !/ai-bots/Thermostats/Web/dashboard_data.json
 !/ai-bots/Thermostats/Web/chart hist/*.json
+!/ai-bots/Scams/bot-assets/config.example.json
 *.txt
 !/bridge/**
 
@@ -77,6 +78,11 @@ __pycache__/
 /ai-bots/shared/
 /EI_ControlTower/twillo.json
 !EI_ControlTower/twillo.example.json
+/ai-bots/Scams/bot-assets/config.json
+/Proposals/MikeG/config/VC-openai_shared_global.json
+/Proposals/MikeG/Global.json
+/Proposals/MikeG/MGlobal.json
+/openai_shared_global.json
 
 # Allow bridge folder contents to be tracked regardless of extension
 !/bridge/
@@ -120,6 +126,8 @@ node_modules/
 /ai-bots/n8n/LeadGen/**/Runtime.log
 /ai-bots/n8n/LeadGen/**/*.sqlite
 /ai-bots/n8n/LeadGen/**/*.sqlite-*
+/ai-bots/Scams/monitor_feed.jsonl
+/ai-bots/Scams/status.log
 
 # UpWork n8n runtime/backups (local only)
 /ai-bots/UpWork/**/*.sqlite
