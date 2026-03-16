@@ -56,7 +56,7 @@ AI_WEEKLY_REQUIRED_HEADERS = [
     # - Other Notable News
     "## 🙏 Closing 🙏",
 ]
-AI_WEEKLY_NEWS_LIMIT = 25
+AI_WEEKLY_NEWS_LIMIT = 50
 RAW_SNAPSHOT_BASE_DIR = Path(
     os.environ.get("CONSUMER_VC_RUNS_DIR", "/opt/consumervc/data/runs")
 ).expanduser()
