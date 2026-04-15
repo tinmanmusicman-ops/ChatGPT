@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 from __future__ import annotations
 
 import argparse
@@ -44,19 +44,21 @@ AI_ALLOWED_CATEGORIES = {
     "commerce_and_retail_tech",
 }
 AI_WEEKLY_REQUIRED_HEADERS = [
-    "## 👋 Intro 👋",
-    "## 📊 Weekly Snapshot 📊",
-    "## 💡 Key Themes 💡",
-    "## 💰 Notable Funding 💰",
-    "## 🤝 Notable M&A 🤝",
+    "## \U0001F44B Intro \U0001F44B",
+    "## \U0001F4CA Weekly Snapshot \U0001F4CA",
+    "## \U0001F4A1 Key Themes \U0001F4A1",
+    "## \U0001F4B0 Notable Funding \U0001F4B0",
+    "## \U0001F91D Notable M&A \U0001F91D",
     # Consumer News split into 4 optional sections (only appear if data exists):
     # - Distribution & Expansion
     # - Product Launches
     # - Retail, Commerce Tech & Supply Chain
     # - Other Notable News
-    "## 🙏 Closing 🙏",
+    "## \U0001F64F Closing \U0001F64F",
 ]
-AI_WEEKLY_NEWS_LIMIT = 50
+AI_WEEKLY_FUNDING_LIMIT = 100
+AI_WEEKLY_MNA_LIMIT = 100
+AI_WEEKLY_NEWS_LIMIT = 40
 RAW_SNAPSHOT_BASE_DIR = Path(
     os.environ.get("CONSUMER_VC_RUNS_DIR", "/opt/consumervc/data/runs")
 ).expanduser()
@@ -340,7 +342,7 @@ def _format_compact_currency(amount: float) -> str:
 
 
 def _parse_amount_numeric_and_currency(text: Any) -> tuple[int | None, str]:
-    """Parse a raw amount string (e.g. '$2 billion', '€500M', 'C$120M') into
+    """Parse a raw amount string (e.g. '$2 billion', '\u20ac500M', 'C$120M') into
     (integer_amount_or_None, iso_currency_code).  Returns (None, '') if the
     text cannot be parsed.  Currency is inferred from leading symbol/code;
     defaults to 'USD' when a bare $ is present."""
@@ -360,18 +362,18 @@ def _parse_amount_numeric_and_currency(text: Any) -> tuple[int | None, str]:
         currency = "HKD"
     elif re.search(r"\bs\$", lowered) or re.search(r"\bsgd\b", lowered):
         currency = "SGD"
-    elif "£" in raw or re.search(r"\bgbp\b", lowered):
+    elif "Â£" in raw or re.search(r"\bgbp\b", lowered):
         currency = "GBP"
-    elif "€" in raw or re.search(r"\beur\b", lowered):
+    elif "\u20ac" in raw or re.search(r"\beur\b", lowered):
         currency = "EUR"
-    elif "¥" in raw or re.search(r"\bjpy\b|\bcny\b|\bcnh\b", lowered):
+    elif "Â¥" in raw or re.search(r"\bjpy\b|\bcny\b|\bcnh\b", lowered):
         currency = "JPY"
-    elif "₹" in raw or re.search(r"\binr\b", lowered):
+    elif "\u20b9" in raw or re.search(r"\binr\b", lowered):
         currency = "INR"
     elif "$" in raw or re.search(r"\busd\b|\bus\$", lowered):
         currency = "USD"
     # strip all currency symbols/codes so regex can find the number
-    cleaned = re.sub(r"[£€¥₹]", " ", lowered)
+    cleaned = re.sub(r"[\u00a3\u20ac\u00a5\u20b9]", " ", lowered)
     cleaned = re.sub(r"\b(?:usd|eur|gbp|jpy|inr|cad|aud|nzd|hkd|sgd|cny|cnh)\b", " ", cleaned)
     cleaned = re.sub(r"[a-z]{1,2}\$", " ", cleaned)  # c$, a$, nz$, hk$, s$
     cleaned = cleaned.replace("$", " ").replace(",", "")
@@ -1229,14 +1231,14 @@ def _extract_title_for_filename(markdown_text: str) -> str:
     if not lines:
         return None
 
-    # Get first line (should be the title like "# Consumer VC Weekly — March 6–12, 2026")
+    # Get first line (should be the title like "# Consumer VC Weekly - March 6-12, 2026")
     title_line = lines[0].strip()
 
     # Remove markdown heading markers
     title = title_line.lstrip('#').strip()
 
-    # Replace em dash with regular dash
-    title = title.replace('—', '-').replace('–', '-')
+    # Normalize dashes for filename safety
+    title = title.replace("\u2014", "-").replace("\u2013", "-").replace('â€”', '-').replace('â€“', '-')
 
     # Remove or replace invalid filesystem characters
     # Windows invalid chars: < > : " / \ | ? *
@@ -1327,8 +1329,8 @@ class RunStore:
         with self.activity_log_path.open("a", encoding="utf-8") as f:
             f.write(line)
 
-    def start_run(self, mode: str) -> str:
-        run_id = f"consumer_vc_v1_{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}"
+    def start_run(self, mode: str, prefix: str = "consumer_vc_v1") -> str:
+        run_id = f"{prefix}_{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}"
         with sqlite3.connect(str(self.db_path), timeout=30) as conn:
             conn.execute(
                 "INSERT INTO runs(run_id, mode, started_at, status) VALUES(?,?,?,?)",
@@ -1741,6 +1743,11 @@ class AirtableStore:
             if isinstance(value, (int, float)):
                 return float(value)
             return None
+        if key == "ms" and field_type in {"number", "currency"}:
+            try:
+                return int(str(value).strip())
+            except Exception:
+                return None
         text = str(value if value is not None else "").strip()
         if not text:
             return None
@@ -1793,7 +1800,6 @@ class AirtableStore:
                 "source_link": ["source_link", "sourceurl"],
                 "source_name": ["source_name", "sourcename"],
                 "raw_summary": ["raw_summary", "summary"],
-                "fingerprint": ["fingerprint"],
             },
         )
         for logical_name, candidates in {
@@ -1887,12 +1893,16 @@ class AirtableStore:
             source_name = str(self._field_value(fields, ["name", "sourcename"], self.table_sources) or source_id).strip()
             source_type = str(self._field_value(fields, ["type", "sourcetype"], self.table_sources) or "").strip()
             source_url = str(self._field_value(fields, ["url"], self.table_sources) or "").strip()
+            source_use_proxy = to_bool(
+                self._field_value(fields, ["useproxy", "use_proxy", "use proxy"], self.table_sources)
+            )
             out.append(
                 {
                     "id": source_id,
                     "name": source_name,
                     "type": source_type,
                     "url": source_url,
+                    "use_proxy": bool(source_use_proxy),
                     "active": True,
                 }
             )
@@ -1920,7 +1930,7 @@ class AirtableStore:
         """Load company category names from the Categories table.
 
         Expects the table to have a field named 'name', 'category', or 'category name'.
-        Optionally an 'active' field — if present, only active rows are returned.
+        Optionally an 'active' field â€” if present, only active rows are returned.
         Returns an empty list if the table is not configured or unavailable.
         """
         if not self.table_categories:
@@ -2121,6 +2131,18 @@ class AirtableStore:
             )
 
         selected = selected_rows[0]
+
+        # ── Script-selector shortcut ──────────────────────────────────────────
+        # If prompt_text is "V1.py" or "V2.py" treat it as a script pointer,
+        # not actual prompt text — skip the Prompts table sync entirely.
+        _SCRIPT_NAMES = {"V1.py", "V2.py"}
+        if selected["prompt_text"] in _SCRIPT_NAMES:
+            return {
+                "selected_name": selected["name"],
+                "updated_prompts_text": "false",
+                "script": selected["prompt_text"],
+            }
+
         prompts_active_field = self._resolve_field(self.table_prompts, ["active"], required=True)
         prompts_key_field = self._resolve_field(self.table_prompts, ["key", "promptname"], required=True)
         prompts_text_field = self._resolve_field(self.table_prompts, ["text", "prompttext"], required=True)
@@ -2163,6 +2185,7 @@ class AirtableStore:
         return {
             "selected_name": selected["name"],
             "updated_prompts_text": updated,
+            "script": "",
         }
 
     def list_substack_prompt_library(self) -> dict[str, Any]:
@@ -2321,6 +2344,9 @@ class AirtableStore:
         raw_event_type = self._read_event_field(fields, "event_type", ["event_type", "eventtype"], target_table)
         category_value = self._read_event_field(fields, "category", ["category"], target_table)
         event_type_value = self._infer_event_type_from_category(raw_event_type, category_value, acquirer_value)
+        make_this_news_value = to_bool(
+            self._field_value(fields, ["makethisnews", "make_this_news", "make this news"], target_table)
+        )
         canonical = {
             "__record_id": str(row.get("id", "")).strip(),
             "event_id": self._read_event_field(fields, "event_id", ["event_id", "eventid"], target_table),
@@ -2354,11 +2380,19 @@ class AirtableStore:
             "Event Flag": event_flag_value,
             "event_flag": event_flag_value,
             "IsConsumerNews": fields.get("IsConsumerNews", False),
+            "AINewsSection": self._read_event_field(
+                fields,
+                "AINewsSection",
+                ["AINewsSection", "AI News Section", "ai_news_section"],
+                target_table,
+            ),
+            "MakeThisNews": make_this_news_value,
             "fingerprint": self._read_event_field(fields, "fingerprint", ["fingerprint"], target_table),
             "base_fingerprint": self._read_event_field(fields, "base_fingerprint", ["base_fingerprint"], target_table),
             "updated_at": self._read_event_field(fields, "updated_at", ["updated_at"], target_table),
             "created_at": self._read_event_field(fields, "created_at", ["created_at"], target_table),
             "airtable_target_table": target_key,
+            "newsletter_override": str(fields.get("newsletter_override") or "").strip().lower(),
         }
         if article_format_fields:
             for field_name in article_format_fields:
@@ -2439,8 +2473,15 @@ class AirtableStore:
                 ("amount_usd", ["amount_usd", "Amount As Number"]),
                 ("amount_currency", ["amount_currency", "Amount Currency"]),
                 ("AIsummary", ["AIsummary", "aisummary", "ai_summary"]),
+                ("AINewsSection", ["AINewsSection", "AI News Section", "ai_news_section"]),
+                ("nlcat", ["NLCat", "nlcat"]),
+                ("newslens", ["NewsLens", "Newslens", "newslens", "news_lens"]),
+                ("ms", ["MS", "ms", "MatchStrength", "match_strength"]),
                 ("company_description", ["company_description", "companydescription", "Company Description"]),
                 ("company_category", ["company_category", "Company Category"]),
+                ("ai_company", ["ai_company", "AI Company"]),
+                ("ai_company_description", ["ai_company_description", "AI Company Description"]),
+                ("ai_company_category", ["ai_company_category", "AI Company Category"]),
                 ("valuation", ["valuation", "Valuation"]),
                 ("target_prior_raise", ["target_prior_raise", "Target Prior Raise"]),
                 ("target_prior_valuation", ["target_prior_valuation", "Target Prior Valuation"]),
@@ -2473,19 +2514,25 @@ class AirtableStore:
             "raw_summary": ["raw_summary", "summary"],
             "SlackContent": ["SlackContent", "slack_content", "slackcontent"],
             "AIsummary": ["AIsummary", "aisummary", "ai_summary"],
+            "AINewsSection": ["AINewsSection", "AI News Section", "ai_news_section"],
+            "nlcat": ["NLCat", "nlcat"],
+            "newslens": ["NewsLens", "Newslens", "newslens", "news_lens"],
+            "ms": ["MS", "ms", "MatchStrength", "match_strength"],
             "company_description": ["company_description", "companydescription", "Company Description"],
+            "ai_company": ["ai_company", "AI Company"],
+            "ai_company_description": ["ai_company_description", "AI Company Description"],
+            "ai_company_category": ["ai_company_category", "AI Company Category"],
             "amount_usd": ["amount_usd", "Amount As Number"],
             "amount_currency": ["amount_currency", "Amount Currency"],
             "company_category": ["company_category", "Company Category"],
             "valuation": ["valuation", "Valuation"],
             "target_prior_raise": ["target_prior_raise", "Target Prior Raise"],
             "target_prior_valuation": ["target_prior_valuation", "Target Prior Valuation"],
-            "fingerprint": ["fingerprint"],
-            "base_fingerprint": ["base_fingerprint"],
             "updated_at": ["updated_at"],
             "manual_override": ["manual_override"],
             "incorrect_flag": ["incorrect_flag"],
             "created_at": ["created_at"],
+            "article_source_code": ["article_source_code", "Article Source Code"],
         }
         if include_event_id:
             mapping["event_id"] = ["event_id", "eventid"]
@@ -2749,7 +2796,16 @@ def _format_source_failure_error(
 
 
 class SlackNotifier:
-    def __init__(self, cfg: dict, config_path: Path, run_store: RunStore | None = None, run_id: str | None = None) -> None:
+    def __init__(
+        self,
+        cfg: dict,
+        config_path: Path,
+        run_store: RunStore | None = None,
+        run_id: str | None = None,
+        *,
+        include_primary: bool = True,
+        include_secondary: bool = True,
+    ) -> None:
         slack = required_obj(cfg, "slack")
         if bool(slack.get("required")) is not True:
             raise RuntimeError("Slack is mandatory for this frame: slack.required must be true")
@@ -2768,13 +2824,17 @@ class SlackNotifier:
             raise RuntimeError(
                 "slack.secondary_webhook_url and slack.secondary_channel must both be set together"
             )
-        self.destinations: list[dict[str, str]] = [
-            {
-                "channel": self.channel,
-                "webhook_url": self.webhook_url,
-            }
-        ]
-        if self.secondary_webhook_url and self.secondary_channel:
+        self.include_primary = bool(include_primary)
+        self.include_secondary = bool(include_secondary)
+        self.destinations: list[dict[str, str]] = []
+        if self.include_primary:
+            self.destinations.append(
+                {
+                    "channel": self.channel,
+                    "webhook_url": self.webhook_url,
+                }
+            )
+        if self.include_secondary and self.secondary_webhook_url and self.secondary_channel:
             self.destinations.append(
                 {
                     "channel": self.secondary_channel,
@@ -2784,6 +2844,9 @@ class SlackNotifier:
         self.run_store = run_store
         self.run_id = run_id or ""
         self.sent_payloads: list[dict[str, Any]] = []
+
+    def has_destinations(self) -> bool:
+        return len(self.destinations) > 0
 
     def _write_mock(self, payload: dict) -> None:
         self.mock_log_file.parent.mkdir(parents=True, exist_ok=True)
@@ -2858,24 +2921,27 @@ class SlackNotifier:
         run_id: str,
         status: str,
         metrics: RunMetrics,
+        include_totals: bool,
         digest_text: str = "",
         digest_blocks: "list[dict[str, Any]] | None" = None,
     ) -> None:
-        summary_lines = [
-            f"Run ID: {run_id}",
-            f"Status: {status}",
-            f"Sources processed: {metrics.active_sources}/{metrics.total_sources}",
-            f"Created: {metrics.created_events}",
-            f"Updated: {metrics.updated_events}",
-            f"Duplicates skipped: {metrics.duplicate_records}",
-            f"Prequal discarded: {metrics.discarded_prequal}",
-            f"Irrelevant discarded: {metrics.discarded_irrelevant}",
-            f"Errors: {metrics.failed_sources}",
-        ]
-        summary_block = "\n".join(summary_lines).strip()
+        summary_block = ""
+        if include_totals:
+            summary_lines = [
+                f"Run ID: {run_id}",
+                f"Status: {status}",
+                f"Sources processed: {metrics.active_sources}/{metrics.total_sources}",
+                f"Created: {metrics.created_events}",
+                f"Updated: {metrics.updated_events}",
+                f"Duplicates skipped: {metrics.duplicate_records}",
+                f"Prequal discarded: {metrics.discarded_prequal}",
+                f"Irrelevant discarded: {metrics.discarded_irrelevant}",
+                f"Errors: {metrics.failed_sources}",
+            ]
+            summary_block = "\n".join(summary_lines).strip()
 
         if digest_blocks is not None:
-            # Block Kit path — structured, grouped layout
+            # Block Kit path â€” structured, grouped layout
             all_blocks: list[dict[str, Any]] = []
             if summary_block:
                 all_blocks.append({"type": "section", "text": {"type": "mrkdwn", "text": summary_block}})
@@ -2884,7 +2950,7 @@ class SlackNotifier:
                     all_blocks.append({"type": "divider"})
                 all_blocks.extend(digest_blocks)
             if all_blocks:
-                self.post_blocks(all_blocks, fallback_text=f"Consumer VC — {status}")
+                self.post_blocks(all_blocks, fallback_text=f"Consumer VC \u2014 {status}")
             return
 
         # Plain text fallback (replay-node path or no blocks available)
@@ -3267,6 +3333,40 @@ def _map_external_normalized_ai_to_event(
     mna_target_prior_raise = str(mna.get("target_prior_raise", "")).strip()
     mna_target_prior_valuation = str(mna.get("target_prior_valuation", "")).strip()
     company_category = str(normalized_ai.get("company_category", "")).strip()
+    ai_company_category = str(normalized_ai.get("ai_company_category", "")).strip() or company_category
+    raw_nlcat = str(
+        normalized_ai.get(
+            "nlcat",
+            airtable_payload.get("NLCat", airtable_payload.get("nlcat", "")),
+        )
+    ).strip()
+    airtable_payload["NLCat"] = raw_nlcat
+    ai_news_section = _normalize_ai_news_section(
+        normalized_ai.get("ai_news_section", airtable_payload.get("AINewsSection", ""))
+    ) or "other"
+    airtable_payload["AINewsSection"] = ai_news_section
+    if "is_consumer_news" not in normalized_ai:
+        raise RuntimeError("normalized ai missing required field: is_consumer_news")
+    is_consumer_news_raw = normalized_ai.get("is_consumer_news")
+    if isinstance(is_consumer_news_raw, bool):
+        is_consumer_news = is_consumer_news_raw
+    elif isinstance(is_consumer_news_raw, str):
+        is_consumer_news = is_consumer_news_raw.strip().lower() in {"1", "true", "yes", "y"}
+    else:
+        is_consumer_news = bool(is_consumer_news_raw)
+    if "consumer_news_confidence" not in normalized_ai:
+        raise RuntimeError("normalized ai missing required field: consumer_news_confidence")
+    try:
+        consumer_news_confidence = float(normalized_ai.get("consumer_news_confidence"))
+    except Exception as exc:
+        raise RuntimeError("normalized ai invalid field: consumer_news_confidence") from exc
+    if consumer_news_confidence < 0.0:
+        consumer_news_confidence = 0.0
+    if consumer_news_confidence > 1.0:
+        consumer_news_confidence = 1.0
+    if "consumer_news_reason" not in normalized_ai:
+        raise RuntimeError("normalized ai missing required field: consumer_news_reason")
+    consumer_news_reason = str(normalized_ai.get("consumer_news_reason")).strip()
     _raw_amount_for_parse = mna_amount if event_type == "m_and_a_transaction" else funding_amount
     if event_type == "consumer_industry_news" or not _raw_amount_for_parse:
         _amount_usd: int | None = None
@@ -3275,7 +3375,9 @@ def _map_external_normalized_ai_to_event(
         _amount_usd, _amount_currency = _parse_amount_numeric_and_currency(_raw_amount_for_parse)
     return {
         "company": str(normalized_ai.get("company", "")).strip(),
+        "ai_company": str(normalized_ai.get("company", "")).strip(),
         "company_description": str(normalized_ai.get("company_description", "")).strip(),
+        "ai_company_description": str(normalized_ai.get("company_description", "")).strip(),
         "acquirer": mna_acquirer,
         "target": mna_target,
         "event_type": event_type,
@@ -3308,9 +3410,16 @@ def _map_external_normalized_ai_to_event(
         "amount_usd": _amount_usd,
         "amount_currency": _amount_currency,
         "company_category": company_category,
+        "ai_company_category": ai_company_category,
+        "nlcat": raw_nlcat,
+        "AINewsSection": ai_news_section,
         "valuation": funding_valuation if event_type != "consumer_industry_news" else "",
         "target_prior_raise": mna_target_prior_raise if event_type == "m_and_a_transaction" else "",
         "target_prior_valuation": mna_target_prior_valuation if event_type == "m_and_a_transaction" else "",
+        "is_consumer_news": is_consumer_news,
+        "consumer_news_confidence": consumer_news_confidence,
+        "consumer_news_reason": consumer_news_reason,
+        "article_source_code": str(normalized_ai.get("article_source_code", "")).strip(),
         "airtable_target_table": airtable_target_table,
         "airtable": dict(airtable_payload),
     }
@@ -4007,13 +4116,7 @@ def _fetch_source_html_browser(source_url: str, timeout_seconds: int) -> str:
     network_idle_timeout_ms = min(7000, goto_timeout_ms)
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
-        page = browser.new_page(
-            user_agent=(
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                "AppleWebKit/537.36 (KHTML, like Gecko) "
-                "Chrome/133.0.0.0 Safari/537.36"
-            )
-        )
+        page = browser.new_page(user_agent=_article_user_agent())
         try:
             page.goto(url, wait_until="domcontentloaded", timeout=goto_timeout_ms)
             try:
@@ -4028,19 +4131,212 @@ def _fetch_source_html_browser(source_url: str, timeout_seconds: int) -> str:
     return html_text
 
 
-_BROWSER_UA = (
+_BROWSER_UA_DEFAULT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
     "AppleWebKit/537.36 (KHTML, like Gecko) "
-    "Chrome/133.0.0.0 Safari/537.36"
+    "Chrome/145.0.0.0 Safari/537.36"
 )
 
+# Keep primary source-fetch headers aligned with ParseFeedFile article fetch headers.
+_BROWSER_HEADERS = {
+    "User-Agent": _BROWSER_UA_DEFAULT,
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Cache-Control": "no-cache",
+    "Referer": "https://www.google.com/",
+}
 
-def _fetch_source_raw_browser(source_url: str, timeout_seconds: int) -> str:
+_PROXY_HOST_MATCH_DEFAULT = ("bevnet.com", "brewbound.com", "nosh.com", "nombase.com")
+_PROXY_ROTATE_ATTEMPTS_DEFAULT = 5
+_PROXY_ROTATE_ATTEMPTS_MAX = 20
+_GLOBAL_CONFIG_CACHE: dict[str, Any] | None = None
+_PROXY_CONFIG_CACHE: dict[str, Any] | None = None
+
+
+def _env_text(*names: str) -> str:
+    for name in names:
+        value = str(os.getenv(name, "")).strip()
+        if value:
+            return value
+    return ""
+
+
+def _load_global_config() -> dict[str, Any]:
+    global _GLOBAL_CONFIG_CACHE
+    if isinstance(_GLOBAL_CONFIG_CACHE, dict):
+        return _GLOBAL_CONFIG_CACHE
+    cfg_path = Path(__file__).resolve().parent / "Global.json"
+    try:
+        raw = load_json_file(cfg_path)
+    except Exception:
+        raw = {}
+    if not isinstance(raw, dict):
+        raw = {}
+    _GLOBAL_CONFIG_CACHE = raw
+    return raw
+
+
+def _article_cfg_text(*keys: str) -> str:
+    cfg = _load_global_config()
+    article_fetch_cfg = cfg.get("article_fetch", {})
+    if not isinstance(article_fetch_cfg, dict):
+        article_fetch_cfg = {}
+    for key in keys:
+        value = str(article_fetch_cfg.get(key, "")).strip()
+        if value:
+            return value
+    return ""
+
+
+def _article_user_agent() -> str:
+    return (
+        _env_text("CONSUMERVC_ARTICLE_USER_AGENT")
+        or _article_cfg_text("user_agent", "useragent")
+        or _BROWSER_UA_DEFAULT
+    )
+
+
+def _browser_headers_for_url(url: str = "") -> dict[str, str]:
+    headers = dict(_BROWSER_HEADERS)
+    headers["User-Agent"] = _article_user_agent()
+    parsed = urlparse(str(url or "").strip())
+    if parsed.scheme and parsed.netloc:
+        headers["Referer"] = f"{parsed.scheme}://{parsed.netloc}/"
+    return headers
+
+
+def _load_proxy_config() -> dict[str, Any]:
+    global _PROXY_CONFIG_CACHE
+    if isinstance(_PROXY_CONFIG_CACHE, dict):
+        return _PROXY_CONFIG_CACHE
+    raw = _load_global_config()
+    proxy_cfg: dict[str, Any] = {}
+    if isinstance(raw, dict):
+        candidate = raw.get("proxy", {})
+        if isinstance(candidate, dict):
+            proxy_cfg = candidate
+    _PROXY_CONFIG_CACHE = proxy_cfg
+    return proxy_cfg
+
+
+def _proxy_cfg_text(*keys: str) -> str:
+    cfg = _load_proxy_config()
+    for key in keys:
+        value = str(cfg.get(key, "")).strip()
+        if value:
+            return value
+    return ""
+
+
+def _proxy_host_match_parts() -> list[str]:
+    raw = _env_text("CONSUMERVC_PROXY_HOST_MATCH") or _proxy_cfg_text("host_match")
+    if raw:
+        parts = [part.strip().lower().removeprefix("www.") for part in raw.split(",") if part.strip()]
+        if parts:
+            return parts
+    return list(_PROXY_HOST_MATCH_DEFAULT)
+
+
+def _url_host_matches_proxy_target(url: str) -> bool:
+    host = str(urlparse(str(url or "").strip()).netloc or "").strip().lower().removeprefix("www.")
+    if not host:
+        return False
+    for part in _proxy_host_match_parts():
+        if host == part or host.endswith(f".{part}"):
+            return True
+    return False
+
+
+def _proxy_server_url() -> str:
+    server = _env_text("CONSUMERVC_PROXY_SERVER") or _proxy_cfg_text("server")
+    if not server:
+        host = _env_text("CONSUMERVC_PROXY_HOST", "PROXY_HOST") or _proxy_cfg_text("host")
+        port = _env_text("CONSUMERVC_PROXY_PORT", "PROXY_PORT") or _proxy_cfg_text("port")
+        if host and port:
+            server = f"http://{host}:{port}"
+        elif host:
+            server = f"http://{host}"
+    if server and "://" not in server:
+        server = f"http://{server}"
+    return server
+
+
+def _requests_proxy_url() -> str:
+    server = _proxy_server_url()
+    if not server:
+        return ""
+    try:
+        parsed = urlparse(server)
+    except Exception:
+        return server
+    scheme = (parsed.scheme or "http").strip() or "http"
+    host = str(parsed.hostname or "").strip()
+    if not host:
+        return server
+    port = f":{int(parsed.port)}" if parsed.port is not None else ""
+    # IP-based proxy auth: force server-only proxy URL (no user/pass in URL).
+    return f"{scheme}://{host}{port}"
+
+
+def _requests_proxies_for_source_url(url: str, *, force_proxy: bool = False) -> dict[str, str] | None:
+    if not force_proxy and not _url_host_matches_proxy_target(url):
+        return None
+    proxy_url = _requests_proxy_url()
+    if not proxy_url:
+        return None
+    return {
+        "http": proxy_url,
+        "https": proxy_url,
+    }
+
+
+def _proxy_rotate_attempts() -> int:
+    raw = _env_text("CONSUMERVC_PROXY_ROTATE_ATTEMPTS") or _proxy_cfg_text("rotate_attempts")
+    try:
+        value = int(raw) if raw else _PROXY_ROTATE_ATTEMPTS_DEFAULT
+    except Exception:
+        value = _PROXY_ROTATE_ATTEMPTS_DEFAULT
+    if value < 1:
+        value = 1
+    if value > _PROXY_ROTATE_ATTEMPTS_MAX:
+        value = _PROXY_ROTATE_ATTEMPTS_MAX
+    return value
+
+
+def _playwright_proxy_for_source_url(
+    url: str,
+    *,
+    attempt_index: int,
+    force_proxy: bool = False,
+) -> dict[str, str] | None:
+    if not force_proxy and not _url_host_matches_proxy_target(url):
+        return None
+    server = _proxy_server_url()
+    if not server:
+        return None
+    # IP-based proxy auth: no username/password passed to Playwright.
+    return {"server": server}
+
+
+def _looks_like_blocked_source_body(body_text: str) -> bool:
+    body = str(body_text or "").lower()
+    if not body:
+        return True
+    markers = (
+        "403 forbidden",
+        "access denied",
+        "just a moment",
+        "cf-challenge",
+        "challenge-platform",
+        "captcha",
+    )
+    return any(marker in body for marker in markers)
+
+def _fetch_source_raw_browser(source_url: str, timeout_seconds: int, *, force_proxy: bool = False) -> str:
     """Fetch a URL via Playwright and return the raw response body (not browser-rendered HTML).
 
     Used as a fallback for RSS/XML feeds blocked by Cloudflare or similar WAFs.
-    Strategy: navigate to the URL to complete any JS challenge, then re-fetch from within
-    the now-unblocked browser session using fetch() — this returns the actual raw content.
+    Strategy: navigate to the URL with proper context settings, then get the page content.
     """
     url = str(source_url or "").strip()
     if not url:
@@ -4051,38 +4347,128 @@ def _fetch_source_raw_browser(source_url: str, timeout_seconds: int) -> str:
         raise RuntimeError(f"browser source fetch unavailable: {exc}") from exc
     goto_timeout_ms = max(1000, int(timeout_seconds) * 1000)
     network_idle_timeout_ms = min(10000, goto_timeout_ms)
-
+    first_proxy = _playwright_proxy_for_source_url(url, attempt_index=1, force_proxy=force_proxy)
+    if first_proxy is None:
+        proxy_attempts: list[dict[str, str] | None] = [None]
+    else:
+        proxy_attempts = [
+            _playwright_proxy_for_source_url(url, attempt_index=idx, force_proxy=force_proxy)
+            for idx in range(1, _proxy_rotate_attempts() + 1)
+        ]
+    errors: list[str] = []
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
-        page = browser.new_page(user_agent=_BROWSER_UA)
-        try:
-            # Navigate first — this completes the Cloudflare JS challenge
-            page.goto(url, wait_until="domcontentloaded", timeout=goto_timeout_ms)
+        for attempt_idx, proxy_cfg in enumerate(proxy_attempts, start=1):
+            browser = None
+            context = None
+            raw_text = ""
             try:
-                page.wait_for_load_state("networkidle", timeout=network_idle_timeout_ms)
-            except Exception:
-                pass
-            # Re-fetch from inside the unblocked session to get raw content
-            raw_text: str = page.evaluate(
-                """async (target) => {
-                    const resp = await fetch(target, {credentials: 'include'});
-                    return await resp.text();
-                }""",
-                url,
-            )
-        finally:
-            browser.close()
+                launch_kwargs: dict[str, Any] = {
+                    "headless": True,
+                    "args": ["--no-sandbox", "--disable-dev-shm-usage"],
+                }
+                if proxy_cfg:
+                    launch_kwargs["proxy"] = proxy_cfg
+                browser = p.chromium.launch(**launch_kwargs)
+                context = browser.new_context(
+                    user_agent=_article_user_agent(),
+                    locale="en-US",
+                    ignore_https_errors=True,
+                )
+                page = context.new_page()
+                response = page.goto(url, wait_until="domcontentloaded", timeout=goto_timeout_ms)
+                status_code = 0
+                try:
+                    if response is not None and getattr(response, "status", None) is not None:
+                        status_code = int(response.status)
+                except Exception:
+                    status_code = 0
+                try:
+                    page.wait_for_load_state("networkidle", timeout=network_idle_timeout_ms)
+                except Exception:
+                    pass
 
-    if not raw_text:
-        raise RuntimeError("browser raw fetch returned no response body")
-    return raw_text
+                def _response_text_or_page_content() -> str:
+                    text = ""
+                    try:
+                        if response is not None:
+                            text = str(response.text() or "")
+                    except Exception:
+                        text = ""
+                    if not text:
+                        text = str(page.content() or "")
+                    return text
 
+                raw_text = _response_text_or_page_content()
+                if not raw_text:
+                    raise RuntimeError("browser raw fetch returned no response body")
 
+                # Cloudflare challenges may return an interstitial first; keep the same browser
+                # context/cookies and retry a few times to obtain the final feed body.
+                challenge_markers = (
+                    "cloudflare",
+                    "security verification",
+                    "verification successful",
+                    "just a moment",
+                    "challenge-platform",
+                )
+                for clearance_attempt in range(1, 4):
+                    blocked = status_code in {403, 429, 503} or _looks_like_blocked_source_body(raw_text)
+                    if not blocked:
+                        return raw_text
+                    lowered = raw_text.lower()
+                    if not any(marker in lowered for marker in challenge_markers):
+                        break
+                    try:
+                        page.wait_for_timeout(1200 * clearance_attempt)
+                    except Exception:
+                        pass
+                    try:
+                        page.wait_for_load_state("networkidle", timeout=network_idle_timeout_ms)
+                    except Exception:
+                        pass
+                    # Re-request with browser context cookies/session.
+                    try:
+                        api_resp = context.request.get(
+                            url,
+                            headers=_browser_headers_for_url(url),
+                            timeout=goto_timeout_ms,
+                        )
+                        status_code = int(getattr(api_resp, "status", 0) or 0)
+                        raw_text = str(api_resp.text() or "")
+                    except Exception:
+                        response = page.goto(url, wait_until="domcontentloaded", timeout=goto_timeout_ms)
+                        status_code = 0
+                        try:
+                            if response is not None and getattr(response, "status", None) is not None:
+                                status_code = int(response.status)
+                        except Exception:
+                            status_code = 0
+                        raw_text = _response_text_or_page_content()
+
+                if status_code in {403, 429, 503} or _looks_like_blocked_source_body(raw_text):
+                    raise RuntimeError(f"browser blocked status={status_code or 'n/a'}")
+                return raw_text
+            except Exception as exc:
+                errors.append(f"attempt {attempt_idx}/{len(proxy_attempts)}: {exc}")
+            finally:
+                if context is not None:
+                    try:
+                        context.close()
+                    except Exception:
+                        pass
+                if browser is not None:
+                    try:
+                        browser.close()
+                    except Exception:
+                        pass
+    if errors:
+        raise RuntimeError(" | ".join(errors[-3:]))
+    raise RuntimeError("browser raw fetch returned no response body")
 def fetch_article_text(source_url: str, timeout_seconds: int) -> str:
     url = str(source_url or "").strip()
     if not url:
         return ""
-    headers = {"User-Agent": _BROWSER_UA}
+    headers = {"User-Agent": _article_user_agent()}
     try:
         resp = requests.get(url, headers=headers, timeout=timeout_seconds)
     except Exception as exc:
@@ -4114,6 +4500,7 @@ def load_live_source_capture(
     timeout_seconds: int,
     config_path: Path,
     source_name: str = "",
+    use_proxy: bool = False,
 ) -> dict[str, Any]:
     src_type = normalize_text(source_type)
     url = str(source_url or "").strip()
@@ -4124,6 +4511,7 @@ def load_live_source_capture(
 
     raw_text = ""
     raw_format = "txt"
+    source_proxies = _requests_proxies_for_source_url(url, force_proxy=bool(use_proxy))
     if _should_fetch_source_in_browser(source_name=source_name, source_url=url):
         raw_text = _fetch_source_html_browser(url, timeout_seconds)
         raw_format = "html"
@@ -4133,16 +4521,21 @@ def load_live_source_capture(
             source_name=source_name,
         )
     else:
-        headers = {"User-Agent": _BROWSER_UA}
         try:
-            resp = requests.get(url, headers=headers, timeout=timeout_seconds)
+            request_kwargs: dict[str, Any] = {
+                "headers": _browser_headers_for_url(url),
+                "timeout": timeout_seconds,
+            }
+            if source_proxies:
+                request_kwargs["proxies"] = source_proxies
+            resp = requests.get(url, **request_kwargs)
         except Exception as exc:
             raise RuntimeError(f"source fetch failed: {exc}") from exc
         if resp.status_code >= 300:
             # Automatically retry blocked requests via Playwright (bypasses Cloudflare/WAF)
             if resp.status_code in {403, 429, 503}:
                 try:
-                    raw_text = _fetch_source_raw_browser(url, timeout_seconds)
+                    raw_text = _fetch_source_raw_browser(url, timeout_seconds, force_proxy=bool(use_proxy))
                 except Exception as browser_exc:
                     body_text = str(resp.text or "")
                     body_flat = " ".join(body_text.split())
@@ -4174,6 +4567,24 @@ def load_live_source_capture(
                 raise RuntimeError(f"source fetch failed status={resp.status_code} body={body_summary}")
         else:
             raw_text = str(resp.text or "")
+            if _looks_like_blocked_source_body(raw_text):
+                try:
+                    raw_text = _fetch_source_raw_browser(url, timeout_seconds, force_proxy=bool(use_proxy))
+                except Exception as browser_exc:
+                    body_flat = " ".join(raw_text.split())
+                    if "<!doctype html" in body_flat.lower() or "<html" in body_flat.lower():
+                        title_match = re.search(r"<title[^>]*>(.*?)</title>", raw_text, re.IGNORECASE | re.DOTALL)
+                        if title_match:
+                            title_text = html.unescape(" ".join(title_match.group(1).split()))
+                            body_summary = f"html challenge page returned title={title_text[:160]}"
+                        else:
+                            body_summary = "html challenge page returned"
+                    else:
+                        body_summary = body_flat[:200]
+                    raise RuntimeError(
+                        f"source fetch blocked body={body_summary} "
+                        f"(browser fallback also failed: {browser_exc})"
+                    ) from browser_exc
         if src_type == "http":
             if looks_like_xml_feed(raw_text):
                 raw_format = "xml"
@@ -4446,6 +4857,362 @@ def _validate_ai_classification_payload(payload: dict) -> dict:
     }
 
 
+_SECOND_GATE_PROMPT_PATH = Path(__file__).resolve().parent / "Prompts" / "Gate.txt"
+_SECOND_GATE_PROMPT_TEXT_CACHE: str | None = None
+
+
+def _load_second_gate_prompt_text() -> str:
+    global _SECOND_GATE_PROMPT_TEXT_CACHE
+    if _SECOND_GATE_PROMPT_TEXT_CACHE is not None:
+        return _SECOND_GATE_PROMPT_TEXT_CACHE
+    if not _SECOND_GATE_PROMPT_PATH.exists():
+        raise AIValidationError(f"consumer-news second gate prompt file missing: {_SECOND_GATE_PROMPT_PATH}")
+    text = _SECOND_GATE_PROMPT_PATH.read_text(encoding="utf-8-sig").strip()
+    if not text:
+        raise AIValidationError(f"consumer-news second gate prompt file is empty: {_SECOND_GATE_PROMPT_PATH}")
+    _SECOND_GATE_PROMPT_TEXT_CACHE = text
+    return text
+
+
+def _normalize_consumer_news_gate_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    if not isinstance(payload, dict):
+        raise AIValidationError("consumer-news gate payload is not a JSON object")
+    if "is_consumer_news" not in payload:
+        raise AIValidationError("consumer-news gate payload missing key: is_consumer_news")
+    if "consumer_news_confidence" not in payload:
+        raise AIValidationError("consumer-news gate payload missing key: consumer_news_confidence")
+    if "consumer_news_reason" not in payload:
+        raise AIValidationError("consumer-news gate payload missing key: consumer_news_reason")
+    is_consumer_news = bool(payload.get("is_consumer_news"))
+    try:
+        confidence = float(payload.get("consumer_news_confidence", 0.0))
+    except Exception as exc:
+        raise AIValidationError("consumer-news gate payload invalid confidence") from exc
+    if confidence < 0.0:
+        confidence = 0.0
+    if confidence > 1.0:
+        confidence = 1.0
+    reason = str(payload.get("consumer_news_reason", "")).strip()
+    return {
+        "is_consumer_news": is_consumer_news,
+        "consumer_news_confidence": confidence,
+        "consumer_news_reason": reason,
+    }
+
+
+_CONSUMER_POSITIVE_MARKERS = (
+    "consumer",
+    "consumers",
+    "retail",
+    "ecommerce",
+    "e-commerce",
+    "shopper",
+    "shoppers",
+    "shopping",
+    "store",
+    "stores",
+    "brand",
+    "brands",
+    "grocery",
+    "groceries",
+    "restaurant",
+    "restaurants",
+    "food",
+    "beverage",
+    "beauty",
+    "fashion",
+    "apparel",
+    "home",
+    "furniture",
+    "travel",
+    "hospitality",
+    "creator",
+    "creators",
+    "cpg",
+    "personal care",
+    "pet",
+)
+
+_CONSUMER_HARD_NEGATIVE_MARKERS = (
+    "data center",
+    "datacenter",
+    "gpu",
+    "foundation model",
+    "llm",
+    "model benchmark",
+    "developer tool",
+    "enterprise software",
+    "b2b",
+    "cybersecurity",
+    "national security",
+    "government",
+    "governments",
+    "local government",
+    "local governments",
+    "municipal",
+    "defense",
+    "defence",
+    "infrastructure",
+    "data centers",
+    "data center",
+    "startup ranking",
+    "top startups",
+    "metro ranking",
+    "research workflow",
+    "proprietary ai model",
+    "reinforcement learning",
+    "healthcare workforce",
+    "real estate expert",
+    "project management",
+    "quarterly earnings",
+    "annual results",
+    "results for the year",
+)
+
+_CONSUMER_REPORT_NOISE_MARKERS = (
+    "ranks no.",
+    "ranks no",
+    "study measuring",
+    "top pacific northwest tech startups",
+    "update: a new no.",
+    "metros in new study",
+    "top pacific northwest tech startups",
+    "expert explains",
+)
+
+
+def _marker_in_text(text_n: str, marker: str) -> bool:
+    marker_n = normalize_text(marker)
+    if not marker_n:
+        return False
+    pattern = r"(?<![a-z0-9])" + re.escape(marker_n) + r"(?![a-z0-9])"
+    return re.search(pattern, text_n) is not None
+
+
+def _deterministic_consumer_gate(event: dict[str, Any]) -> dict[str, Any] | None:
+    text = " ".join(
+        [
+            str(event.get("raw_title", "")).strip(),
+            str(event.get("raw_summary", "")).strip(),
+            str(event.get("article", "")).strip(),
+            str(event.get("AIsummary", "")).strip(),
+            str(event.get("SlackContent", "")).strip(),
+            str(event.get("company_category", "")).strip(),
+            str(event.get("ai_company_category", "")).strip(),
+        ]
+    )
+    text_n = normalize_text(text)
+    if not text_n:
+        return None
+    has_positive = any(_marker_in_text(text_n, marker) for marker in _CONSUMER_POSITIVE_MARKERS)
+    hard_negative_hits = [
+        marker for marker in _CONSUMER_HARD_NEGATIVE_MARKERS if _marker_in_text(text_n, marker)
+    ]
+    if hard_negative_hits and not has_positive:
+        return {
+            "is_consumer_news": False,
+            "consumer_news_confidence": 0.05,
+            "consumer_news_reason": "Enterprise/infra/government topic, not consumer business.",
+        }
+    if any(_marker_in_text(text_n, marker) for marker in _CONSUMER_REPORT_NOISE_MARKERS) and not has_positive:
+        return {
+            "is_consumer_news": False,
+            "consumer_news_confidence": 0.10,
+            "consumer_news_reason": "Ranking/report item without consumer business event.",
+        }
+    return None
+
+
+def _run_consumer_news_second_pass(
+    *,
+    event: dict[str, Any],
+    logic: dict[str, Any],
+    run_store: RunStore,
+    run_id: str,
+    source_id: str,
+    record_key: str,
+) -> dict[str, Any]:
+    deterministic = _deterministic_consumer_gate(event)
+    if deterministic is not None and not to_bool(event.get("MakeThisNews", False)):
+        updated = dict(event)
+        updated["is_consumer_news"] = deterministic["is_consumer_news"]
+        updated["consumer_news_confidence"] = deterministic["consumer_news_confidence"]
+        updated["consumer_news_reason"] = deterministic["consumer_news_reason"]
+        updated["IsConsumerNews"] = deterministic["is_consumer_news"]
+        existing_airtable = updated.get("airtable")
+        if isinstance(existing_airtable, dict):
+            updated_airtable = dict(existing_airtable)
+            updated_airtable["IsConsumerNews"] = deterministic["is_consumer_news"]
+            updated["airtable"] = updated_airtable
+        run_store.log(
+            run_id,
+            "info",
+            "consumer_news_gate",
+            (
+                "deterministic gate result "
+                f"is_consumer_news={deterministic['is_consumer_news']} "
+                f"confidence={deterministic['consumer_news_confidence']:.2f} "
+                f"reason={deterministic['consumer_news_reason']}"
+            ),
+            source_id=source_id,
+            record_key=record_key,
+        )
+        return updated
+    api_key = str(logic.get("openai_api_key", "")).strip()
+    model_name = str(logic.get("ai_model_name", "")).strip()
+    if not api_key or not model_name:
+        raise AIValidationError("consumer-news second pass missing OpenAI runtime configuration")
+    context = {
+        "title": str(event.get("raw_title", "")).strip(),
+        "summary": str(event.get("raw_summary", "")).strip(),
+        "article": str(event.get("article", "")).strip(),
+        "slack_content": str(event.get("SlackContent", "")).strip(),
+        "source_link": str(event.get("source_link", "")).strip(),
+        "source_name": str(event.get("source_name", "")).strip(),
+        "event_type": str(event.get("event_type", "")).strip(),
+        "company": str(event.get("company", "")).strip(),
+        "ai_company_category": str(event.get("ai_company_category", "")).strip(),
+        "company_category": str(event.get("company_category", "")).strip(),
+    }
+    payload = {
+        "model": model_name,
+        "temperature": 0.0,
+        "messages": [
+            {
+                "role": "system",
+                "content": _load_second_gate_prompt_text(),
+            },
+            {
+                "role": "user",
+                "content": json.dumps(
+                    {
+                        "task": "Return strict classification based on PRIMARY subject only.",
+                        "rules": [
+                            "Map CONSUMER -> is_consumer_news=true.",
+                            "Map NOT_CONSUMER -> is_consumer_news=false.",
+                            "For corporate events (acquisition/funding/ownership change), classify by whether the primary company is B2C.",
+                            "Set consumer_news_confidence between 0 and 1.",
+                            "Set consumer_news_reason to one sentence referencing the PRIMARY subject only.",
+                        ],
+                        "content": context,
+                    },
+                    ensure_ascii=False,
+                ),
+            },
+        ],
+        "response_format": {
+            "type": "json_schema",
+            "json_schema": {
+                "name": "consumer_news_gate",
+                "strict": True,
+                "schema": {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "properties": {
+                        "is_consumer_news": {"type": "boolean"},
+                        "consumer_news_confidence": {"type": "number"},
+                        "consumer_news_reason": {"type": "string"},
+                    },
+                    "required": [
+                        "is_consumer_news",
+                        "consumer_news_confidence",
+                        "consumer_news_reason",
+                    ],
+                },
+            },
+        },
+    }
+    response_data = _openai_chat_completion(
+        api_key=api_key,
+        payload=payload,
+        run_store=run_store,
+        run_id=run_id,
+        request_stage="consumer_news_gate_request",
+        response_stage="consumer_news_gate_response",
+        source_id=source_id,
+        record_key=record_key,
+    )
+    content = _openai_extract_content(response_data)
+    try:
+        parsed = json.loads(content)
+    except Exception as exc:
+        raise AIValidationError(f"consumer-news gate response is not valid JSON: {exc}") from exc
+    normalized = _normalize_consumer_news_gate_payload(parsed)
+    updated = dict(event)
+    updated["is_consumer_news"] = normalized["is_consumer_news"]
+    updated["consumer_news_confidence"] = normalized["consumer_news_confidence"]
+    updated["consumer_news_reason"] = normalized["consumer_news_reason"]
+    updated["IsConsumerNews"] = normalized["is_consumer_news"]
+    existing_airtable = updated.get("airtable")
+    if isinstance(existing_airtable, dict):
+        updated_airtable = dict(existing_airtable)
+        updated_airtable["IsConsumerNews"] = normalized["is_consumer_news"]
+        updated["airtable"] = updated_airtable
+    run_store.log(
+        run_id,
+        "info",
+        "consumer_news_gate",
+        (
+            f"second pass result is_consumer_news={normalized['is_consumer_news']} "
+            f"confidence={normalized['consumer_news_confidence']:.2f} "
+            f"reason={normalized['consumer_news_reason']}"
+        ),
+        source_id=source_id,
+        record_key=record_key,
+    )
+    return updated
+
+
+def _uncheck_existing_non_consumer_record(
+    *,
+    airtable: AirtableStore,
+    event: dict[str, Any],
+    dedupe_state: dict[str, dict[str, Any]] | None,
+    run_store: RunStore,
+    run_id: str,
+    source_id: str,
+    record_key: str,
+) -> bool:
+    source_link = str(event.get("source_link", "")).strip()
+    if not source_link:
+        return False
+    target_key = normalized_key(str(event.get("airtable_target_table", "")).strip())
+    if target_key not in {"events", "news"}:
+        return False
+    if target_key == "news":
+        if not airtable.table_news:
+            return False
+        target_table = airtable.table_news
+    else:
+        target_table = airtable.table_events
+    table_state = _ensure_table_dedupe_state(airtable, target_table, dedupe_state)
+    if not isinstance(table_state, dict):
+        return False
+    by_source_link = table_state.get("by_source_link", {})
+    if not isinstance(by_source_link, dict):
+        return False
+    source_link_key = normalize_text(source_link)
+    existing_row = by_source_link.get(source_link_key)
+    if not isinstance(existing_row, dict):
+        return False
+    if not bool(existing_row.get("IsConsumerNews")):
+        return False
+    updated_row = dict(existing_row)
+    updated_row["IsConsumerNews"] = False
+    updated_row["updated_at"] = utc_now_iso()
+    saved_row = airtable.update_event(updated_row)
+    by_source_link[source_link_key] = saved_row
+    run_store.log(
+        run_id,
+        "info",
+        "consumer_news_gate",
+        "existing Airtable record unchecked by consumer-news gate",
+        source_id=source_id,
+        record_key=record_key,
+    )
+    return True
+
+
 def passes_prequal(item: dict) -> bool:
     funding_keywords = [
         "raise",
@@ -4522,6 +5289,8 @@ def classify_and_extract(
     except RuntimeError as exc:
         raise AIValidationError(str(exc)) from exc
 
+    if normalized_ai is None:
+        raise AIValidationError("non-consumer item discarded at classification gate")
     mapped = _map_external_normalized_ai_to_event(
         normalized_ai=normalized_ai,
         title=title,
@@ -4699,20 +5468,94 @@ def _reserve_event_id(
     return f"evt_{next_event_num:06d}"
 
 
+def _apply_prewrite_nlcat(
+    *,
+    event: dict[str, Any],
+    logic: dict[str, Any],
+) -> dict[str, Any]:
+    def _derive_ms(confidence_value: Any, current_ms_value: str = "") -> str:
+        try:
+            conf = float(confidence_value)
+        except Exception:
+            return current_ms_value
+        if conf >= 0.75:
+            return "1"
+        if conf >= 0.45:
+            return "2"
+        return "3"
+
+    updated = dict(event)
+    current_nlcat = str(updated.get("nlcat", "")).strip()
+    current_newslens = str(updated.get("newslens", updated.get("NewsLens", ""))).strip().lower()
+    current_ms = str(updated.get("ms", updated.get("MS", ""))).strip()
+    try:
+        normalizer_mod = _load_external_feed_normalizer_module()
+        derive_fn = getattr(normalizer_mod, "derive_nlcat_only", None)
+        if not callable(derive_fn):
+            return updated
+        settings = _external_normalizer_settings_from_logic(
+            logic,
+            request_timeout_seconds=30,
+        )
+        title = str(updated.get("raw_title", "")).strip()
+        description = str(updated.get("raw_summary", "")).strip()
+        article = str(updated.get("article", "")).strip()
+        event_type = str(updated.get("event_type", "")).strip()
+        result = derive_fn(
+            title=title,
+            description=description,
+            article=article,
+            event_type=event_type,
+            settings=settings,
+            current_nlcat=current_nlcat,
+            current_newslens=current_newslens,
+        )
+        resolved_nlcat = ""
+        resolved_newslens = ""
+        if isinstance(result, dict):
+            resolved_nlcat = str(result.get("nlcat", "")).strip().upper().replace(" ", "")
+            resolved_newslens = str(result.get("newslens", "")).strip().lower().replace(" ", "_")
+        if not resolved_nlcat:
+            resolved_nlcat = current_nlcat
+        if not resolved_newslens:
+            resolved_newslens = current_newslens
+        if resolved_nlcat:
+            updated["nlcat"] = resolved_nlcat
+            existing_airtable = updated.get("airtable")
+            if isinstance(existing_airtable, dict):
+                updated_airtable = dict(existing_airtable)
+                updated_airtable["NLCat"] = resolved_nlcat
+                if resolved_newslens:
+                    updated_airtable["NewsLens"] = resolved_newslens
+                updated["airtable"] = updated_airtable
+        if resolved_newslens:
+            updated["newslens"] = resolved_newslens
+        resolved_ms = _derive_ms(updated.get("consumer_news_confidence"), current_ms)
+        if resolved_ms:
+            updated["ms"] = resolved_ms
+            existing_airtable = updated.get("airtable")
+            if isinstance(existing_airtable, dict):
+                updated_airtable = dict(existing_airtable)
+                updated_airtable["MS"] = resolved_ms
+                updated["airtable"] = updated_airtable
+    except Exception:
+        return updated
+    return updated
+
+
 def upsert_event(
     airtable: AirtableStore,
     event: dict,
     logic: dict,
+    allow_url_match_updates: bool = False,
     dedupe_state: dict[str, dict[str, Any]] | None = None,
 ) -> tuple[str, dict]:
+    event = _apply_prewrite_nlcat(event=event, logic=logic)
     target_table = airtable._resolve_event_target_table(event)
     target_key = "news" if airtable.table_news and target_table == airtable.table_news else "events"
     event["airtable_target_table"] = target_key
     table_state = _ensure_table_dedupe_state(airtable, target_table, dedupe_state)
     events = airtable.load_events(target_table) if table_state is None else []
-    fingerprint, base_fingerprint = build_fingerprints(event, logic)
-    event["fingerprint"] = fingerprint
-    event["base_fingerprint"] = base_fingerprint
     event["updated_at"] = utc_now_iso()
     event["manual_override"] = False
     event["incorrect_flag"] = False
@@ -4733,6 +5576,10 @@ def upsert_event(
     for row in candidates:
         if table_state is None and normalize_text(row.get("source_link", "")) != source_link_key:
             continue
+        # URL match is the primary dedupe key. By default, do not overwrite existing records.
+        # Optional maintenance mode can enable updates for URL matches when content has changed.
+        if not allow_url_match_updates:
+            return "duplicate", _merge_runtime_event_fields(row, event)
         existing_slack = normalize_text(row.get("SlackContent", ""))
         if existing_slack == incoming_slack:
             return "duplicate", _merge_runtime_event_fields(row, event)
@@ -4771,15 +5618,10 @@ def create_event_without_dedupe(
     record_key: str,
     dedupe_state: dict[str, dict[str, Any]] | None = None,
 ) -> tuple[str, dict]:
+    event = _apply_prewrite_nlcat(event=event, logic=logic)
     target_table = airtable._resolve_event_target_table(event)
     target_key = "news" if airtable.table_news and target_table == airtable.table_news else "events"
-    fingerprint, base_fingerprint = build_fingerprints(event, logic)
-    nonce_raw = f"{record_key}|{utc_now_iso()}|no_dedupe"
-    nonce = hashlib.sha256(nonce_raw.encode("utf-8")).hexdigest()
-
     event_copy = dict(event)
-    event_copy["fingerprint"] = hashlib.sha256(f"{fingerprint}|{nonce}".encode("utf-8")).hexdigest()
-    event_copy["base_fingerprint"] = hashlib.sha256(f"{base_fingerprint}|{nonce}".encode("utf-8")).hexdigest()
     event_copy["updated_at"] = utc_now_iso()
     event_copy["manual_override"] = False
     event_copy["incorrect_flag"] = False
@@ -4842,6 +5684,88 @@ def _resolve_week_window(
     return start, end
 
 
+def _is_make_this_news(event: dict[str, Any]) -> bool:
+    return to_bool(event.get("MakeThisNews", False))
+
+
+def _weekly_effective_event_type(event: dict[str, Any]) -> str:
+    event_type = str(event.get("event_type", "")).strip()
+    if _is_make_this_news(event) and event_type in {"funding_round", "m_and_a_transaction"}:
+        return "consumer_industry_news"
+    return event_type
+
+
+def _is_not_consumer_relevent_checked(event: dict[str, Any]) -> bool:
+    return to_bool(event.get("IsNotConsumerRelevent", False))
+
+
+def _weekly_has_consumer_signal(value: Any) -> bool:
+    text_n = normalize_text(str(value if value is not None else ""))
+    if not text_n:
+        return False
+    markers = (
+        "consumer",
+        "retail",
+        "commerce",
+        "ecommerce",
+        "marketplace",
+        "d2c",
+        "food",
+        "beverage",
+        "beauty",
+        "wellness",
+        "home",
+        "travel",
+        "hospitality",
+        "fashion",
+        "apparel",
+        "pet",
+        "grocery",
+        "restaurant",
+        "shopper",
+    )
+    return any(normalize_text(marker) in text_n for marker in markers)
+
+
+def _weekly_is_consumer_related_funding_mna(event: dict[str, Any]) -> bool:
+    if _is_make_this_news(event):
+        return True
+
+    category_fields = (
+        event.get("ai_company_category", ""),
+        event.get("company_category", ""),
+        event.get("category", ""),
+    )
+    for value in category_fields:
+        if _weekly_has_consumer_signal(value):
+            return True
+
+    text_fields = (
+        event.get("company_description", ""),
+        event.get("raw_title", ""),
+        event.get("raw_summary", ""),
+        event.get("AIsummary", ""),
+        event.get("SlackContent", ""),
+    )
+    for value in text_fields:
+        if _weekly_has_consumer_signal(value):
+            return True
+    return False
+
+
+def _weekly_include_event(event: dict[str, Any]) -> bool:
+    if _is_not_consumer_relevent_checked(event):
+        return False
+    effective_type = _weekly_effective_event_type(event)
+    if effective_type in {"funding_round", "m_and_a_transaction"}:
+        return _weekly_is_consumer_related_funding_mna(event)
+    if effective_type != "consumer_industry_news":
+        return True
+    if _is_make_this_news(event):
+        return True
+    return bool(event.get("IsConsumerNews"))
+
+
 def build_weekly_summary(
     events: list[dict],
     today: datetime,
@@ -4857,14 +5781,12 @@ def build_weekly_summary(
         except ValueError:
             continue
         if start <= d <= end:
-            # Only include records where IsConsumerNews is checked for consumer_industry_news events
-            event_type = str(e.get("event_type", "")).strip()
-            if event_type == "consumer_industry_news" and not e.get("IsConsumerNews"):
+            if not _weekly_include_event(e):
                 continue
             selected.append(e)
     by_type: dict[str, int] = {}
     for e in selected:
-        t = str(e.get("event_type", "unknown"))
+        t = _weekly_effective_event_type(e) or "unknown"
         by_type[t] = by_type.get(t, 0) + 1
     lines = [f"# Weekly Summary ({start.isoformat()} to {end.isoformat()})", "", f"Total events: {len(selected)}", ""]
     for t, c in sorted(by_type.items()):
@@ -4875,7 +5797,7 @@ def build_weekly_summary(
         company = _clean_optional_render_text(e.get("company", ""))
         if not company:
             continue
-        event_type = str(e.get("event_type", "unknown")).strip() or "unknown"
+        event_type = _weekly_effective_event_type(e) or "unknown"
         amount = _normalize_amount_text(e.get("amount", ""))
         parts = [part for part in [event_date, company, event_type, amount] if part]
         lines.append("- " + " | ".join(parts))
@@ -4897,9 +5819,7 @@ def _select_week_events(
         except ValueError:
             continue
         if start <= d <= end:
-            # Only include records where IsConsumerNews is checked for consumer_industry_news events
-            event_type = str(e.get("event_type", "")).strip()
-            if event_type == "consumer_industry_news" and not e.get("IsConsumerNews"):
+            if not _weekly_include_event(e):
                 continue
             selected.append(e)
     return start, end, selected
@@ -4909,7 +5829,7 @@ def _cap_weekly_news_events(selected_events: list[dict], news_limit: int) -> tup
     news_events = [
         event
         for event in selected_events
-        if str(event.get("event_type", "")).strip() == "consumer_industry_news" and event.get("IsConsumerNews")
+        if _weekly_effective_event_type(event) == "consumer_industry_news" and _weekly_include_event(event)
     ]
     news_total = len(news_events)
     if news_total <= news_limit:
@@ -4928,7 +5848,7 @@ def _cap_weekly_news_events(selected_events: list[dict], news_limit: int) -> tup
 
     capped = []
     for event in selected_events:
-        event_type = str(event.get("event_type", "")).strip()
+        event_type = _weekly_effective_event_type(event)
         if event_type != "consumer_industry_news" or id(event) in keep_ids:
             capped.append(event)
     return capped, news_total
@@ -4994,7 +5914,11 @@ def _validate_weekly_sections_payload(payload: Any) -> dict[str, str]:
     return out
 
 
-def _deduplicate_section_events(events: list[dict], event_type: str) -> list[dict]:
+def _deduplicate_section_events(
+    events: list[dict],
+    event_type: str,
+    article_format_config: dict[str, Any] | None = None,
+) -> list[dict]:
     """Deduplicate events by company, keeping the one with most content."""
     from collections import defaultdict
 
@@ -5002,10 +5926,35 @@ def _deduplicate_section_events(events: list[dict], event_type: str) -> list[dic
     grouped = defaultdict(list)
     no_key_events = []  # Events without a dedup key
 
+    def _canonical_company_for_dedupe(value: Any) -> str:
+        raw = str(value if value is not None else "").strip()
+        if not raw:
+            return ""
+        # Normalize common link wrappers if they leaked into company field.
+        raw = re.sub(r"\[([^\]]+)\]\((https?://[^\)]+)\)", r"\1", raw)
+        raw = re.sub(r"<https?://[^|>]+\|([^>]+)>", r"\1", raw)
+        text = normalize_text(raw)
+        text = re.sub(r"[^a-z0-9\s]", " ", text)
+        text = re.sub(r"\s+", " ", text).strip()
+        if not text:
+            return ""
+        tokens = text.split()
+        # Strip only trailing legal designators so "sunday" and "sunday inc" dedupe.
+        legal_suffixes = {
+            "inc", "incorporated", "corp", "corporation", "co", "company",
+            "llc", "ltd", "limited", "plc", "ag", "sa", "sarl", "gmbh",
+            "holdings", "group",
+        }
+        while tokens and tokens[-1] in legal_suffixes:
+            tokens.pop()
+        if tokens and tokens[0] == "the":
+            tokens = tokens[1:]
+        return " ".join(tokens).strip()
+
     for event in events:
         if event_type == "funding_round":
             # Group by company name
-            company = str(event.get("company", "")).strip().lower()
+            company = _canonical_company_for_dedupe(event.get("company", ""))
             if company:
                 grouped[company].append(event)
             else:
@@ -5013,10 +5962,10 @@ def _deduplicate_section_events(events: list[dict], event_type: str) -> list[dic
 
         elif event_type == "m_and_a_transaction":
             # Group by (acquiring company, target) tuple
-            company = str(event.get("company", "")).strip().lower()
-            target = str(event.get("target", "")).strip().lower()
+            company = _canonical_company_for_dedupe(event.get("company", ""))
+            target = _canonical_company_for_dedupe(event.get("target", ""))
             if not target:
-                target = str(event.get("counterparty", "")).strip().lower()
+                target = _canonical_company_for_dedupe(event.get("counterparty", ""))
 
             if company or target:
                 key = (company, target)
@@ -5060,6 +6009,10 @@ def _deduplicate_section_events(events: list[dict], event_type: str) -> list[dic
                     score += 1
                 if str(e.get("summary", "")).strip():
                     score += 1
+                # Prefer richer selected newsletter content when available.
+                selected_text, _ = _selected_article_text(e, article_format_config=article_format_config)
+                if selected_text:
+                    score += max(0, len(selected_text) // 120)
                 # Also consider text length
                 desc_len = len(str(e.get("company_description", "")).strip())
                 summary_len = len(str(e.get("summary", "")).strip())
@@ -5081,21 +6034,26 @@ def _select_weekly_section_events(
     *,
     event_type: str,
     limit: int,
+    article_format_config: dict[str, Any] | None = None,
 ) -> list[dict]:
     # Filter by event type
     filtered = [
         event
         for event in selected_events
-        if str(event.get("event_type", "")).strip() == event_type
+        if _weekly_effective_event_type(event) == event_type
     ]
 
     # Deduplicate events with same company
-    deduplicated = _deduplicate_section_events(filtered, event_type)
+    deduplicated = _deduplicate_section_events(
+        filtered,
+        event_type,
+        article_format_config=article_format_config,
+    )
 
-    # Sort by company category (A-Z), then by date (newest first)
+    # Sort by AI company category (A-Z), then by date (newest first)
     def sort_key(event: dict) -> tuple[str, int, str]:
         # Get category for primary sort
-        category = str(event.get("company_category", "")).strip().lower()
+        category = str(event.get("ai_company_category", "")).strip().lower()
 
         # Convert date to negative ordinal for descending sort (newest first)
         # while keeping category ascending (A-Z)
@@ -5112,7 +6070,222 @@ def _select_weekly_section_events(
         return (category, date_ordinal, event_id)
 
     deduplicated.sort(key=sort_key)  # No reverse - using negative date for descending
-    return deduplicated[:limit]
+
+    if event_type != "consumer_industry_news":
+        return deduplicated[:limit]
+
+    # Weekly rendering rule for News:
+    # Round-robin one item per source each pass until we reach the limit.
+    # Source order follows the existing sorted order of `deduplicated`.
+    source_order: list[str] = []
+    buckets: dict[str, list[dict]] = {}
+    for event in deduplicated:
+        source_name = str(event.get("source_name", "")).strip() or "(unknown source)"
+        if source_name not in buckets:
+            buckets[source_name] = []
+            source_order.append(source_name)
+        buckets[source_name].append(event)
+
+    positions: dict[str, int] = {name: 0 for name in source_order}
+    selected: list[dict] = []
+    while len(selected) < limit:
+        added_this_pass = False
+        for source_name in source_order:
+            bucket = buckets.get(source_name, [])
+            idx = int(positions.get(source_name, 0))
+            if idx >= len(bucket):
+                continue
+            selected.append(bucket[idx])
+            positions[source_name] = idx + 1
+            added_this_pass = True
+            if len(selected) >= limit:
+                break
+        if not added_this_pass:
+            break
+    return selected
+
+
+def _score_weekly_event_for_dedupe(
+    event: dict[str, Any],
+    *,
+    article_format_config: dict[str, Any] | None = None,
+) -> tuple[int, int, int, str]:
+    score = 0
+    if str(event.get("amount", "")).strip():
+        score += 3
+    if str(event.get("round", "")).strip():
+        score += 2
+    if str(event.get("valuation", "")).strip():
+        score += 2
+    if str(event.get("investors", "")).strip():
+        score += 2
+    if str(event.get("lead_investors", "")).strip():
+        score += 2
+    if str(event.get("company_description", "")).strip():
+        score += 1
+    if str(event.get("summary", "")).strip():
+        score += 1
+    if str(event.get("AIsummary", "")).strip():
+        score += 1
+
+    selected_text, _ = _selected_article_text(event, article_format_config=article_format_config)
+    content_len = len(selected_text.strip()) if selected_text else 0
+    score += content_len // 120
+    summary_len = len(str(event.get("raw_summary", "")).strip())
+    event_id = str(event.get("event_id", "")).strip()
+    return (score, content_len, summary_len, event_id)
+
+
+def _pick_richer_weekly_event(
+    events: list[dict[str, Any]],
+    *,
+    article_format_config: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    return max(
+        events,
+        key=lambda e: _score_weekly_event_for_dedupe(e, article_format_config=article_format_config),
+    )
+
+
+def _dedupe_weekly_cross_table_events(
+    events: list[dict[str, Any]],
+    *,
+    article_format_config: dict[str, Any] | None = None,
+) -> list[dict[str, Any]]:
+    from collections import defaultdict
+
+    def _canonical_company_for_dedupe(value: Any) -> str:
+        raw = str(value if value is not None else "").strip()
+        if not raw:
+            return ""
+        raw = re.sub(r"\[([^\]]+)\]\((https?://[^\)]+)\)", r"\1", raw)
+        raw = re.sub(r"<https?://[^|>]+\|([^>]+)>", r"\1", raw)
+        text = normalize_text(raw)
+        text = re.sub(r"[^a-z0-9\s]", " ", text)
+        text = re.sub(r"\s+", " ", text).strip()
+        if not text:
+            return ""
+        tokens = text.split()
+        legal_suffixes = {
+            "inc", "incorporated", "corp", "corporation", "co", "company",
+            "llc", "ltd", "limited", "plc", "ag", "sa", "sarl", "gmbh",
+            "holdings", "group",
+        }
+        while tokens and tokens[-1] in legal_suffixes:
+            tokens.pop()
+        if tokens and tokens[0] == "the":
+            tokens = tokens[1:]
+        return " ".join(tokens).strip()
+
+    # Pass 1: exact source_link dedupe across combined Events + News.
+    by_source_link: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    no_source_link: list[dict[str, Any]] = []
+    for event in events:
+        source_link_key = normalize_text(event.get("source_link", ""))
+        if source_link_key:
+            by_source_link[source_link_key].append(event)
+        else:
+            no_source_link.append(event)
+
+    stage_one: list[dict[str, Any]] = []
+    for grouped in by_source_link.values():
+        if len(grouped) == 1:
+            stage_one.append(grouped[0])
+        else:
+            stage_one.append(
+                _pick_richer_weekly_event(grouped, article_format_config=article_format_config)
+            )
+    stage_one.extend(no_source_link)
+
+    # Pass 2: same-story dedupe for Funding/M&A using base_fingerprint.
+    by_story_key: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    passthrough: list[dict[str, Any]] = []
+    for event in stage_one:
+        effective_type = _weekly_effective_event_type(event)
+        if effective_type not in {"funding_round", "m_and_a_transaction"}:
+            passthrough.append(event)
+            continue
+        company = _canonical_company_for_dedupe(event.get("company", ""))
+        if not company:
+            passthrough.append(event)
+            continue
+        if effective_type == "m_and_a_transaction":
+            target = _canonical_company_for_dedupe(
+                event.get("target", "") or event.get("counterparty", "")
+            )
+            amount = normalize_text(event.get("amount", ""))
+            story_key = f"{effective_type}|{company}|{target or amount}"
+        else:
+            amount = normalize_text(event.get("amount", ""))
+            round_key = normalize_text(event.get("round", ""))
+            # Amount+round guards against over-merging companies with similar names.
+            story_key = f"{effective_type}|{company}|{amount}|{round_key}"
+        by_story_key[story_key].append(event)
+
+    deduped: list[dict[str, Any]] = []
+    for grouped in by_story_key.values():
+        if len(grouped) == 1:
+            deduped.append(grouped[0])
+        else:
+            deduped.append(
+                _pick_richer_weekly_event(grouped, article_format_config=article_format_config)
+            )
+    deduped.extend(passthrough)
+    deduped.sort(
+        key=lambda e: (
+            str(e.get("event_date", "")).strip(),
+            str(e.get("event_id", "")).strip(),
+        ),
+        reverse=True,
+    )
+    return deduped
+
+
+def _prepare_weekly_events_for_render(
+    events: list[dict[str, Any]],
+    *,
+    article_format_config: dict[str, Any] | None = None,
+) -> list[dict[str, Any]]:
+    deduped = _dedupe_weekly_cross_table_events(
+        events,
+        article_format_config=article_format_config,
+    )
+    funding_events = _select_weekly_section_events(
+        deduped,
+        event_type="funding_round",
+        limit=AI_WEEKLY_FUNDING_LIMIT,
+        article_format_config=article_format_config,
+    )
+    mna_events = _select_weekly_section_events(
+        deduped,
+        event_type="m_and_a_transaction",
+        limit=AI_WEEKLY_MNA_LIMIT,
+        article_format_config=article_format_config,
+    )
+    news_events = _select_weekly_section_events(
+        deduped,
+        event_type="consumer_industry_news",
+        limit=AI_WEEKLY_NEWS_LIMIT,
+        article_format_config=article_format_config,
+    )
+
+    out: list[dict[str, Any]] = []
+    seen: set[str] = set()
+
+    def _event_identity(event: dict[str, Any]) -> str:
+        source_link = normalize_text(event.get("source_link", ""))
+        event_id = str(event.get("event_id", "")).strip()
+        event_type = _weekly_effective_event_type(event)
+        company = normalize_text(event.get("company", ""))
+        return "|".join((event_type, source_link, event_id, company))
+
+    for event in (funding_events + mna_events + news_events):
+        identity = _event_identity(event)
+        if identity in seen:
+            continue
+        seen.add(identity)
+        out.append(event)
+    return out
 
 
 def _extract_text_from_slack_content(slack_content: str) -> str:
@@ -5138,9 +6311,9 @@ def _clean_summary_for_newsletter(text: str) -> str:
     value = str(text or "").strip()
     # Strip leading routing code e.g. "FNDYA ", "NWSNB ", "ACQYA "
     value = re.sub(r"^[A-Z]{3,5}[YN][A-Z]?\s+", "", value)
-    # Convert Slack links <url|display> → Markdown [display](url)
+    # Convert Slack links <url|display> â†’ Markdown [display](url)
     value = re.sub(r"<(https?://[^|>]+)\|([^>]+)>", r"[\2](\1)", value)
-    # Convert bare Slack URLs <url> → Markdown [url](url)
+    # Convert bare Slack URLs <url> â†’ Markdown [url](url)
     value = re.sub(r"<(https?://[^>]+)>", r"[\1](\1)", value)
     return value.strip()
 
@@ -5275,6 +6448,365 @@ def _categorize_consumer_news_by_keywords(
     return categories
 
 
+def _normalize_ai_news_section(value: Any) -> str:
+    norm = normalized_key(str(value or ""))
+    if norm in {
+        "distribution",
+        "debutsdistribution",
+        "debutsdistributionexpansion",
+        "distributionexpansion",
+    }:
+        return "distribution"
+    if norm in {
+        "productlaunch",
+        "productlaunches",
+        "launch",
+        "launches",
+    }:
+        return "product_launch"
+    if norm in {
+        "retailtech",
+        "retailcommercetech",
+        "retailcommercetechsupplychain",
+        "commercetech",
+        "supplychain",
+    }:
+        return "retail_tech"
+    if norm in {
+        "other",
+        "othernotablenews",
+    }:
+        return "other"
+    return ""
+
+
+def _categorize_consumer_news_by_assigned_section(events: list[dict[str, Any]]) -> tuple[dict[str, list[dict]], dict[str, Any]]:
+    """Categorize consumer news from Airtable field AINewsSection."""
+    categories: dict[str, list[dict]] = {
+        "distribution": [],
+        "product_launch": [],
+        "retail_tech": [],
+        "other": [],
+    }
+    missing_field_ids: list[str] = []
+    invalid_field_values: list[dict[str, str]] = []
+    for event in events:
+        raw_value = ""
+        for key in ("AINewsSection", "AI News Section", "ai_news_section"):
+            candidate = str(event.get(key, "")).strip()
+            if candidate:
+                raw_value = candidate
+                break
+        section = _normalize_ai_news_section(raw_value)
+        if not section:
+            section = "other"
+            event_id = str(event.get("event_id", "")).strip()
+            if raw_value:
+                invalid_field_values.append({"event_id": event_id, "value": raw_value})
+            else:
+                missing_field_ids.append(event_id)
+        categories[section].append(event)
+    stats = {
+        "counts": {k: len(v) for k, v in categories.items()},
+        "missing_ainewssection_count": len(missing_field_ids),
+        "invalid_ainewssection_count": len(invalid_field_values),
+        "missing_ainewssection_event_ids_sample": [x for x in missing_field_ids[:20] if x],
+        "invalid_ainewssection_sample": invalid_field_values[:20],
+    }
+    return categories, stats
+
+
+def _normalize_consumer_news_sectioning_text(content: str) -> str:
+    text = str(content or "").replace("\r", "\n")
+    if not text:
+        return ""
+    # Remove trailing source citation text so sectioning focuses on article meaning.
+    text = re.sub(r"\n+\s*source:\s*.*$", "", text, flags=re.IGNORECASE | re.DOTALL)
+    text = re.sub(r"\s+source:\s*.*$", "", text, flags=re.IGNORECASE)
+    # Normalize common link formats to plain display text.
+    text = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", text)
+    text = re.sub(r"<https?://[^>|]+\|([^>]+)>", r"\1", text)
+    text = re.sub(r"<https?://[^>]+>", "", text)
+    text = re.sub(r"<a\s+[^>]*>([^<]+)</a>", r"\1", text, flags=re.IGNORECASE)
+    text = re.sub(r"\s+", " ", text).strip().lower()
+    return text
+
+
+def _heuristic_consumer_news_section(content: str) -> str | None:
+    text = _normalize_consumer_news_sectioning_text(content)
+    if not text:
+        return None
+
+    retail_phrases = (
+        "retail tech",
+        "commerce tech",
+        "supply chain",
+        "logistics",
+        "fulfillment",
+        "warehouse",
+        "inventory",
+        "checkout",
+        "point-of-sale",
+        "point of sale",
+        "pos system",
+        "merchant platform",
+        "retail media",
+        "omnichannel",
+        "ecommerce platform",
+        "e-commerce platform",
+        "shopping agent",
+        "last-mile",
+        "last mile",
+    )
+    product_phrases = (
+        "new product",
+        "new products",
+        "new line",
+        "new lineup",
+        "new collection",
+        "new sku",
+        "product launch",
+        "launches",
+        "launched",
+        "unveiled",
+        "introduces",
+        "introduced",
+        "released",
+        "release",
+        "debuts",
+        "debuted",
+        "debut ",
+    )
+    distribution_phrases = (
+        "distribution",
+        "expansion",
+        "expands",
+        "expanded",
+        "expanding",
+        "rollout",
+        "rolls out",
+        "available at",
+        "now available",
+        "nationwide",
+        "store opening",
+        "store openings",
+        "new locations",
+        "geographic expansion",
+        "market entry",
+        "entered the",
+        "enters the",
+        "partnered with",
+        "partnership with",
+    )
+
+    retail_score = sum(1 for phrase in retail_phrases if phrase in text)
+    product_score = sum(1 for phrase in product_phrases if phrase in text)
+    distribution_score = sum(1 for phrase in distribution_phrases if phrase in text)
+
+    if retail_score >= 1 and retail_score >= product_score and retail_score >= distribution_score:
+        return "retail_tech"
+    if product_score >= 2 and distribution_score == 0:
+        return "product_launch"
+    if distribution_score >= 2:
+        return "distribution"
+    if product_score >= 1 and any(token in text for token in ("new ", "launch", "introduc", "unveil", "release", "debut")):
+        return "product_launch"
+    if distribution_score >= 1 and any(
+        token in text for token in ("distribution", "expansion", "available at", "nationwide", "store", "rollout", "location")
+    ):
+        return "distribution"
+    return None
+
+
+def _categorize_consumer_news_by_ai(
+    events: list[dict[str, Any]],
+    *,
+    logic: dict[str, Any],
+    run_store: RunStore,
+    run_id: str,
+    article_format_config: dict[str, Any] | None = None,
+) -> dict[str, list[dict]]:
+    """Use AI to place consumer news into newsletter sections."""
+    categories: dict[str, list[dict]] = {
+        "distribution": [],
+        "product_launch": [],
+        "retail_tech": [],
+        "other": [],
+    }
+    if not events:
+        return categories
+
+    if article_format_config is None:
+        article_format_config = {
+            "active_field": "SlackContent",
+            "active_format_name": "SlackContent (default)",
+            "all_formats": [],
+        }
+
+    payload_events: list[dict[str, str]] = []
+    event_lookup: dict[str, dict[str, Any]] = {}
+    event_content_lookup: dict[str, str] = {}
+    for event in events:
+        event_id = str(event.get("event_id", "")).strip()
+        if not event_id:
+            continue
+        content, _ = _selected_article_text(event, article_format_config=article_format_config)
+        if not content:
+            continue
+        payload_events.append(
+            {
+                "event_id": event_id,
+                "source_name": str(event.get("source_name", "")).strip(),
+                "source_link": str(event.get("source_link", "")).strip(),
+                "content": content[:2500],
+            }
+        )
+        event_lookup[event_id] = event
+        event_content_lookup[event_id] = content
+
+    if not payload_events:
+        return categories
+
+    user_payload = {
+        "task": "Place each consumer news event into exactly one section.",
+        "sections": {
+            "distribution": "Debuts, distribution expansion, new store openings, market rollouts, geographic expansion.",
+            "product_launch": "New product releases, new SKUs, new collections, product introductions.",
+            "retail_tech": "Retail technology, commerce tech, supply chain, logistics, ecommerce enablement.",
+            "other": "Everything else that is still consumer-relevant news.",
+        },
+        "rules": [
+            "Assign every event_id exactly one section.",
+            "Use the content text as the primary signal.",
+            "Use 'other' only when the event clearly does not fit distribution, product_launch, or retail_tech.",
+            "Do not drop or invent events.",
+            "Do not include commentary outside JSON.",
+        ],
+        "events": payload_events,
+    }
+    response_schema = {
+        "type": "object",
+        "additionalProperties": False,
+        "properties": {
+            "placements": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "properties": {
+                        "event_id": {"type": "string"},
+                        "section": {
+                            "type": "string",
+                            "enum": ["distribution", "product_launch", "retail_tech", "other"],
+                        },
+                    },
+                    "required": ["event_id", "section"],
+                },
+            }
+        },
+        "required": ["placements"],
+    }
+    payload = {
+        "model": logic["ai_model_name"],
+        "temperature": 0.0,
+        "messages": [
+            {
+                "role": "system",
+                "content": (
+                    "You are a senior consumer VC newsletter editor. "
+                    "Classify each event into exactly one requested section with strict JSON output."
+                ),
+            },
+            {"role": "user", "content": to_json(user_payload)},
+        ],
+        "response_format": {
+            "type": "json_schema",
+            "json_schema": {
+                "name": "consumer_vc_news_sectioning",
+                "strict": True,
+                "schema": response_schema,
+            },
+        },
+    }
+    data = _openai_chat_completion(
+        api_key=str(logic["openai_api_key"]).strip(),
+        payload=payload,
+        run_store=run_store,
+        run_id=run_id,
+        request_stage="ai_weekly_news_sections_request",
+        response_stage="ai_weekly_news_sections_raw_response",
+        source_id="",
+        record_key="weekly_draft",
+    )
+    content = _openai_extract_content(data)
+    run_store.log(run_id, "info", "ai_weekly_news_sections_content", content, record_key="weekly_draft")
+    try:
+        parsed = json.loads(content)
+    except Exception as exc:
+        raise AIValidationError(f"weekly news sectioning is not valid JSON: {exc}") from exc
+    if not isinstance(parsed, dict):
+        raise AIValidationError("weekly news sectioning payload is not an object")
+    placements = parsed.get("placements", [])
+    if not isinstance(placements, list):
+        raise AIValidationError("weekly news sectioning placements is not a list")
+
+    expected_ids = {str(item.get("event_id", "")).strip() for item in payload_events if str(item.get("event_id", "")).strip()}
+    assigned: dict[str, str] = {}
+    for item in placements:
+        if not isinstance(item, dict):
+            raise AIValidationError("weekly news sectioning placements contain non-object entries")
+        event_id = str(item.get("event_id", "")).strip()
+        section = str(item.get("section", "")).strip()
+        if not event_id:
+            raise AIValidationError("weekly news sectioning placement missing event_id")
+        if section not in categories:
+            raise AIValidationError(f"weekly news sectioning has invalid section '{section}' for event_id={event_id}")
+        if event_id not in expected_ids:
+            raise AIValidationError(f"weekly news sectioning returned unknown event_id={event_id}")
+        if event_id in assigned:
+            raise AIValidationError(f"weekly news sectioning returned duplicate event_id={event_id}")
+        assigned[event_id] = section
+
+    missing = sorted(expected_ids - set(assigned.keys()))
+    if missing:
+        raise AIValidationError(f"weekly news sectioning missing event_ids: {', '.join(missing[:10])}")
+
+    for payload_event in payload_events:
+        event_id = str(payload_event.get("event_id", "")).strip()
+        if not event_id:
+            continue
+        section = assigned.get(event_id, "")
+        event_obj = event_lookup.get(event_id)
+        if not event_obj or section not in categories:
+            continue
+        categories[section].append(event_obj)
+
+    # Post-AI safety pass: rebucket obvious non-'other' events that were sent to 'other'.
+    rebucketed: list[dict[str, str]] = []
+    other_remaining: list[dict[str, Any]] = []
+    for event_obj in categories["other"]:
+        event_id = str(event_obj.get("event_id", "")).strip()
+        suggested = _heuristic_consumer_news_section(event_content_lookup.get(event_id, ""))
+        if suggested and suggested in categories and suggested != "other":
+            categories[suggested].append(event_obj)
+            rebucketed.append({"event_id": event_id, "from": "other", "to": suggested})
+            continue
+        other_remaining.append(event_obj)
+    categories["other"] = other_remaining
+    if rebucketed:
+        run_store.log(
+            run_id,
+            "info",
+            "ai_weekly_news_sections_rebucketed",
+            to_json(rebucketed),
+            record_key="weekly_draft",
+        )
+
+    counts = {k: len(v) for k, v in categories.items()}
+    run_store.log(run_id, "info", "ai_weekly_news_sections", to_json(counts), record_key="weekly_draft")
+    return categories
+
+
 def _render_weekly_event_bullets(
     section_key: str,
     selected_events: list[dict],
@@ -5283,58 +6815,58 @@ def _render_weekly_event_bullets(
     # Category emoji mapping
     CATEGORY_EMOJIS = {
         # Broad categories (from AI_ALLOWED_CATEGORIES)
-        "consumer brands": "🏷️",
-        "consumer technology": "💻",
-        "commerce and retail tech": "🛒",
+        "consumer brands": "\U0001F3F7\ufe0f",
+        "consumer technology": "\U0001F4BB",
+        "commerce and retail tech": "\U0001F6D2",
         # Detailed categories
-        "e-commerce": "🛒",
-        "ecommerce": "🛒",
-        "commerce": "🛒",
-        "fintech": "💳",
-        "financial technology": "💳",
-        "finance": "💳",
-        "food & beverage": "🍕",
-        "food and beverage": "🍕",
-        "food": "🍕",
-        "beverage": "🍺",
-        "health & wellness": "🏥",
-        "health and wellness": "🏥",
-        "healthcare": "🏥",
-        "wellness": "💊",
-        "beauty & personal care": "💄",
-        "beauty": "💄",
-        "personal care": "💄",
-        "cosmetics": "💄",
-        "apparel & fashion": "👕",
-        "apparel": "👕",
-        "fashion": "👕",
-        "clothing": "👕",
-        "home & living": "🏠",
-        "home": "🏠",
-        "furniture": "🛋️",
-        "technology": "💻",
-        "saas": "☁️",
-        "software": "💻",
-        "pet care": "🐾",
-        "pets": "🐾",
-        "sports & fitness": "⚽",
-        "fitness": "💪",
-        "sports": "⚽",
-        "media & entertainment": "🎬",
-        "entertainment": "🎮",
-        "media": "📺",
-        "travel": "✈️",
-        "hospitality": "🏨",
-        "education": "📚",
-        "edtech": "🎓",
-        "automotive": "🚗",
-        "mobility": "🚙",
-        "real estate": "🏘️",
-        "proptech": "🏗️",
-        "marketplace": "🏪",
-        "subscription": "📦",
-        "delivery": "🚚",
-        "logistics": "📦",
+        "e-commerce": "\U0001F6D2",
+        "ecommerce": "\U0001F6D2",
+        "commerce": "\U0001F6D2",
+        "fintech": "\U0001F4B3",
+        "financial technology": "\U0001F4B3",
+        "finance": "\U0001F4B3",
+        "food & beverage": "\U0001F355",
+        "food and beverage": "\U0001F355",
+        "food": "\U0001F355",
+        "beverage": "\U0001F37A",
+        "health & wellness": "\U0001F3E5",
+        "health and wellness": "\U0001F3E5",
+        "healthcare": "\U0001F3E5",
+        "wellness": "\U0001F48A",
+        "beauty & personal care": "\U0001F484",
+        "beauty": "\U0001F484",
+        "personal care": "\U0001F484",
+        "cosmetics": "\U0001F484",
+        "apparel & fashion": "\U0001F455",
+        "apparel": "\U0001F455",
+        "fashion": "\U0001F455",
+        "clothing": "\U0001F455",
+        "home & living": "\U0001F3E0",
+        "home": "\U0001F3E0",
+        "furniture": "\U0001F6CB\ufe0f",
+        "technology": "\U0001F4BB",
+        "saas": "\u2601\ufe0f",
+        "software": "\U0001F4BB",
+        "pet care": "\U0001F43E",
+        "pets": "\U0001F43E",
+        "sports & fitness": "\u26BD",
+        "fitness": "\U0001F4AA",
+        "sports": "\u26BD",
+        "media & entertainment": "\U0001F3AC",
+        "entertainment": "\U0001F3AE",
+        "media": "\U0001F4FA",
+        "travel": "\u2708\ufe0f",
+        "hospitality": "\U0001F3E8",
+        "education": "\U0001F4DA",
+        "edtech": "\U0001F393",
+        "automotive": "\U0001F697",
+        "mobility": "\U0001F699",
+        "real estate": "\U0001F3D8\ufe0f",
+        "proptech": "\U0001F3D7\ufe0f",
+        "marketplace": "\U0001F3EA",
+        "subscription": "\U0001F4E6",
+        "delivery": "\U0001F69A",
+        "logistics": "\U0001F4E6",
     }
 
     event_type = {
@@ -5343,12 +6875,17 @@ def _render_weekly_event_bullets(
         "consumer_industry_updates": "consumer_industry_news",
     }[section_key]
     section_limits = {
-        "notable_funding": 100,
-        "notable_m_and_a": 100,
-        "consumer_industry_updates": 25,
+        "notable_funding": AI_WEEKLY_FUNDING_LIMIT,
+        "notable_m_and_a": AI_WEEKLY_MNA_LIMIT,
+        "consumer_industry_updates": AI_WEEKLY_NEWS_LIMIT,
     }
     limit = section_limits[section_key]
-    section_events = _select_weekly_section_events(selected_events, event_type=event_type, limit=limit)
+    section_events = _select_weekly_section_events(
+        selected_events,
+        event_type=event_type,
+        limit=limit,
+        article_format_config=article_format_config,
+    )
 
     if not section_events:
         fallback = {
@@ -5386,6 +6923,7 @@ def _render_weekly_markdown_from_sections(
     week_start: Any = None,
     week_end: Any = None,
     article_format_config: dict[str, Any] | None = None,
+    consumer_news_categorized: dict[str, list[dict]] | None = None,
 ) -> str:
     header_lines: list[str] = []
     if week_start and week_end:
@@ -5395,28 +6933,28 @@ def _render_weekly_markdown_from_sections(
             end_str = f"{week_end.strftime('%B')} {week_end.day}, {week_end.year}"
         else:
             end_str = f"{week_end.day}, {week_end.year}"
-        header_lines = [f"# Consumer VC Weekly — {start_str}–{end_str}", ""]
+        header_lines = [f"# Consumer VC Weekly \u2014 {start_str}\u2013{end_str}", ""]
     lines = [
         *header_lines,
-        "## 👋 Intro 👋",
+        "## \U0001F44B Intro \U0001F44B",
         sections["intro"],
         "",
-        "## 📊 Weekly Snapshot 📊",
+        "## \U0001F4CA Weekly Snapshot \U0001F4CA",
         sections["weekly_snapshot"],
         "",
-        "## 💡 Key Themes 💡",
+        "## \U0001F4A1 Key Themes \U0001F4A1",
         sections["key_themes"],
         "",
         "---",
         "",
-        "## 💰 Notable Funding 💰",
+        "## \U0001F4B0 Notable Funding \U0001F4B0",
         *_render_weekly_event_bullets(
             "notable_funding",
             selected_events,
             article_format_config=article_format_config,
         ),
         "",
-        "## 🤝 Notable M&A 🤝",
+        "## \U0001F91D Notable M&A \U0001F91D",
         *_render_weekly_event_bullets(
             "notable_m_and_a",
             selected_events,
@@ -5425,7 +6963,7 @@ def _render_weekly_markdown_from_sections(
         "",
     ]
 
-    # Get consumer news events and categorize by keywords
+    # Get consumer news events and use provided categorization
     event_type_map = {
         "notable_funding": "funding_round",
         "notable_m_and_a": "m_and_a_transaction",
@@ -5434,51 +6972,91 @@ def _render_weekly_markdown_from_sections(
     consumer_news_events = _select_weekly_section_events(
         selected_events,
         event_type=event_type_map["consumer_industry_updates"],
-        limit=25
+        limit=AI_WEEKLY_NEWS_LIMIT,
+        article_format_config=article_format_config,
     )
 
     if consumer_news_events:
-        categorized = _categorize_consumer_news_by_keywords(
-            consumer_news_events,
-            article_format_config=article_format_config,
-        )
+        if consumer_news_categorized is None:
+            categorized = _categorize_consumer_news_by_keywords(
+                consumer_news_events,
+                article_format_config=article_format_config,
+            )
+        else:
+            categorized = consumer_news_categorized
 
         # Distribution & Expansion section
         if categorized["distribution"]:
-            lines.extend([
-                "## 🚀 Distribution & Expansion 🚀",
-                *[_render_substack_event_line(e, article_format_config=article_format_config) for e in categorized["distribution"]],
-                "",
-            ])
+            distribution_lines = [
+                line
+                for line in (
+                    _render_substack_event_line(e, article_format_config=article_format_config)
+                    for e in categorized["distribution"]
+                )
+                if line
+            ]
+            if distribution_lines:
+                lines.extend([
+                    "## \U0001F680 Debuts, Distribution & Expansion \U0001F680",
+                    *distribution_lines,
+                    "",
+                ])
 
         # Product Launches section
         if categorized["product_launch"]:
-            lines.extend([
-                "## 🚀 Product Launches",
-                *[_render_substack_event_line(e, article_format_config=article_format_config) for e in categorized["product_launch"]],
-                "",
-            ])
+            product_launch_lines = [
+                line
+                for line in (
+                    _render_substack_event_line(e, article_format_config=article_format_config)
+                    for e in categorized["product_launch"]
+                )
+                if line
+            ]
+            if product_launch_lines:
+                lines.extend([
+                    "## \U0001F680 Product Launches",
+                    *product_launch_lines,
+                    "",
+                ])
 
         # Retail/Commerce Tech section
         if categorized["retail_tech"]:
-            lines.extend([
-                "## 🛍️ Retail, Commerce Tech & Supply Chain",
-                *[_render_substack_event_line(e, article_format_config=article_format_config) for e in categorized["retail_tech"]],
-                "",
-            ])
+            retail_tech_lines = [
+                line
+                for line in (
+                    _render_substack_event_line(e, article_format_config=article_format_config)
+                    for e in categorized["retail_tech"]
+                )
+                if line
+            ]
+            if retail_tech_lines:
+                lines.extend([
+                    "## \U0001F6CD\ufe0f Retail, Commerce Tech & Supply Chain",
+                    *retail_tech_lines,
+                    "",
+                ])
 
         # Other Notable News section
         if categorized["other"]:
-            lines.extend([
-                "## 🔻 Other Notable News 🔻",
-                *[_render_substack_event_line(e, article_format_config=article_format_config) for e in categorized["other"]],
-                "",
-            ])
+            other_lines = [
+                line
+                for line in (
+                    _render_substack_event_line(e, article_format_config=article_format_config)
+                    for e in categorized["other"]
+                )
+                if line
+            ]
+            if other_lines:
+                lines.extend([
+                    "## \U0001F53B Other Notable News \U0001F53B",
+                    *other_lines,
+                    "",
+                ])
 
     lines.extend([
         "---",
         "",
-        "## 🙏 Closing 🙏",
+        "## \U0001F64F Closing \U0001F64F",
         sections["closing"],
     ])
     return "\n".join(lines).strip() + "\n"
@@ -5500,6 +7078,7 @@ def _generate_newsletter_audit_report(
     selected_events: list[dict],
     start_date: datetime.date,
     end_date: datetime.date,
+    consumer_news_categorized: dict[str, list[dict]] | None = None,
 ) -> str:
     """Generate HTML audit report showing what was pulled vs what made it into newsletter."""
 
@@ -5507,27 +7086,43 @@ def _generate_newsletter_audit_report(
     event_sections = {}
 
     # Track funding events
-    funding_events = _select_weekly_section_events(selected_events, event_type="funding_round", limit=100)
+    funding_events = _select_weekly_section_events(
+        selected_events,
+        event_type="funding_round",
+        limit=AI_WEEKLY_FUNDING_LIMIT,
+    )
     for event in funding_events:
-        event_sections[event.get("event_id")] = "💰 Notable Funding"
+        event_sections[event.get("event_id")] = "\U0001F4B0 Notable Funding"
 
     # Track M&A events
-    ma_events = _select_weekly_section_events(selected_events, event_type="m_and_a_transaction", limit=100)
+    ma_events = _select_weekly_section_events(
+        selected_events,
+        event_type="m_and_a_transaction",
+        limit=AI_WEEKLY_MNA_LIMIT,
+    )
     for event in ma_events:
-        event_sections[event.get("event_id")] = "🤝 Notable M&A"
+        event_sections[event.get("event_id")] = "\U0001F91D Notable M&A"
 
     # Track consumer news events (split by keywords)
-    consumer_news = _select_weekly_section_events(selected_events, event_type="consumer_industry_news", limit=25)
+    consumer_news = _select_weekly_section_events(
+        selected_events,
+        event_type="consumer_industry_news",
+        limit=AI_WEEKLY_NEWS_LIMIT,
+    )
     if consumer_news:
-        categorized = _categorize_consumer_news_by_keywords(consumer_news)
+        categorized = (
+            consumer_news_categorized
+            if consumer_news_categorized is not None
+            else _categorize_consumer_news_by_keywords(consumer_news)
+        )
         for event in categorized.get("distribution", []):
-            event_sections[event.get("event_id")] = "🚀 Distribution & Expansion"
+            event_sections[event.get("event_id")] = "\U0001F680 Debuts, Distribution & Expansion"
         for event in categorized.get("product_launch", []):
-            event_sections[event.get("event_id")] = "🚀 Product Launches"
+            event_sections[event.get("event_id")] = "\U0001F680 Product Launches"
         for event in categorized.get("retail_tech", []):
-            event_sections[event.get("event_id")] = "🛍️ Retail, Commerce Tech & Supply Chain"
+            event_sections[event.get("event_id")] = "\U0001F6CD\ufe0f Retail, Commerce Tech & Supply Chain"
         for event in categorized.get("other", []):
-            event_sections[event.get("event_id")] = "🔻 Other Notable News"
+            event_sections[event.get("event_id")] = "\U0001F53B Other Notable News"
 
     # Build HTML table rows
     rows = []
@@ -5538,7 +7133,7 @@ def _generate_newsletter_audit_report(
         event_id = event.get("event_id", "")
         event_id_display = str(event_id).strip() or "N/A"
         company = str(event.get("company", "")).strip() or "N/A"
-        event_type = str(event.get("event_type", "")).strip() or "unknown"
+        event_type = _weekly_effective_event_type(event) or "unknown"
         event_date = str(event.get("event_date", "")).strip() or "N/A"
         source_url = str(event.get("source_link", "")).strip()
         _, source_article_file = _read_article_cache_text_by_url(source_url)
@@ -5550,11 +7145,11 @@ def _generate_newsletter_audit_report(
 
         if event_id in event_sections:
             section = event_sections[event_id]
-            status = f'<span style="color: #28a745; font-weight: bold;">✓ Included</span>'
+            status = f'<span style="color: #28a745; font-weight: bold;">\u2713 Included</span>'
             status_detail = section
             included_count += 1
         else:
-            status = f'<span style="color: #dc3545; font-weight: bold;">✗ Excluded</span>'
+            status = f'<span style="color: #dc3545; font-weight: bold;">\u2717 Excluded</span>'
             # Determine why excluded
             if event_type not in ["funding_round", "m_and_a_transaction", "consumer_industry_news"]:
                 status_detail = f"Wrong event type: {event_type}"
@@ -5654,7 +7249,7 @@ def _generate_newsletter_audit_report(
 <body>
     <div class="header">
         <h1>Newsletter Audit Report</h1>
-        <p><strong>Date Range:</strong> {start_date.strftime('%B %d, %Y')} – {end_date.strftime('%B %d, %Y')}</p>
+        <p><strong>Date Range:</strong> {start_date.strftime('%B %d, %Y')} \u2013 {end_date.strftime('%B %d, %Y')}</p>
         <div class="summary">
             <div class="stat">
                 <div class="stat-label">Total Events Pulled</div>
@@ -6017,20 +7612,44 @@ def build_weekly_substack_draft(
         start_override=start_override,
         end_override=end_override,
     )
-    selected, news_total = _cap_weekly_news_events(selected, AI_WEEKLY_NEWS_LIMIT)
-    news_kept = sum(
+    selected_news_before = sum(
         1
         for event in selected
-        if str(event.get("event_type", "")).strip() == "consumer_industry_news"
+        if _weekly_effective_event_type(event) == "consumer_industry_news"
     )
-    if news_total > news_kept:
+    selected = _prepare_weekly_events_for_render(
+        selected,
+        article_format_config=article_format_config,
+    )
+    selected_news_after = sum(
+        1
+        for event in selected
+        if _weekly_effective_event_type(event) == "consumer_industry_news"
+    )
+    if selected_news_before > selected_news_after:
         run_store.log(
             run_id,
             "info",
             "ai_weekly_news_cap",
-            f"consumer_industry_news capped from {news_total} to {news_kept}",
+            f"consumer_industry_news capped from {selected_news_before} to {selected_news_after}",
             record_key="weekly_draft",
         )
+    consumer_news_for_sections = _select_weekly_section_events(
+        selected,
+        event_type="consumer_industry_news",
+        limit=AI_WEEKLY_NEWS_LIMIT,
+        article_format_config=article_format_config,
+    )
+    consumer_news_categorized, section_stats = _categorize_consumer_news_by_assigned_section(
+        consumer_news_for_sections
+    )
+    run_store.log(
+        run_id,
+        "info",
+        "weekly_news_sections_from_ainewssection",
+        to_json(section_stats),
+        record_key="weekly_draft",
+    )
     article_text, article_text_used, article_text_missing = _build_weekly_ai_article_text(
         selected,
         article_format_config=article_format_config,
@@ -6083,10 +7702,10 @@ def build_weekly_substack_draft(
             "Do not generate the Notable Funding, Notable M&A, or Consumer Industry Updates sections; those are rendered by the application.",
             "Only provide intro, weekly_snapshot, key_themes, and closing.",
             "Use article_text and the events list (including each event's summary field) as primary source material.",
-            "Write in Mike Gelb's personal voice: casual, warm, and direct — like a note from a fellow investor, not a press release.",
+            "Write in Mike Gelb's personal voice: casual, warm, and direct \u2014 like a note from a fellow investor, not a press release.",
             "The intro must open with 'Hey friends,' and feel like a personal letter to the reader community.",
             "Reference specific companies, deal sizes, and investors by name drawn from the data; do not make up figures.",
-            "Keep each section to 2-4 punchy sentences. No bullet points in AI sections — flowing prose only.",
+            "Keep each section to 2-4 punchy sentences. No bullet points in AI sections \u2014 flowing prose only.",
             "Avoid hollow filler phrases like 'signaling robust growth', 'in today's dynamic landscape', or 'continued momentum'.",
             "The closing section must feel warm and end with a genuine call-to-action to subscribe, share, or engage.",
         ],
@@ -6145,6 +7764,7 @@ def build_weekly_substack_draft(
         week_start=start,
         week_end=end,
         article_format_config=article_format_config,
+        consumer_news_categorized=consumer_news_categorized,
     )
     try:
         validated = _validate_weekly_markdown(markdown_text, selected_events=selected)
@@ -6153,6 +7773,7 @@ def build_weekly_substack_draft(
             "start_date": start,
             "end_date": end,
             "selected_events": selected,
+            "consumer_news_categorized": consumer_news_categorized,
         }
         return (validated, audit_data)
     except AIValidationError as exc:
@@ -6198,6 +7819,8 @@ def build_weekly_substack_draft(
             selected_events=selected,
             week_start=start,
             week_end=end,
+            article_format_config=article_format_config,
+            consumer_news_categorized=consumer_news_categorized,
         )
         validated_retry = _validate_weekly_markdown(retry_markdown, selected_events=selected)
         run_store.log(run_id, "info", "ai_weekly_validated", "weekly draft validated after retry", record_key="weekly_draft")
@@ -6205,6 +7828,7 @@ def build_weekly_substack_draft(
             "start_date": start,
             "end_date": end,
             "selected_events": selected,
+            "consumer_news_categorized": consumer_news_categorized,
         }
         return (validated_retry, audit_data)
 
@@ -6321,118 +7945,14 @@ def _run_post_content_backfill_scripts(
     run_id: str,
     event_ids_by_table: dict[str, list[str]],
 ) -> list[dict[str, Any]]:
-    script_dir = project_root / "Tools" / "AirtableScripts"
-    results: list[dict[str, Any]] = []
-
-    def _run_step(*, script_name: str, table_key: str, event_id: str, args: list[str]) -> None:
-        script_path = script_dir / script_name
-        if not script_path.exists() or not script_path.is_file():
-            raise RuntimeError(f"post-content script not found: {script_path}")
-        cmd = [sys.executable, str(script_path), *args, "--config", str(config_path)]
-        completed = subprocess.run(
-            cmd,
-            cwd=str(project_root),
-            capture_output=True,
-            text=True,
-        )
-        stdout_text = str(completed.stdout or "").strip()
-        stderr_text = str(completed.stderr or "").strip()
-        if stdout_text:
-            run_store.log(
-                run_id,
-                "info",
-                "post_content_backfill",
-                f"{script_name} table={table_key} event_id={event_id} stdout: {stdout_text}",
-                record_key=event_id,
-            )
-        if stderr_text:
-            run_store.log(
-                run_id,
-                "warn",
-                "post_content_backfill",
-                f"{script_name} table={table_key} event_id={event_id} stderr: {stderr_text}",
-                record_key=event_id,
-            )
-        if completed.returncode != 0:
-            raise RuntimeError(
-                f"post-content script failed ({script_name}) table={table_key} event_id={event_id} "
-                f"rc={completed.returncode}: {stderr_text or stdout_text}"
-            )
-        results.append(
-            {
-                "script": script_name,
-                "table": table_key,
-                "event_id": event_id,
-                "returncode": int(completed.returncode),
-                "stdout": stdout_text,
-                "stderr": stderr_text,
-            }
-        )
-
-    for table_key in ("events", "news"):
-        event_ids = list(event_ids_by_table.get(table_key, []))
-        if not event_ids:
-            continue
-        for event_id in event_ids:
-            # Step 1: build clean Slack field for this record.
-            _run_step(
-                script_name="clean_slackcontent_to_slackclean.py",
-                table_key=table_key,
-                event_id=event_id,
-                args=[
-                    "--table",
-                    table_key,
-                    "--event-id-start",
-                    event_id,
-                    "--event-id-end",
-                    event_id,
-                    "--write",
-                ],
-            )
-
-            # Step 2: generate the three primary CVC fields for this record.
-            for script_name in (
-                "cvc_format_slackcontent.py",
-                "cvc_with_company_desc.py",
-                "cvc_comp_desc_announce_editorial.py",
-            ):
-                _run_step(
-                    script_name=script_name,
-                    table_key=table_key,
-                    event_id=event_id,
-                    args=[
-                        "--table",
-                        table_key,
-                        "--event-id-start",
-                        event_id,
-                        "--event-id-end",
-                        event_id,
-                        "--write",
-                    ],
-                )
-
-            # Step 3: company website link formatting for each generated field.
-            for field_name in ("CVCFormatted", "CVCWithCompanyDesc", "CVCCompDescAnnounceEditorial"):
-                _run_step(
-                    script_name="ai_link_companies_from_field.py",
-                    table_key=table_key,
-                    event_id=event_id,
-                    args=[
-                        "--table",
-                        table_key,
-                        "--input-field",
-                        field_name,
-                        "--output-field",
-                        field_name,
-                        "--event-id-start",
-                        event_id,
-                        "--event-id-end",
-                        event_id,
-                        "--overwrite-existing",
-                        "--write",
-                    ],
-                )
-    return results
+    run_store.log(
+        run_id,
+        "info",
+        "post_content_backfill",
+        "post-content scripts are disabled; skipping extra script execution",
+        record_key=run_id,
+    )
+    return []
 
 
 def run_daily(
@@ -6466,7 +7986,8 @@ def run_daily(
 
     db_path = state_dir / "consumer_vc_v1.db"
     run_store = RunStore(db_path=db_path, activity_log_path=activity_log_path)
-    run_id = run_store.start_run(mode=execution_mode)
+    _run_id_prefix = str(runtime.get("run_id_prefix", "consumer_vc_v1")).strip() or "consumer_vc_v1"
+    run_id = run_store.start_run(mode=execution_mode, prefix=_run_id_prefix)
     metrics = RunMetrics()
     save_checkpoint(
         checkpoint_root,
@@ -6526,6 +8047,7 @@ def run_daily(
                 f"updated_prompts_text={substack_prompt_sync['updated_prompts_text']}"
             ),
         )
+    _weekly_script = substack_prompt_sync.get("script", "") if substack_prompt_sync else ""
     prompts = airtable.load_prompts()
     run_store.log(run_id, "info", "load_prompts", f"prompts loaded count={len(prompts)}")
     save_checkpoint(checkpoint_root, run_id, "load_prompts", {"prompts": prompts})
@@ -6562,6 +8084,7 @@ def run_daily(
     required_runtime_control_keys = [
         "email_notifications_enabled",
         "slack_notifications_enabled",
+        "slack_include_totals",
         "daily_summary_enabled",
         "weekly_summary_enabled",
         "ingestion_enabled",
@@ -6576,6 +8099,9 @@ def run_daily(
         )
     email_notifications_enabled = bool(runtime_controls["email_notifications_enabled"])
     slack_notifications_enabled = bool(runtime_controls["slack_notifications_enabled"])
+    slack_include_totals = bool(runtime_controls["slack_include_totals"])
+    slack_primary_notifications_enabled = bool(runtime_controls.get("slack_primary_notifications_enabled", True))
+    slack_secondary_notifications_enabled = bool(runtime_controls.get("slack_secondary_notifications_enabled", True))
     daily_summary_enabled = bool(runtime_controls["daily_summary_enabled"])
     weekly_summary_enabled = bool(runtime_controls["weekly_summary_enabled"])
     ingestion_enabled = bool(runtime_controls["ingestion_enabled"])
@@ -6587,8 +8113,10 @@ def run_daily(
     runtime_test_max_items_enabled = bool(runtime_controls.get("test_max_items_per_source_enabled", False))
     bypass_source_urls = bool(runtime_controls.get("bypass_source_urls", False))
     bypass_seen_urls = bool(runtime_controls.get("bypass_seen_urls", False) or bypass_source_urls)
+    allow_url_match_updates = bool(runtime_controls.get("allow_url_match_updates", False))
     post_category_backfill_enabled = bool(runtime_controls.get("post_category_backfill_enabled", False))
     post_content_backfill_enabled = bool(runtime_controls.get("post_content_backfill_enabled", True))
+    consumer_news_second_pass_enabled = bool(runtime_controls.get("consumer_news_second_pass_enabled", True))
     effective_test_slack_only = bool(test_slack_only or runtime_test_slack_only_enabled)
     effective_max_items_per_source_override = (
         int(max_items_per_source_override)
@@ -6606,6 +8134,9 @@ def run_daily(
         (
             f"email_notifications_enabled={email_notifications_enabled} "
             f"slack_notifications_enabled={slack_notifications_enabled} "
+            f"slack_include_totals={slack_include_totals} "
+            f"slack_primary_notifications_enabled={slack_primary_notifications_enabled} "
+            f"slack_secondary_notifications_enabled={slack_secondary_notifications_enabled} "
             f"daily_summary_enabled={daily_summary_enabled} "
             f"weekly_summary_enabled={weekly_summary_enabled} "
             f"ingestion_enabled={ingestion_enabled} "
@@ -6620,8 +8151,10 @@ def run_daily(
             f"test_slack_only_enabled={effective_test_slack_only} "
             f"bypass_source_urls={bypass_source_urls} "
             f"bypass_seen_urls={bypass_seen_urls} "
+            f"allow_url_match_updates={allow_url_match_updates} "
             f"post_category_backfill_enabled={post_category_backfill_enabled} "
-            f"post_content_backfill_enabled={post_content_backfill_enabled}"
+            f"post_content_backfill_enabled={post_content_backfill_enabled} "
+            f"consumer_news_second_pass_enabled={consumer_news_second_pass_enabled}"
         ),
     )
     run_store.log(
@@ -6639,6 +8172,9 @@ def run_daily(
             "resolved": {
                 "email_notifications_enabled": email_notifications_enabled,
                 "slack_notifications_enabled": slack_notifications_enabled,
+                "slack_include_totals": slack_include_totals,
+                "slack_primary_notifications_enabled": slack_primary_notifications_enabled,
+                "slack_secondary_notifications_enabled": slack_secondary_notifications_enabled,
                 "daily_summary_enabled": daily_summary_enabled,
                 "weekly_summary_enabled": weekly_summary_enabled,
                 "ingestion_enabled": ingestion_enabled,
@@ -6648,8 +8184,10 @@ def run_daily(
                 "prequal_enabled": prequal_enabled,
                 "bypass_source_urls": bypass_source_urls,
                 "bypass_seen_urls": bypass_seen_urls,
+                "allow_url_match_updates": allow_url_match_updates,
                 "post_category_backfill_enabled": post_category_backfill_enabled,
                 "post_content_backfill_enabled": post_content_backfill_enabled,
+                "consumer_news_second_pass_enabled": consumer_news_second_pass_enabled,
             },
         },
     )
@@ -6678,14 +8216,28 @@ def run_daily(
     )
 
     slack = (
-        SlackNotifier(cfg, config_path, run_store=run_store, run_id=run_id)
+        SlackNotifier(
+            cfg,
+            config_path,
+            run_store=run_store,
+            run_id=run_id,
+            include_primary=slack_primary_notifications_enabled,
+            include_secondary=slack_secondary_notifications_enabled,
+        )
         if (not dry_run and slack_notifications_enabled)
         else None
     )
     error_slack = slack
     if error_slack is None and not dry_run:
         try:
-            error_slack = SlackNotifier(cfg, config_path, run_store=run_store, run_id=run_id)
+            error_slack = SlackNotifier(
+                cfg,
+                config_path,
+                run_store=run_store,
+                run_id=run_id,
+                include_primary=slack_primary_notifications_enabled,
+                include_secondary=slack_secondary_notifications_enabled,
+            )
         except Exception as exc:
             run_store.log(run_id, "warn", "slack_post", f"error Slack notifier unavailable: {exc}", record_key=run_id)
     emailer = EmailNotifier(cfg, config_path) if (not dry_run and email_notifications_enabled) else None
@@ -6755,6 +8307,7 @@ def run_daily(
             source_name = str(source.get("name", source_id)).strip() or source_id
             source_type = str(source.get("type", "")).strip()
             source_url = str(source.get("url", "")).strip()
+            source_use_proxy = bool(source.get("use_proxy", False))
             if not source_id:
                 raise RuntimeError("source row missing id")
             if not source_type:
@@ -6781,6 +8334,7 @@ def run_daily(
                     timeout_seconds=int(runtime.get("request_timeout_seconds", 30)),
                     config_path=config_path,
                     source_name=source_name,
+                    use_proxy=source_use_proxy,
                 )
                 fetched_items = capture.get("items")
                 if not isinstance(fetched_items, list):
@@ -6824,6 +8378,7 @@ def run_daily(
                     "source_name": source_name,
                     "source_type": source_type,
                     "source_url": source_url,
+                    "use_proxy": source_use_proxy,
                     "raw_response_format": raw_response_format,
                     "seen_urls_before_run": list(seen_urls_before_run),
                     "raw_items_total": int(source_records_total),
@@ -6921,6 +8476,8 @@ def run_daily(
             "runtime_controls": {
                 "email_notifications_enabled": email_notifications_enabled,
                 "slack_notifications_enabled": slack_notifications_enabled,
+                "slack_primary_notifications_enabled": slack_primary_notifications_enabled,
+                "slack_secondary_notifications_enabled": slack_secondary_notifications_enabled,
                 "daily_summary_enabled": daily_summary_enabled,
                 "weekly_summary_enabled": weekly_summary_enabled,
                 "ingestion_enabled": ingestion_enabled,
@@ -6928,6 +8485,7 @@ def run_daily(
                 "dedupe_enabled": dedupe_enabled,
                 "force_source_failure": force_source_failure,
                 "prequal_enabled": prequal_enabled,
+                "allow_url_match_updates": allow_url_match_updates,
                 "post_category_backfill_enabled": post_category_backfill_enabled,
                 "post_content_backfill_enabled": post_content_backfill_enabled,
             },
@@ -7025,6 +8583,7 @@ def run_daily(
             source_name = str(source_payload.get("source_name", source_id)).strip() or source_id
             source_type = str(source_payload.get("source_type", "")).strip()
             source_url = str(source_payload.get("source_url", "")).strip()
+            source_use_proxy = bool(source_payload.get("use_proxy", False))
             if not source_id:
                 raise RuntimeError("raw snapshot source missing source_id")
             if not source_type:
@@ -7055,6 +8614,7 @@ def run_daily(
                     "source_name": source_name,
                     "source_type": source_type,
                     "source_url": source_url,
+                    "use_proxy": source_use_proxy,
                     "snapshot_run_id": active_snapshot_run_id,
                 }
             )
@@ -7307,6 +8867,10 @@ def run_daily(
                     ai_block = parsed_item.get("ai", {})
                     if not isinstance(feedparser_block, dict) or not isinstance(ai_block, dict):
                         continue
+                    _asc = str(parsed_item.get("Article Source Code", "")).strip()
+                    if _asc:
+                        ai_block = dict(ai_block)
+                        ai_block["article_source_code"] = _asc
                     parsed_link = str(feedparser_block.get("link", "")).strip()
                     parsed_id = str(feedparser_block.get("id", "")).strip()
                     for parsed_key in _url_lookup_keys(parsed_link) + _url_lookup_keys(parsed_id):
@@ -7533,6 +9097,26 @@ def run_daily(
                     source_name=source_name,
                     published_date_fallback=published_fallback,
                 )
+                event_type_value = str(event.get("event_type", "")).strip()
+                event_type_key = normalized_key(event_type_value)
+                if consumer_news_second_pass_enabled and event_type_key == "consumerindustrynews":
+                    event = _run_consumer_news_second_pass(
+                        event=event,
+                        logic=logic,
+                        run_store=run_store,
+                        run_id=run_id,
+                        source_id=source_id,
+                        record_key=url,
+                    )
+                elif consumer_news_second_pass_enabled and event_type_key in {"fundinground", "mandatransaction"}:
+                    run_store.log(
+                        run_id,
+                        "info",
+                        "consumer_news_gate",
+                        f"second pass skipped for structured deal type {event_type_value or event_type_key}",
+                        source_id=source_id,
+                        record_key=url,
+                    )
                 run_store.log(run_id, "info", "ai_classify_validated", to_json(event), source_id=source_id, record_key=url)
                 classify_outputs.append(
                     {
@@ -7555,6 +9139,29 @@ def run_daily(
                 if event["event_type"] == "irrelevant":
                     metrics.discarded_irrelevant += 1
                     run_store.log(run_id, "info", "classify", "discarded irrelevant", source_id=source_id, record_key=url)
+                    continue
+                if not bool(event.get("is_consumer_news", True)) and not to_bool(event.get("MakeThisNews", False)):
+                    metrics.discarded_irrelevant += 1
+                    updated_existing = _uncheck_existing_non_consumer_record(
+                        airtable=airtable,
+                        event=event,
+                        dedupe_state=dedupe_state,
+                        run_store=run_store,
+                        run_id=run_id,
+                        source_id=source_id,
+                        record_key=url,
+                    )
+                    if updated_existing:
+                        metrics.updated_events += 1
+                    gate_confidence = float(event.get("consumer_news_confidence", 0.0) or 0.0)
+                    gate_reason = str(event.get("consumer_news_reason", "")).strip()
+                    gate_message = (
+                        f"discarded non-consumer item by ai gate "
+                        f"(confidence={gate_confidence:.2f}"
+                        + (f", reason={gate_reason}" if gate_reason else "")
+                        + ")"
+                    )
+                    run_store.log(run_id, "info", "classify", gate_message, source_id=source_id, record_key=url)
                     continue
 
                 if str(event.get("event_flag", "")).strip().upper() != "Y":
@@ -7593,7 +9200,13 @@ def run_daily(
 
                 if dedupe_enabled:
                     run_store.log(run_id, "info", "dedupe", "dedupe check", source_id=source_id, record_key=url)
-                    action, row = upsert_event(airtable, event, logic, dedupe_state=dedupe_state)
+                    action, row = upsert_event(
+                        airtable,
+                        event,
+                        logic,
+                        allow_url_match_updates=allow_url_match_updates,
+                        dedupe_state=dedupe_state,
+                    )
                 else:
                     run_store.log(
                         run_id,
@@ -7844,95 +9457,116 @@ def run_daily(
         )
 
     if weekly_summary_enabled:
-        substack_events = airtable.load_events() + airtable.load_news()
-        if not substack_events:
-            substack_events = list(summary_events)
-        run_store.log(run_id, "info", "summary_weekly", "building weekly summary")
-        save_checkpoint(
-            checkpoint_root,
-            run_id,
-            "summary_weekly",
-            {
-                "today": today.isoformat(),
-                "summary_events": substack_events,
-                "output_file": str(weekly_file),
-            },
-        )
-        weekly_text = build_weekly_summary(substack_events, today)
-        save_checkpoint(
-            checkpoint_root,
-            run_id,
-            "ai_weekly_draft",
-            {
-                "today": today.isoformat(),
-                "summary_events": substack_events,
-                "output_file": str(weekly_draft_file),
-            },
-        )
-        weekly_draft_text, audit_data = build_weekly_substack_draft(
-            substack_events,
-            today,
-            logic=logic,
-            run_store=run_store,
-            run_id=run_id,
-            article_format_config=article_format_config,
-        )
-
-        # Extract title from markdown for filename
-        title_filename = _extract_title_for_filename(weekly_draft_text)
-        if title_filename:
-            # Use title-based filename for draft files
-            weekly_draft_file = weekly_draft_file_base.parent / f"{title_filename}.md"
-            weekly_draft_html_file = weekly_draft_file_base.parent / f"{title_filename}.html"
+        if _weekly_script:
+            # ── Shell out to external V1/V2 weekly newsletter script ──────────
+            _ws_today = today.date() if hasattr(today, "date") else today
+            _ws_start = _ws_today - timedelta(days=6)
+            _ws_script_path = Path(__file__).resolve().parent / "NewsLetters" / _weekly_script
+            run_store.log(run_id, "info", "summary_weekly_draft", f"shelling out to {_weekly_script} start={_ws_start} end={_ws_today}")
+            subprocess.run(
+                [
+                    sys.executable, str(_ws_script_path),
+                    "--start", str(_ws_start),
+                    "--end",   str(_ws_today),
+                    "--output-dir", str(output_dir),
+                ],
+                check=True,
+                cwd=str(_ws_script_path.parent),
+            )
+            run_store.log(run_id, "info", "summary_weekly_draft", f"external script completed: {_weekly_script}")
+            save_checkpoint(checkpoint_root, run_id, "summary_weekly", {"today": today.isoformat(), "script": _weekly_script, "output_dir": str(output_dir)})
+            save_checkpoint(checkpoint_root, run_id, "ai_weekly_draft", {"today": today.isoformat(), "script": _weekly_script, "output_dir": str(output_dir)})
         else:
-            # Fallback to timestamped if title extraction fails
-            weekly_draft_file = _timestamped_output_path(weekly_draft_file_base, output_timestamp)
-            weekly_draft_html_file = weekly_draft_file.with_suffix(".html")
+            substack_events = airtable.load_events() + airtable.load_news()
+            if not substack_events:
+                substack_events = list(summary_events)
+            run_store.log(run_id, "info", "summary_weekly", "building weekly summary")
+            save_checkpoint(
+                checkpoint_root,
+                run_id,
+                "summary_weekly",
+                {
+                    "today": today.isoformat(),
+                    "summary_events": substack_events,
+                    "output_file": str(weekly_file),
+                },
+            )
+            weekly_text = build_weekly_summary(substack_events, today)
+            save_checkpoint(
+                checkpoint_root,
+                run_id,
+                "ai_weekly_draft",
+                {
+                    "today": today.isoformat(),
+                    "summary_events": substack_events,
+                    "output_file": str(weekly_draft_file),
+                },
+            )
+            weekly_draft_text, audit_data = build_weekly_substack_draft(
+                substack_events,
+                today,
+                logic=logic,
+                run_store=run_store,
+                run_id=run_id,
+                article_format_config=article_format_config,
+            )
 
-        weekly_file.parent.mkdir(parents=True, exist_ok=True)
-        weekly_draft_file.parent.mkdir(parents=True, exist_ok=True)
-        weekly_file.write_text(weekly_text, encoding="utf-8")
-        weekly_draft_file.write_text(weekly_draft_text, encoding="utf-8")
-        weekly_draft_html_file.write_text(_render_weekly_html(weekly_draft_text), encoding="utf-8")
+            # Extract title from markdown for filename
+            title_filename = _extract_title_for_filename(weekly_draft_text)
+            if title_filename:
+                # Use title-based filename for draft files
+                weekly_draft_file = weekly_draft_file_base.parent / f"{title_filename}.md"
+                weekly_draft_html_file = weekly_draft_file_base.parent / f"{title_filename}.html"
+            else:
+                # Fallback to timestamped if title extraction fails
+                weekly_draft_file = _timestamped_output_path(weekly_draft_file_base, output_timestamp)
+                weekly_draft_html_file = weekly_draft_file.with_suffix(".html")
 
-        # Generate audit report
-        audit_report_html = _generate_newsletter_audit_report(
-            all_events=audit_data["selected_events"],
-            selected_events=audit_data["selected_events"],
-            start_date=audit_data["start_date"],
-            end_date=audit_data["end_date"],
-        )
-        if title_filename:
-            audit_report_file = weekly_draft_file_base.parent / f"{title_filename} - Audit Report.html"
-        else:
-            audit_report_file = weekly_draft_file.with_stem(f"{weekly_draft_file.stem} - Audit Report").with_suffix(".html")
-        audit_report_file.write_text(audit_report_html, encoding="utf-8")
+            weekly_file.parent.mkdir(parents=True, exist_ok=True)
+            weekly_draft_file.parent.mkdir(parents=True, exist_ok=True)
+            weekly_file.write_text(weekly_text, encoding="utf-8")
+            weekly_draft_file.write_text(weekly_draft_text, encoding="utf-8")
+            weekly_draft_html_file.write_text(_render_weekly_html(weekly_draft_text), encoding="utf-8")
 
-        run_store.log(run_id, "info", "summary_weekly", f"weekly summary written {weekly_file}")
-        run_store.log(run_id, "info", "summary_weekly_draft", f"weekly Substack draft written {weekly_draft_file}")
-        run_store.log(run_id, "info", "audit_report", f"audit report written {audit_report_file}")
-        save_checkpoint(
-            checkpoint_root,
-            run_id,
-            "summary_weekly",
-            {
-                "today": today.isoformat(),
-                "summary_events": substack_events,
-                "output_file": str(weekly_file),
-                "summary_text": weekly_text,
-            },
-        )
-        save_checkpoint(
-            checkpoint_root,
-            run_id,
-            "ai_weekly_draft",
-            {
-                "today": today.isoformat(),
-                "summary_events": substack_events,
-                "output_file": str(weekly_draft_file),
-                "draft_text": weekly_draft_text,
-            },
-        )
+            # Generate audit report
+            audit_report_html = _generate_newsletter_audit_report(
+                all_events=audit_data["selected_events"],
+                selected_events=audit_data["selected_events"],
+                start_date=audit_data["start_date"],
+                end_date=audit_data["end_date"],
+                consumer_news_categorized=audit_data.get("consumer_news_categorized"),
+            )
+            if title_filename:
+                audit_report_file = weekly_draft_file_base.parent / f"{title_filename} - Audit Report.html"
+            else:
+                audit_report_file = weekly_draft_file.with_stem(f"{weekly_draft_file.stem} - Audit Report").with_suffix(".html")
+            audit_report_file.write_text(audit_report_html, encoding="utf-8")
+
+            run_store.log(run_id, "info", "summary_weekly", f"weekly summary written {weekly_file}")
+            run_store.log(run_id, "info", "summary_weekly_draft", f"weekly Substack draft written {weekly_draft_file}")
+            run_store.log(run_id, "info", "audit_report", f"audit report written {audit_report_file}")
+            save_checkpoint(
+                checkpoint_root,
+                run_id,
+                "summary_weekly",
+                {
+                    "today": today.isoformat(),
+                    "summary_events": substack_events,
+                    "output_file": str(weekly_file),
+                    "summary_text": weekly_text,
+                },
+            )
+            save_checkpoint(
+                checkpoint_root,
+                run_id,
+                "ai_weekly_draft",
+                {
+                    "today": today.isoformat(),
+                    "summary_events": substack_events,
+                    "output_file": str(weekly_draft_file),
+                    "draft_text": weekly_draft_text,
+                },
+            )
     else:
         run_store.log(run_id, "info", "summary_weekly", "weekly summary skipped by runtime control")
         run_store.log(run_id, "info", "summary_weekly_draft", "weekly Substack draft skipped by runtime control")
@@ -8104,10 +9738,13 @@ def run_daily(
     save_checkpoint(checkpoint_root, run_id, "post_content_backfill", post_content_backfill_result)
 
     status = "completed_with_errors" if metrics.failed_sources > 0 else "completed"
+    # Slack digest should include only newly created records, not duplicates/updates.
     slack_digest_events = [
         dict(entry.get("event", {}))
-        for entry in classify_outputs
-        if isinstance(entry, dict) and isinstance(entry.get("event"), dict)
+        for entry in dedupe_actions
+        if isinstance(entry, dict)
+        and str(entry.get("action", "")).strip() in {"created", "created_no_dedupe"}
+        and isinstance(entry.get("event"), dict)
     ]
     raw_slack_digest_text = build_slack_run_digest(slack_digest_events)
     slack_digest_blocks = build_slack_run_blocks(slack_digest_events)
@@ -8161,20 +9798,45 @@ def run_daily(
         "slack_post",
         {
             "enabled": slack_notifications_enabled,
+            "include_totals": slack_include_totals,
+            "primary_enabled": slack_primary_notifications_enabled,
+            "secondary_enabled": slack_secondary_notifications_enabled,
             "status": status,
             "metrics": metrics.__dict__,
             "digest_text_raw": raw_slack_digest_text,
             "digest_text": slack_digest_text,
         },
     )
-    if slack is not None and not effective_test_slack_only:
-        slack.post_run_summary(run_id=run_id, status=status, metrics=metrics, digest_text=slack_digest_text, digest_blocks=slack_digest_blocks)
+    if slack is not None and not effective_test_slack_only and slack.has_destinations():
+        slack.post_run_summary(
+            run_id=run_id,
+            status=status,
+            metrics=metrics,
+            include_totals=slack_include_totals,
+            digest_text=slack_digest_text,
+            digest_blocks=slack_digest_blocks,
+        )
         metrics.slack_posts += 1
         run_store.log(run_id, "info", "slack_post", "posted run summary with digest", record_key=run_id)
-    elif slack is not None and effective_test_slack_only:
-        slack.post_run_summary(run_id=run_id, status=status, metrics=metrics, digest_text=slack_digest_text, digest_blocks=slack_digest_blocks)
+    elif slack is not None and effective_test_slack_only and slack.has_destinations():
+        slack.post_run_summary(
+            run_id=run_id,
+            status=status,
+            metrics=metrics,
+            include_totals=slack_include_totals,
+            digest_text=slack_digest_text,
+            digest_blocks=slack_digest_blocks,
+        )
         metrics.slack_posts += 1
         run_store.log(run_id, "info", "slack_post", "posted digest summary Slack content (test_slack_only)", record_key=run_id)
+    elif slack is not None and not slack.has_destinations():
+        run_store.log(
+            run_id,
+            "info",
+            "slack_post",
+            "run summary Slack post skipped because primary/secondary destinations are disabled by runtime controls",
+            record_key=run_id,
+        )
     elif not dry_run and not slack_notifications_enabled:
         run_store.log(run_id, "info", "slack_post", "run summary Slack post skipped by runtime control", record_key=run_id)
     save_checkpoint(
@@ -8183,6 +9845,9 @@ def run_daily(
         "slack_post",
         {
             "enabled": slack_notifications_enabled,
+            "include_totals": slack_include_totals,
+            "primary_enabled": slack_primary_notifications_enabled,
+            "secondary_enabled": slack_secondary_notifications_enabled,
             "status": status,
             "metrics": metrics.__dict__,
             "digest_text_raw": raw_slack_digest_text,
@@ -8212,6 +9877,9 @@ def run_daily(
         "runtime_controls": {
             "email_notifications_enabled": email_notifications_enabled,
             "slack_notifications_enabled": slack_notifications_enabled,
+            "slack_include_totals": slack_include_totals,
+            "slack_primary_notifications_enabled": slack_primary_notifications_enabled,
+            "slack_secondary_notifications_enabled": slack_secondary_notifications_enabled,
             "daily_summary_enabled": daily_summary_enabled,
             "weekly_summary_enabled": weekly_summary_enabled,
             "ingestion_enabled": ingestion_enabled,
@@ -8219,8 +9887,10 @@ def run_daily(
             "dedupe_enabled": dedupe_enabled,
             "force_source_failure": force_source_failure,
             "prequal_enabled": prequal_enabled,
+            "allow_url_match_updates": allow_url_match_updates,
             "post_category_backfill_enabled": post_category_backfill_enabled,
             "post_content_backfill_enabled": post_content_backfill_enabled,
+            "consumer_news_second_pass_enabled": consumer_news_second_pass_enabled,
         },
         "post_category_backfill": post_category_backfill_result,
         "post_content_backfill": post_content_backfill_result,
@@ -8265,6 +9935,20 @@ def run_daily(
         },
     )
     cleanup_active_checkpoints(checkpoint_root, run_id)
+
+    if status in {"completed", "completed_with_errors"} and execution_mode == "live":
+        _proc = Path(__file__).resolve().parent / "V2" / "Auto" / "process_new_records.py"
+        if _proc.exists():
+            run_store.log(run_id, "info", "post_ingest", "starting process_new_records")
+            try:
+                subprocess.run(
+                    [sys.executable, str(_proc)],
+                    check=False,
+                    cwd=str(_proc.parent),
+                )
+                run_store.log(run_id, "info", "post_ingest", "process_new_records completed")
+            except Exception as _e:
+                run_store.log(run_id, "warning", "post_ingest", f"process_new_records error: {_e}")
 
     print(f"run_id={run_id}")
     print(f"status={status}")
@@ -8423,7 +10107,8 @@ def replay_node_from_checkpoint(
 
     db_path = state_dir / "consumer_vc_v1.db"
     run_store = RunStore(db_path=db_path, activity_log_path=activity_log_path)
-    run_id = run_store.start_run(mode=f"replay_from:{replay_target}")
+    _run_id_prefix = str(runtime.get("run_id_prefix", "consumer_vc_v1")).strip() or "consumer_vc_v1"
+    run_id = run_store.start_run(mode=f"replay_from:{replay_target}", prefix=_run_id_prefix)
     replay_output_timestamp = _output_timestamp_label()
     run_store.log(run_id, "info", "start", f"replay started source_run={checkpoint_run_id} node={replay_target}")
     if content_start_override is not None and content_end_override is not None:
@@ -8441,10 +10126,15 @@ def replay_node_from_checkpoint(
     try:
         airtable = AirtableStore(cfg)
         current_runtime_controls = airtable.load_runtime_controls()
+        if "slack_include_totals" not in current_runtime_controls:
+            raise RuntimeError(
+                "required runtime control(s) missing in Runtime Controls table: slack_include_totals"
+            )
         article_format_config = airtable.load_article_format()
         logic_cache: dict[str, Any] | None = None
         weekly_prompt_override_text = ""
         weekly_prompt_selected_name = ""
+        _replay_script = ""
         if replay_target == "ai_weekly_draft":
             selected_prompt_name = str(weekly_prompt_name or "").strip()
             if selected_prompt_name:
@@ -8473,6 +10163,7 @@ def replay_node_from_checkpoint(
                         ),
                         record_key=replay_target,
                     )
+                    _replay_script = substack_prompt_sync.get("script", "")
         stage_aliases = {
             "runtime_controls": "load_runtime_controls",
             "airtable_events": "upsert_event",
@@ -8514,6 +10205,10 @@ def replay_node_from_checkpoint(
                 save_active_checkpoint(checkpoint_root, checkpoint_run_id, "load_prompts", result_payload)
             elif current_node == "runtime_controls":
                 current_runtime_controls = airtable.load_runtime_controls()
+                if "slack_include_totals" not in current_runtime_controls:
+                    raise RuntimeError(
+                        "required runtime control(s) missing in Runtime Controls table: slack_include_totals"
+                    )
                 result_payload = {"controls": current_runtime_controls}
                 save_active_checkpoint(checkpoint_root, checkpoint_run_id, "runtime_controls", result_payload)
             elif current_node == "load_sources":
@@ -8539,29 +10234,34 @@ def replay_node_from_checkpoint(
                     source_name = str(item.get("source_name", "")).strip() or source_id
                     run_store.log(run_id, "info", "classify_progress", f"{index}/{total_items} | {source_name}", source_id=source_id, record_key=url)
                     run_store.log(run_id, "info", "classify", "classifying item", source_id=source_id, record_key=url)
-                    event = classify_and_extract(
-                        {
-                            "title": str(item.get("title", "")),
-                            "summary": str(item.get("summary", "")),
-                            "url": url,
-                            "source_id": source_id,
-                            "source_name": str(item.get("source_name", "")),
-                            "published_at": str(item.get("published_at", "")),
-                            "request_timeout_seconds": int(item.get("request_timeout_seconds", 30) or 30),
-                        },
-                        current_logic(),
-                        run_store=run_store,
-                        run_id=run_id,
-                        source_id=source_id,
-                        record_key=url,
-                        request_timeout_seconds=int(item.get("request_timeout_seconds", 30) or 30),
-                    )
+                    try:
+                        event = classify_and_extract(
+                            {
+                                "title": str(item.get("title", "")),
+                                "summary": str(item.get("summary", "")),
+                                "url": url,
+                                "source_id": source_id,
+                                "source_name": str(item.get("source_name", "")),
+                                "published_at": str(item.get("published_at", "")),
+                                "request_timeout_seconds": int(item.get("request_timeout_seconds", 30) or 30),
+                            },
+                            current_logic(),
+                            run_store=run_store,
+                            run_id=run_id,
+                            source_id=source_id,
+                            record_key=url,
+                            request_timeout_seconds=int(item.get("request_timeout_seconds", 30) or 30),
+                        )
+                    except AIValidationError as exc:
+                        run_store.log(run_id, "info", "classify", f"discarded at gate: {exc}", source_id=source_id, record_key=url)
+                        continue
                     output_events.append({"source_id": source_id, "url": url, "event": event})
                 metrics.discarded_irrelevant = sum(1 for entry in output_events if isinstance(entry, dict) and isinstance(entry.get("event"), dict) and str(entry["event"].get("event_type", "")).strip() == "irrelevant")
                 result_payload = {"total_items": total_items, "input_items": input_items, "output_events": output_events}
                 save_active_checkpoint(checkpoint_root, checkpoint_run_id, "classify", result_payload)
             elif current_node in {"dedupe", "airtable_events"}:
                 dedupe_enabled = bool(current_runtime_controls.get("dedupe_enabled", True))
+                allow_url_match_updates = bool(current_runtime_controls.get("allow_url_match_updates", False))
                 if current_node == "dedupe":
                     canonical_events = _canonical_events_from_classify_payload(effective("classify"))
                     logic = current_logic()
@@ -8575,7 +10275,13 @@ def replay_node_from_checkpoint(
                         url = str(entry.get("url", "")).strip()
                         run_store.log(run_id, "info", "dedupe", "dedupe check", source_id=source_id, record_key=url)
                         if dedupe_enabled:
-                            action, row = upsert_event(airtable, event, current_logic(), dedupe_state=dedupe_state)
+                            action, row = upsert_event(
+                                airtable,
+                                event,
+                                current_logic(),
+                                allow_url_match_updates=allow_url_match_updates,
+                                dedupe_state=dedupe_state,
+                            )
                         else:
                             action, row = create_event_without_dedupe(
                                 airtable,
@@ -8605,7 +10311,13 @@ def replay_node_from_checkpoint(
                         event = required_obj(entry, "event")
                         url = str(entry.get("url", "")).strip()
                         if dedupe_enabled:
-                            action, row = upsert_event(airtable, event, current_logic(), dedupe_state=dedupe_state)
+                            action, row = upsert_event(
+                                airtable,
+                                event,
+                                current_logic(),
+                                allow_url_match_updates=allow_url_match_updates,
+                                dedupe_state=dedupe_state,
+                            )
                         else:
                             action, row = create_event_without_dedupe(
                                 airtable,
@@ -8722,6 +10434,30 @@ def replay_node_from_checkpoint(
                 }
                 save_active_checkpoint(checkpoint_root, checkpoint_run_id, "summary_weekly", result_payload)
             elif current_node == "ai_weekly_draft":
+                if _replay_script:
+                    # ── Shell out to external V1/V2 weekly newsletter script ──
+                    if content_start_override is not None and content_end_override is not None:
+                        _rsh_start = content_start_override
+                        _rsh_end = content_end_override
+                    else:
+                        _rsh_end = _runtime_now(cfg).date()
+                        _rsh_start = _rsh_end - timedelta(days=6)
+                    _rsh_script_path = Path(__file__).resolve().parent / "NewsLetters" / _replay_script
+                    _rsh_out_dir = resolve_path(required_text(required_obj(cfg, "runtime"), "output_dir"), config_path)
+                    run_store.log(run_id, "info", "summary_weekly_draft", f"shelling out to {_replay_script} start={_rsh_start} end={_rsh_end}", record_key=current_node)
+                    subprocess.run(
+                        [
+                            sys.executable, str(_rsh_script_path),
+                            "--start", str(_rsh_start),
+                            "--end",   str(_rsh_end),
+                            "--output-dir", str(_rsh_out_dir),
+                        ],
+                        check=True,
+                        cwd=str(_rsh_script_path.parent),
+                    )
+                    run_store.log(run_id, "info", "summary_weekly_draft", f"external script completed: {_replay_script}", record_key=current_node)
+                    save_active_checkpoint(checkpoint_root, checkpoint_run_id, "ai_weekly_draft", {"today": _runtime_now(cfg).isoformat(), "script": _replay_script})
+                    continue
                 if content_start_override is not None and content_end_override is not None:
                     summary_events = airtable.load_events() + airtable.load_news()
                     today = datetime.combine(content_end_override, datetime.min.time(), tzinfo=timezone.utc)
@@ -8807,6 +10543,7 @@ def replay_node_from_checkpoint(
                     selected_events=audit_data["selected_events"],
                     start_date=audit_data["start_date"],
                     end_date=audit_data["end_date"],
+                    consumer_news_categorized=audit_data.get("consumer_news_categorized"),
                 )
                 if title_filename:
                     audit_report_file = output_file_base.parent / f"{title_filename} - Audit Report.html"
@@ -8846,6 +10583,9 @@ def replay_node_from_checkpoint(
             elif current_node == "slack_post":
                 slack_payload = _load_optional_effective_checkpoint(checkpoint_root, checkpoint_run_id, "slack_post") or {}
                 slack_enabled = bool(slack_payload.get("enabled", current_runtime_controls.get("slack_notifications_enabled", False)))
+                slack_include_totals = bool(current_runtime_controls["slack_include_totals"])
+                slack_primary_enabled = bool(current_runtime_controls.get("slack_primary_notifications_enabled", True))
+                slack_secondary_enabled = bool(current_runtime_controls.get("slack_secondary_notifications_enabled", True))
                 digest_text = str(slack_payload.get("digest_text", "")).strip()
                 digest_text = _prepare_slack_digest_for_post(
                     digest_text,
@@ -8854,18 +10594,39 @@ def replay_node_from_checkpoint(
                 )
                 sent = False
                 if slack_enabled:
-                    SlackNotifier(cfg, config_path, run_store=run_store, run_id=run_id).post_run_summary(
+                    slack_notifier = SlackNotifier(
+                        cfg,
+                        config_path,
+                        run_store=run_store,
                         run_id=run_id,
-                        status=status,
-                        metrics=metrics,
-                        digest_text=digest_text,
+                        include_primary=slack_primary_enabled,
+                        include_secondary=slack_secondary_enabled,
                     )
-                    run_store.log(run_id, "info", "slack_post", "posted run summary", record_key=checkpoint_run_id)
-                    sent = True
+                    if slack_notifier.has_destinations():
+                        slack_notifier.post_run_summary(
+                            run_id=run_id,
+                            status=status,
+                            metrics=metrics,
+                            include_totals=slack_include_totals,
+                            digest_text=digest_text,
+                        )
+                        run_store.log(run_id, "info", "slack_post", "posted run summary", record_key=checkpoint_run_id)
+                        sent = True
+                    else:
+                        run_store.log(
+                            run_id,
+                            "info",
+                            "slack_post",
+                            "run summary Slack post skipped because primary/secondary destinations are disabled by runtime controls",
+                            record_key=checkpoint_run_id,
+                        )
                 else:
                     run_store.log(run_id, "info", "slack_post", "run summary Slack post skipped by runtime control", record_key=checkpoint_run_id)
                 result_payload = {
                     "enabled": slack_enabled,
+                    "include_totals": slack_include_totals,
+                    "primary_enabled": slack_primary_enabled,
+                    "secondary_enabled": slack_secondary_enabled,
                     "status": status,
                     "metrics": metrics.__dict__,
                     "digest_text": digest_text,
@@ -8948,6 +10709,28 @@ def run_weekly_summary_only(config_path: Path) -> int:
                 f"updated_prompts_text={substack_prompt_sync['updated_prompts_text']}"
             ),
         )
+    if substack_prompt_sync and substack_prompt_sync.get("script"):
+        # ── Shell out to external V1/V2 weekly newsletter script ─────────────
+        _script_name = substack_prompt_sync["script"]
+        _now = _runtime_now(cfg)
+        _end_dt = _now.date()
+        _start_dt = _end_dt - timedelta(days=6)
+        _script_path = Path(__file__).resolve().parent / "NewsLetters" / _script_name
+        _out_dir = resolve_path(required_text(runtime, "output_dir"), config_path)
+        run_store.log(run_id, "info", "summary_weekly_draft", f"shelling out to {_script_name} start={_start_dt} end={_end_dt}")
+        subprocess.run(
+            [
+                sys.executable, str(_script_path),
+                "--start", str(_start_dt),
+                "--end",   str(_end_dt),
+                "--output-dir", str(_out_dir),
+            ],
+            check=True,
+            cwd=str(_script_path.parent),
+        )
+        run_store.log(run_id, "info", "summary_weekly_draft", f"external script completed: {_script_name}")
+        run_store.finish(run_id, "completed", RunMetrics())
+        return 0
     prompts = airtable.load_prompts()
     run_store.log(run_id, "info", "load_prompts", f"prompts loaded count={len(prompts)}")
     required_prompt_keys = required_obj(cfg, "prompts").get("required_prompt_keys", [])
@@ -9030,6 +10813,7 @@ def run_weekly_summary_only(config_path: Path) -> int:
         selected_events=audit_data["selected_events"],
         start_date=audit_data["start_date"],
         end_date=audit_data["end_date"],
+        consumer_news_categorized=audit_data.get("consumer_news_categorized"),
     )
     if title_filename:
         audit_report_file = weekly_draft_file_base.parent / f"{title_filename} - Audit Report.html"
@@ -9144,3 +10928,4 @@ _enable_flow_tracing()
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
